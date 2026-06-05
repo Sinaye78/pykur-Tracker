@@ -9642,7 +9642,7 @@ function assetPath(src){
     .replace(/^\.?\/?ambiance\//,"./assets/ambiance/")
     .replace(/^\.?\/?tuto\//,"./assets/tuto/");
 }
-const AUTH_API_BASE=localStorage.getItem("pykur_api_base")||"http://127.0.0.1:3000/api";
+const AUTH_API_BASE=localStorage.getItem("pykur_api_base")||(location.hostname==="127.0.0.1"||location.hostname==="localhost"?"http://127.0.0.1:3000/api":"/api");
 const AUTH_TOKEN_KEY="pykur_auth_token";
 let authMode="login";
 let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null};
