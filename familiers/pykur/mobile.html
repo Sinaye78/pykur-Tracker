@@ -1043,7 +1043,7 @@
             <div class="line"><span>Donjon actif</span><strong id="activeFarm">Morose</strong></div>
             <div class="line"><span>Prochaine PP</span><strong id="nextPP">--</strong></div>
             <div class="line"><span>Session & Chrono</span><strong id="chronoMini">00:00:00</strong></div>
-            <div class="line"><span>Ã‰tat</span><strong id="sessionMini">PrÃªte</strong></div>
+            <div class="line"><span>État</span><strong id="sessionMini">Prête</strong></div>
           </article>
 
           <article class="card">
@@ -1052,7 +1052,7 @@
               <button class="btn-light" data-open="projectionSheet" type="button">Projections</button>
               <button class="btn-light" data-open="statsSheet" type="button">Stats</button>
               <button class="btn-light" data-open="monstersSheet" type="button">Monstres</button>
-              <button class="btn-light" data-open="achievementsSheet" type="button">SuccÃ¨s</button>
+              <button class="btn-light" data-open="achievementsSheet" type="button">Succès</button>
               <button class="btn-light" data-open="manualRunsSheet" type="button">Modifier</button>
               <button class="btn-light" data-open="profileSheet" type="button">Profils</button>
             </div>
@@ -1064,7 +1064,7 @@
     <section class="view" id="view-chrono">
       <article class="chrono-display">
         <span>Session & Chrono</span>
-        <strong id="sessionState">PrÃªte</strong>
+        <strong id="sessionState">Prête</strong>
         <div class="chrono-time" id="chronoDisplay">00:00:00</div>
         <div class="line" id="sessionTimeRow"><span>Temps total farm</span><strong id="sessionTime">00:00:00</strong></div>
       </article>
@@ -1073,7 +1073,7 @@
         <div class="line"><span>Donjons</span><strong id="sessionRuns">0</strong></div>
         <div class="line"><span>PP session</span><strong id="sessionPP">+0</strong></div>
         <div class="toolbar">
-          <button class="btn-green" id="chronoToggleBtn" type="button">DÃ©marrer</button>
+          <button class="btn-green" id="chronoToggleBtn" type="button">Démarrer</button>
           <button class="btn-blue" id="sessionEndBtn" type="button">Terminer</button>
           <button class="btn-red" id="chronoResetBtn" type="button">Reset</button>
           <button class="btn-orange" id="markTimeBtn" type="button">Marquer run</button>
@@ -1089,8 +1089,8 @@
           <button class="active" data-history-filter="all" type="button">Tous</button>
           <button data-history-filter="run" type="button">Runs</button>
           <button data-history-filter="chrono" type="button">Chrono</button>
-          <button data-history-filter="system" type="button">SystÃ¨me</button>
-          <button data-history-filter="success" type="button">SuccÃ¨s</button>
+          <button data-history-filter="system" type="button">Système</button>
+          <button data-history-filter="success" type="button">Succès</button>
         </div>
         <div class="timeline" id="historyList"></div>
       </article>
@@ -1100,14 +1100,14 @@
       <article class="card">
         <h2>Options mobiles</h2>
         <div class="settings-grid">
-          <div class="setting-row"><div><strong>Mode nuit</strong><p>SynchronisÃ© avec desktop.</p></div><button class="btn-blue" id="nightBtn" type="button">Off</button></div>
-          <div class="setting-row"><div><strong>Notifications</strong><p>Affiche les retours dâ€™action mobiles.</p></div><button class="btn-blue" id="notifBtn" type="button">On</button></div>
-          <div class="setting-row"><div><strong>Raccourcis clavier</strong><p>ConservÃ©s dans la mÃªme sauvegarde.</p></div><button class="btn-blue" id="shortcutBtn" type="button">On</button></div>
+          <div class="setting-row"><div><strong>Mode nuit</strong><p>Synchronisé avec desktop.</p></div><button class="btn-blue" id="nightBtn" type="button">Off</button></div>
+          <div class="setting-row"><div><strong>Notifications</strong><p>Affiche les retours d’action mobiles.</p></div><button class="btn-blue" id="notifBtn" type="button">On</button></div>
+          <div class="setting-row"><div><strong>Raccourcis clavier</strong><p>Conservés dans la même sauvegarde.</p></div><button class="btn-blue" id="shortcutBtn" type="button">On</button></div>
           <div class="setting-row"><div><strong>Estimation chrono auto</strong><p>Utilise les temps moyens sans valider de donjon automatiquement.</p></div><button class="btn-blue" id="autoEstimateBtn" type="button">Off</button></div>
         </div>
       </article>
       <article class="card">
-        <h2>Temps estimÃ©s</h2>
+        <h2>Temps estimés</h2>
         <div class="line"><span>Morose</span><strong id="avgMoroseText">--</strong></div>
         <div class="line"><span>Tynril</span><strong id="avgTynrilText">--</strong></div>
         <label class="option-control"><span>Temps Morose</span><input id="avgMoroseInput" type="text" inputmode="numeric" placeholder="2:30"></label>
@@ -1123,11 +1123,11 @@
           <button class="btn-orange" id="importBtn" type="button">Importer</button>
           <input class="mobile-hidden" id="importInput" type="file" accept="application/json,.json">
         </div>
-        <p class="meta">MÃªme sauvegarde localStorage que la version desktop.</p>
+        <p class="meta">Même sauvegarde localStorage que la version desktop.</p>
       </article>
       <article class="card">
         <h2>Danger</h2>
-        <div class="setting-row"><div><strong>Reset Pykur actif</strong><p>RÃ©initialise uniquement le profil sÃ©lectionnÃ©.</p></div><button class="btn-red" id="resetActivePykur" type="button">Reset</button></div>
+        <div class="setting-row"><div><strong>Reset Pykur actif</strong><p>Réinitialise uniquement le profil sélectionné.</p></div><button class="btn-red" id="resetActivePykur" type="button">Reset</button></div>
       </article>
     </section>
   </main>
@@ -1143,10 +1143,10 @@
   <div class="modal-bg" id="projectionSheet"><section class="sheet"><div class="sheet-head"><h2>Projections</h2><button class="btn-gray" data-close type="button">Fermer</button></div><div id="projectionContent"></div></section></div>
   <div class="modal-bg" id="statsSheet"><section class="sheet"><div class="sheet-head"><h2>Statistiques</h2><button class="btn-gray" data-close type="button">Fermer</button></div><div id="statsContent"></div></section></div>
   <div class="modal-bg" id="monstersSheet"><section class="sheet"><div class="sheet-head"><h2>Monstres</h2><div class="toolbar"><button class="btn-blue" id="saveMonsterEdits" type="button">Sauver</button><button class="btn-gray" data-close type="button">Fermer</button></div></div><div class="list" id="monsterList"></div></section></div>
-  <div class="modal-bg" id="manualRunsSheet"><section class="sheet"><div class="sheet-head"><h2>Modifier donjons</h2><button class="btn-gray" data-close type="button">Annuler</button></div><div class="card"><p class="meta">Saisissez directement les donjons du profil actif. Morose est limitÃ© Ã  640, Tynril Ã  48. Les valeurs ne sont appliquÃ©es qu'aprÃ¨s validation.</p><div class="manual-run-grid"><label class="manual-run-card"><span>Donjons Morose</span><div class="manual-stepper"><button class="btn-gray" data-manual-step="morose" data-step="-1" type="button">-</button><input id="manualMoroseRuns" type="number" inputmode="numeric" min="0" max="640"><button class="btn-green" data-manual-step="morose" data-step="1" type="button">+</button></div></label><label class="manual-run-card"><span>Donjons Tynril</span><div class="manual-stepper"><button class="btn-gray" data-manual-step="tynril" data-step="-1" type="button">-</button><input id="manualTynrilRuns" type="number" inputmode="numeric" min="0" max="48"><button class="btn-green" data-manual-step="tynril" data-step="1" type="button">+</button></div></label></div><div class="toolbar"><button class="btn-blue" id="applyManualRuns" type="button">Appliquer</button><button class="btn-gray" data-close type="button">Annuler</button></div></div></section></div>
-  <div class="modal-bg" id="achievementsSheet"><section class="sheet"><div class="sheet-head"><h2>SuccÃ¨s</h2><button class="btn-gray" data-close type="button">Fermer</button></div><div class="achievement-summary"><span id="mobileAchievementProgress">Chargement...</span><div class="toolbar"><button class="btn-red" id="mobileResetAchievements" type="button">Reset</button></div></div><div class="history-filters" id="mobileAchievementCategories"></div><div class="achievement-list" id="mobileAchievementList"></div></section></div>
-  <div class="modal-bg" id="splitsSheet"><section class="sheet"><div class="sheet-head"><h2>Donjons chronomÃ©trÃ©s</h2><div class="toolbar"><button class="btn-red" id="resetSplitsBtn" type="button">Reset</button><button class="btn-gray" data-close type="button">Fermer</button></div></div><div class="list" id="splitsList"></div></section></div>
-  <div class="modal-bg" id="sessionSummarySheet"><section class="sheet session-summary-sheet"><div class="sheet-head"><h2>RÃ©sumÃ© de session</h2><button class="btn-gray" data-close type="button">Fermer</button></div><div id="sessionSummaryContent"></div></section></div>
+  <div class="modal-bg" id="manualRunsSheet"><section class="sheet"><div class="sheet-head"><h2>Modifier donjons</h2><button class="btn-gray" data-close type="button">Annuler</button></div><div class="card"><p class="meta">Saisissez directement les donjons du profil actif. Morose est limité à 640, Tynril à 48. Les valeurs ne sont appliquées qu'après validation.</p><div class="manual-run-grid"><label class="manual-run-card"><span>Donjons Morose</span><div class="manual-stepper"><button class="btn-gray" data-manual-step="morose" data-step="-1" type="button">-</button><input id="manualMoroseRuns" type="number" inputmode="numeric" min="0" max="640"><button class="btn-green" data-manual-step="morose" data-step="1" type="button">+</button></div></label><label class="manual-run-card"><span>Donjons Tynril</span><div class="manual-stepper"><button class="btn-gray" data-manual-step="tynril" data-step="-1" type="button">-</button><input id="manualTynrilRuns" type="number" inputmode="numeric" min="0" max="48"><button class="btn-green" data-manual-step="tynril" data-step="1" type="button">+</button></div></label></div><div class="toolbar"><button class="btn-blue" id="applyManualRuns" type="button">Appliquer</button><button class="btn-gray" data-close type="button">Annuler</button></div></div></section></div>
+  <div class="modal-bg" id="achievementsSheet"><section class="sheet"><div class="sheet-head"><h2>Succès</h2><button class="btn-gray" data-close type="button">Fermer</button></div><div class="achievement-summary"><span id="mobileAchievementProgress">Chargement...</span><div class="toolbar"><button class="btn-red" id="mobileResetAchievements" type="button">Reset</button></div></div><div class="history-filters" id="mobileAchievementCategories"></div><div class="achievement-list" id="mobileAchievementList"></div></section></div>
+  <div class="modal-bg" id="splitsSheet"><section class="sheet"><div class="sheet-head"><h2>Donjons chronométrés</h2><div class="toolbar"><button class="btn-red" id="resetSplitsBtn" type="button">Reset</button><button class="btn-gray" data-close type="button">Fermer</button></div></div><div class="list" id="splitsList"></div></section></div>
+  <div class="modal-bg" id="sessionSummarySheet"><section class="sheet session-summary-sheet"><div class="sheet-head"><h2>Résumé de session</h2><button class="btn-gray" data-close type="button">Fermer</button></div><div id="sessionSummaryContent"></div></section></div>
   <div class="modal-bg" id="profileSheet"><section class="sheet"><div class="sheet-head"><h2>Profils</h2><button class="btn-gray" data-close type="button">Fermer</button></div><div id="profileList"></div><div class="toolbar"><button class="btn-green" id="createProfileBtn" type="button">+ Profil</button></div></section></div>
   <div class="modal-bg" id="confirmDialog"><section class="sheet"><div class="sheet-head"><h2 id="confirmTitle">Confirmation</h2></div><p id="confirmMessage" class="meta"></p><input id="confirmInput" class="mobile-hidden" type="text"><div class="toolbar"><button class="btn-red" id="confirmOk" type="button">Confirmer</button><button class="btn-gray" id="confirmCancel" type="button">Annuler</button></div></section></div>
 
@@ -1159,9 +1159,9 @@
     const CORE=window.PykurCore;
     const {STORE_KEY,PP_MAX,RUN_LIMITS,mobs,gains,ACHIEVEMENTS,ACHIEVEMENT_CATEGORIES,MAIN_ACHIEVEMENT_CATEGORIES}=CORE;
     /*
-      fecorce:{name:"FÃ©corce",ppNeed:60},
-      tynrilDeconcerte:{name:"Tynril DÃ©concertÃ©",ppNeed:3},
-      tynrilConsterne:{name:"Tynril ConsternÃ©",ppNeed:3}
+      fecorce:{name:"Fécorce",ppNeed:60},
+      tynrilDeconcerte:{name:"Tynril Déconcerté",ppNeed:3},
+      tynrilConsterne:{name:"Tynril Consterné",ppNeed:3}
     };
     const legacyGainsUnused={
       morose:{chiendent:1,nerbe:1,fecorce:1,abrakleur:1,bitouf:1,floribonde:2},
@@ -1446,7 +1446,7 @@
       wrap.replaceChildren();
       const node=document.createElement("div");
       node.className="toast achievement";
-      node.innerHTML=`${achievement.icon?`<img class="achievement-toast-icon" src="${assetPath(achievement.icon)}" alt="" onerror="this.remove()">`:""}<span>SuccÃ¨s dÃ©bloquÃ© : <strong>${achievement.title}</strong></span>`;
+      node.innerHTML=`${achievement.icon?`<img class="achievement-toast-icon" src="${assetPath(achievement.icon)}" alt="" onerror="this.remove()">`:""}<span>Succès débloqué : <strong>${achievement.title}</strong></span>`;
       wrap.appendChild(node);
       setTimeout(()=>node.remove(),2600);
     }
@@ -1471,7 +1471,7 @@
       data.achievements.unlocked[id]={date:new Date().toISOString()};
       if(!silent){
         showAchievementToast(id);
-        addActivity(`SuccÃ¨s dÃ©bloquÃ© : ${achievement.title}`,"success");
+        addActivity(`Succès débloqué : ${achievement.title}`,"success");
       }
       saveMobileData();
       renderAchievementsMobile();
@@ -1486,25 +1486,25 @@
         return false;
       }
       if(!data.achievements.eggCollected){
-        toast("L'Å“uf scellÃ© refuse de s'ouvrir : trouve l'Å“uf cachÃ©.","error");
+        toast("L'œuf scellé refuse de s'ouvrir : trouve l'œuf caché.","error");
         return false;
       }
       data.achievements.secretCategoriesUnlocked=true;
       saveMobileData();
       renderAchievementsMobile();
-      toast("ðŸ¥š CatÃ©gories secrÃ¨tes dÃ©bloquÃ©es.","success");
-      addActivity("CatÃ©gories secrÃ¨tes dÃ©bloquÃ©es","success");
+      toast("🥚 Catégories secrètes débloquées.","success");
+      addActivity("Catégories secrètes débloquées","success");
       return true;
     }
 
     function tickSecretGateMobile(){
       if(data.achievements?.secretCategoriesUnlocked){
-        toast("Les archives secrÃ¨tes sont dÃ©jÃ  ouvertes.","info");
+        toast("Les archives secrètes sont déjà ouvertes.","info");
         return;
       }
       ensureAchievements();
       if(!data.achievements.eggCollected){
-        toast("L'Å“uf scellÃ© est vide. Trouve l'Å“uf cachÃ© sur le site.","error");
+        toast("L'œuf scellé est vide. Trouve l'œuf caché sur le site.","error");
         document.body.classList.add("secret-gate-pulse");
         setTimeout(()=>document.body.classList.remove("secret-gate-pulse"),420);
         return;
@@ -1519,8 +1519,8 @@
       saveMobileData();
       renderHiddenSecretEggMobile();
       renderAchievementsMobile();
-      toast("ðŸ¥š Å’uf secret rÃ©cupÃ©rÃ©.","success");
-      addActivity("Å’uf secret rÃ©cupÃ©rÃ©","success");
+      toast("🥚 Œuf secret récupéré.","success");
+      addActivity("Œuf secret récupéré","success");
     }
 
     function resetHiddenSecretEggMobile(){
@@ -1530,7 +1530,7 @@
       saveMobileData();
       renderHiddenSecretEggMobile();
       renderAchievementsMobile();
-      toast("Commande admin : l'Å“uf secret a Ã©tÃ© remis en place.","warning");
+      toast("Commande admin : l'œuf secret a été remis en place.","warning");
     }
 
     function renderHiddenSecretEggMobile(){
@@ -1545,7 +1545,7 @@
       document.body.classList.add("secret-gate-pulse");
       setTimeout(()=>document.body.classList.remove("secret-gate-pulse"),420);
       if(secretGateClicks===1){
-        toast("ðŸ¥š L'Å“uf rÃ©agit...","info");
+        toast("🥚 L'œuf réagit...","info");
         return;
       }
       if(secretGateClicks===2){
@@ -1558,8 +1558,8 @@
 
     async function resetAchievementsMobile(){
       const ok=await showConfirmDialog({
-        title:"Reset succÃ¨s",
-        message:"Remettre tous les succÃ¨s Ã  zÃ©ro ? Les catÃ©gories secrÃ¨tes seront Ã  nouveau masquÃ©es.",
+        title:"Reset succès",
+        message:"Remettre tous les succès à zéro ? Les catégories secrètes seront à nouveau masquées.",
         okLabel:"Reset"
       });
       if(!ok)return;
@@ -1569,8 +1569,8 @@
       saveMobileData();
       renderHiddenSecretEggMobile();
       renderAchievementsMobile();
-      toast("SuccÃ¨s remis Ã  zÃ©ro.","warning");
-      addActivity("SuccÃ¨s remis Ã  zÃ©ro","warning");
+      toast("Succès remis à zéro.","warning");
+      addActivity("Succès remis à zéro","warning");
       saveMobileData();
     }
 
@@ -1608,21 +1608,21 @@
       progressEl.textContent=`Progression : ${progress.done}/${progress.total}`;
       const secretBtn=$("#mobileUnlockSecretAchievements");
       if(secretBtn){
-        secretBtn.textContent=data.achievements.secretCategoriesUnlocked?"Secrets dÃ©bloquÃ©s":"Å’uf scellÃ©";
+        secretBtn.textContent=data.achievements.secretCategoriesUnlocked?"Secrets débloqués":"Œuf scellé";
         secretBtn.disabled=!!data.achievements.secretCategoriesUnlocked;
       }
       cats.innerHTML=visible.map(category=>{
         const entries=achievementEntries().filter(([id,achievement])=>achievement.category===category && isAchievementVisibleMobile(id));
         const done=entries.filter(([id])=>isAchievementUnlocked(id)).length;
-        return `<button class="${category===activeAchievementCategory?"active":""}" data-achievement-category="${category}" type="button">${category} Â· ${done}/${entries.length}</button>`;
+        return `<button class="${category===activeAchievementCategory?"active":""}" data-achievement-category="${category}" type="button">${category} · ${done}/${entries.length}</button>`;
       }).join("");
       const entries=achievementEntries().filter(([id,achievement])=>achievement.category===activeAchievementCategory && isAchievementVisibleMobile(id));
       list.innerHTML=entries.map(([id,achievement])=>{
         const unlocked=data.achievements.unlocked[id];
-        const date=unlocked?.date ? new Date(unlocked.date).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"}) : "VerrouillÃ©";
+        const date=unlocked?.date ? new Date(unlocked.date).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"}) : "Verrouillé";
         const icon=achievement.icon
-          ? `<img src="${assetPath(achievement.icon)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'achievement-placeholder',textContent:'ðŸ†'}))">`
-          : `<span class="achievement-placeholder">ðŸ†</span>`;
+          ? `<img src="${assetPath(achievement.icon)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'achievement-placeholder',textContent:'🏆'}))">`
+          : `<span class="achievement-placeholder">🏆</span>`;
         return `<article class="achievement-card ${unlocked?"unlocked":"locked"}">${icon}<div><h3>${achievement.title}</h3><p>${achievement.description}</p><span class="achievement-date">${date}</span></div></article>`;
       }).join("");
     }
@@ -1733,7 +1733,7 @@
     function addRun(delta,options={}){
       const farm=data.ui.farm||"morose";
       if(delta>0 && (data.runs[farm]||0)>=RUN_LIMITS[farm]){
-        toast(`${farmLabel(farm)} est dÃ©jÃ  au maximum.`,"warning");
+        toast(`${farmLabel(farm)} est déjà au maximum.`,"warning");
         return;
       }
       if(delta<0 && (data.runs[farm]||0)<=0)return;
@@ -1752,7 +1752,7 @@
       }
       saveMobileData();
       syncFromEngine();
-      if(!options.silent)toast(delta>0?`Donjon ${farmLabel(farm)} ajoutÃ©`:`Donjon ${farmLabel(farm)} retirÃ©`,delta>0?"success":"warning");
+      if(!options.silent)toast(delta>0?`Donjon ${farmLabel(farm)} ajouté`:`Donjon ${farmLabel(farm)} retiré`,delta>0?"success":"warning");
     }
 
     function getChronoSeconds(){
@@ -1772,7 +1772,7 @@
       data.chrono.running=true;
       data.chrono.startedAt=Date.now();
       chronoTimer=setInterval(syncFromEngine,250);
-      if(notify){addActivity("Session & chrono lancÃ©s","chrono");unlockAchievement("start_chrono");toast("Session & chrono lancÃ©s","success")}
+      if(notify){addActivity("Session & chrono lancés","chrono");unlockAchievement("start_chrono");toast("Session & chrono lancés","success")}
       saveMobileData();
       syncFromEngine();
     }
@@ -1799,27 +1799,27 @@
       data.chrono.startedAt=null;
       data.chrono.lastMarkSeconds=0;
       data.session=defaultData().session;
-      addActivity("Session & chrono rÃ©initialisÃ©s","warning");
+      addActivity("Session & chrono réinitialisés","warning");
       saveMobileData();
       syncFromEngine();
-      toast("Session & chrono remis Ã  zÃ©ro","warning");
+      toast("Session & chrono remis à zéro","warning");
     }
 
     async function resetSplits(){
-      if(!data.chrono.marks.length){toast("Aucun temps chrono Ã  vider","warning");return}
+      if(!data.chrono.marks.length){toast("Aucun temps chrono à vider","warning");return}
       const ok=await showConfirmDialog({
         title:"Vider les temps chrono",
-        message:"Supprimer tous les donjons chronomÃ©trÃ©s enregistrÃ©s ? La progression et les donjons suivis ne seront pas modifiÃ©s.",
+        message:"Supprimer tous les donjons chronométrés enregistrés ? La progression et les donjons suivis ne seront pas modifiés.",
         okLabel:"Vider",
         danger:true
       });
       if(!ok)return;
       data.chrono.marks=[];
       data.chrono.lastMarkSeconds=0;
-      addActivity("Temps chrono vidÃ©s","warning");
+      addActivity("Temps chrono vidés","warning");
       saveMobileData();
       syncFromEngine();
-      toast("Temps chrono vidÃ©s","warning");
+      toast("Temps chrono vidés","warning");
     }
 
     function markTime(silent=false){
@@ -1832,10 +1832,10 @@
       data.chrono.marks.push({farm,time:split,totalTime:total,date:new Date().toISOString(),auto:!!silent});
       data.chrono.marks=data.chrono.marks.slice(-80);
       syncAverageFromMarks(farm);
-      addActivity(`Temps ${farmLabel(farm)} marquÃ© : ${formatChrono(split)}`,"chrono");
+      addActivity(`Temps ${farmLabel(farm)} marqué : ${formatChrono(split)}`,"chrono");
       saveMobileData();
       syncFromEngine();
-      if(!silent)toast("Temps enregistrÃ©","success");
+      if(!silent)toast("Temps enregistré","success");
       return split;
     }
 
@@ -1857,13 +1857,13 @@
     }
 
     function startSession(){
-      if(data.session.active){toast("Session dÃ©jÃ  en cours","warning");return}
+      if(data.session.active){toast("Session déjà en cours","warning");return}
       data.session={active:true,startedAt:Date.now(),totalSeconds:0,runs:{morose:0,tynril:0},ppStart:currentPP(),ppGain:0,lastSummary:null};
-      addActivity("Session de farm dÃ©marrÃ©e","system");
+      addActivity("Session de farm démarrée","system");
       unlockAchievement("start_session");
       saveMobileData();
       syncFromEngine();
-      toast("Session dÃ©marrÃ©e","success");
+      toast("Session démarrée","success");
     }
 
     function endSession(){
@@ -1875,7 +1875,7 @@
       updateSessionPP();
       const summary={elapsed:sessionElapsedSeconds(),runs:clone(data.session.runs),pp:data.session.ppGain,date:new Date().toISOString()};
       data.session.lastSummary=summary;
-      addActivity(`Session terminÃ©e : ${data.session.ppGain} PP gagnÃ©es`,"system");
+      addActivity(`Session terminée : ${data.session.ppGain} PP gagnées`,"system");
       data.session.active=false;
       data.session.startedAt=null;
       data.session.totalSeconds=0;
@@ -1886,21 +1886,21 @@
       saveMobileData();
       syncFromEngine();
       openSessionSummary(summary);
-      toast("Session terminÃ©e","success");
+      toast("Session terminée","success");
     }
 
     function resetSession(){
       data.session=defaultData().session;
-      addActivity("Session effacÃ©e","warning");
+      addActivity("Session effacée","warning");
       saveMobileData();
       syncFromEngine();
-      toast("Session effacÃ©e","warning");
+      toast("Session effacée","warning");
     }
 
     async function resetActivePykur(){
       const ok=await showConfirmDialog({
         title:"Reset Pykur actif",
-        message:"RÃ©initialiser uniquement le Pykur du profil sÃ©lectionnÃ© ? Les autres profils et les rÃ©glages sont conservÃ©s.",
+        message:"Réinitialiser uniquement le Pykur du profil sélectionné ? Les autres profils et les réglages sont conservés.",
         okLabel:"Reset"
       });
       if(!ok)return;
@@ -1913,10 +1913,10 @@
       data.ui=ui;
       ensureData();
       unlockAchievement("reset_pykur");
-      addActivity("Le Pykur du profil sÃ©lectionnÃ© a Ã©tÃ© rÃ©initialisÃ©.","error");
+      addActivity("Le Pykur du profil sélectionné a été réinitialisé.","error");
       saveMobileData();
       syncFromEngine();
-      toast("Le Pykur du profil sÃ©lectionnÃ© a Ã©tÃ© rÃ©initialisÃ©.","warning");
+      toast("Le Pykur du profil sélectionné a été réinitialisé.","warning");
     }
 
     function simulateRunsForPP(farm,targetPP){
@@ -1967,7 +1967,7 @@
       if(!avgMorose || !avgTynril)return {message:"Temps moyens manquants."};
       const m=Math.min(Math.floor(elapsed/avgMorose),RUN_LIMITS.morose-(data.runs.morose||0));
       const t=Math.min(Math.floor(elapsed/avgTynril),RUN_LIMITS.tynril-(data.runs.tynril||0));
-      return {message:`Estimation chrono : ${Math.max(0,m)} Morose Â· ${Math.max(0,t)} Tynril`};
+      return {message:`Estimation chrono : ${Math.max(0,m)} Morose · ${Math.max(0,t)} Tynril`};
     }
 
     function getStore(){
@@ -2046,21 +2046,21 @@
       setText("tynrilDone",data.runs.tynril||0);
       setText("moroseLeft",snap.left.morose);
       setText("tynrilLeft",snap.left.tynril);
-      setText("moroseTime",`â‰ˆ ${snap.times.morose}`);
-      setText("tynrilTime",`â‰ˆ ${snap.times.tynril}`);
+      setText("moroseTime",`≈ ${snap.times.morose}`);
+      setText("tynrilTime",`≈ ${snap.times.tynril}`);
       ["morose","tynril"].forEach(farm=>{
         const active=data.ui.farm===farm;
         $(`#${farm}Card`).classList.toggle("active",active);
         $(`#${farm}Active`).classList.toggle("mobile-hidden",!active);
       });
       setText("activeFarm",farmLabel(data.ui.farm));
-      setText("nextPP",`Morose ${formatRuns(snap.next.morose)} Â· Tynril ${formatRuns(snap.next.tynril)}`);
+      setText("nextPP",`Morose ${formatRuns(snap.next.morose)} · Tynril ${formatRuns(snap.next.tynril)}`);
       setText("chronoMini",snap.times.chrono);
       setText("chronoDisplay",snap.times.chrono);
-      const toggleLabel=data.chrono.running?"Pause":(data.session.active || getChronoSeconds()>0)?"Reprendre":"DÃ©marrer";
+      const toggleLabel=data.chrono.running?"Pause":(data.session.active || getChronoSeconds()>0)?"Reprendre":"Démarrer";
       setText("chronoToggleBtn",toggleLabel);
-      setText("sessionMini",data.session.active?"En cours":"PrÃªte");
-      setText("sessionState",data.session.active?"En cours":"PrÃªte");
+      setText("sessionMini",data.session.active?"En cours":"Prête");
+      setText("sessionState",data.session.active?"En cours":"Prête");
       setText("sessionTime",snap.times.session);
       const sessionTimeRow=$("#sessionTimeRow");
       if(sessionTimeRow){
@@ -2114,10 +2114,10 @@
         const type=String(item.type||"info");
         const msg=String(item.message||"").toLowerCase();
         if(msg.includes("run"))return "+";
-        if(type==="chrono" || msg.includes("chrono") || msg.includes("temps"))return "â±";
+        if(type==="chrono" || msg.includes("chrono") || msg.includes("temps"))return "⏱";
         if(type==="error" || type==="reset")return "!";
-        if(type==="success" || type==="milestone" || type==="unlock")return "â˜…";
-        return "â€¢";
+        if(type==="success" || type==="milestone" || type==="unlock")return "★";
+        return "•";
       };
       box.innerHTML=filtered.length ? Object.entries(groups).map(([day,list])=>`
         <section class="timeline-day">
@@ -2125,10 +2125,10 @@
           ${list.map(item=>{
         const date=new Date(item.date);
         const time=Number.isNaN(date.getTime())?"":date.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
-        return `<div class="history-item"><span class="history-icon">${iconFor(item)}</span><div><strong>${item.message}</strong><span>${time} Â· ${item.type||"info"}</span></div></div>`;
+        return `<div class="history-item"><span class="history-icon">${iconFor(item)}</span><div><strong>${item.message}</strong><span>${time} · ${item.type||"info"}</span></div></div>`;
       }).join("")}
         </section>
-      `).join("") : `<div class="history-item"><span class="history-icon">â€¢</span><div><strong>Aucune action enregistrÃ©e</strong><span>Les donjons validÃ©s, temps marquÃ©s et changements importants apparaÃ®tront ici.</span></div></div>`;
+      `).join("") : `<div class="history-item"><span class="history-icon">•</span><div><strong>Aucune action enregistrée</strong><span>Les donjons validés, temps marqués et changements importants apparaîtront ici.</span></div></div>`;
     }
 
     function renderProjection(snap){
@@ -2139,9 +2139,9 @@
         <div class="line"><span>Progression</span><strong>${snap.pp} / 90 PP</strong></div>
         <div class="line"><span>Prochaine PP Morose</span><strong>${formatRuns(snap.next.morose)}</strong></div>
         <div class="line"><span>Prochaine PP Tynril</span><strong>${formatRuns(snap.next.tynril)}</strong></div>
-        <div class="line"><span>Morose restant</span><strong>${snap.left.morose} Â· ${snap.times.morose}</strong></div>
-        <div class="line"><span>Tynril restant</span><strong>${snap.left.tynril} Â· ${snap.times.tynril}</strong></div>
-        <div class="line"><span>Estimation chrono</span><strong>${data.settings.autoDungeonEstimate?(snap.chronoEstimate||"Indisponible"):"DÃ©sactivÃ©e"}</strong></div>
+        <div class="line"><span>Morose restant</span><strong>${snap.left.morose} · ${snap.times.morose}</strong></div>
+        <div class="line"><span>Tynril restant</span><strong>${snap.left.tynril} · ${snap.times.tynril}</strong></div>
+        <div class="line"><span>Estimation chrono</span><strong>${data.settings.autoDungeonEstimate?(snap.chronoEstimate||"Indisponible"):"Désactivée"}</strong></div>
       `;
     }
 
@@ -2158,7 +2158,7 @@
         <div class="line"><span>Morose</span><strong>${data.runs.morose||0}</strong></div>
         <div class="line"><span>Tynril</span><strong>${data.runs.tynril||0} / 48</strong></div>
         <div class="line"><span>Session actuelle</span><strong>${sessionRuns} donjon${sessionRuns>1?"s":""}</strong></div>
-        <div class="line"><span>Temps enregistrÃ©s</span><strong>${marks}</strong></div>
+        <div class="line"><span>Temps enregistrés</span><strong>${marks}</strong></div>
         <div class="line"><span>Temps moyen Morose</span><strong>${formatDuration(data.stats.avgMorose||0)}</strong></div>
         <div class="line"><span>Temps moyen Tynril</span><strong>${formatDuration(data.stats.avgTynril||0)}</strong></div>
       `;
@@ -2172,7 +2172,7 @@
       box.innerHTML=entries.map(mob=>`
         <div class="monster-item" data-monster-row="${mob.id}">
           <img src="./assets/images/${mob.img}" alt="">
-          <div><strong>${mob.name}</strong><span>${mob.total} tuÃ©s Â· besoin ${mob.ppNeed} pour 1 PP</span></div>
+          <div><strong>${mob.name}</strong><span>${mob.total} tués · besoin ${mob.ppNeed} pour 1 PP</span></div>
           <div class="monster-edit">
             <label>Morose<input type="number" min="0" data-mob="${mob.id}" data-area="morose" value="${snap.data.mobs.morose[mob.id]||0}"></label>
             <label>Tynril<input type="number" min="0" data-mob="${mob.id}" data-area="tynril" value="${snap.data.mobs.tynril[mob.id]||0}"></label>
@@ -2189,13 +2189,13 @@
       const tynril=summary.runs?.tynril||0;
       const total=morose+tynril;
       box.innerHTML=`
-        <p class="meta">Votre session est terminÃ©e. Les chronos ont Ã©tÃ© remis Ã  zÃ©ro.</p>
+        <p class="meta">Votre session est terminée. Les chronos ont été remis à zéro.</p>
         <div class="session-summary-grid">
-          <div class="session-summary-card wide"><span>DurÃ©e totale</span><strong>${formatChrono(summary.elapsed||0)}</strong></div>
+          <div class="session-summary-card wide"><span>Durée totale</span><strong>${formatChrono(summary.elapsed||0)}</strong></div>
           <div class="session-summary-card"><span>Morose</span><strong>${morose}</strong></div>
           <div class="session-summary-card"><span>Tynril</span><strong>${tynril}</strong></div>
           <div class="session-summary-card"><span>Donjons</span><strong>${total}</strong></div>
-          <div class="session-summary-card"><span>PP gagnÃ©e</span><strong>+${summary.pp||0}</strong></div>
+          <div class="session-summary-card"><span>PP gagnée</span><strong>+${summary.pp||0}</strong></div>
         </div>
       `;
       $("#sessionSummarySheet")?.classList.add("show");
@@ -2213,7 +2213,7 @@
           </div>
           <strong class="split-time">${formatChrono(parseInt(mark.time,10)||0)}</strong>
         </div>
-      `).join("") : `<div class="split-item"><div class="split-main"><strong>Aucun temps marquÃ©</strong><span>DÃ©marrez Session & Chrono, puis marquez le temps Ã  la fin d'un donjon.</span></div></div>`;
+      `).join("") : `<div class="split-item"><div class="split-main"><strong>Aucun temps marqué</strong><span>Démarrez Session & Chrono, puis marquez le temps à la fin d'un donjon.</span></div></div>`;
     }
 
     function renderProfiles(){
@@ -2289,10 +2289,10 @@
         return;
       }
       data.stats[key]=seconds;
-      addActivity(`Temps moyen ${label} rÃ©glÃ© : ${formatDuration(seconds)}`,"info");
+      addActivity(`Temps moyen ${label} réglé : ${formatDuration(seconds)}`,"info");
       saveMobileData();
       syncFromEngine();
-      toast(`Temps ${label} enregistrÃ©`,"success");
+      toast(`Temps ${label} enregistré`,"success");
     }
 
     function saveAverageTimesMobile(){
@@ -2308,10 +2308,10 @@
       $("#avgTynrilInput").dataset.dirty="";
       delete $("#avgMoroseInput").dataset.dirty;
       delete $("#avgTynrilInput").dataset.dirty;
-      addActivity(`Temps moyens rÃ©glÃ©s : Morose ${formatDuration(morose)} Â· Tynril ${formatDuration(tynril)}`,"info");
+      addActivity(`Temps moyens réglés : Morose ${formatDuration(morose)} · Tynril ${formatDuration(tynril)}`,"info");
       saveMobileData();
       syncFromEngine();
-      toast("Temps estimÃ©s enregistrÃ©s","success");
+      toast("Temps estimés enregistrés","success");
     }
 
     function saveAverageField(input,farm){
@@ -2319,7 +2319,7 @@
       if(!seconds)return false;
       data.stats[farm==="morose"?"avgMorose":"avgTynril"]=seconds;
       delete input.dataset.dirty;
-      addActivity(`Temps moyen ${farmLabel(farm)} rÃ©glÃ© : ${formatDuration(seconds)}`,"info");
+      addActivity(`Temps moyen ${farmLabel(farm)} réglé : ${formatDuration(seconds)}`,"info");
       saveMobileData();
       syncFromEngine();
       return true;
@@ -2334,10 +2334,10 @@
       });
       const newPP=currentPP();
       mobileState.monsterEditing=false;
-      addActivity(`Monstres modifiÃ©s manuellement (${oldPP} â†’ ${newPP} PP)`,"warning");
+      addActivity(`Monstres modifiés manuellement (${oldPP} → ${newPP} PP)`,"warning");
       saveMobileData();
       syncFromEngine();
-      toast("Monstres sauvegardÃ©s","success");
+      toast("Monstres sauvegardés","success");
     }
 
     function updateManualDraftFromInputs(){
@@ -2386,7 +2386,7 @@
       if(delta>=20){
         const ok=await showConfirmDialog({
           title:"Modifier les donjons",
-          message:`Appliquer ${nextMorose} Morose et ${nextTynril} Tynril au profil actif ? Les monstres, PP et projections seront recalculÃ©s.`,
+          message:`Appliquer ${nextMorose} Morose et ${nextTynril} Tynril au profil actif ? Les monstres, PP et projections seront recalculés.`,
           okLabel:"Appliquer",
           danger:false
         });
@@ -2397,13 +2397,13 @@
       setRunsSynced("tynril",nextTynril);
       const newPP=currentPP();
       addDailyRun(data.ui.farm||"morose",0,newPP-oldPP);
-      addActivity(`Donjons modifiÃ©s manuellement : Morose ${nextMorose}, Tynril ${nextTynril}`,"warning");
+      addActivity(`Donjons modifiés manuellement : Morose ${nextMorose}, Tynril ${nextTynril}`,"warning");
       unlockAchievement("manual_adjustments");
       saveMobileData();
       mobileState.manualEditing=false;
       syncFromEngine();
       $("#manualRunsSheet").classList.remove("show");
-      toast("Donjons mis Ã  jour","success");
+      toast("Donjons mis à jour","success");
     }
 
     function setFarm(farm){
@@ -2424,9 +2424,9 @@
       a.click();
       a.remove();
       setTimeout(()=>URL.revokeObjectURL(url),250);
-      addActivity("Sauvegarde exportÃ©e","system");
+      addActivity("Sauvegarde exportée","system");
       saveMobileData();
-      toast("Sauvegarde exportÃ©e","success");
+      toast("Sauvegarde exportée","success");
     }
 
     async function importMobileSave(file){
@@ -2438,7 +2438,7 @@
         if(!importedStore?.profiles || !importedStore?.active)throw new Error("Format invalide");
         const ok=await showConfirmDialog({
           title:"Importer la sauvegarde",
-          message:`Importer cette sauvegarde (${Object.keys(importedStore.profiles).length} profil(s)) ? Les donnÃ©es locales seront remplacÃ©es.`,
+          message:`Importer cette sauvegarde (${Object.keys(importedStore.profiles).length} profil(s)) ? Les données locales seront remplacées.`,
           okLabel:"Importer",
           danger:false
         });
@@ -2448,7 +2448,7 @@
         achievementNotificationMuted=true;
         syncFromEngine();
         achievementNotificationMuted=false;
-        toast("Sauvegarde importÃ©e","success");
+        toast("Sauvegarde importée","success");
       }catch(error){
         toast("Sauvegarde invalide","error");
       }
@@ -2459,7 +2459,7 @@
         title:"Nouveau profil",
         message:"Choisissez le nom du nouveau profil Pykur.",
         value:"Nouveau Pykur",
-        okLabel:"CrÃ©er"
+        okLabel:"Créer"
       });
       if(!name)return;
       const store=getStore();
@@ -2470,7 +2470,7 @@
       localStorage.setItem(STORE_KEY,JSON.stringify(store));
       loadMobileData();
       syncFromEngine();
-      toast("Profil crÃ©Ã©","success");
+      toast("Profil créé","success");
     }
 
     async function renameProfileMobile(id){
@@ -2488,7 +2488,7 @@
       localStorage.setItem(STORE_KEY,JSON.stringify(store));
       loadMobileData();
       syncFromEngine();
-      toast("Profil renommÃ©","success");
+      toast("Profil renommé","success");
     }
 
     async function deleteProfileMobile(id){
@@ -2507,7 +2507,7 @@
       localStorage.setItem(STORE_KEY,JSON.stringify(store));
       loadMobileData();
       syncFromEngine();
-      toast("Profil supprimÃ©","warning");
+      toast("Profil supprimé","warning");
     }
 
     function switchProfileMobile(id){
@@ -2517,7 +2517,7 @@
       localStorage.setItem(STORE_KEY,JSON.stringify(store));
       loadMobileData();
       syncFromEngine();
-      toast("Profil changÃ©","success");
+      toast("Profil changé","success");
     }
 
     function handleSecretKeys(event){
@@ -2531,7 +2531,7 @@
       }
       if(mobileState.secret.endsWith("ester eggs")){
         mobileState.secret="";
-        toast("Une coquille murmure : cherche l'Å“uf cachÃ©.","info");
+        toast("Une coquille murmure : cherche l'œuf caché.","info");
         return;
       }
       if(mobileState.secret.endsWith("pc")){
@@ -2575,9 +2575,9 @@
       if(word==="aina")$("#ainaEgg")?.classList.toggle("show",mobileState.eggs[word]);
       if(word==="capy")toast(mobileState.eggs[word]?"Capy passe en inspection mobile.":"Capy repart.",mobileState.eggs[word]?"success":"warning");
       if(word==="charlie")toast(mobileState.eggs[word]?"Charlie surveille le tactile.":"Charlie rend le curseur.",mobileState.eggs[word]?"success":"warning");
-      if(word==="alhass")toast(mobileState.eggs[word]?"Alhass observe la version mobile.":"Alhass disparaÃ®t.","warning");
-      if(word==="toom")toast(mobileState.eggs[word]?"Toom rÃ©cupÃ¨re une NRG mobile.":"Nipsey rÃ©cupÃ¨re la NRG.","warning");
-      if(word==="aina")toast(mobileState.eggs[word]?"Aina brandit le Dofus Ivoire.":"Le Dofus disparaÃ®t.","success");
+      if(word==="alhass")toast(mobileState.eggs[word]?"Alhass observe la version mobile.":"Alhass disparaît.","warning");
+      if(word==="toom")toast(mobileState.eggs[word]?"Toom récupère une NRG mobile.":"Nipsey récupère la NRG.","warning");
+      if(word==="aina")toast(mobileState.eggs[word]?"Aina brandit le Dofus Ivoire.":"Le Dofus disparaît.","success");
     }
 
     engine.addEventListener("load",()=>syncFromEngine());
