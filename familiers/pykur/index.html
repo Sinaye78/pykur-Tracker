@@ -4766,6 +4766,34 @@ body[data-fx="premium"] .milestone-flash{box-shadow:0 0 0 9999px rgba(212,167,60
   min-width:0;
 }
 
+.cloud-save-state{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  width:max-content;
+  max-width:100%;
+  padding:6px 12px;
+  border:1px solid rgba(180,130,45,.34);
+  border-radius:999px;
+  background:linear-gradient(135deg,rgba(255,247,214,.94),rgba(255,255,255,.72));
+  color:#5b3514;
+  font-weight:900;
+  font-size:12px;
+}
+
+.cloud-save-state::before{
+  content:"";
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:#9ca3af;
+  box-shadow:0 0 0 3px rgba(156,163,175,.14);
+}
+
+.cloud-save-state.online::before{background:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.16)}
+.cloud-save-state.local::before{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.16)}
+.cloud-save-state.error::before{background:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.16)}
+
 .dialog-bg{
   position:fixed;
   inset:0;
@@ -9350,16 +9378,19 @@ body.no-anim .pykur-sparkle{
           </section>
 
           <section class="options-panel" data-options-panel="data">
-            <div class="options-panel-head"><h3>Sauvegarde / Données</h3><p>Export, import, sauvegarde locale et restauration.</p></div>
+            <div class="options-panel-head"><h3>Sauvegarde cloud</h3><p>Les membres synchronisent leur tracker en ligne. Les invités restent en sauvegarde locale navigateur.</p></div>
             <div class="backup-panel">
-              <div class="backup-copy"><strong>Profils et progression</strong><small>Exporte ou importe tous vos profils, monstres, donjons, options et historiques.</small></div>
+              <div class="backup-copy">
+                <strong id="cloudSaveTitle">Mode invité local</strong>
+                <small id="cloudSaveDetail">Votre progression est conservée uniquement dans ce navigateur. Sans compte, elle peut être perdue si le cache est supprimé ou si vous changez d'appareil.</small>
+              </div>
               <div class="backup-actions">
-                <button class="btn btn-green tooltip" id="exportSave" data-tooltip="Télécharge une sauvegarde complète au format JSON.">Exporter</button>
-                <button class="btn btn-orange tooltip" id="importSave" data-tooltip="Importe une sauvegarde JSON existante.">Importer</button>
-                <input id="importSaveInput" type="file" accept="application/json,.json" style="display:none">
+                <button class="btn btn-green tooltip" id="cloudSyncNow" type="button" data-tooltip="Envoie la sauvegarde actuelle vers le cloud si vous êtes connecté.">Synchroniser</button>
+                <button class="btn btn-blue tooltip" id="cloudLoadNow" type="button" data-tooltip="Charge la dernière sauvegarde cloud disponible.">Charger cloud</button>
               </div>
             </div>
-            <div class="options-note">La sauvegarde automatique utilise localStorage après chaque action importante.</div>
+            <div class="cloud-save-state local" id="cloudSaveState">Sauvegarde locale active</div>
+            <div class="options-note">Import/export n'est plus proposé dans les options. Connectez-vous pour profiter de la sauvegarde cloud ; en invité, le tracker continue de fonctionner localement à vos risques.</div>
           </section>
 
           <section class="options-panel" data-options-panel="accessibility">
@@ -9646,6 +9677,7 @@ const AUTH_API_BASE=localStorage.getItem("pykur_api_base")||(location.hostname==
 const AUTH_TOKEN_KEY="pykur_auth_token";
 let authMode="login";
 let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null};
+const cloudState={timer:null,syncing:false,lastSyncAt:null,error:null,loading:false};
 
 async function authFetch(path,options={}){
   const headers=Object.assign({"Content-Type":"application/json"},options.headers||{});
@@ -9689,6 +9721,7 @@ function authRender(){
     box.innerHTML='<button class="btn btn-blue" id="openLogin" type="button">Connexion</button><button class="btn btn-orange" id="openRegister" type="button">Inscription</button>';
     $("#openLogin").onclick=()=>authOpen("login");
     $("#openRegister").onclick=()=>authOpen("register");
+    renderCloudStatus();
     return;
   }
   const user=authState.user;
@@ -9696,6 +9729,7 @@ function authRender(){
   box.innerHTML='<div class="auth-user-chip"><strong>'+user.pseudo+'</strong><span>'+authRoleLabel(user.role)+'</span></div>'+adminButton+'<button class="btn btn-gray" id="authLogout" type="button">Déconnexion</button>';
   if($("#authLogout"))$("#authLogout").onclick=authLogout;
   if($("#authAdminPanel"))$("#authAdminPanel").onclick=()=>livingOpenAdmin();
+  renderCloudStatus();
 }
 
 function authOpen(mode="login"){
@@ -9723,12 +9757,17 @@ async function authSubmit(event){
     authRender();
     closeModal("authModal");
     toast(result.bootstrapAdmin?"Premier compte créé : rôle admin activé.":"Connexion réussie.","success","success");
+    cloudAfterLogin();
   }catch(error){
     authSetError(error.message||"Connexion impossible.");
   }
 }
 
 function authLogout(){
+  if(cloudState.timer){
+    clearTimeout(cloudState.timer);
+    cloudState.timer=null;
+  }
   authState={token:"",user:null,apiOnline:authState.apiOnline};
   localStorage.removeItem(AUTH_TOKEN_KEY);
   authRender();
@@ -9751,6 +9790,169 @@ async function authRefresh(){
     localStorage.removeItem(AUTH_TOKEN_KEY);
   }
   authRender();
+  if(authState.user)cloudAfterLogin({silent:true});
+}
+
+function cloudPayload(){
+  return {
+    app:"pykur-tracker",
+    version:"1.5.0-preview",
+    savedAt:new Date().toISOString(),
+    store:clone(store)
+  };
+}
+
+function normalizeCloudPayload(payload){
+  if(!payload)return null;
+  if(payload.store)return payload;
+  if(payload.profiles && payload.active)return {app:"pykur-tracker",version:"legacy",savedAt:null,store:payload};
+  return null;
+}
+
+function cloudStatusText(){
+  if(!authState.user)return "Sauvegarde locale active";
+  if(cloudState.error)return "Erreur de sauvegarde cloud";
+  if(cloudState.syncing)return "Synchronisation cloud...";
+  if(cloudState.lastSyncAt)return "Cloud synchronisé";
+  return "Connecté au cloud";
+}
+
+function renderCloudStatus(){
+  const title=$("#cloudSaveTitle");
+  const detail=$("#cloudSaveDetail");
+  const state=$("#cloudSaveState");
+  const syncBtn=$("#cloudSyncNow");
+  const loadBtn=$("#cloudLoadNow");
+  const logged=!!authState.user;
+  if(title)title.textContent=logged?"Sauvegarde cloud membre":"Mode invité local";
+  if(detail){
+    detail.textContent=logged
+      ? "Votre progression, vos profils, vos succès, votre galerie et vos options sont synchronisés avec votre compte."
+      : "Votre progression est conservée uniquement dans ce navigateur. Sans compte, elle peut être perdue si le cache est supprimé ou si vous changez d'appareil.";
+  }
+  if(state){
+    state.textContent=cloudStatusText();
+    state.classList.toggle("online",logged && !cloudState.error);
+    state.classList.toggle("local",!logged);
+    state.classList.toggle("error",!!cloudState.error);
+  }
+  if(syncBtn){
+    syncBtn.disabled=!logged || cloudState.syncing;
+    syncBtn.textContent=cloudState.syncing?"Synchronisation...":"Synchroniser";
+  }
+  if(loadBtn)loadBtn.disabled=!logged || cloudState.syncing;
+}
+
+function scheduleCloudSave(){
+  if(!authState.user || cloudState.loading)return;
+  if(cloudState.timer)clearTimeout(cloudState.timer);
+  cloudState.timer=setTimeout(()=>cloudSyncNow({silent:true}),1800);
+}
+
+async function cloudSyncNow(options={}){
+  if(!authState.user){
+    if(!options.silent)toast("Connectez-vous pour utiliser la sauvegarde cloud.","warning","warning");
+    renderCloudStatus();
+    return false;
+  }
+  if(cloudState.syncing)return false;
+  cloudState.syncing=true;
+  cloudState.error=null;
+  renderCloudStatus();
+  try{
+    await authFetch("/cloud/save",{method:"PUT",body:JSON.stringify({payload:cloudPayload()})});
+    cloudState.lastSyncAt=new Date();
+    cloudState.error=null;
+    markSaveStatus(true);
+    if(!options.silent)toast("Sauvegarde cloud synchronisée.","success","success");
+    return true;
+  }catch(error){
+    cloudState.error=error.message||"Erreur cloud";
+    if(!options.silent)toast("Sauvegarde cloud impossible.","error","error");
+    return false;
+  }finally{
+    cloudState.syncing=false;
+    renderCloudStatus();
+  }
+}
+
+async function cloudFetchSave(){
+  const result=await authFetch("/cloud/save");
+  return {
+    payload:normalizeCloudPayload(result.payload),
+    updatedAt:result.updatedAt
+  };
+}
+
+async function cloudLoadNow(options={}){
+  if(!authState.user){
+    if(!options.silent)toast("Connectez-vous pour charger une sauvegarde cloud.","warning","warning");
+    return false;
+  }
+  if(cloudState.syncing)return false;
+  cloudState.syncing=true;
+  cloudState.error=null;
+  renderCloudStatus();
+  try{
+    const remote=await cloudFetchSave();
+    if(!remote.payload?.store){
+      if(!options.silent)toast("Aucune sauvegarde cloud trouvée.","info","click");
+      return false;
+    }
+    if(!options.skipConfirm){
+      const ok=await showConfirm("",{
+        title:"Charger la sauvegarde cloud",
+        subtitle:"Cette opération remplacera les données locales par la dernière sauvegarde cloud.",
+        okLabel:"Charger",
+        html:`<p>La sauvegarde cloud remplacera les données actuellement chargées dans ce navigateur.</p><p><strong>Dernière sauvegarde :</strong> ${remote.updatedAt?formatDateShort(remote.updatedAt):"date inconnue"}</p>`
+      });
+      if(!ok)return false;
+    }
+    cloudState.loading=true;
+    store=remote.payload.store;
+    localStorage.setItem("pykur_clean_v1",JSON.stringify(store));
+    load();
+    cloudState.lastSyncAt=new Date(remote.updatedAt||Date.now());
+    cloudState.error=null;
+    if(!options.silent)toast("Sauvegarde cloud chargée.","success","success");
+    return true;
+  }catch(error){
+    cloudState.error=error.message||"Erreur cloud";
+    if(!options.silent)toast("Chargement cloud impossible.","error","error");
+    return false;
+  }finally{
+    cloudState.loading=false;
+    cloudState.syncing=false;
+    renderCloudStatus();
+  }
+}
+
+async function cloudAfterLogin(options={}){
+  if(!authState.user)return;
+  try{
+    const remote=await cloudFetchSave();
+    if(remote.payload?.store){
+      if(options.silent){
+        cloudState.lastSyncAt=new Date(remote.updatedAt||Date.now());
+        renderCloudStatus();
+        return;
+      }
+      const useCloud=await showConfirm("",{
+        title:"Sauvegarde cloud trouvée",
+        subtitle:"Votre compte possède déjà une sauvegarde en ligne.",
+        okLabel:"Charger le cloud",
+        cancelLabel:"Garder local",
+        html:`<p>Vous pouvez charger la sauvegarde cloud ou garder la progression locale actuelle.</p><p>Si vous gardez la progression locale, elle sera envoyée au cloud lors de la prochaine synchronisation.</p>`
+      });
+      if(useCloud)await cloudLoadNow({skipConfirm:true,silent:true});
+      else await cloudSyncNow({silent:true});
+      return;
+    }
+    await cloudSyncNow({silent:true});
+  }catch(error){
+    cloudState.error=error.message||"Erreur cloud";
+    renderCloudStatus();
+  }
 }
 const RAJ_ASSETS={
   cra:"./assets/images/raj/cra.png",
@@ -13711,6 +13913,7 @@ function save(){
     syncSharedAchievementsFromData();
     localStorage.setItem("pykur_clean_v1",JSON.stringify(store));
     markSaveStatus(true);
+    scheduleCloudSave();
   }catch(err){
     console.error("Erreur de sauvegarde",err);
     markSaveStatus(false);
@@ -15146,11 +15349,11 @@ const legacyGuideHelpSteps=[
   },
   {
     title:"Options et confort",
-    html:`<p>Options regroupe les reglages utiles : mode nuit, animations, infobulles, HUD, chrono, notifications, accessibilite, import et export.</p><p>Le bouton son global coupe ou reactive les sons du tracker, y compris notifications, chrono, milestones et futurs sons.</p>`
+    html:`<p>Options regroupe les reglages utiles : mode nuit, animations, infobulles, HUD, chrono, notifications, accessibilite et sauvegarde cloud.</p><p>Le bouton son global coupe ou reactive les sons du tracker, y compris notifications, chrono, milestones et futurs sons.</p>`
   },
   {
     title:"Profils et sauvegardes",
-    html:`<p>Chaque profil conserve ses propres donjons, monstres, historique, chrono, statistiques et options de profil. Le changement de profil recharge ses données sans les mélanger.</p><p>La sauvegarde locale utilise le stockage du navigateur. <strong>Exporter</strong> télécharge une copie JSON. <strong>Importer</strong> remplace les données locales après confirmation : c'est protégé par une boîte de dialogue personnalisée.</p>`
+    html:`<p>Chaque profil conserve ses propres donjons, monstres, historique, chrono, statistiques et options de profil. Le changement de profil recharge ses données sans les mélanger.</p><p>Les membres synchronisent automatiquement leur progression avec la sauvegarde cloud. En mode invité, la sauvegarde reste locale au navigateur et peut être perdue si le cache est supprimé.</p>`
   },
   {
     title:"Raccourcis utiles",
@@ -15283,8 +15486,8 @@ function applyHelpfulTooltips(){
     toggleNotif:"Active ou masque les notifications d'action.",
     toggleMinorNotif:"Masque les notifications mineures tout en gardant erreurs et milestones.",
     togglePersistentNotif:"Garde les notifications visibles jusqu'au clic.",
-    exportSave:"Telecharge une sauvegarde JSON complete de tous les profils.",
-    importSave:"Importe une sauvegarde JSON après confirmation. Remplace les données locales.",
+    exportSave:"Action de secours réservée aux anciennes sauvegardes JSON.",
+    importSave:"Action de secours réservée aux anciennes sauvegardes JSON.",
     toggleHighContrast:"Renforce le contraste des textes et panneaux.",
     toggleReducedSaturation:"Reduit la saturation pour une interface plus calme.",
     toggleLargeFont:"Augmente la taille generale du texte.",
@@ -15742,6 +15945,7 @@ function openHistoryShortcut(){
 function openOptionsShortcut(){
   unlockAchievement("open_options");
   applySettings();
+  renderCloudStatus();
   if($("#optionsSearch")){
     $("#optionsSearch").value="";
     filterOptionsSearch();
@@ -18304,7 +18508,7 @@ const CHANGELOG_ENTRIES={
     items:[
       ["Hébergement officiel","Passage sur VPS avec un vrai nom de domaine pour rendre le tracker plus accessible."],
       ["Comptes utilisateurs","Création d'un système de compte pour retrouver sa progression plus facilement."],
-      ["Sauvegarde cloud","Stockage des données en base de données, avec conservation de l'import/export en sécurité."],
+      ["Sauvegarde cloud","Stockage des données en base de données pour les comptes membres."],
       ["Profils communautaires","Possibilité de consulter les profils publics des autres utilisateurs."],
       ["Partage social","Partage de succès, galeries et anciennes aventures de Pykur."],
       ["Messagerie","Ajout prévu de messages privés entre utilisateurs."],
@@ -18322,7 +18526,7 @@ const CHANGELOG_ENTRIES={
       ["Projections plus claires","Les gains de PP à venir sont mieux affichés et plus fiables."],
       ["Simulation de donjons","Ajout d'un simulateur non destructif dans la projection."],
       ["Finition visuelle","Améliorations du Pykur, des monstres et des modales."],
-      ["Compatibilité renforcée","Corrections import/export entre versions PC et Web."]
+      ["Compatibilité renforcée","Corrections de sauvegarde locale, cloud et compatibilité PC/Web."]
     ]
   },
   "1.3":{
@@ -18346,7 +18550,7 @@ const CHANGELOG_ENTRIES={
       ["Détection Dofus","Configuration personnalisée et optionnelle."],
       ["Ambiances passives","Système indépendant des événements vivants."],
       ["Pykur plus vivant","Premières réactions visuelles aux actions du joueur."],
-      ["Confort général","Options, raccourcis, import/export et sauvegarde améliorés."]
+      ["Confort général","Options, raccourcis et sauvegarde améliorés."]
     ]
   }
 };
@@ -18539,8 +18743,10 @@ if($("#dofusThresholdInput"))$("#dofusThresholdInput").oninput=e=>{
   if(farm && data.dofusDetection?.refs?.[farm])data.dofusDetection.refs[farm].threshold=parseInt(e.target.value,10)||82;
   dofusUpdateConfigReadout();
 };
+if($("#cloudSyncNow"))$("#cloudSyncNow").onclick=()=>cloudSyncNow({silent:false});
+if($("#cloudLoadNow"))$("#cloudLoadNow").onclick=()=>cloudLoadNow({silent:false});
 if($("#exportSave"))$("#exportSave").onclick=exportSave;
-if($("#importSave"))$("#importSave").onclick=()=>$("#importSaveInput").click();
+if($("#importSave"))$("#importSave").onclick=()=>$("#importSaveInput")?.click();
 if($("#resetHudLayout"))$("#resetHudLayout").onclick=resetHudLayout;
 if($("#resetKeybinds"))$("#resetKeybinds").onclick=resetKeybindsToDefault;
 if($("#livingStopEvent"))$("#livingStopEvent").onclick=()=>{livingStop({silent:false,schedule:true});adminPanelAfterAction()};
