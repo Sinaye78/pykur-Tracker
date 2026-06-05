@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="refresh" content="0; url=./familiers/pykur/mobile.html?view=mobile">
+<title>Redirection vers Pykur Mobile</title>
+<script>
+(function(){
+  const url=new URL("./familiers/pykur/mobile.html",location.href);
+  const params=new URLSearchParams(location.search);
+  params.forEach((value,key)=>url.searchParams.set(key,value));
+  if(!url.searchParams.has("view"))url.searchParams.set("view","mobile");
+  location.replace(url.href);
+})();
+</script>
+</head>
+<body>
+<p>Redirection vers <a href="./familiers/pykur/mobile.html?view=mobile">Pykur Mobile</a>...</p>
+</body>
+</html>

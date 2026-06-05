@@ -1,0 +1,2726 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <script>
+    (function(){
+      const params=new URLSearchParams(location.search);
+      const forced=params.get("view");
+      if(forced==="mobile")return;
+      const isMobile=window.matchMedia("(max-width: 768px)").matches
+        || window.matchMedia("(pointer: coarse)").matches
+        || /Android|iPhone|iPad|iPod|Windows Phone|Mobile/i.test(navigator.userAgent);
+      if(!isMobile || forced==="desktop"){
+        const url=new URL("./index.html",location.href);
+        params.forEach((value,key)=>{if(key!=="view")url.searchParams.set(key,value)});
+        if(forced==="desktop")url.searchParams.set("view","desktop");
+        location.replace(url.href);
+      }
+    })();
+  </script>
+  <title>Pykur Tracker Mobile</title>
+  <link rel="icon" type="image/png" href="./assets/images/logo.png">
+  <style>
+    :root{
+      --bg:#16110b;
+      --paper:#fff7e8;
+      --surface:#fffaf1;
+      --surface-2:#f3eadc;
+      --text:#2c190d;
+      --muted:#786a5b;
+      --line:rgba(86,63,35,.22);
+      --green:#16803a;
+      --blue:#2563eb;
+      --orange:#c76a14;
+      --red:#b42318;
+      --gray:#667085;
+      --gold:#d89b17;
+      --shadow:0 12px 34px rgba(19,12,6,.22);
+      --radius:14px;
+      --safe-bottom:env(safe-area-inset-bottom,0px);
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;width:100%;max-width:100%;overflow-x:hidden}
+    body{
+      font-family:Inter,Arial,sans-serif;
+      color:var(--text);
+      background:
+        linear-gradient(rgba(18,13,8,.72),rgba(18,13,8,.76)),
+        url("./assets/images/fond.png") center/cover fixed;
+      -webkit-tap-highlight-color:transparent;
+    }
+    body.night{
+      --paper:#171b22;
+      --surface:#202631;
+      --surface-2:#2a3240;
+      --text:#f7eddc;
+      --muted:#b9ad9d;
+      --line:rgba(255,255,255,.14);
+      background:
+        linear-gradient(rgba(4,7,12,.82),rgba(4,7,12,.88)),
+        url("./assets/images/fond.png") center/cover fixed;
+    }
+    body.no-anim *, body.no-anim *::before, body.no-anim *::after{
+      animation:none!important;
+      transition:none!important;
+    }
+
+    .engine-frame{
+      position:fixed;
+      width:1px;
+      height:1px;
+      left:-4px;
+      top:-4px;
+      opacity:0;
+      pointer-events:none;
+      border:0;
+    }
+
+    .mobile-app{
+      position:relative;
+      z-index:1;
+      width:100%;
+      max-width:390px;
+      min-height:100vh;
+      margin:0;
+      padding:12px 12px calc(92px + var(--safe-bottom));
+      overflow-x:hidden;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:20;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 4px 12px;
+      backdrop-filter:blur(10px);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+      color:#fff7e8;
+      text-shadow:0 2px 10px rgba(0,0,0,.35);
+    }
+    .brand img{
+      width:42px;
+      height:42px;
+      object-fit:contain;
+      filter:drop-shadow(0 4px 12px rgba(255,207,83,.38));
+    }
+    .brand h1{
+      margin:0;
+      font-size:18px;
+      line-height:1;
+    }
+    .brand span{
+      display:block;
+      margin-top:3px;
+      font-size:12px;
+      color:rgba(255,247,232,.74);
+      font-weight:750;
+    }
+
+    .icon-row{display:flex;gap:8px}
+    button,select,input{
+      font:inherit;
+      border-radius:10px;
+    }
+    button{
+      border:1px solid transparent;
+      min-height:42px;
+      padding:0 13px;
+      font-weight:850;
+      color:#fff;
+      cursor:pointer;
+      touch-action:manipulation;
+      box-shadow:0 8px 18px rgba(0,0,0,.16);
+    }
+    button:focus{outline:none}
+    button:focus-visible{
+      outline:3px solid rgba(96,165,250,.75);
+      outline-offset:2px;
+    }
+    button:active{transform:translateY(1px);filter:brightness(.98)}
+    .btn-green{background:var(--green)}
+    .btn-blue{background:var(--blue)}
+    .btn-orange{background:var(--orange)}
+    .btn-red{background:var(--red)}
+    .btn-gray{background:var(--gray)}
+    .btn-ghost{
+      background:rgba(255,250,241,.18);
+      border-color:rgba(255,255,255,.24);
+      color:#fff7e8;
+      box-shadow:none;
+    }
+    .btn-light{
+      background:transparent;
+      color:var(--blue);
+      border-color:rgba(37,99,235,.28);
+      box-shadow:none;
+    }
+
+    .view{display:none}
+    .view.active{display:block}
+    .dashboard-layout,
+    .dashboard-layout > div,
+    .hero-card,
+    .card,
+    .dungeon-card{
+      min-width:0;
+    }
+
+    .hero-card,.card{
+      background:linear-gradient(180deg,var(--paper),var(--surface));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .hero-card::before,.card::before{
+      content:"";
+      position:absolute;
+      inset:0 0 auto;
+      height:3px;
+      background:linear-gradient(90deg,var(--gold),rgba(216,155,23,0),var(--blue));
+      opacity:.55;
+      pointer-events:none;
+    }
+    .hero-card{
+      padding:14px;
+      display:grid;
+      gap:12px;
+    }
+    .progress-head{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .progress-head h2,.card h2,.panel-title{
+      margin:0;
+      font-size:17px;
+      line-height:1.15;
+    }
+    .meta{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:750;
+    }
+    .pp-pill{
+      display:inline-flex;
+      align-items:center;
+      min-height:32px;
+      padding:0 10px;
+      border-radius:999px;
+      background:rgba(216,155,23,.14);
+      color:#7a4c00;
+      font-weight:900;
+      white-space:nowrap;
+    }
+    body.night .pp-pill{color:#ffd67a}
+    .progress-bar{
+      height:12px;
+      border-radius:999px;
+      background:rgba(0,0,0,.12);
+      overflow:hidden;
+    }
+    .progress-bar span{
+      display:block;
+      height:100%;
+      width:0;
+      border-radius:inherit;
+      background:linear-gradient(90deg,var(--green),#f1b51c);
+      transition:width .25s ease;
+    }
+    .big-percent{
+      font-size:34px;
+      line-height:1;
+      font-weight:950;
+      color:var(--green);
+      letter-spacing:0;
+    }
+
+    .dungeon-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+      margin-top:12px;
+    }
+    .dungeon-card{
+      padding:12px;
+      display:grid;
+      gap:9px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:var(--surface);
+    }
+    .dungeon-card.active{
+      border-color:rgba(216,155,23,.72);
+      box-shadow:0 0 0 2px rgba(216,155,23,.18);
+    }
+    .dungeon-card button{
+      width:100%;
+      min-height:38px;
+      box-shadow:none;
+    }
+    .dungeon-title{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:6px;
+      font-weight:950;
+    }
+    .active-badge{
+      padding:3px 7px;
+      border-radius:999px;
+      background:#ffe07a;
+      color:#452900;
+      font-size:10px;
+      font-weight:950;
+    }
+    .dungeon-numbers{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:6px;
+    }
+    .mini-stat{
+      padding:8px;
+      border-radius:10px;
+      background:rgba(0,0,0,.045);
+      text-align:center;
+    }
+    .mini-stat span{
+      display:block;
+      color:var(--muted);
+      font-size:10px;
+      font-weight:800;
+      text-transform:uppercase;
+    }
+    .mini-stat strong{
+      font-size:18px;
+      color:var(--blue);
+    }
+    .mini-stat.danger strong{color:var(--red)}
+
+    .quick-actions{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 86px;
+      gap:10px;
+      margin:12px 0;
+    }
+    .quick-actions button{
+      min-height:62px;
+      font-size:22px;
+    }
+
+    .card{
+      padding:14px;
+      margin-top:12px;
+    }
+    .sheet .card{
+      box-shadow:none;
+      margin-top:10px;
+      background:linear-gradient(180deg,var(--surface),var(--surface-2));
+    }
+    .line{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:9px 0;
+      border-bottom:1px solid rgba(86,63,35,.12);
+    }
+    .line:last-child{border-bottom:0}
+    .line span{color:var(--muted);font-weight:750;font-size:13px}
+    .line strong{
+      min-width:0;
+      text-align:right;
+      overflow-wrap:anywhere;
+    }
+
+    .chrono-display{
+      display:grid;
+      gap:8px;
+      padding:18px;
+      border-radius:16px;
+      background:#111827;
+      color:#f8fafc;
+      border:1px solid rgba(147,197,253,.18);
+      box-shadow:0 16px 40px rgba(0,0,0,.22);
+    }
+    .chrono-display span{
+      color:#93c5fd;
+      font-size:12px;
+      font-weight:850;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .chrono-time{
+      font:900 44px/1 ui-monospace,SFMono-Regular,Consolas,monospace;
+      letter-spacing:0;
+    }
+    .chrono-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:12px;
+    }
+    .chrono-actions button{min-height:54px}
+
+    .bottom-nav{
+      position:fixed;
+      left:0;
+      bottom:0;
+      z-index:50;
+      width:100%;
+      max-width:390px;
+      transform:none;
+      display:grid;
+      grid-template-columns:1fr 1fr 82px 1fr 1fr;
+      gap:6px;
+      padding:9px 8px calc(9px + var(--safe-bottom));
+      background:rgba(20,13,7,.84);
+      backdrop-filter:blur(14px);
+      border-top:1px solid rgba(255,255,255,.16);
+    }
+    .bottom-nav button{
+      min-width:0;
+      min-height:50px;
+      padding:0 5px;
+      border-radius:13px;
+      font-size:11px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      background:rgba(255,255,255,.1);
+      border-color:rgba(255,255,255,.12);
+      color:#fff7e8;
+      box-shadow:none;
+    }
+    .bottom-nav button.active{
+      background:var(--blue);
+      border-color:transparent;
+    }
+    .bottom-nav .fab{
+      min-height:58px;
+      margin-top:-16px;
+      border-radius:20px;
+      background:var(--green);
+      font-size:28px;
+      box-shadow:0 12px 26px rgba(22,128,58,.36);
+    }
+
+    .toolbar{
+      display:flex;
+      gap:8px;
+      overflow-x:auto;
+      padding:4px 0 10px;
+      scrollbar-width:none;
+    }
+    .toolbar::-webkit-scrollbar{display:none}
+    .toolbar button{flex:0 0 auto;box-shadow:none}
+    .view .card .toolbar{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+      overflow:visible;
+      padding-bottom:0;
+    }
+    .view .card .toolbar button{
+      width:100%;
+      min-width:0;
+      flex:initial;
+      white-space:normal;
+    }
+
+    .list{
+      display:grid;
+      gap:8px;
+    }
+    .history-item,.monster-item,.profile-row{
+      padding:10px 0;
+      border-bottom:1px solid rgba(86,63,35,.13);
+    }
+    .history-filters{
+      display:flex;
+      gap:7px;
+      overflow-x:auto;
+      padding:4px 0 12px;
+      scrollbar-width:none;
+    }
+    .history-filters::-webkit-scrollbar{display:none}
+    .history-filters button{
+      flex:0 0 auto;
+      min-height:36px;
+      padding:0 11px;
+      border-radius:999px;
+      box-shadow:none;
+      background:rgba(37,99,235,.08);
+      color:var(--blue);
+      border-color:rgba(37,99,235,.18);
+    }
+    .history-filters button.active{
+      color:#fff;
+      background:var(--blue);
+    }
+    .timeline{
+      display:grid;
+      gap:12px;
+    }
+    .timeline-day{
+      display:grid;
+      gap:8px;
+    }
+    .timeline-day-title{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:950;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      padding-left:8px;
+    }
+    .history-item{
+      display:grid;
+      grid-template-columns:34px minmax(0,1fr);
+      gap:10px;
+      align-items:start;
+      padding:10px;
+      border:1px solid rgba(86,63,35,.12);
+      border-radius:12px;
+      background:rgba(0,0,0,.035);
+    }
+    .history-icon{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      display:grid;
+      place-items:center;
+      background:rgba(37,99,235,.1);
+      color:var(--blue);
+      font-weight:950;
+    }
+    .monster-item{
+      display:grid;
+      grid-template-columns:46px minmax(0,1fr);
+      gap:10px;
+      align-items:center;
+      border-radius:12px;
+      padding:10px;
+      background:rgba(0,0,0,.035);
+      border:1px solid rgba(86,63,35,.1);
+    }
+    .monster-item img{
+      width:46px;
+      height:46px;
+      object-fit:contain;
+      border-radius:10px;
+      background:rgba(0,0,0,.06);
+      border:1px solid rgba(86,63,35,.14);
+      padding:3px;
+    }
+    .monster-edit{
+      grid-column:1 / -1;
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:7px;
+      margin-top:8px;
+    }
+    .monster-edit label{
+      display:grid;
+      gap:4px;
+      color:var(--muted);
+      font-size:10px;
+      font-weight:850;
+      text-transform:uppercase;
+    }
+    .monster-edit input{
+      min-height:38px;
+      text-align:center;
+      font-size:14px;
+    }
+    .sheet-head{
+      position:sticky;
+      top:0;
+      z-index:2;
+      padding-bottom:8px;
+      background:linear-gradient(180deg,var(--paper),rgba(255,247,232,.86));
+      backdrop-filter:blur(8px);
+    }
+    body.night .sheet-head{
+      background:linear-gradient(180deg,var(--paper),rgba(23,27,34,.86));
+    }
+    .history-item:last-child,.monster-item:last-child,.profile-row:last-child{border-bottom:0}
+    .history-item strong,.monster-item strong{display:block;font-size:14px}
+    .history-item span,.monster-item span{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:750;
+    }
+
+    .settings-grid{
+      display:grid;
+      gap:10px;
+    }
+    .setting-row{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      align-items:center;
+      padding:10px 0;
+      border-bottom:1px solid rgba(86,63,35,.12);
+    }
+    .setting-row:last-child{border-bottom:0}
+    .setting-row p{margin:4px 0 0;color:var(--muted);font-size:12px;font-weight:700}
+    .manual-run-grid{
+      display:grid;
+      gap:12px;
+      margin-top:12px;
+    }
+    .manual-run-card{
+      display:grid;
+      gap:7px;
+    }
+    .manual-run-card > span{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:900;
+    }
+    .manual-stepper{
+      display:grid;
+      grid-template-columns:44px minmax(0,1fr) 44px;
+      gap:8px;
+      align-items:center;
+    }
+    .manual-stepper button{
+      min-height:42px;
+      padding:0;
+      box-shadow:none;
+      font-size:18px;
+    }
+    select,input[type="text"],input[type="number"]{
+      width:100%;
+      min-height:42px;
+      border:1px solid var(--line);
+      background:var(--surface);
+      color:var(--text);
+      padding:0 10px;
+      font-weight:800;
+    }
+
+    .toast-wrap{
+      position:fixed;
+      left:50%;
+      bottom:calc(86px + var(--safe-bottom));
+      z-index:100;
+      width:min(100% - 22px,520px);
+      transform:translateX(-50%);
+      display:grid;
+      gap:6px;
+      pointer-events:none;
+    }
+    .toast{
+      justify-self:center;
+      max-width:min(92vw,360px);
+      padding:9px 11px;
+      border-radius:10px;
+      color:#fff;
+      font-size:13px;
+      font-weight:800;
+      box-shadow:0 8px 18px rgba(0,0,0,.18);
+      background:var(--blue);
+      opacity:.94;
+    }
+    .toast.success{background:var(--green)}
+    .toast.warning{background:var(--orange)}
+    .toast.error{background:var(--red)}
+    .toast.achievement{
+      background:linear-gradient(135deg,#7c4a12,#d69b2d);
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .achievement-toast-icon{
+      width:34px;
+      height:34px;
+      border-radius:8px;
+      object-fit:cover;
+      background:rgba(255,255,255,.18);
+      flex:0 0 auto;
+    }
+    .achievement-summary{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:12px;
+      border:1px solid rgba(139,111,71,.28);
+      border-radius:14px;
+      background:rgba(255,255,255,.84);
+      font-weight:850;
+      margin-bottom:12px;
+      font-size:14px;
+    }
+    .achievement-summary .toolbar{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      width:100%;
+    }
+    .achievement-summary .toolbar button{min-width:0}
+    body.secret-gate-pulse .sheet{
+      box-shadow:0 0 0 2px rgba(250,204,21,.18),0 0 24px rgba(126,34,206,.24);
+    }
+    .hidden-secret-egg{
+      position:fixed;
+      right:14px;
+      bottom:86px;
+      z-index:72;
+      width:32px;
+      height:32px;
+      padding:0;
+      border:0;
+      background:transparent;
+      opacity:.38;
+      filter:drop-shadow(0 5px 10px rgba(0,0,0,.28));
+    }
+    .hidden-secret-egg img{width:100%;height:100%;object-fit:contain;display:block}
+    .hidden-secret-egg,.hidden-secret-egg.hidden{display:none!important}
+    body.night .achievement-summary{background:rgba(15,23,42,.72)}
+    #mobileAchievementCategories{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:8px;
+      margin-bottom:12px;
+      padding-bottom:4px;
+      overflow:visible;
+    }
+    #mobileAchievementCategories button{
+      flex:initial;
+      width:100%;
+      min-height:38px;
+      padding:0 12px;
+      font-size:12px;
+      font-weight:850;
+      white-space:normal;
+      border-radius:999px;
+    }
+    .achievement-list{display:flex;flex-direction:column;gap:10px}
+    .achievement-card{
+      display:grid;
+      grid-template-columns:58px minmax(0,1fr);
+      gap:12px;
+      align-items:center;
+      padding:12px;
+      border:1px solid rgba(139,111,71,.24);
+      border-radius:14px;
+      background:rgba(255,255,255,.86);
+    }
+    body.night .achievement-card{background:rgba(15,23,42,.74);border-color:rgba(148,163,184,.24)}
+    .achievement-card.locked{opacity:.62;filter:saturate(.72)}
+    .achievement-card img,.achievement-placeholder{
+      width:58px;
+      height:58px;
+      border-radius:12px;
+      object-fit:cover;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,rgba(214,155,45,.25),rgba(37,99,235,.18));
+      font-size:24px;
+      font-weight:900;
+    }
+    .achievement-card h3{margin:0 0 5px;font-size:16px;font-weight:850;letter-spacing:0;color:var(--text)}
+    .achievement-card p{margin:0 0 6px;color:var(--muted);font-size:12px;line-height:1.38;font-weight:650}
+    .achievement-date{font-size:11px;font-weight:850;color:var(--blue)}
+
+    /* Ambiance mobile fantasy legere */
+    body{
+      --farm-aura:rgba(88,28,135,.18);
+      --farm-aura-2:rgba(22,128,58,.12);
+      --awaken-glow:rgba(250,204,21,.12);
+      --ambient-opacity:.16;
+    }
+    body[data-farm-active="tynril"]{
+      --farm-aura:rgba(22,101,52,.22);
+      --farm-aura-2:rgba(132,204,22,.14);
+    }
+    body[data-awaken="spark"]{--awaken-glow:rgba(250,204,21,.18);--ambient-opacity:.20}
+    body[data-awaken="pulse"]{--awaken-glow:rgba(56,189,248,.17);--ambient-opacity:.24}
+    body[data-awaken="surge"]{--awaken-glow:rgba(216,155,23,.24);--ambient-opacity:.28}
+    body[data-awaken="complete"]{--awaken-glow:rgba(250,204,21,.34);--ambient-opacity:.34}
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 18% 12%,var(--farm-aura),transparent 34%),
+        radial-gradient(circle at 86% 24%,var(--awaken-glow),transparent 34%),
+        radial-gradient(circle at 52% 92%,var(--farm-aura-2),transparent 38%);
+      opacity:.95;
+    }
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle,rgba(255,246,200,.40) 0 1px,transparent 1.8px) 0 0/86px 86px,
+        linear-gradient(115deg,transparent 0 42%,rgba(255,255,255,.11) 45%,transparent 48%) 0 0/220px 150px;
+      opacity:var(--ambient-opacity);
+      animation:mobileAmbient 34s linear infinite;
+    }
+    @keyframes mobileAmbient{
+      from{background-position:0 0,0 0}
+      to{background-position:86px 172px,220px 150px}
+    }
+    .hero-card{
+      box-shadow:var(--shadow),0 0 28px var(--awaken-glow);
+    }
+    .hero-card::after{
+      content:"";
+      position:absolute;
+      right:10px;
+      bottom:8px;
+      width:118px;
+      height:118px;
+      background:url("./assets/images/pykur.png") center/contain no-repeat;
+      opacity:.08;
+      filter:drop-shadow(0 0 18px var(--awaken-glow));
+      transform:rotate(-8deg);
+      pointer-events:none;
+    }
+    .brand img{
+      animation:mobilePykurBreath 5.8s ease-in-out infinite;
+    }
+    @keyframes mobilePykurBreath{
+      0%,100%{transform:translateY(0) scale(1)}
+      50%{transform:translateY(-3px) scale(1.045)}
+    }
+    .dungeon-card:first-child{
+      background:
+        radial-gradient(circle at 10% 0,rgba(124,58,237,.10),transparent 42%),
+        var(--surface);
+    }
+    .dungeon-card:nth-child(2){
+      background:
+        radial-gradient(circle at 90% 0,rgba(22,128,58,.12),transparent 42%),
+        var(--surface);
+    }
+    .chrono-display{
+      box-shadow:0 16px 34px rgba(0,0,0,.30),0 0 22px rgba(37,99,235,.16);
+    }
+    body.chrono-live .chrono-display{
+      box-shadow:0 16px 34px rgba(0,0,0,.32),0 0 28px rgba(96,165,250,.28);
+    }
+    body.chrono-live .chrono-time{
+      text-shadow:0 0 16px rgba(96,165,250,.45);
+    }
+    .toast.achievement{
+      border:1px solid rgba(255,228,138,.45);
+      box-shadow:0 13px 28px rgba(0,0,0,.28),0 0 24px rgba(250,204,21,.24);
+      animation:mobileAchievementReveal .36s cubic-bezier(.2,.9,.2,1);
+    }
+    @keyframes mobileAchievementReveal{
+      from{opacity:0;transform:translateY(12px) scale(.96)}
+      to{opacity:.94;transform:translateY(0) scale(1)}
+    }
+    body.no-anim::after,
+    body.no-anim .brand img,
+    body.no-anim .toast.achievement{
+      animation:none!important;
+    }
+
+    .modal-bg{
+      position:fixed;
+      inset:0;
+      z-index:90;
+      display:none;
+      align-items:flex-end;
+      background:rgba(0,0,0,.55);
+      padding:12px;
+    }
+    .modal-bg.show{display:flex}
+    .sheet{
+      width:min(100%,560px);
+      max-height:min(86vh,720px);
+      margin:0 auto;
+      overflow:auto;
+      border-radius:18px 18px 14px 14px;
+      background:var(--paper);
+      color:var(--text);
+      border:1px solid var(--line);
+      box-shadow:0 -18px 50px rgba(0,0,0,.35);
+      padding:16px;
+    }
+    .sheet-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:10px;
+    }
+    .sheet-head h2{margin:0;font-size:19px}
+    .split-item{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:12px;
+      align-items:center;
+      padding:12px 14px;
+      border:1px solid rgba(86,63,35,.14);
+      border-radius:12px;
+      background:rgba(255,255,255,.34);
+      box-shadow:0 6px 14px rgba(60,37,10,.05);
+    }
+    .split-main{
+      min-width:0;
+      display:grid;
+      gap:3px;
+    }
+    .split-main strong{
+      font-size:15px;
+      line-height:1.15;
+    }
+    .split-main span{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      line-height:1.2;
+    }
+    .split-time{
+      font:900 16px/1 ui-monospace,SFMono-Regular,Consolas,monospace;
+      color:#1f5fe0;
+      white-space:nowrap;
+    }
+    .session-summary-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin:12px 0;
+    }
+    .session-summary-card{
+      padding:12px;
+      border:1px solid rgba(86,63,35,.14);
+      border-radius:12px;
+      background:rgba(255,255,255,.38);
+    }
+    .session-summary-card span{
+      display:block;
+      color:var(--muted);
+      font-size:11px;
+      font-weight:850;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      margin-bottom:5px;
+    }
+    .session-summary-card strong{
+      font-size:18px;
+      line-height:1.15;
+    }
+    .session-summary-card.wide{
+      grid-column:1 / -1;
+    }
+    @media(max-width:420px){
+      .session-summary-grid{grid-template-columns:1fr}
+      .session-summary-card.wide{grid-column:auto}
+    }
+
+    .egg{
+      position:fixed;
+      z-index:60;
+      pointer-events:none;
+      display:none;
+    }
+    .egg.show{display:block}
+    .egg.alhass{right:8px;bottom:96px;width:82px;filter:drop-shadow(0 0 18px rgba(120,0,0,.52))}
+    .egg.toom{left:10px;bottom:96px;width:128px}
+    .egg.aina{right:12px;bottom:178px;width:94px;filter:drop-shadow(0 0 18px rgba(255,255,230,.72))}
+
+    .mobile-hidden{display:none!important}
+
+    @media(max-width:768px){
+      .dungeon-grid{grid-template-columns:1fr}
+    }
+
+    @media(max-width:370px){
+      .mobile-app{width:100vw;max-width:100vw;padding-left:8px;padding-right:8px}
+      .topbar{padding-left:0;padding-right:0;gap:6px}
+      .brand{gap:7px}
+      .brand img{width:36px;height:36px}
+      .brand h1{font-size:16px}
+      #soundBtn{min-height:42px;padding:0 10px;font-size:14px}
+      .chrono-time{font-size:36px}
+      .quick-actions{grid-template-columns:1fr 74px}
+      .bottom-nav{width:100vw;max-width:100vw;gap:5px;padding-left:6px;padding-right:6px;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 74px minmax(0,1fr) minmax(0,1fr)}
+      .bottom-nav button{font-size:10px}
+    }
+
+    @media(orientation:landscape) and (max-height:520px){
+      .mobile-app{width:min(100%,920px);max-width:920px;margin:0 auto}
+      .dashboard-layout{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:12px;
+        align-items:start;
+      }
+      .bottom-nav{left:50%;width:min(100%,920px);max-width:920px;transform:translateX(-50%)}
+    }
+  </style>
+</head>
+<body>
+  <iframe class="engine-frame" id="engineFrame" title="Pykur desktop engine" aria-hidden="true"></iframe>
+
+  <main class="mobile-app">
+    <header class="topbar">
+      <div class="brand">
+        <img src="./assets/images/pykur.png" alt="Pykur">
+        <div>
+          <h1>Pykur Tracker</h1>
+          <span id="profileName">Mobile</span>
+        </div>
+      </div>
+      <div class="icon-row">
+        <button class="btn-ghost" id="soundBtn" type="button" aria-label="Son">Son</button>
+      </div>
+    </header>
+
+    <section class="view active" id="view-dashboard">
+      <div class="dashboard-layout">
+        <div>
+          <article class="hero-card">
+            <div class="progress-head">
+              <div>
+                <h2>Progression du Pykur</h2>
+                <div class="meta" id="progressMeta">Chargement...</div>
+              </div>
+              <div class="pp-pill" id="ppPill">0 / 90 PP</div>
+            </div>
+            <div class="progress-bar"><span id="progressBar"></span></div>
+            <div class="big-percent" id="progressPercent">0%</div>
+          </article>
+
+          <div class="dungeon-grid">
+            <article class="dungeon-card" id="moroseCard">
+              <div class="dungeon-title">Morose <span class="active-badge mobile-hidden" id="moroseActive">Actif</span></div>
+              <div class="dungeon-numbers">
+                <div class="mini-stat"><span>Faits</span><strong id="moroseDone">0</strong></div>
+                <div class="mini-stat danger"><span>Restants</span><strong id="moroseLeft">0</strong></div>
+              </div>
+              <div class="meta" id="moroseTime">--</div>
+              <button class="btn-blue" data-farm="morose" type="button">Choisir</button>
+            </article>
+            <article class="dungeon-card" id="tynrilCard">
+              <div class="dungeon-title">Tynril <span class="active-badge mobile-hidden" id="tynrilActive">Actif</span></div>
+              <div class="dungeon-numbers">
+                <div class="mini-stat"><span>Faits</span><strong id="tynrilDone">0</strong></div>
+                <div class="mini-stat danger"><span>Restants</span><strong id="tynrilLeft">0</strong></div>
+              </div>
+              <div class="meta" id="tynrilTime">--</div>
+              <button class="btn-blue" data-farm="tynril" type="button">Choisir</button>
+            </article>
+          </div>
+        </div>
+
+        <div>
+          <div class="quick-actions">
+            <button class="btn-green" id="addRunBtn" type="button">+ Run</button>
+            <button class="btn-red" id="removeRunBtn" type="button">-</button>
+          </div>
+
+          <article class="card">
+            <h2>Vue rapide</h2>
+            <div class="line"><span>Donjon actif</span><strong id="activeFarm">Morose</strong></div>
+            <div class="line"><span>Prochaine PP</span><strong id="nextPP">--</strong></div>
+            <div class="line"><span>Session & Chrono</span><strong id="chronoMini">00:00:00</strong></div>
+            <div class="line"><span>Ã‰tat</span><strong id="sessionMini">PrÃªte</strong></div>
+          </article>
+
+          <article class="card">
+            <h2>Actions</h2>
+            <div class="toolbar">
+              <button class="btn-light" data-open="projectionSheet" type="button">Projections</button>
+              <button class="btn-light" data-open="statsSheet" type="button">Stats</button>
+              <button class="btn-light" data-open="monstersSheet" type="button">Monstres</button>
+              <button class="btn-light" data-open="achievementsSheet" type="button">SuccÃ¨s</button>
+              <button class="btn-light" data-open="manualRunsSheet" type="button">Modifier</button>
+              <button class="btn-light" data-open="profileSheet" type="button">Profils</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-chrono">
+      <article class="chrono-display">
+        <span>Session & Chrono</span>
+        <strong id="sessionState">PrÃªte</strong>
+        <div class="chrono-time" id="chronoDisplay">00:00:00</div>
+        <div class="line" id="sessionTimeRow"><span>Temps total farm</span><strong id="sessionTime">00:00:00</strong></div>
+      </article>
+      <article class="card">
+        <h2>Suivi chrono</h2>
+        <div class="line"><span>Donjons</span><strong id="sessionRuns">0</strong></div>
+        <div class="line"><span>PP session</span><strong id="sessionPP">+0</strong></div>
+        <div class="toolbar">
+          <button class="btn-green" id="chronoToggleBtn" type="button">DÃ©marrer</button>
+          <button class="btn-blue" id="sessionEndBtn" type="button">Terminer</button>
+          <button class="btn-red" id="chronoResetBtn" type="button">Reset</button>
+          <button class="btn-orange" id="markTimeBtn" type="button">Marquer run</button>
+          <button class="btn-gray" data-open="splitsSheet" type="button">Temps chrono</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="view" id="view-history">
+      <article class="card">
+        <h2>Historique</h2>
+        <div class="history-filters" id="historyFilters">
+          <button class="active" data-history-filter="all" type="button">Tous</button>
+          <button data-history-filter="run" type="button">Runs</button>
+          <button data-history-filter="chrono" type="button">Chrono</button>
+          <button data-history-filter="system" type="button">SystÃ¨me</button>
+          <button data-history-filter="success" type="button">SuccÃ¨s</button>
+        </div>
+        <div class="timeline" id="historyList"></div>
+      </article>
+    </section>
+
+    <section class="view" id="view-options">
+      <article class="card">
+        <h2>Options mobiles</h2>
+        <div class="settings-grid">
+          <div class="setting-row"><div><strong>Mode nuit</strong><p>SynchronisÃ© avec desktop.</p></div><button class="btn-blue" id="nightBtn" type="button">Off</button></div>
+          <div class="setting-row"><div><strong>Notifications</strong><p>Affiche les retours dâ€™action mobiles.</p></div><button class="btn-blue" id="notifBtn" type="button">On</button></div>
+          <div class="setting-row"><div><strong>Raccourcis clavier</strong><p>ConservÃ©s dans la mÃªme sauvegarde.</p></div><button class="btn-blue" id="shortcutBtn" type="button">On</button></div>
+          <div class="setting-row"><div><strong>Estimation chrono auto</strong><p>Utilise les temps moyens sans valider de donjon automatiquement.</p></div><button class="btn-blue" id="autoEstimateBtn" type="button">Off</button></div>
+        </div>
+      </article>
+      <article class="card">
+        <h2>Temps estimÃ©s</h2>
+        <div class="line"><span>Morose</span><strong id="avgMoroseText">--</strong></div>
+        <div class="line"><span>Tynril</span><strong id="avgTynrilText">--</strong></div>
+        <label class="option-control"><span>Temps Morose</span><input id="avgMoroseInput" type="text" inputmode="numeric" placeholder="2:30"></label>
+        <label class="option-control"><span>Temps Tynril</span><input id="avgTynrilInput" type="text" inputmode="numeric" placeholder="10:00"></label>
+        <div class="toolbar">
+          <button class="btn-blue" id="saveAverageTimes" type="button">Enregistrer les temps</button>
+        </div>
+      </article>
+      <article class="card">
+        <h2>Sauvegarde</h2>
+        <div class="toolbar">
+          <button class="btn-green" id="exportBtn" type="button">Exporter</button>
+          <button class="btn-orange" id="importBtn" type="button">Importer</button>
+          <input class="mobile-hidden" id="importInput" type="file" accept="application/json,.json">
+        </div>
+        <p class="meta">MÃªme sauvegarde localStorage que la version desktop.</p>
+      </article>
+      <article class="card">
+        <h2>Danger</h2>
+        <div class="setting-row"><div><strong>Reset Pykur actif</strong><p>RÃ©initialise uniquement le profil sÃ©lectionnÃ©.</p></div><button class="btn-red" id="resetActivePykur" type="button">Reset</button></div>
+      </article>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Navigation mobile">
+    <button class="active" data-view="dashboard" type="button">Dashboard</button>
+    <button data-view="chrono" type="button">Chrono</button>
+    <button class="fab" id="fabRun" type="button" aria-label="Ajouter une run">+</button>
+    <button data-view="history" type="button">Historique</button>
+    <button data-view="options" type="button">Options</button>
+  </nav>
+
+  <div class="modal-bg" id="projectionSheet"><section class="sheet"><div class="sheet-head"><h2>Projections</h2><button class="btn-gray" data-close type="button">Fermer</button></div><div id="projectionContent"></div></section></div>
+  <div class="modal-bg" id="statsSheet"><section class="sheet"><div class="sheet-head"><h2>Statistiques</h2><button class="btn-gray" data-close type="button">Fermer</button></div><div id="statsContent"></div></section></div>
+  <div class="modal-bg" id="monstersSheet"><section class="sheet"><div class="sheet-head"><h2>Monstres</h2><div class="toolbar"><button class="btn-blue" id="saveMonsterEdits" type="button">Sauver</button><button class="btn-gray" data-close type="button">Fermer</button></div></div><div class="list" id="monsterList"></div></section></div>
+  <div class="modal-bg" id="manualRunsSheet"><section class="sheet"><div class="sheet-head"><h2>Modifier donjons</h2><button class="btn-gray" data-close type="button">Annuler</button></div><div class="card"><p class="meta">Saisissez directement les donjons du profil actif. Morose est limitÃ© Ã  640, Tynril Ã  48. Les valeurs ne sont appliquÃ©es qu'aprÃ¨s validation.</p><div class="manual-run-grid"><label class="manual-run-card"><span>Donjons Morose</span><div class="manual-stepper"><button class="btn-gray" data-manual-step="morose" data-step="-1" type="button">-</button><input id="manualMoroseRuns" type="number" inputmode="numeric" min="0" max="640"><button class="btn-green" data-manual-step="morose" data-step="1" type="button">+</button></div></label><label class="manual-run-card"><span>Donjons Tynril</span><div class="manual-stepper"><button class="btn-gray" data-manual-step="tynril" data-step="-1" type="button">-</button><input id="manualTynrilRuns" type="number" inputmode="numeric" min="0" max="48"><button class="btn-green" data-manual-step="tynril" data-step="1" type="button">+</button></div></label></div><div class="toolbar"><button class="btn-blue" id="applyManualRuns" type="button">Appliquer</button><button class="btn-gray" data-close type="button">Annuler</button></div></div></section></div>
+  <div class="modal-bg" id="achievementsSheet"><section class="sheet"><div class="sheet-head"><h2>SuccÃ¨s</h2><button class="btn-gray" data-close type="button">Fermer</button></div><div class="achievement-summary"><span id="mobileAchievementProgress">Chargement...</span><div class="toolbar"><button class="btn-red" id="mobileResetAchievements" type="button">Reset</button></div></div><div class="history-filters" id="mobileAchievementCategories"></div><div class="achievement-list" id="mobileAchievementList"></div></section></div>
+  <div class="modal-bg" id="splitsSheet"><section class="sheet"><div class="sheet-head"><h2>Donjons chronomÃ©trÃ©s</h2><div class="toolbar"><button class="btn-red" id="resetSplitsBtn" type="button">Reset</button><button class="btn-gray" data-close type="button">Fermer</button></div></div><div class="list" id="splitsList"></div></section></div>
+  <div class="modal-bg" id="sessionSummarySheet"><section class="sheet session-summary-sheet"><div class="sheet-head"><h2>RÃ©sumÃ© de session</h2><button class="btn-gray" data-close type="button">Fermer</button></div><div id="sessionSummaryContent"></div></section></div>
+  <div class="modal-bg" id="profileSheet"><section class="sheet"><div class="sheet-head"><h2>Profils</h2><button class="btn-gray" data-close type="button">Fermer</button></div><div id="profileList"></div><div class="toolbar"><button class="btn-green" id="createProfileBtn" type="button">+ Profil</button></div></section></div>
+  <div class="modal-bg" id="confirmDialog"><section class="sheet"><div class="sheet-head"><h2 id="confirmTitle">Confirmation</h2></div><p id="confirmMessage" class="meta"></p><input id="confirmInput" class="mobile-hidden" type="text"><div class="toolbar"><button class="btn-red" id="confirmOk" type="button">Confirmer</button><button class="btn-gray" id="confirmCancel" type="button">Annuler</button></div></section></div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <script src="./pykur-core.js"></script>
+  <script>
+    const $=selector=>document.querySelector(selector);
+    const $$=selector=>Array.from(document.querySelectorAll(selector));
+    const CORE=window.PykurCore;
+    const {STORE_KEY,PP_MAX,RUN_LIMITS,mobs,gains,ACHIEVEMENTS,ACHIEVEMENT_CATEGORIES,MAIN_ACHIEVEMENT_CATEGORIES}=CORE;
+    /*
+      fecorce:{name:"FÃ©corce",ppNeed:60},
+      tynrilDeconcerte:{name:"Tynril DÃ©concertÃ©",ppNeed:3},
+      tynrilConsterne:{name:"Tynril ConsternÃ©",ppNeed:3}
+    };
+    const legacyGainsUnused={
+      morose:{chiendent:1,nerbe:1,fecorce:1,abrakleur:1,bitouf:1,floribonde:2},
+      tynril:{tynrilConsterne:1,tynrilDeconcerte:1,tynrilPerfide:1,tynrilAhuri:1,fecorce:2,abrakleur:3,brouture:3,chiendent:5,nerbe:6,floribonde:6,bitouf:10}
+    };
+    */
+    const engine=$("#engineFrame");
+    const mobileState={
+      ready:false,
+      snapshot:null,
+      view:"dashboard",
+      secret:"",
+      manualEditing:false,
+      monsterEditing:false,
+      manualDraft:{morose:"0",tynril:"0"},
+      eggs:{charlie:false,alhass:false,toom:false,aina:false,capy:false}
+    };
+    let historyFilter="all";
+    let pendingConfirm=null;
+    let pendingDialogMode="confirm";
+    let store=null;
+    let activeProfile=null;
+    let data=null;
+    let chronoTimer=null;
+    let audioUnlocked=false;
+    const sounds={
+      click:new Audio("./assets/sons/click.mp3"),
+      success:new Audio("./assets/sons/success.mp3"),
+      error:new Audio("./assets/sons/error.mp3"),
+      warning:new Audio("./assets/sons/warning.mp3"),
+      unlock:new Audio("./assets/sons/unlock.mp3"),
+      pp:new Audio("./assets/sons/pp_gain.wav"),
+      mark:new Audio("./assets/sons/run_mark.wav"),
+      reset:new Audio("./assets/sons/reset_soft.wav"),
+      chrono:new Audio("./assets/sons/chrono_toggle.wav"),
+      export:new Audio("./assets/sons/export_save.wav"),
+      import:new Audio("./assets/sons/import_save.wav"),
+      undo:new Audio("./assets/sons/undo_soft.wav")
+    };
+    Object.values(sounds).forEach(sound=>{sound.volume=.14;sound.preload="auto"});
+
+    function assetPath(src){
+      if(!src || typeof src!=="string")return src;
+      if(/^(data:|blob:|https?:\/\/)/i.test(src))return src;
+      return src
+        .replace(/^\.?\/?images\//,"./assets/images/")
+        .replace(/^\.?\/?sons\//,"./assets/sons/")
+        .replace(/^\.?\/?ambiance\//,"./assets/ambiance/")
+        .replace(/^\.?\/?tuto\//,"./assets/tuto/");
+    }
+
+    function clone(value){return CORE.clone(value)}
+
+    function defaultKeybinds(){
+      return CORE.defaultKeybinds();
+    }
+
+    function defaultData(){
+      return CORE.defaultData();
+      return {
+        runs:{morose:0,tynril:0},
+        mobs:{morose:{},tynril:{},zone:{}},
+        settings:{
+          night:false,animations:true,tooltips:true,notifications:true,sound:true,autoMarkOnPlus:false,hudMode:false,
+          visualIntensity:"standard",uiOpacity:"medium",dashboardMode:"tryhard",
+          chronoStyle:"technical",showMilliseconds:false,autoDungeonEstimate:false,notificationSize:"normal",notificationDuration:3200,
+          notificationsPersistent:false,disableMinorNotifications:false,highContrast:false,reducedSaturation:false,largeFont:false,
+          shortcutsEnabled:true,keybinds:defaultKeybinds()
+        },
+        stats:{avgMorose:125,avgTynril:600,milestones:{},days:{}},
+        chrono:{seconds:0,running:false,startedAt:null,lastMarkSeconds:0,marks:[]},
+        session:{active:false,startedAt:null,totalSeconds:0,runs:{morose:0,tynril:0},ppStart:0,ppGain:0,lastSummary:null},
+        ui:{farm:"morose",tab:"morose",monsterSort:"total",monsterView:"comfortable",monsterSearch:"",monsterFavs:[],activityDensity:"compact",collapsedActivityDays:[],capyMode:false},
+        hud:{windows:{},z:10050},
+        activity:[],
+        undo:[]
+      };
+    }
+
+    function makeStore(){
+      return CORE.makeStore();
+    }
+
+    function ensureData(){
+      const base=defaultData();
+      data=Object.assign(base,data||{});
+      data.runs=Object.assign({morose:0,tynril:0},data.runs||{});
+      data.mobs=Object.assign({morose:{},tynril:{},zone:{}},data.mobs||{});
+      ["morose","tynril","zone"].forEach(area=>{
+        data.mobs[area]=Object.assign({},data.mobs[area]||{});
+        Object.keys(mobs).forEach(id=>{if(data.mobs[area][id]===undefined)data.mobs[area][id]=0});
+      });
+      data.settings=Object.assign(base.settings,data.settings||{});
+      data.settings.keybinds=Object.assign(defaultKeybinds(),data.settings.keybinds||{});
+      data.stats=Object.assign(base.stats,data.stats||{});
+      data.stats.days=Object.assign({},data.stats.days||{});
+      data.chrono=Object.assign(base.chrono,data.chrono||{});
+      data.chrono.marks=Array.isArray(data.chrono.marks)?data.chrono.marks:[];
+      data.session=Object.assign(base.session,data.session||{});
+      data.session.runs=Object.assign({morose:0,tynril:0},data.session.runs||{});
+      if(!data.session.active){
+        data.session.startedAt=null;
+        data.session.totalSeconds=0;
+        data.session.runs={morose:0,tynril:0};
+        data.session.ppGain=0;
+      }
+      data.ui=Object.assign(base.ui,data.ui||{});
+      data.achievements=Object.assign(base.achievements,data.achievements||{});
+      data.achievements.unlocked=Object.assign({},data.achievements.unlocked||{});
+      data.achievements.counters=Object.assign({happiosHover:0},data.achievements.counters||{});
+      data.achievements.eggCollected=!!data.achievements.eggCollected;
+      data.achievements.secretCategoriesUnlocked=!!data.achievements.secretCategoriesUnlocked;
+      data.activity=Array.isArray(data.activity)?data.activity:[];
+      data.undo=Array.isArray(data.undo)?data.undo:[];
+      data.runs.morose=Math.min(RUN_LIMITS.morose,Math.max(0,parseInt(data.runs.morose,10)||0));
+      data.runs.tynril=Math.min(RUN_LIMITS.tynril,Math.max(0,parseInt(data.runs.tynril,10)||0));
+    }
+
+    function normalizeMobileSettings(settings){
+      const normalized=Object.assign(defaultData().settings,settings||{});
+      normalized.keybinds=Object.assign(defaultKeybinds(),normalized.keybinds||{});
+      return normalized;
+    }
+
+    function normalizeMobileAchievements(achievements){
+      const base=defaultData().achievements;
+      const normalized=Object.assign({},base,achievements||{});
+      normalized.unlocked=Object.assign({},normalized.unlocked||{});
+      normalized.counters=Object.assign({happiosHover:0},normalized.counters||{});
+      normalized.eggCollected=!!normalized.eggCollected;
+      normalized.secretCategoriesUnlocked=!!normalized.secretCategoriesUnlocked;
+      return normalized;
+    }
+
+    function ensureMobileSharedState(){
+      if(!store)return;
+      if(store.optionsShared===undefined)store.optionsShared=false;
+      if(store.achievementsShared===undefined)store.achievementsShared=false;
+      store.sharedSettings=normalizeMobileSettings(store.sharedSettings || data?.settings);
+      store.sharedAchievements=normalizeMobileAchievements(store.sharedAchievements || data?.achievements);
+    }
+
+    function applyMobileSharedState(){
+      ensureMobileSharedState();
+      if(store?.optionsShared)data.settings=normalizeMobileSettings(store.sharedSettings);
+      if(store?.achievementsShared)data.achievements=normalizeMobileAchievements(store.sharedAchievements);
+    }
+
+    function syncMobileSharedState(){
+      ensureMobileSharedState();
+      if(store?.optionsShared){
+        store.sharedSettings=normalizeMobileSettings(data.settings);
+        Object.values(store.profiles||{}).forEach(profile=>{if(profile?.data)profile.data.settings=clone(store.sharedSettings)});
+      }
+      if(store?.achievementsShared){
+        store.sharedAchievements=normalizeMobileAchievements(data.achievements);
+        Object.values(store.profiles||{}).forEach(profile=>{if(profile?.data)profile.data.achievements=clone(store.sharedAchievements)});
+      }
+    }
+
+    function loadMobileData(){
+      try{store=JSON.parse(localStorage.getItem(STORE_KEY))||makeStore()}catch(error){store=makeStore()}
+      if(!store.profiles || !store.active)store=makeStore();
+      if(!store.profiles[store.active])store.active=Object.keys(store.profiles)[0];
+      activeProfile=store.active;
+      data=clone(store.profiles[activeProfile]?.data || defaultData());
+      ensureData();
+      ensureMobileSharedState();
+      applyMobileSharedState();
+      ensureData();
+      syncGlobalSoundSetting();
+      saveMobileData(true);
+      achievementNotificationMuted=true;
+      if(data.chrono.running)startChrono(false);
+      achievementNotificationMuted=false;
+    }
+
+    function saveMobileData(write=true){
+      ensureData();
+      ensureMobileSharedState();
+      syncMobileSharedState();
+      store.active=activeProfile;
+      const savedData=clone(data);
+      if(store.optionsShared)savedData.settings=clone(store.sharedSettings);
+      if(store.achievementsShared)savedData.achievements=clone(store.sharedAchievements);
+      store.profiles[activeProfile].data=savedData;
+      syncMobileSharedState();
+      if(write)localStorage.setItem(STORE_KEY,JSON.stringify(store));
+    }
+
+    function syncGlobalSoundSetting(){
+      const muted=localStorage.getItem("pykur_global_muted");
+      if(muted!==null)data.settings.sound=muted!=="1";
+    }
+
+    function setGlobalSound(enabled){
+      data.settings.sound=!!enabled;
+      localStorage.setItem("pykur_global_muted",enabled?"0":"1");
+      saveMobileData();
+      syncFromEngine();
+    }
+
+    function unlockAudio(){
+      if(audioUnlocked)return;
+      audioUnlocked=true;
+      Object.values(sounds).forEach(sound=>{
+        try{
+          const wasMuted=sound.muted;
+          sound.muted=true;
+          sound.play().then(()=>{
+            sound.pause();
+            sound.currentTime=0;
+            sound.muted=wasMuted;
+          }).catch(()=>{sound.muted=wasMuted});
+        }catch(error){}
+      });
+    }
+
+    function playSound(type="click"){
+      if(!data?.settings?.sound)return;
+      const sound=sounds[type]||sounds.click;
+      if(!sound)return;
+      try{
+        sound.currentTime=0;
+        sound.play().catch(()=>{});
+      }catch(error){}
+    }
+
+    function toast(message,type="info"){
+      const soundType=type==="success"?"success":type==="error"?"error":type==="warning"?"warning":"click";
+      playSound(soundType);
+      if(data?.settings && !data.settings.notifications && type!=="error")return;
+      const wrap=$("#toastWrap");
+      wrap.replaceChildren();
+      const node=document.createElement("div");
+      node.className=`toast ${type}`;
+      node.textContent=message;
+      wrap.appendChild(node);
+      setTimeout(()=>node.remove(),1800);
+    }
+
+    let activeAchievementCategory="PROGRESSION PYKUR";
+    let achievementNotificationMuted=false;
+    let secretGateClicks=0;
+    const MOBILE_HIDDEN_ACHIEVEMENTS=["master_secrets","true_100"];
+
+    function ensureAchievements(){
+      if(!data.achievements)data.achievements=defaultData().achievements;
+      data.achievements.unlocked=Object.assign({},data.achievements.unlocked||{});
+      data.achievements.counters=Object.assign({happiosHover:0},data.achievements.counters||{});
+      data.achievements.eggCollected=!!data.achievements.eggCollected;
+      data.achievements.secretCategoriesUnlocked=!!data.achievements.secretCategoriesUnlocked;
+    }
+
+    function achievementEntries({mainOnly=false}={}){
+      return Object.entries(ACHIEVEMENTS||{}).filter(([,achievement])=>{
+        if(mainOnly)return MAIN_ACHIEVEMENT_CATEGORIES.includes(achievement.category);
+        return true;
+      });
+    }
+
+    function isAchievementVisibleMobile(id){
+      return !MOBILE_HIDDEN_ACHIEVEMENTS.includes(id);
+    }
+
+    function isAchievementUnlocked(id){
+      return !!data?.achievements?.unlocked?.[id];
+    }
+
+    function getMainAchievementsProgress(){
+      ensureAchievements();
+      const main=achievementEntries({mainOnly:true});
+      return {done:main.filter(([id])=>isAchievementUnlocked(id)).length,total:main.length};
+    }
+
+    function showAchievementToast(id){
+      const achievement=ACHIEVEMENTS[id];
+      if(!achievement)return;
+      playSound("success");
+      if(data?.settings && !data.settings.notifications)return;
+      const wrap=$("#toastWrap");
+      wrap.replaceChildren();
+      const node=document.createElement("div");
+      node.className="toast achievement";
+      node.innerHTML=`${achievement.icon?`<img class="achievement-toast-icon" src="${assetPath(achievement.icon)}" alt="" onerror="this.remove()">`:""}<span>SuccÃ¨s dÃ©bloquÃ© : <strong>${achievement.title}</strong></span>`;
+      wrap.appendChild(node);
+      setTimeout(()=>node.remove(),2600);
+    }
+
+    function checkTrackerAbsolute({silent=false}={}){
+      const progress=getMainAchievementsProgress();
+      if(progress.done<progress.total && isAchievementUnlocked("tracker_absolute")){
+        delete data.achievements.unlocked.tracker_absolute;
+        saveMobileData();
+        renderAchievementsMobile();
+      }
+      if(progress.total && progress.done>=progress.total && !isAchievementUnlocked("tracker_absolute")){
+        unlockAchievement("tracker_absolute",{silent});
+      }
+    }
+
+    function unlockAchievement(id,{silent=false}={}){
+      if(achievementNotificationMuted)silent=true;
+      ensureAchievements();
+      const achievement=ACHIEVEMENTS[id];
+      if(!achievement || isAchievementUnlocked(id))return false;
+      data.achievements.unlocked[id]={date:new Date().toISOString()};
+      if(!silent){
+        showAchievementToast(id);
+        addActivity(`SuccÃ¨s dÃ©bloquÃ© : ${achievement.title}`,"success");
+      }
+      saveMobileData();
+      renderAchievementsMobile();
+      if(achievement.category!=="FINAL")checkTrackerAbsolute({silent});
+      return true;
+    }
+
+    function unlockSecretCategories(){
+      ensureAchievements();
+      if(data.achievements.secretCategoriesUnlocked){
+        renderAchievementsMobile();
+        return false;
+      }
+      if(!data.achievements.eggCollected){
+        toast("L'Å“uf scellÃ© refuse de s'ouvrir : trouve l'Å“uf cachÃ©.","error");
+        return false;
+      }
+      data.achievements.secretCategoriesUnlocked=true;
+      saveMobileData();
+      renderAchievementsMobile();
+      toast("ðŸ¥š CatÃ©gories secrÃ¨tes dÃ©bloquÃ©es.","success");
+      addActivity("CatÃ©gories secrÃ¨tes dÃ©bloquÃ©es","success");
+      return true;
+    }
+
+    function tickSecretGateMobile(){
+      if(data.achievements?.secretCategoriesUnlocked){
+        toast("Les archives secrÃ¨tes sont dÃ©jÃ  ouvertes.","info");
+        return;
+      }
+      ensureAchievements();
+      if(!data.achievements.eggCollected){
+        toast("L'Å“uf scellÃ© est vide. Trouve l'Å“uf cachÃ© sur le site.","error");
+        document.body.classList.add("secret-gate-pulse");
+        setTimeout(()=>document.body.classList.remove("secret-gate-pulse"),420);
+        return;
+      }
+      unlockSecretCategories();
+    }
+
+    function collectHiddenSecretEggMobile(){
+      ensureAchievements();
+      if(data.achievements.eggCollected)return;
+      data.achievements.eggCollected=true;
+      saveMobileData();
+      renderHiddenSecretEggMobile();
+      renderAchievementsMobile();
+      toast("ðŸ¥š Å’uf secret rÃ©cupÃ©rÃ©.","success");
+      addActivity("Å’uf secret rÃ©cupÃ©rÃ©","success");
+    }
+
+    function resetHiddenSecretEggMobile(){
+      ensureAchievements();
+      data.achievements.eggCollected=false;
+      data.achievements.secretCategoriesUnlocked=false;
+      saveMobileData();
+      renderHiddenSecretEggMobile();
+      renderAchievementsMobile();
+      toast("Commande admin : l'Å“uf secret a Ã©tÃ© remis en place.","warning");
+    }
+
+    function renderHiddenSecretEggMobile(){
+      const egg=$("#mobileHiddenSecretEgg");
+      if(!egg || !data)return;
+      ensureAchievements();
+      egg.classList.toggle("hidden",!!data.achievements.eggCollected);
+    }
+
+    function tickSecretGateMobileOld(){
+      secretGateClicks++;
+      document.body.classList.add("secret-gate-pulse");
+      setTimeout(()=>document.body.classList.remove("secret-gate-pulse"),420);
+      if(secretGateClicks===1){
+        toast("ðŸ¥š L'Å“uf rÃ©agit...","info");
+        return;
+      }
+      if(secretGateClicks===2){
+        toast("Gravure : ester eggs","success");
+        return;
+      }
+      secretGateClicks=0;
+      unlockSecretCategories();
+    }
+
+    async function resetAchievementsMobile(){
+      const ok=await showConfirmDialog({
+        title:"Reset succÃ¨s",
+        message:"Remettre tous les succÃ¨s Ã  zÃ©ro ? Les catÃ©gories secrÃ¨tes seront Ã  nouveau masquÃ©es.",
+        okLabel:"Reset"
+      });
+      if(!ok)return;
+      const eggCollected=!!data.achievements?.eggCollected;
+      data.achievements=clone(defaultData().achievements);
+      data.achievements.eggCollected=eggCollected;
+      saveMobileData();
+      renderHiddenSecretEggMobile();
+      renderAchievementsMobile();
+      toast("SuccÃ¨s remis Ã  zÃ©ro.","warning");
+      addActivity("SuccÃ¨s remis Ã  zÃ©ro","warning");
+      saveMobileData();
+    }
+
+    function checkProgressAchievements(){
+      const pp=currentPP();
+      if(pp>=1)unlockAchievement("first_pp");
+      if(pp>=30)unlockAchievement("growth");
+      if(pp>=45)unlockAchievement("half_awaken");
+      if(pp>=60)unlockAchievement("mutation");
+      if(pp>=90)unlockAchievement("full_awaken");
+    }
+
+    function checkDungeonAchievements(){
+      if((data.runs?.morose||0)>=320 || (data.runs?.tynril||0)>=24)unlockAchievement("halfway_dungeons");
+    }
+
+    function visibleAchievementCategories(){
+      ensureAchievements();
+      return ACHIEVEMENT_CATEGORIES.filter(category=>{
+        if(category==="EASTER EGGS" || category==="SECRETS")return false;
+        if(category==="FINAL")return achievementEntries().some(([id,achievement])=>achievement.category==="FINAL" && isAchievementVisibleMobile(id));
+        return true;
+      });
+    }
+
+    function renderAchievementsMobile(){
+      const cats=$("#mobileAchievementCategories");
+      const list=$("#mobileAchievementList");
+      const progressEl=$("#mobileAchievementProgress");
+      if(!cats || !list || !progressEl || !data)return;
+      ensureAchievements();
+      const visible=visibleAchievementCategories();
+      if(!visible.includes(activeAchievementCategory))activeAchievementCategory=visible[0]||"PROGRESSION PYKUR";
+      const progress=getMainAchievementsProgress();
+      progressEl.textContent=`Progression : ${progress.done}/${progress.total}`;
+      const secretBtn=$("#mobileUnlockSecretAchievements");
+      if(secretBtn){
+        secretBtn.textContent=data.achievements.secretCategoriesUnlocked?"Secrets dÃ©bloquÃ©s":"Å’uf scellÃ©";
+        secretBtn.disabled=!!data.achievements.secretCategoriesUnlocked;
+      }
+      cats.innerHTML=visible.map(category=>{
+        const entries=achievementEntries().filter(([id,achievement])=>achievement.category===category && isAchievementVisibleMobile(id));
+        const done=entries.filter(([id])=>isAchievementUnlocked(id)).length;
+        return `<button class="${category===activeAchievementCategory?"active":""}" data-achievement-category="${category}" type="button">${category} Â· ${done}/${entries.length}</button>`;
+      }).join("");
+      const entries=achievementEntries().filter(([id,achievement])=>achievement.category===activeAchievementCategory && isAchievementVisibleMobile(id));
+      list.innerHTML=entries.map(([id,achievement])=>{
+        const unlocked=data.achievements.unlocked[id];
+        const date=unlocked?.date ? new Date(unlocked.date).toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"}) : "VerrouillÃ©";
+        const icon=achievement.icon
+          ? `<img src="${assetPath(achievement.icon)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'achievement-placeholder',textContent:'ðŸ†'}))">`
+          : `<span class="achievement-placeholder">ðŸ†</span>`;
+        return `<article class="achievement-card ${unlocked?"unlocked":"locked"}">${icon}<div><h3>${achievement.title}</h3><p>${achievement.description}</p><span class="achievement-date">${date}</span></div></article>`;
+      }).join("");
+    }
+
+    function showConfirmDialog({title="Confirmation",message="",okLabel="Confirmer",danger=true}){
+      return new Promise(resolve=>{
+        pendingConfirm=resolve;
+        pendingDialogMode="confirm";
+        $("#confirmTitle").textContent=title;
+        $("#confirmMessage").textContent=message;
+        $("#confirmInput").classList.add("mobile-hidden");
+        $("#confirmInput").value="";
+        $("#confirmOk").textContent=okLabel;
+        $("#confirmOk").className=danger?"btn-red":"btn-blue";
+        $("#confirmDialog").classList.add("show");
+        setTimeout(()=>$("#confirmOk").focus(),0);
+      });
+    }
+
+    function showPromptDialog({title="Saisie",message="",value="",okLabel="Valider"}){
+      return new Promise(resolve=>{
+        pendingConfirm=resolve;
+        pendingDialogMode="prompt";
+        $("#confirmTitle").textContent=title;
+        $("#confirmMessage").textContent=message;
+        $("#confirmInput").classList.remove("mobile-hidden");
+        $("#confirmInput").value=value;
+        $("#confirmOk").textContent=okLabel;
+        $("#confirmOk").className="btn-blue";
+        $("#confirmDialog").classList.add("show");
+        setTimeout(()=>{$("#confirmInput").focus();$("#confirmInput").select()},0);
+      });
+    }
+
+    function closeConfirmDialog(value=false){
+      $("#confirmDialog").classList.remove("show");
+      const resolver=pendingConfirm;
+      const result=pendingDialogMode==="prompt" ? (value ? $("#confirmInput").value : null) : value;
+      pendingConfirm=null;
+      pendingDialogMode="confirm";
+      $("#confirmInput").classList.add("mobile-hidden");
+      resolver?.(result);
+    }
+
+    function formatChrono(sec){
+      return CORE.formatChrono(sec);
+    }
+
+    function formatDuration(sec){
+      return CORE.formatDuration(sec);
+    }
+
+    function totalMobs(){
+      return CORE.totalMobs(data);
+      const totals={};
+      Object.keys(mobs).forEach(id=>{
+        totals[id]=(data.mobs.morose[id]||0)+(data.mobs.tynril[id]||0)+(data.mobs.zone[id]||0);
+      });
+      return totals;
+    }
+
+    function ppFrom(source){
+      return CORE.ppFrom(source);
+      let pp=0;
+      Object.keys(mobs).forEach(id=>pp+=Math.floor((source[id]||0)/mobs[id].ppNeed));
+      return Math.min(pp,PP_MAX);
+    }
+
+    function currentPP(){return CORE.currentPP(data)}
+
+    function syncMobsFromRuns(farm){
+      const runs=Math.min(RUN_LIMITS[farm],Math.max(0,parseInt(data.runs[farm],10)||0));
+      data.runs[farm]=runs;
+      Object.keys(gains[farm]).forEach(id=>data.mobs[farm][id]=runs*gains[farm][id]);
+    }
+
+    function setRunsSynced(farm,value){
+      const old=data.runs[farm]||0;
+      const next=Math.min(RUN_LIMITS[farm],Math.max(0,parseInt(value,10)||0));
+      data.runs[farm]=next;
+      syncMobsFromRuns(farm);
+      return next-old;
+    }
+
+    function addActivity(message,type="info"){
+      data.activity.unshift({message,type,date:new Date().toISOString()});
+      data.activity=data.activity.slice(0,80);
+    }
+
+    function applyRunDelta(farm,delta){
+      data.runs[farm]=Math.min(RUN_LIMITS[farm],Math.max(0,(data.runs[farm]||0)+delta));
+      syncMobsFromRuns(farm);
+    }
+
+    function recordSessionRun(farm,delta){
+      if(!data.session.active)return;
+      data.session.runs[farm]=Math.max(0,(data.session.runs[farm]||0)+delta);
+      updateSessionPP();
+    }
+
+    function addDailyRun(farm,delta,ppDelta){
+      const key=new Date().toISOString().slice(0,10);
+      const day=data.stats.days[key]||(data.stats.days[key]={morose:0,tynril:0,ppGain:0});
+      day[farm]=Math.max(0,(day[farm]||0)+delta);
+      day.ppGain=Math.max(0,(day.ppGain||0)+Math.max(0,ppDelta||0));
+    }
+
+    function addRun(delta,options={}){
+      const farm=data.ui.farm||"morose";
+      if(delta>0 && (data.runs[farm]||0)>=RUN_LIMITS[farm]){
+        toast(`${farmLabel(farm)} est dÃ©jÃ  au maximum.`,"warning");
+        return;
+      }
+      if(delta<0 && (data.runs[farm]||0)<=0)return;
+      const oldPP=currentPP();
+      applyRunDelta(farm,delta);
+      if(delta>0 && data.settings.autoMarkOnPlus && data.chrono.running && !options.skipAutoMark)markTime(true,false);
+      const newPP=currentPP();
+      recordSessionRun(farm,delta);
+      addDailyRun(farm,delta,newPP-oldPP);
+      addActivity(`${delta>0?"+1":"-1"} donjon ${farmLabel(farm)}`,delta>0?"success":"warning");
+      if(delta>0){
+        unlockAchievement(farm==="morose"?"first_morose":"first_tynril");
+        const sessionRuns=data.session?.active ? (data.session.runs?.morose||0)+(data.session.runs?.tynril||0) : 0;
+        if(sessionRuns>=10)unlockAchievement("session_10");
+        if(sessionRuns>=25)unlockAchievement("session_25");
+      }
+      saveMobileData();
+      syncFromEngine();
+      if(!options.silent)toast(delta>0?`Donjon ${farmLabel(farm)} ajoutÃ©`:`Donjon ${farmLabel(farm)} retirÃ©`,delta>0?"success":"warning");
+    }
+
+    function getChronoSeconds(){
+      const base=parseInt(data.chrono.seconds,10)||0;
+      if(!data.chrono.running || !data.chrono.startedAt)return base;
+      return base+Math.max(0,Math.floor((Date.now()-data.chrono.startedAt)/1000));
+    }
+
+    function startChrono(notify=true){
+      if(chronoTimer)return;
+      if(!data.session.active){
+        data.session={active:true,startedAt:Date.now(),totalSeconds:0,runs:{morose:0,tynril:0},ppStart:currentPP(),ppGain:0,lastSummary:null};
+        unlockAchievement("start_session");
+      }else if(!data.session.startedAt){
+        data.session.startedAt=Date.now();
+      }
+      data.chrono.running=true;
+      data.chrono.startedAt=Date.now();
+      chronoTimer=setInterval(syncFromEngine,250);
+      if(notify){addActivity("Session & chrono lancÃ©s","chrono");unlockAchievement("start_chrono");toast("Session & chrono lancÃ©s","success")}
+      saveMobileData();
+      syncFromEngine();
+    }
+
+    function pauseChrono(){
+      if(chronoTimer){clearInterval(chronoTimer);chronoTimer=null}
+      data.chrono.seconds=getChronoSeconds();
+      data.chrono.running=false;
+      data.chrono.startedAt=null;
+      if(data.session.active){
+        data.session.totalSeconds=sessionElapsedSeconds();
+        data.session.startedAt=null;
+      }
+      addActivity(`Session & chrono en pause : ${formatChrono(data.chrono.seconds)}`,"chrono");
+      saveMobileData();
+      syncFromEngine();
+      toast("Session & chrono en pause","warning");
+    }
+
+    function resetChrono(){
+      if(chronoTimer){clearInterval(chronoTimer);chronoTimer=null}
+      data.chrono.seconds=0;
+      data.chrono.running=false;
+      data.chrono.startedAt=null;
+      data.chrono.lastMarkSeconds=0;
+      data.session=defaultData().session;
+      addActivity("Session & chrono rÃ©initialisÃ©s","warning");
+      saveMobileData();
+      syncFromEngine();
+      toast("Session & chrono remis Ã  zÃ©ro","warning");
+    }
+
+    async function resetSplits(){
+      if(!data.chrono.marks.length){toast("Aucun temps chrono Ã  vider","warning");return}
+      const ok=await showConfirmDialog({
+        title:"Vider les temps chrono",
+        message:"Supprimer tous les donjons chronomÃ©trÃ©s enregistrÃ©s ? La progression et les donjons suivis ne seront pas modifiÃ©s.",
+        okLabel:"Vider",
+        danger:true
+      });
+      if(!ok)return;
+      data.chrono.marks=[];
+      data.chrono.lastMarkSeconds=0;
+      addActivity("Temps chrono vidÃ©s","warning");
+      saveMobileData();
+      syncFromEngine();
+      toast("Temps chrono vidÃ©s","warning");
+    }
+
+    function markTime(silent=false){
+      const total=getChronoSeconds();
+      const previous=Math.max(0,parseInt(data.chrono.lastMarkSeconds,10)||0);
+      const split=Math.max(0,total-previous);
+      if(split<=0 && !silent){toast("Chrono trop court pour marquer un temps","warning");return false}
+      const farm=data.ui.farm||"morose";
+      data.chrono.lastMarkSeconds=total;
+      data.chrono.marks.push({farm,time:split,totalTime:total,date:new Date().toISOString(),auto:!!silent});
+      data.chrono.marks=data.chrono.marks.slice(-80);
+      syncAverageFromMarks(farm);
+      addActivity(`Temps ${farmLabel(farm)} marquÃ© : ${formatChrono(split)}`,"chrono");
+      saveMobileData();
+      syncFromEngine();
+      if(!silent)toast("Temps enregistrÃ©","success");
+      return split;
+    }
+
+    function syncAverageFromMarks(farm){
+      const list=(data.chrono.marks||[]).filter(mark=>mark.farm===farm && mark.time>0);
+      if(!list.length)return;
+      const avg=Math.round(list.reduce((sum,mark)=>sum+mark.time,0)/list.length);
+      data.stats[farm==="morose"?"avgMorose":"avgTynril"]=avg;
+    }
+
+    function sessionElapsedSeconds(){
+      if(!data.session.active)return 0;
+      const base=parseInt(data.session.totalSeconds,10)||0;
+      return base+Math.max(0,Math.floor((Date.now()-(data.session.startedAt||Date.now()))/1000));
+    }
+
+    function updateSessionPP(){
+      data.session.ppGain=data.session.active?Math.max(0,currentPP()-(data.session.ppStart||0)):0;
+    }
+
+    function startSession(){
+      if(data.session.active){toast("Session dÃ©jÃ  en cours","warning");return}
+      data.session={active:true,startedAt:Date.now(),totalSeconds:0,runs:{morose:0,tynril:0},ppStart:currentPP(),ppGain:0,lastSummary:null};
+      addActivity("Session de farm dÃ©marrÃ©e","system");
+      unlockAchievement("start_session");
+      saveMobileData();
+      syncFromEngine();
+      toast("Session dÃ©marrÃ©e","success");
+    }
+
+    function endSession(){
+      if(!data.session.active && getChronoSeconds()<=0){toast("Aucune session active","warning");return}
+      if(chronoTimer){clearInterval(chronoTimer);chronoTimer=null}
+      data.chrono.seconds=getChronoSeconds();
+      data.chrono.running=false;
+      data.chrono.startedAt=null;
+      updateSessionPP();
+      const summary={elapsed:sessionElapsedSeconds(),runs:clone(data.session.runs),pp:data.session.ppGain,date:new Date().toISOString()};
+      data.session.lastSummary=summary;
+      addActivity(`Session terminÃ©e : ${data.session.ppGain} PP gagnÃ©es`,"system");
+      data.session.active=false;
+      data.session.startedAt=null;
+      data.session.totalSeconds=0;
+      data.session.runs={morose:0,tynril:0};
+      data.session.ppGain=0;
+      data.chrono.seconds=0;
+      data.chrono.lastMarkSeconds=0;
+      saveMobileData();
+      syncFromEngine();
+      openSessionSummary(summary);
+      toast("Session terminÃ©e","success");
+    }
+
+    function resetSession(){
+      data.session=defaultData().session;
+      addActivity("Session effacÃ©e","warning");
+      saveMobileData();
+      syncFromEngine();
+      toast("Session effacÃ©e","warning");
+    }
+
+    async function resetActivePykur(){
+      const ok=await showConfirmDialog({
+        title:"Reset Pykur actif",
+        message:"RÃ©initialiser uniquement le Pykur du profil sÃ©lectionnÃ© ? Les autres profils et les rÃ©glages sont conservÃ©s.",
+        okLabel:"Reset"
+      });
+      if(!ok)return;
+      const settings=clone(data.settings);
+      const achievements=clone(data.achievements||defaultData().achievements);
+      const ui=Object.assign(clone(defaultData().ui),{farm:data.ui.farm||"morose"});
+      data=defaultData();
+      data.settings=settings;
+      data.achievements=achievements;
+      data.ui=ui;
+      ensureData();
+      unlockAchievement("reset_pykur");
+      addActivity("Le Pykur du profil sÃ©lectionnÃ© a Ã©tÃ© rÃ©initialisÃ©.","error");
+      saveMobileData();
+      syncFromEngine();
+      toast("Le Pykur du profil sÃ©lectionnÃ© a Ã©tÃ© rÃ©initialisÃ©.","warning");
+    }
+
+    function simulateRunsForPP(farm,targetPP){
+      if(currentPP()>=targetPP)return 0;
+      const sim=clone(totalMobs());
+      const capacity=Math.max(0,RUN_LIMITS[farm]-(data.runs[farm]||0));
+      let count=0;
+      while(ppFrom(sim)<targetPP && count<capacity){
+        count++;
+        Object.keys(gains[farm]).forEach(id=>sim[id]=(sim[id]||0)+gains[farm][id]);
+      }
+      return ppFrom(sim)>=targetPP?count:null;
+    }
+
+    function simulateRemaining(farm){
+      if(currentPP()>=PP_MAX)return 0;
+      const sim=clone(totalMobs());
+      const capacity=Math.max(0,RUN_LIMITS[farm]-(data.runs[farm]||0));
+      let count=0;
+      while(ppFrom(sim)<PP_MAX && count<capacity){
+        count++;
+        Object.keys(gains[farm]).forEach(id=>sim[id]=(sim[id]||0)+gains[farm][id]);
+      }
+      return count;
+    }
+
+    function dungeonEstimateFor(farm){
+      const baseRemaining=simulateRemaining(farm);
+      const avg=farm==="morose" ? (parseInt(data.stats.avgMorose,10)||0) : (parseInt(data.stats.avgTynril,10)||0);
+      const elapsed=getChronoSeconds();
+      const canUseAuto=!!data.settings.autoDungeonEstimate && elapsed>0 && avg>0;
+      const chronoRuns=canUseAuto ? Math.floor(elapsed/avg) : 0;
+      return {
+        baseRemaining,
+        remaining:baseRemaining,
+        avg:avg || (farm==="morose"?125:600),
+        chronoRuns,
+        canUseAuto
+      };
+    }
+
+    function buildChronoEstimate(){
+      if(!data.settings.autoDungeonEstimate)return null;
+      const elapsed=getChronoSeconds();
+      if(elapsed<=0)return {message:"Lance le chrono pour calculer une estimation."};
+      const avgMorose=parseInt(data.stats.avgMorose,10)||0;
+      const avgTynril=parseInt(data.stats.avgTynril,10)||0;
+      if(!avgMorose || !avgTynril)return {message:"Temps moyens manquants."};
+      const m=Math.min(Math.floor(elapsed/avgMorose),RUN_LIMITS.morose-(data.runs.morose||0));
+      const t=Math.min(Math.floor(elapsed/avgTynril),RUN_LIMITS.tynril-(data.runs.tynril||0));
+      return {message:`Estimation chrono : ${Math.max(0,m)} Morose Â· ${Math.max(0,t)} Tynril`};
+    }
+
+    function getStore(){
+      try{return JSON.parse(localStorage.getItem(STORE_KEY))}catch(error){return null}
+    }
+
+    function getActiveProfile(store=getStore()){
+      if(!store?.profiles)return null;
+      return store.profiles[store.active] || store.profiles[Object.keys(store.profiles)[0]];
+    }
+
+    function getProfileName(){
+      const store=getStore();
+      return getActiveProfile(store)?.name || "Pykur principal";
+    }
+
+    function engineSnapshot(){
+      ensureData();
+      updateSessionPP();
+      const pp=currentPP();
+      const pct=Math.min(100,(pp/PP_MAX)*100);
+      const moroseEstimate=dungeonEstimateFor("morose");
+      const tynrilEstimate=dungeonEstimateFor("tynril");
+      const moroseLeft=moroseEstimate.remaining;
+      const tynrilLeft=tynrilEstimate.remaining;
+      const nextTarget=Math.min(PP_MAX,Math.floor(pp)+1);
+      const chronoEstimate=buildChronoEstimate();
+      return {
+        data:clone(data),
+        pp,pct,
+        limits:clone(RUN_LIMITS),
+        left:{morose:moroseLeft,tynril:tynrilLeft},
+        next:{morose:simulateRunsForPP("morose",nextTarget),tynril:simulateRunsForPP("tynril",nextTarget)},
+        times:{
+          morose:formatDuration(moroseEstimate.avg*moroseLeft),
+          tynril:formatDuration(tynrilEstimate.avg*tynrilLeft),
+          chrono:formatChrono(getChronoSeconds()),
+          session:formatChrono(sessionElapsedSeconds())
+        },
+        chronoEstimate:chronoEstimate?chronoEstimate.message:"",
+        estimates:{morose:moroseEstimate,tynril:tynrilEstimate},
+        marks:clone(data.chrono.marks||[]),
+        activity:clone(data.activity||[]),
+        mobs:clone(mobs),
+        totals:clone(totalMobs()),
+        profileName:(store.profiles[activeProfile]||{}).name || "Pykur principal"
+      };
+    }
+
+    function setText(id,value){
+      const el=$("#"+id);
+      if(el)el.textContent=value;
+    }
+
+    function farmLabel(farm){return farm==="tynril"?"Tynril":"Morose"}
+    function formatRuns(value){return value===null || value===undefined ? "Impossible" : value<=0 ? "Maintenant" : `${value} donjon${value>1?"s":""}`}
+
+    function syncFromEngine(){
+      if(!mobileState.ready)return;
+      const snap=engineSnapshot();
+      if(!snap?.data)return;
+      mobileState.snapshot=snap;
+      const data=snap.data;
+      document.body.classList.toggle("night",!!data.settings.night);
+      document.body.classList.toggle("no-anim",!data.settings.animations);
+      const awaken=snap.pct>=100?"complete":snap.pct>=75?"surge":snap.pct>=50?"pulse":snap.pct>=25?"spark":"seed";
+      document.body.dataset.awaken=awaken;
+      document.body.dataset.farmActive=data.ui.farm||"morose";
+      document.body.classList.toggle("chrono-live",!!data.chrono.running);
+      setText("profileName",snap.profileName);
+      setText("ppPill",`${snap.pp} / 90 PP`);
+      setText("progressMeta",`${(data.runs.morose||0)+(data.runs.tynril||0)} donjon${((data.runs.morose||0)+(data.runs.tynril||0))>1?"s":""} suivi${((data.runs.morose||0)+(data.runs.tynril||0))>1?"s":""}`);
+      setText("progressPercent",`${snap.pct.toFixed(2)}%`);
+      $("#progressBar").style.width=`${snap.pct}%`;
+      setText("moroseDone",data.runs.morose||0);
+      setText("tynrilDone",data.runs.tynril||0);
+      setText("moroseLeft",snap.left.morose);
+      setText("tynrilLeft",snap.left.tynril);
+      setText("moroseTime",`â‰ˆ ${snap.times.morose}`);
+      setText("tynrilTime",`â‰ˆ ${snap.times.tynril}`);
+      ["morose","tynril"].forEach(farm=>{
+        const active=data.ui.farm===farm;
+        $(`#${farm}Card`).classList.toggle("active",active);
+        $(`#${farm}Active`).classList.toggle("mobile-hidden",!active);
+      });
+      setText("activeFarm",farmLabel(data.ui.farm));
+      setText("nextPP",`Morose ${formatRuns(snap.next.morose)} Â· Tynril ${formatRuns(snap.next.tynril)}`);
+      setText("chronoMini",snap.times.chrono);
+      setText("chronoDisplay",snap.times.chrono);
+      const toggleLabel=data.chrono.running?"Pause":(data.session.active || getChronoSeconds()>0)?"Reprendre":"DÃ©marrer";
+      setText("chronoToggleBtn",toggleLabel);
+      setText("sessionMini",data.session.active?"En cours":"PrÃªte");
+      setText("sessionState",data.session.active?"En cours":"PrÃªte");
+      setText("sessionTime",snap.times.session);
+      const sessionTimeRow=$("#sessionTimeRow");
+      if(sessionTimeRow){
+        const desync=data.session.active && Math.abs(sessionElapsedSeconds()-getChronoSeconds())>1;
+        sessionTimeRow.style.display=desync?"flex":"none";
+      }
+      setText("sessionRuns",data.session.active ? ((data.session.runs?.morose||0)+(data.session.runs?.tynril||0)) : 0);
+      setText("sessionPP",`+${data.session.active ? (data.session.ppGain||0) : 0}`);
+      setText("soundBtn",data.settings.sound?"Son":"Muet");
+      setText("nightBtn",data.settings.night?"On":"Off");
+      setText("notifBtn",data.settings.notifications?"On":"Off");
+      setText("shortcutBtn",data.settings.shortcutsEnabled?"On":"Off");
+      setText("autoEstimateBtn",data.settings.autoDungeonEstimate?"On":"Off");
+      setText("avgMoroseText",formatDuration(data.stats.avgMorose||0));
+      setText("avgTynrilText",formatDuration(data.stats.avgTynril||0));
+      if(!$("#avgMoroseInput").dataset.dirty && document.activeElement!==$("#avgMoroseInput"))$("#avgMoroseInput").value=formatAverageInput(data.stats.avgMorose||0);
+      if(!$("#avgTynrilInput").dataset.dirty && document.activeElement!==$("#avgTynrilInput"))$("#avgTynrilInput").value=formatAverageInput(data.stats.avgTynril||0);
+      renderHistory(snap.activity);
+      renderProjection(snap);
+      renderStatsMobile(snap);
+      renderMonsters(snap);
+      renderSplits(snap);
+      renderProfiles();
+      checkProgressAchievements();
+      checkDungeonAchievements();
+      renderHiddenSecretEggMobile();
+      renderAchievementsMobile();
+    }
+
+    function renderHistory(items=[]){
+      const box=$("#historyList");
+      if(!box)return;
+      const filtered=items.filter(item=>{
+        if(historyFilter==="all")return true;
+        const type=String(item.type||"info");
+        const msg=String(item.message||"").toLowerCase();
+        if(historyFilter==="run")return type==="run" || msg.includes("run");
+        if(historyFilter==="chrono")return type==="chrono" || msg.includes("chrono") || msg.includes("temps");
+        if(historyFilter==="system")return ["system","warning","error","reset","import","export"].includes(type);
+        if(historyFilter==="success")return ["success","milestone","unlock"].includes(type);
+        return true;
+      }).slice(0,45);
+      const groups={};
+      filtered.forEach(item=>{
+        const date=new Date(item.date);
+        const key=Number.isNaN(date.getTime())?"Sans date":date.toLocaleDateString("fr-FR",{weekday:"short",day:"2-digit",month:"short"});
+        if(!groups[key])groups[key]=[];
+        groups[key].push(item);
+      });
+      const iconFor=item=>{
+        const type=String(item.type||"info");
+        const msg=String(item.message||"").toLowerCase();
+        if(msg.includes("run"))return "+";
+        if(type==="chrono" || msg.includes("chrono") || msg.includes("temps"))return "â±";
+        if(type==="error" || type==="reset")return "!";
+        if(type==="success" || type==="milestone" || type==="unlock")return "â˜…";
+        return "â€¢";
+      };
+      box.innerHTML=filtered.length ? Object.entries(groups).map(([day,list])=>`
+        <section class="timeline-day">
+          <div class="timeline-day-title">${day}</div>
+          ${list.map(item=>{
+        const date=new Date(item.date);
+        const time=Number.isNaN(date.getTime())?"":date.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+        return `<div class="history-item"><span class="history-icon">${iconFor(item)}</span><div><strong>${item.message}</strong><span>${time} Â· ${item.type||"info"}</span></div></div>`;
+      }).join("")}
+        </section>
+      `).join("") : `<div class="history-item"><span class="history-icon">â€¢</span><div><strong>Aucune action enregistrÃ©e</strong><span>Les donjons validÃ©s, temps marquÃ©s et changements importants apparaÃ®tront ici.</span></div></div>`;
+    }
+
+    function renderProjection(snap){
+      const box=$("#projectionContent");
+      if(!box)return;
+      const data=snap.data;
+      box.innerHTML=`
+        <div class="line"><span>Progression</span><strong>${snap.pp} / 90 PP</strong></div>
+        <div class="line"><span>Prochaine PP Morose</span><strong>${formatRuns(snap.next.morose)}</strong></div>
+        <div class="line"><span>Prochaine PP Tynril</span><strong>${formatRuns(snap.next.tynril)}</strong></div>
+        <div class="line"><span>Morose restant</span><strong>${snap.left.morose} Â· ${snap.times.morose}</strong></div>
+        <div class="line"><span>Tynril restant</span><strong>${snap.left.tynril} Â· ${snap.times.tynril}</strong></div>
+        <div class="line"><span>Estimation chrono</span><strong>${data.settings.autoDungeonEstimate?(snap.chronoEstimate||"Indisponible"):"DÃ©sactivÃ©e"}</strong></div>
+      `;
+    }
+
+    function renderStatsMobile(snap){
+      const box=$("#statsContent");
+      if(!box)return;
+      const data=snap.data;
+      const totalRuns=(data.runs.morose||0)+(data.runs.tynril||0);
+      const sessionRuns=data.session.active ? ((data.session.runs?.morose||0)+(data.session.runs?.tynril||0)) : 0;
+      const marks=(data.chrono.marks||[]).length;
+      box.innerHTML=`
+        <div class="line"><span>Progression</span><strong>${snap.pp} / 90 PP</strong></div>
+        <div class="line"><span>Donjons suivis</span><strong>${totalRuns}</strong></div>
+        <div class="line"><span>Morose</span><strong>${data.runs.morose||0}</strong></div>
+        <div class="line"><span>Tynril</span><strong>${data.runs.tynril||0} / 48</strong></div>
+        <div class="line"><span>Session actuelle</span><strong>${sessionRuns} donjon${sessionRuns>1?"s":""}</strong></div>
+        <div class="line"><span>Temps enregistrÃ©s</span><strong>${marks}</strong></div>
+        <div class="line"><span>Temps moyen Morose</span><strong>${formatDuration(data.stats.avgMorose||0)}</strong></div>
+        <div class="line"><span>Temps moyen Tynril</span><strong>${formatDuration(data.stats.avgTynril||0)}</strong></div>
+      `;
+    }
+
+    function renderMonsters(snap){
+      const box=$("#monsterList");
+      if(!box)return;
+      if(mobileState.monsterEditing && box.children.length)return;
+      const entries=Object.entries(snap.mobs).map(([id,mob])=>({id,...mob,total:snap.totals[id]||0})).sort((a,b)=>b.total-a.total);
+      box.innerHTML=entries.map(mob=>`
+        <div class="monster-item" data-monster-row="${mob.id}">
+          <img src="./assets/images/${mob.img}" alt="">
+          <div><strong>${mob.name}</strong><span>${mob.total} tuÃ©s Â· besoin ${mob.ppNeed} pour 1 PP</span></div>
+          <div class="monster-edit">
+            <label>Morose<input type="number" min="0" data-mob="${mob.id}" data-area="morose" value="${snap.data.mobs.morose[mob.id]||0}"></label>
+            <label>Tynril<input type="number" min="0" data-mob="${mob.id}" data-area="tynril" value="${snap.data.mobs.tynril[mob.id]||0}"></label>
+            <label>Zone<input type="number" min="0" data-mob="${mob.id}" data-area="zone" value="${snap.data.mobs.zone[mob.id]||0}"></label>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function openSessionSummary(summary=data.session?.lastSummary){
+      const box=$("#sessionSummaryContent");
+      if(!box || !summary)return;
+      const morose=summary.runs?.morose||0;
+      const tynril=summary.runs?.tynril||0;
+      const total=morose+tynril;
+      box.innerHTML=`
+        <p class="meta">Votre session est terminÃ©e. Les chronos ont Ã©tÃ© remis Ã  zÃ©ro.</p>
+        <div class="session-summary-grid">
+          <div class="session-summary-card wide"><span>DurÃ©e totale</span><strong>${formatChrono(summary.elapsed||0)}</strong></div>
+          <div class="session-summary-card"><span>Morose</span><strong>${morose}</strong></div>
+          <div class="session-summary-card"><span>Tynril</span><strong>${tynril}</strong></div>
+          <div class="session-summary-card"><span>Donjons</span><strong>${total}</strong></div>
+          <div class="session-summary-card"><span>PP gagnÃ©e</span><strong>+${summary.pp||0}</strong></div>
+        </div>
+      `;
+      $("#sessionSummarySheet")?.classList.add("show");
+    }
+
+    function renderSplits(snap){
+      const box=$("#splitsList");
+      if(!box)return;
+      const marks=(snap.marks||[]).slice().reverse().slice(0,30);
+      box.innerHTML=marks.length ? marks.map(mark=>`
+        <div class="split-item">
+          <div class="split-main">
+            <strong>${farmLabel(mark.farm)}</strong>
+            <span>${mark.auto?"Auto chrono":"Temps manuel"}</span>
+          </div>
+          <strong class="split-time">${formatChrono(parseInt(mark.time,10)||0)}</strong>
+        </div>
+      `).join("") : `<div class="split-item"><div class="split-main"><strong>Aucun temps marquÃ©</strong><span>DÃ©marrez Session & Chrono, puis marquez le temps Ã  la fin d'un donjon.</span></div></div>`;
+    }
+
+    function renderProfiles(){
+      const box=$("#profileList");
+      if(!box)return;
+      const store=getStore();
+      const profiles=store?.profiles||{};
+      box.innerHTML=Object.entries(profiles).map(([id,profile])=>`
+        <div class="profile-row">
+          <div class="line"><span>${profile.name||"Profil"}</span><strong>${id===store.active?"Actif":""}</strong></div>
+          <div class="toolbar">
+            <button class="btn-blue" data-profile-switch="${id}" type="button">Choisir</button>
+            <button class="btn-orange" data-profile-rename="${id}" type="button">Renommer</button>
+            <button class="btn-red" data-profile-delete="${id}" type="button">Supprimer</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function switchView(name){
+      if(name==="history")unlockAchievement("open_history");
+      if(name==="options")unlockAchievement("open_options");
+      mobileState.view=name;
+      $$(".view").forEach(view=>view.classList.toggle("active",view.id===`view-${name}`));
+      $$("[data-view]").forEach(btn=>btn.classList.toggle("active",btn.dataset.view===name));
+      syncFromEngine();
+    }
+
+    function toggleSetting(key){
+      data.settings[key]=!data.settings[key];
+      unlockAchievement("edit_shortcuts");
+      saveMobileData();
+      syncFromEngine();
+    }
+
+    function parseAverageTime(value){
+      const text=String(value||"").trim();
+      if(!text)return null;
+      if(text.includes(":")){
+        const parts=text.split(":");
+        if(parts.length<2)return null;
+        const minutes=parseInt(parts[parts.length-2],10);
+        const seconds=parseInt(parts[parts.length-1],10);
+        if(Number.isNaN(minutes)||Number.isNaN(seconds)||minutes<0||seconds<0||seconds>59)return null;
+        return minutes*60+seconds;
+      }
+      const minutes=Number(text.replace(",","."));
+      if(!Number.isFinite(minutes)||minutes<0)return null;
+      return Math.round(minutes*60);
+    }
+
+    function formatAverageInput(seconds){
+      seconds=Math.max(0,Math.round(seconds||0));
+      const minutes=Math.floor(seconds/60);
+      const rest=seconds%60;
+      return `${minutes}:${String(rest).padStart(2,"0")}`;
+    }
+
+    async function setAverageTimeMobile(farm){
+      const key=farm==="morose"?"avgMorose":"avgTynril";
+      const label=farmLabel(farm);
+      const current=formatChrono(data.stats[key]||0).replace(/^00:/,"");
+      const value=await showPromptDialog({
+        title:`Temps moyen ${label}`,
+        message:"Format : minutes:secondes. Exemple : 2:30",
+        value:current,
+        okLabel:"Enregistrer"
+      });
+      if(value===null)return;
+      const seconds=parseAverageTime(value);
+      if(!seconds){
+        toast("Format invalide, exemple : 2:30","error");
+        return;
+      }
+      data.stats[key]=seconds;
+      addActivity(`Temps moyen ${label} rÃ©glÃ© : ${formatDuration(seconds)}`,"info");
+      saveMobileData();
+      syncFromEngine();
+      toast(`Temps ${label} enregistrÃ©`,"success");
+    }
+
+    function saveAverageTimesMobile(){
+      const morose=parseAverageTime($("#avgMoroseInput").value);
+      const tynril=parseAverageTime($("#avgTynrilInput").value);
+      if(!morose || !tynril){
+        toast("Format invalide, exemple : 2:30","error");
+        return;
+      }
+      data.stats.avgMorose=morose;
+      data.stats.avgTynril=tynril;
+      $("#avgMoroseInput").dataset.dirty="";
+      $("#avgTynrilInput").dataset.dirty="";
+      delete $("#avgMoroseInput").dataset.dirty;
+      delete $("#avgTynrilInput").dataset.dirty;
+      addActivity(`Temps moyens rÃ©glÃ©s : Morose ${formatDuration(morose)} Â· Tynril ${formatDuration(tynril)}`,"info");
+      saveMobileData();
+      syncFromEngine();
+      toast("Temps estimÃ©s enregistrÃ©s","success");
+    }
+
+    function saveAverageField(input,farm){
+      const seconds=parseAverageTime(input.value);
+      if(!seconds)return false;
+      data.stats[farm==="morose"?"avgMorose":"avgTynril"]=seconds;
+      delete input.dataset.dirty;
+      addActivity(`Temps moyen ${farmLabel(farm)} rÃ©glÃ© : ${formatDuration(seconds)}`,"info");
+      saveMobileData();
+      syncFromEngine();
+      return true;
+    }
+
+    function saveMonsterEdits(){
+      const oldPP=currentPP();
+      $$("#monsterList input[data-mob]").forEach(input=>{
+        const area=input.dataset.area;
+        const id=input.dataset.mob;
+        data.mobs[area][id]=Math.max(0,parseInt(input.value||"0",10)||0);
+      });
+      const newPP=currentPP();
+      mobileState.monsterEditing=false;
+      addActivity(`Monstres modifiÃ©s manuellement (${oldPP} â†’ ${newPP} PP)`,"warning");
+      saveMobileData();
+      syncFromEngine();
+      toast("Monstres sauvegardÃ©s","success");
+    }
+
+    function updateManualDraftFromInputs(){
+      mobileState.manualDraft.morose=$("#manualMoroseRuns").value;
+      mobileState.manualDraft.tynril=$("#manualTynrilRuns").value;
+    }
+
+    function openManualRunsEditor(){
+      mobileState.manualEditing=true;
+      mobileState.manualDraft={
+        morose:String(data.runs.morose||0),
+        tynril:String(data.runs.tynril||0)
+      };
+      $("#manualMoroseRuns").value=mobileState.manualDraft.morose;
+      $("#manualTynrilRuns").value=mobileState.manualDraft.tynril;
+      $("#manualRunsSheet").classList.add("show");
+    }
+
+    function closeManualRunsEditor(){
+      mobileState.manualEditing=false;
+    }
+
+    function stepManualRun(farm,step){
+      mobileState.manualEditing=true;
+      const input=farm==="morose"?$("#manualMoroseRuns"):$("#manualTynrilRuns");
+      const max=RUN_LIMITS[farm];
+      const current=parseInt(input.value,10);
+      const next=Math.min(max,Math.max(0,(Number.isNaN(current)?0:current)+step));
+      input.value=String(next);
+      updateManualDraftFromInputs();
+    }
+
+    async function applyManualRuns(){
+      updateManualDraftFromInputs();
+      const moroseRaw=mobileState.manualDraft.morose;
+      const tynrilRaw=mobileState.manualDraft.tynril;
+      const morose=parseInt(moroseRaw,10);
+      const tynril=parseInt(tynrilRaw,10);
+      if(Number.isNaN(morose)||Number.isNaN(tynril)||morose<0||tynril<0){
+        toast("Valeurs invalides","error");
+        return;
+      }
+      const nextMorose=Math.min(RUN_LIMITS.morose,morose);
+      const nextTynril=Math.min(RUN_LIMITS.tynril,tynril);
+      const delta=Math.abs(nextMorose-(data.runs.morose||0))+Math.abs(nextTynril-(data.runs.tynril||0));
+      if(delta>=20){
+        const ok=await showConfirmDialog({
+          title:"Modifier les donjons",
+          message:`Appliquer ${nextMorose} Morose et ${nextTynril} Tynril au profil actif ? Les monstres, PP et projections seront recalculÃ©s.`,
+          okLabel:"Appliquer",
+          danger:false
+        });
+        if(!ok)return;
+      }
+      const oldPP=currentPP();
+      setRunsSynced("morose",nextMorose);
+      setRunsSynced("tynril",nextTynril);
+      const newPP=currentPP();
+      addDailyRun(data.ui.farm||"morose",0,newPP-oldPP);
+      addActivity(`Donjons modifiÃ©s manuellement : Morose ${nextMorose}, Tynril ${nextTynril}`,"warning");
+      unlockAchievement("manual_adjustments");
+      saveMobileData();
+      mobileState.manualEditing=false;
+      syncFromEngine();
+      $("#manualRunsSheet").classList.remove("show");
+      toast("Donjons mis Ã  jour","success");
+    }
+
+    function setFarm(farm){
+      data.ui.farm=farm;
+      saveMobileData();
+      syncFromEngine();
+    }
+
+    function exportMobileSave(){
+      saveMobileData();
+      const payload={version:2,exportedAt:new Date().toISOString(),app:"pykur-tracker",store};
+      const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url;
+      a.download="pykur-sauvegarde.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),250);
+      addActivity("Sauvegarde exportÃ©e","system");
+      saveMobileData();
+      toast("Sauvegarde exportÃ©e","success");
+    }
+
+    async function importMobileSave(file){
+      if(!file)return;
+      const text=await file.text();
+      try{
+        const imported=JSON.parse(text);
+        const importedStore=imported.store || imported;
+        if(!importedStore?.profiles || !importedStore?.active)throw new Error("Format invalide");
+        const ok=await showConfirmDialog({
+          title:"Importer la sauvegarde",
+          message:`Importer cette sauvegarde (${Object.keys(importedStore.profiles).length} profil(s)) ? Les donnÃ©es locales seront remplacÃ©es.`,
+          okLabel:"Importer",
+          danger:false
+        });
+        if(!ok)return;
+        localStorage.setItem(STORE_KEY,JSON.stringify(importedStore));
+        loadMobileData();
+        achievementNotificationMuted=true;
+        syncFromEngine();
+        achievementNotificationMuted=false;
+        toast("Sauvegarde importÃ©e","success");
+      }catch(error){
+        toast("Sauvegarde invalide","error");
+      }
+    }
+
+    async function createProfileMobile(){
+      const name=await showPromptDialog({
+        title:"Nouveau profil",
+        message:"Choisissez le nom du nouveau profil Pykur.",
+        value:"Nouveau Pykur",
+        okLabel:"CrÃ©er"
+      });
+      if(!name)return;
+      const store=getStore();
+      const id=`p_${Date.now()}`;
+      const base=defaultData();
+      store.profiles[id]={name:name.trim(),data:base};
+      store.active=id;
+      localStorage.setItem(STORE_KEY,JSON.stringify(store));
+      loadMobileData();
+      syncFromEngine();
+      toast("Profil crÃ©Ã©","success");
+    }
+
+    async function renameProfileMobile(id){
+      const store=getStore();
+      const current=store?.profiles?.[id];
+      if(!current)return;
+      const name=await showPromptDialog({
+        title:"Renommer le profil",
+        message:"Nouveau nom du profil.",
+        value:current.name||"Profil",
+        okLabel:"Renommer"
+      });
+      if(!name)return;
+      current.name=name.trim();
+      localStorage.setItem(STORE_KEY,JSON.stringify(store));
+      loadMobileData();
+      syncFromEngine();
+      toast("Profil renommÃ©","success");
+    }
+
+    async function deleteProfileMobile(id){
+      const store=getStore();
+      if(!store?.profiles?.[id])return;
+      if(Object.keys(store.profiles).length<=1){toast("Impossible de supprimer le dernier profil","warning");return}
+      const ok=await showConfirmDialog({
+        title:"Supprimer le profil",
+        message:"Supprimer ce profil ? Cette action ne touche pas les autres profils.",
+        okLabel:"Supprimer",
+        danger:true
+      });
+      if(!ok)return;
+      delete store.profiles[id];
+      if(store.active===id)store.active=Object.keys(store.profiles)[0];
+      localStorage.setItem(STORE_KEY,JSON.stringify(store));
+      loadMobileData();
+      syncFromEngine();
+      toast("Profil supprimÃ©","warning");
+    }
+
+    function switchProfileMobile(id){
+      const store=getStore();
+      if(!store?.profiles?.[id])return;
+      store.active=id;
+      localStorage.setItem(STORE_KEY,JSON.stringify(store));
+      loadMobileData();
+      syncFromEngine();
+      toast("Profil changÃ©","success");
+    }
+
+    function handleSecretKeys(event){
+      if(event.target.closest("input,textarea,select,[contenteditable='true'],[contenteditable='']"))return;
+      if(event.key.length!==1)return;
+      mobileState.secret=(mobileState.secret+event.key.toLowerCase()).slice(-16);
+      if(mobileState.secret.endsWith("adminoeuf")){
+        mobileState.secret="";
+        toast("Les commandes d'easter egg sont desactivees sur mobile.","warning");
+        return;
+      }
+      if(mobileState.secret.endsWith("ester eggs")){
+        mobileState.secret="";
+        toast("Une coquille murmure : cherche l'Å“uf cachÃ©.","info");
+        return;
+      }
+      if(mobileState.secret.endsWith("pc")){
+        mobileState.secret="";
+        goToVersion("desktop");
+        return;
+      }
+      if(mobileState.secret.endsWith("tel")){
+        mobileState.secret="";
+        goToVersion("mobile");
+        return;
+      }
+      ["alhass","toom","aina","capy","charlie","raj","brako","dimeh"].forEach(word=>{
+        if(mobileState.secret.endsWith(word)){
+          mobileState.secret="";
+          toast("Easter egg disponible uniquement sur PC.","warning");
+        }
+      });
+    }
+
+    function buildVersionUrl(file,view){
+      const url=new URL(file,location.href);
+      const params=new URLSearchParams(location.search);
+      params.forEach((value,key)=>{if(key!=="view")url.searchParams.set(key,value)});
+      url.searchParams.set("view",view);
+      return url.href;
+    }
+
+    function goToVersion(view){
+      location.href=view==="mobile"?buildVersionUrl("./mobile.html","mobile"):buildVersionUrl("./index.html","desktop");
+    }
+
+    function toggleEgg(word){
+      toast("Easter egg disponible uniquement sur PC.","warning");
+      return;
+      mobileState.eggs[word]=!mobileState.eggs[word];
+      const eggAchievement={charlie:"egg_charlie",toom:"egg_toom",aina:"egg_aina",alhass:"egg_alhass",capy:"egg_capy"}[word];
+      if(mobileState.eggs[word] && eggAchievement)unlockAchievement(eggAchievement);
+      if(word==="alhass")$("#alhassEgg")?.classList.toggle("show",mobileState.eggs[word]);
+      if(word==="toom")$("#toomEgg")?.classList.toggle("show",mobileState.eggs[word]);
+      if(word==="aina")$("#ainaEgg")?.classList.toggle("show",mobileState.eggs[word]);
+      if(word==="capy")toast(mobileState.eggs[word]?"Capy passe en inspection mobile.":"Capy repart.",mobileState.eggs[word]?"success":"warning");
+      if(word==="charlie")toast(mobileState.eggs[word]?"Charlie surveille le tactile.":"Charlie rend le curseur.",mobileState.eggs[word]?"success":"warning");
+      if(word==="alhass")toast(mobileState.eggs[word]?"Alhass observe la version mobile.":"Alhass disparaÃ®t.","warning");
+      if(word==="toom")toast(mobileState.eggs[word]?"Toom rÃ©cupÃ¨re une NRG mobile.":"Nipsey rÃ©cupÃ¨re la NRG.","warning");
+      if(word==="aina")toast(mobileState.eggs[word]?"Aina brandit le Dofus Ivoire.":"Le Dofus disparaÃ®t.","success");
+    }
+
+    engine.addEventListener("load",()=>syncFromEngine());
+
+    window.addEventListener("storage",event=>{
+      if(event.key!==STORE_KEY && event.key!=="pykur_global_muted")return;
+      mobileState.ready=false;
+      loadMobileData();
+      mobileState.ready=true;
+      syncFromEngine();
+    });
+
+    document.addEventListener("keydown",event=>{
+      if($("#confirmDialog").classList.contains("show")){
+        if(event.key==="Enter"){
+          event.preventDefault();
+          closeConfirmDialog(true);
+          return;
+        }
+        if(event.key==="Escape"){
+          event.preventDefault();
+          closeConfirmDialog(false);
+          return;
+        }
+      }
+      handleSecretKeys(event);
+    });
+    document.addEventListener("click",event=>{
+      const viewBtn=event.target.closest("[data-view]");
+      if(viewBtn)switchView(viewBtn.dataset.view);
+      const farmBtn=event.target.closest("[data-farm]");
+      if(farmBtn)setFarm(farmBtn.dataset.farm);
+      const openBtn=event.target.closest("[data-open]");
+      if(openBtn){
+        syncFromEngine();
+        if(openBtn.dataset.open==="projectionSheet")unlockAchievement("open_projection");
+        if(openBtn.dataset.open==="statsSheet")unlockAchievement("open_stats");
+        if(openBtn.dataset.open==="monstersSheet")unlockAchievement("open_monsters");
+        if(openBtn.dataset.open==="manualRunsSheet"){
+          openManualRunsEditor();
+          return;
+        }
+        if(openBtn.dataset.open==="monstersSheet"){
+          mobileState.monsterEditing=true;
+        }
+        $("#"+openBtn.dataset.open)?.classList.add("show");
+      }
+      if(event.target.closest("[data-close]") || (event.target.classList.contains("modal-bg") && event.target.id!=="confirmDialog")){
+        const modal=event.target.closest(".modal-bg");
+        if(modal?.id==="manualRunsSheet")closeManualRunsEditor();
+        if(modal?.id==="monstersSheet"){
+          mobileState.monsterEditing=false;
+          syncFromEngine();
+        }
+        modal?.classList.remove("show");
+      }
+      const historyBtn=event.target.closest("[data-history-filter]");
+      if(historyBtn){
+        historyFilter=historyBtn.dataset.historyFilter;
+        $$("[data-history-filter]").forEach(btn=>btn.classList.toggle("active",btn===historyBtn));
+        renderHistory(data.activity||[]);
+      }
+      const achievementCat=event.target.closest("[data-achievement-category]");
+      if(achievementCat){
+        activeAchievementCategory=achievementCat.dataset.achievementCategory;
+        renderAchievementsMobile();
+      }
+      if(event.target.closest("#mobileUnlockSecretAchievements")){
+        tickSecretGateMobile();
+      }
+      if(event.target.closest("#mobileResetAchievements")){
+        resetAchievementsMobile();
+      }
+      const manualStep=event.target.closest("[data-manual-step]");
+      if(manualStep){
+        stepManualRun(manualStep.dataset.manualStep,parseInt(manualStep.dataset.step,10)||0);
+      }
+      const monsterStep=event.target.closest("[data-monster-step]");
+      if(monsterStep){
+        mobileState.monsterEditing=true;
+        const input=monsterStep.closest(".monster-edit")?.querySelector(`input[data-area="${monsterStep.dataset.area}"]`);
+        if(input)input.value=Math.max(0,(parseInt(input.value,10)||0)+parseInt(monsterStep.dataset.monsterStep,10));
+      }
+      const switchBtn=event.target.closest("[data-profile-switch]");
+      if(switchBtn)switchProfileMobile(switchBtn.dataset.profileSwitch);
+      const renameBtn=event.target.closest("[data-profile-rename]");
+      if(renameBtn)renameProfileMobile(renameBtn.dataset.profileRename);
+      const deleteBtn=event.target.closest("[data-profile-delete]");
+      if(deleteBtn)deleteProfileMobile(deleteBtn.dataset.profileDelete);
+    });
+
+    document.addEventListener("input",event=>{
+      if(event.target.closest("#monsterList") && event.target.matches("input[data-mob]")){
+        mobileState.monsterEditing=true;
+      }
+    });
+
+    $("#addRunBtn").onclick=()=>addRun(1);
+    $("#fabRun").onclick=()=>addRun(1);
+    $("#removeRunBtn").onclick=()=>addRun(-1);
+    $("#chronoToggleBtn").onclick=()=>data.chrono.running?pauseChrono():startChrono();
+    $("#chronoResetBtn").onclick=resetChrono;
+    $("#markTimeBtn").onclick=()=>markTime(false);
+    if($("#resetSplitsBtn"))$("#resetSplitsBtn").onclick=resetSplits;
+    if($("#sessionStartBtn"))$("#sessionStartBtn").onclick=startSession;
+    if($("#sessionEndBtn"))$("#sessionEndBtn").onclick=endSession;
+    if($("#sessionResetBtn"))$("#sessionResetBtn").onclick=resetSession;
+    $("#soundBtn").onclick=()=>{
+      setGlobalSound(!data.settings.sound);
+      if(data.settings.sound)playSound("click");
+    };
+    $("#nightBtn").onclick=()=>toggleSetting("night");
+    $("#notifBtn").onclick=()=>toggleSetting("notifications");
+    $("#shortcutBtn").onclick=()=>{toggleSetting("shortcutsEnabled");unlockAchievement("edit_shortcuts")};
+    $("#autoEstimateBtn").onclick=()=>toggleSetting("autoDungeonEstimate");
+    $("#saveAverageTimes").onclick=saveAverageTimesMobile;
+    $("#avgMoroseInput").addEventListener("input",()=>$("#avgMoroseInput").dataset.dirty="1");
+    $("#avgTynrilInput").addEventListener("input",()=>$("#avgTynrilInput").dataset.dirty="1");
+    $("#avgMoroseInput").addEventListener("change",()=>saveAverageField($("#avgMoroseInput"),"morose"));
+    $("#avgTynrilInput").addEventListener("change",()=>saveAverageField($("#avgTynrilInput"),"tynril"));
+    $("#avgMoroseInput").addEventListener("blur",()=>saveAverageField($("#avgMoroseInput"),"morose"));
+    $("#avgTynrilInput").addEventListener("blur",()=>saveAverageField($("#avgTynrilInput"),"tynril"));
+    $("#manualMoroseRuns").addEventListener("input",()=>{mobileState.manualEditing=true;updateManualDraftFromInputs()});
+    $("#manualTynrilRuns").addEventListener("input",()=>{mobileState.manualEditing=true;updateManualDraftFromInputs()});
+    $("#saveMonsterEdits").onclick=saveMonsterEdits;
+    $("#applyManualRuns").onclick=applyManualRuns;
+    $("#resetActivePykur").onclick=resetActivePykur;
+    if($("#mobileHiddenSecretEgg"))$("#mobileHiddenSecretEgg").onclick=collectHiddenSecretEggMobile;
+    $("#confirmOk").onclick=()=>closeConfirmDialog(true);
+    $("#confirmCancel").onclick=()=>closeConfirmDialog(false);
+    $("#exportBtn").onclick=exportMobileSave;
+    $("#importBtn").onclick=()=>$("#importInput").click();
+    $("#importInput").onchange=event=>importMobileSave(event.target.files[0]);
+    $("#createProfileBtn").onclick=createProfileMobile;
+    document.addEventListener("pointerdown",unlockAudio,{once:true,passive:true});
+
+    loadMobileData();
+    mobileState.ready=true;
+    achievementNotificationMuted=true;
+    syncFromEngine();
+    achievementNotificationMuted=false;
+    setInterval(syncFromEngine,1000);
+  </script>
+</body>
+</html>
+

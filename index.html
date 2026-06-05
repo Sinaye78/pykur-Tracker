@@ -1,0 +1,302 @@
+﻿<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Familier Tracker Hub</title>
+<link rel="icon" type="image/png" href="./familiers/pykur/assets/images/logo.png">
+<style>
+:root{
+  --bg:#1f140c;
+  --surface:rgba(246,232,204,.94);
+  --surface-soft:rgba(255,252,242,.76);
+  --text:#2b1609;
+  --muted:#6b4f2a;
+  --line:rgba(119,79,28,.34);
+  --blue:#2563eb;
+  --orange:#c76a14;
+  --green:#16803a;
+  --shadow:0 24px 70px rgba(0,0,0,.34);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--text);
+  font-family:Arial,Helvetica,sans-serif;
+  background:
+    linear-gradient(rgba(0,0,0,.72),rgba(0,0,0,.78)),
+    url("./familiers/pykur/assets/images/fond.png") center/cover fixed no-repeat;
+}
+.hub{
+  width:min(1120px,94vw);
+  margin:32px auto;
+  padding:22px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:var(--surface);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(10px);
+}
+.hero{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:22px;
+  align-items:center;
+  padding:22px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 90% 15%,rgba(250,204,21,.22),transparent 28%),
+    linear-gradient(135deg,rgba(255,252,242,.92),rgba(242,223,184,.68));
+}
+.hero h1{
+  margin:0;
+  font-size:clamp(32px,5vw,56px);
+  line-height:1;
+}
+.hero p{
+  max-width:660px;
+  margin:12px 0 0;
+  color:var(--muted);
+  font-weight:800;
+  line-height:1.5;
+}
+.hero-logo{
+  width:112px;
+  height:112px;
+  object-fit:contain;
+  filter:drop-shadow(0 12px 18px rgba(56,28,10,.24));
+}
+.section-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:end;
+  gap:12px;
+  margin:24px 2px 12px;
+}
+.section-title h2{
+  margin:0;
+  font-size:24px;
+}
+.section-title span{
+  color:var(--muted);
+  font-size:13px;
+  font-weight:850;
+}
+.pet-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:14px;
+}
+.pet-card{
+  position:relative;
+  min-height:260px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  overflow:hidden;
+  padding:18px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:var(--surface-soft);
+}
+.pet-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(110deg,transparent 0 36%,rgba(255,255,255,.35) 48%,transparent 60%);
+  opacity:.4;
+}
+.pet-card>*{position:relative;z-index:1}
+.pet-main{
+  display:grid;
+  grid-template-columns:96px minmax(0,1fr);
+  gap:14px;
+  align-items:center;
+}
+.pet-main img{
+  width:96px;
+  height:96px;
+  object-fit:contain;
+  filter:drop-shadow(0 10px 14px rgba(56,28,10,.22));
+}
+.pet-card h3{
+  margin:0;
+  font-size:24px;
+}
+.pet-card p{
+  margin:8px 0 0;
+  color:var(--muted);
+  font-weight:800;
+  line-height:1.45;
+}
+.badge-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:14px;
+}
+.badge{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:0 10px;
+  border-radius:999px;
+  color:#3b2408;
+  background:linear-gradient(#fff3b0,#facc15);
+  border:1px solid rgba(180,120,24,.34);
+  font-size:12px;
+  font-weight:950;
+}
+.badge.soon{
+  color:#1d4ed8;
+  background:linear-gradient(180deg,rgba(219,234,254,.82),rgba(255,255,255,.42));
+  border-color:rgba(37,99,235,.24);
+}
+.actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:18px;
+}
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
+  padding:0 14px;
+  border:1px solid transparent;
+  border-radius:10px;
+  color:#fff;
+  font-weight:900;
+  text-decoration:none;
+  transition:transform .15s ease,filter .15s ease;
+}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.04)}
+.btn.primary{background:var(--green)}
+.btn.secondary{background:var(--blue)}
+.btn.disabled{
+  cursor:not-allowed;
+  color:#f8fafc;
+  background:#667085;
+  opacity:.78;
+}
+.roadmap{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+}
+.roadmap-card{
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:rgba(255,252,242,.66);
+}
+.roadmap-card strong{
+  display:block;
+  margin-bottom:5px;
+  font-size:15px;
+}
+.roadmap-card span{
+  color:var(--muted);
+  font-size:13px;
+  font-weight:800;
+  line-height:1.4;
+}
+.footer{
+  margin-top:22px;
+  color:rgba(255,252,242,.82);
+  text-align:center;
+  font-size:12px;
+  font-weight:800;
+}
+@media(max-width:720px){
+  .hub{width:100%;min-height:100vh;margin:0;border-radius:0;border:none}
+  .hero{grid-template-columns:1fr;text-align:center}
+  .hero-logo{margin:auto}
+  .section-title{align-items:start;flex-direction:column}
+  .actions{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<main class="hub">
+  <section class="hero">
+    <div>
+      <h1>Familier Tracker Hub</h1>
+      <p>Choisissez le familier que vous souhaitez suivre. Le Pykur reste disponible dans sa version complÃ¨te, pendant que la structure du tracker se prÃ©pare pour les futures pages et la version 1.5.</p>
+    </div>
+    <img class="hero-logo" src="./familiers/pykur/assets/images/logo.png" alt="Pykur Tracker">
+  </section>
+
+  <div class="section-title">
+    <div>
+      <h2>Familiers disponibles</h2>
+      <span>Le hub deviendra la porte d'entrÃ©e commune de tous les trackers.</span>
+    </div>
+    <span>Version actuelle : 1.4</span>
+  </div>
+
+  <section class="pet-grid">
+    <article class="pet-card">
+      <div>
+        <div class="pet-main">
+          <img src="./familiers/pykur/assets/images/pykur.png" alt="Pykur">
+          <div>
+            <h3>Pykur</h3>
+            <p>Suivi complet de progression, donjons, PP, chrono, galerie, succÃ¨s, Ã©vÃ©nements et dÃ©tection Dofus.</p>
+          </div>
+        </div>
+        <div class="badge-row">
+          <span class="badge">Disponible</span>
+          <span class="badge">Tracker complet</span>
+          <span class="badge">Version 1.4</span>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="btn primary" href="./familiers/pykur/index.html?view=desktop">Ouvrir Pykur</a>
+        <a class="btn secondary" href="./familiers/pykur/mobile.html?view=mobile">Version mobile</a>
+      </div>
+    </article>
+
+    <article class="pet-card">
+      <div>
+        <div class="pet-main">
+          <img src="./familiers/pykur/assets/images/aurapykur.png" alt="">
+          <div>
+            <h3>Prochain familier</h3>
+            <p>Emplacement prÃ©vu pour les futurs trackers de familiers. La base est prÃªte pour ajouter de nouvelles pages sans casser le Pykur.</p>
+          </div>
+        </div>
+        <div class="badge-row">
+          <span class="badge soon">Ã€ venir</span>
+          <span class="badge soon">Structure prÃªte</span>
+        </div>
+      </div>
+      <div class="actions">
+        <span class="btn disabled">BientÃ´t</span>
+        <span class="btn disabled">Non disponible</span>
+      </div>
+    </article>
+  </section>
+
+  <div class="section-title">
+    <div>
+      <h2>PrÃ©paration 1.5</h2>
+      <span>La prochaine Ã©tape vise Ã  transformer le tracker en plateforme connectÃ©e.</span>
+    </div>
+  </div>
+  <section class="roadmap">
+    <div class="roadmap-card"><strong>VPS & domaine</strong><span>Passage vers un hÃ©bergement officiel avec un vrai nom de domaine.</span></div>
+    <div class="roadmap-card"><strong>Comptes utilisateurs</strong><span>Connexion, profils en ligne et rÃ©cupÃ©ration de progression.</span></div>
+    <div class="roadmap-card"><strong>Sauvegarde cloud</strong><span>Base de donnÃ©es pour synchroniser les donnÃ©es tout en gardant l'import/export.</span></div>
+    <div class="roadmap-card"><strong>CommunautÃ©</strong><span>Profils publics, partage de succÃ¨s, galerie, messages privÃ©s et chatbox.</span></div>
+  </section>
+</main>
+<div class="footer">Pykur Tracker - Hub de prÃ©paration multi-familiers</div>
+</body>
+</html>
+
