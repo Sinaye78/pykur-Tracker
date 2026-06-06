@@ -10464,6 +10464,26 @@ function cloudPayload(){
   };
 }
 
+function applyCloudPayload(payload){
+  if(!payload?.store || typeof payload.store!=="object")return false;
+  cloudState.loading=true;
+  try{
+    store=clone(payload.store);
+    localStorage.setItem("pykur_clean_v1",JSON.stringify(store));
+    load();
+    cloudState.lastSyncAt=payload.savedAt ? new Date(payload.savedAt) : new Date();
+    markSaveStatus(true);
+    return true;
+  }catch(error){
+    console.error("Chargement cloud impossible",error);
+    toast("Sauvegarde cloud invalide.","error","error");
+    return false;
+  }finally{
+    cloudState.loading=false;
+    renderCloudStatus();
+  }
+}
+
 function cloudStatusText(){
   if(!authState.user)return "Sauvegarde locale active";
   if(cloudState.error)return "Erreur de sauvegarde cloud";
@@ -10538,8 +10558,26 @@ async function cloudSyncNow(options={}){
 
 async function cloudAfterLogin(options={}){
   if(!authState.user)return;
-  await cloudSyncNow({silent:true});
-  if(!options.silent)toast("Sauvegarde cloud automatique activée.","success","success");
+  cloudState.loading=true;
+  renderCloudStatus();
+  try{
+    const result=await authFetch("/cloud/save");
+    const remotePayload=result?.payload;
+    if(remotePayload?.store){
+      cloudState.loading=false;
+      const applied=applyCloudPayload(remotePayload);
+      if(applied && !options.silent)toast("Sauvegarde cloud récupérée.","success","success");
+      return;
+    }
+    cloudState.loading=false;
+    await cloudSyncNow({silent:true});
+    if(!options.silent)toast("Sauvegarde cloud automatique activée.","success","success");
+  }catch(error){
+    cloudState.loading=false;
+    cloudState.error=error.message||"Erreur cloud";
+    renderCloudStatus();
+    if(!options.silent)toast("Impossible de récupérer la sauvegarde cloud.","error","error");
+  }
 }
 const RAJ_ASSETS={
   cra:"./assets/images/raj/cra.png",
