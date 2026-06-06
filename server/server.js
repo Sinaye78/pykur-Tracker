@@ -605,6 +605,29 @@ app.get("/api/cloud/save", requireAuth, (req, res) => {
   res.json({ payload: row ? JSON.parse(row.payload) : null, updatedAt: row?.updated_at || null });
 });
 
+app.get("/api/community/users", (req, res) => {
+  const query = cleanPseudo(req.query.q || "");
+  if (query.length < 2) return res.json({ users: [] });
+  const rows = db.prepare(`
+    SELECT pseudo, role, preferences, created_at
+    FROM users
+    WHERE email_verified_at IS NOT NULL
+      AND is_banned = 0
+      AND lower(pseudo) LIKE lower(?)
+    ORDER BY pseudo COLLATE NOCASE ASC
+    LIMIT 30
+  `).all(`%${query}%`);
+  const users = rows
+    .filter((user) => parsePreferences(user.preferences).publicProfile)
+    .slice(0, 12)
+    .map((user) => ({
+      pseudo: user.pseudo,
+      role: user.role,
+      createdAt: user.created_at
+    }));
+  res.json({ users });
+});
+
 app.get("/api/community/users/:pseudo", (req, res) => {
   const pseudo = cleanPseudo(req.params.pseudo);
   const user = db.prepare("SELECT * FROM users WHERE lower(pseudo) = lower(?)").get(pseudo);

@@ -3771,6 +3771,7 @@ body.no-anim .app.milestone-flash{
 #authModal.modal-bg,
 #passwordResetModal.modal-bg,
 #accountProfileModal.modal-bg,
+#communityDirectoryModal.modal-bg,
 #communityProfileModal.modal-bg{
   background:rgba(15,18,24,.72);
   backdrop-filter:blur(10px) saturate(.86);
@@ -3779,6 +3780,7 @@ body.no-anim .app.milestone-flash{
 #authModal .modal,
 #passwordResetModal .modal,
 #accountProfileModal .modal,
+#communityDirectoryModal .modal,
 #communityProfileModal .modal{
   width:min(560px,calc(100vw - 28px));
   border:1px solid rgba(198,148,68,.42);
@@ -3794,6 +3796,7 @@ body.no-anim .app.milestone-flash{
 #authModal .modal-head,
 #passwordResetModal .modal-head,
 #accountProfileModal .modal-head,
+#communityDirectoryModal .modal-head,
 #communityProfileModal .modal-head{
   min-height:62px;
   padding:14px 18px;
@@ -3805,6 +3808,7 @@ body.no-anim .app.milestone-flash{
 #authModal .modal-head h2,
 #passwordResetModal .modal-head h2,
 #accountProfileModal .modal-head h2,
+#communityDirectoryModal .modal-head h2,
 #communityProfileModal .modal-head h2{
   font-size:22px;
   letter-spacing:.05px;
@@ -3814,6 +3818,7 @@ body.no-anim .app.milestone-flash{
 #authModal .modal-head p,
 #passwordResetModal .modal-head p,
 #accountProfileModal .modal-head p,
+#communityDirectoryModal .modal-head p,
 #communityProfileModal .modal-head p{
   max-width:620px;
   color:rgba(255,244,214,.82);
@@ -3824,6 +3829,7 @@ body.no-anim .app.milestone-flash{
 #authModal .modal-body,
 #passwordResetModal .modal-body,
 #accountProfileModal .modal-body,
+#communityDirectoryModal .modal-body,
 #communityProfileModal .modal-body{
   padding:18px;
   background:
@@ -3834,6 +3840,7 @@ body.no-anim .app.milestone-flash{
 #authModal .modal-foot,
 #passwordResetModal .modal-foot,
 #accountProfileModal .modal-foot,
+#communityDirectoryModal .modal-foot,
 #communityProfileModal .modal-foot{
   min-height:0;
   padding:0 18px 18px;
@@ -4078,6 +4085,67 @@ body.no-anim .app.milestone-flash{
   font-weight:800!important;
 }
 
+.community-search-form{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:end;
+  margin-bottom:14px;
+}
+
+.community-search-form label{
+  display:grid;
+  gap:6px;
+  color:#5a3b1a;
+  font-weight:900;
+  font-size:13px;
+}
+
+.community-search-form input{
+  min-height:42px;
+  padding:0 13px;
+  border-radius:12px;
+  border:1px solid rgba(120,80,36,.30);
+  background:rgba(255,255,255,.78);
+  color:#2f1d10;
+  font-weight:850;
+  outline:none;
+}
+
+.community-search-form input:focus{
+  border-color:rgba(37,99,235,.58);
+  box-shadow:0 0 0 3px rgba(37,99,235,.14);
+}
+
+.community-search-results{
+  display:grid;
+  gap:9px;
+}
+
+.community-search-result{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px;
+  border:1px solid rgba(140,100,48,.22);
+  border-radius:13px;
+  background:rgba(255,255,255,.62);
+}
+
+.community-search-result strong{
+  display:block;
+  color:#2f1d10;
+  font-size:15px;
+}
+
+.community-search-result small{
+  display:block;
+  margin-top:2px;
+  color:#73522d;
+  font-weight:850;
+}
+
 .community-profile-view{
   display:grid;
   gap:14px;
@@ -4112,6 +4180,14 @@ body.no-anim .app.milestone-flash{
   color:#3b2408;
   font-weight:950;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+}
+
+.community-profile-hero-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  margin-top:10px;
 }
 
 .community-profile-grid{
@@ -4221,6 +4297,13 @@ body.no-anim .app.milestone-flash{
   }
   #accountProfileModal .account-panel{
     padding:14px;
+  }
+  .community-search-form{
+    grid-template-columns:1fr;
+  }
+  .community-search-result{
+    align-items:stretch;
+    flex-direction:column;
   }
 }
 
@@ -9731,6 +9814,8 @@ body.no-anim .pykur-sparkle{
           <div class="account-meta" id="accountProfileMeta"></div>
           <div class="community-profile-actions">
             <button class="btn btn-blue" id="previewCommunityProfile" type="button">Voir mon profil public</button>
+            <button class="btn btn-gray" id="openCommunitySearch" type="button">Rechercher un membre</button>
+            <button class="btn btn-orange" id="copyMyCommunityLink" type="button">Copier mon lien public</button>
           </div>
         </section>
         <section class="account-panel">
@@ -9755,6 +9840,32 @@ body.no-anim .pykur-sparkle{
         </section>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- RECHERCHE COMMUNAUTAIRE -->
+<div class="modal-bg" id="communityDirectoryModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2>Recherche de membres</h2>
+        <p>Trouvez un profil public et consultez les informations partagées par l'utilisateur.</p>
+      </div>
+      <button class="btn btn-red modal-close" data-close="communityDirectoryModal">X</button>
+    </div>
+    <div class="modal-body">
+      <form class="community-search-form" id="communitySearchForm">
+        <label>
+          Pseudo
+          <input id="communitySearchInput" autocomplete="off" placeholder="Rechercher un pseudo public">
+        </label>
+        <button class="btn btn-blue" type="submit">Rechercher</button>
+      </form>
+      <div class="community-search-results" id="communitySearchResults">
+        <div class="community-profile-empty">Saisissez au moins 2 caractères pour rechercher un membre.</div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-gray" data-close="communityDirectoryModal">Fermer</button></div>
   </div>
 </div>
 
@@ -10438,8 +10549,9 @@ function authRender(){
   }
   const user=authState.user;
   const adminButton=user.role==="admin" ? '<button class="btn btn-orange" id="authAdminPanel" type="button">Admin panel</button>' : "";
-  box.innerHTML='<button class="auth-user-chip account-open" id="accountProfileOpen" type="button" title="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button>'+adminButton+'<button class="btn btn-gray" id="authLogout" type="button">Déconnexion</button>';
+  box.innerHTML='<button class="auth-user-chip account-open" id="accountProfileOpen" type="button" title="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-blue" id="authCommunitySearch" type="button">Membres</button>'+adminButton+'<button class="btn btn-gray" id="authLogout" type="button">Déconnexion</button>';
   if($("#accountProfileOpen"))$("#accountProfileOpen").onclick=openAccountProfile;
+  if($("#authCommunitySearch"))$("#authCommunitySearch").onclick=openCommunityDirectory;
   if($("#authLogout"))$("#authLogout").onclick=authLogout;
   if($("#authAdminPanel"))$("#authAdminPanel").onclick=()=>livingOpenAdmin();
   renderCloudStatus();
@@ -10572,6 +10684,30 @@ function communityAchievementEntries(profile){
     .sort((a,b)=>new Date(b.item.date||0)-new Date(a.item.date||0));
 }
 
+function communityProfileUrl(pseudo){
+  const url=new URL(location.href);
+  url.search="";
+  url.hash="";
+  url.searchParams.set("user",pseudo||"");
+  return url.toString();
+}
+
+async function copyTextToClipboard(text){
+  if(navigator.clipboard?.writeText){
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const input=document.createElement("textarea");
+  input.value=text;
+  input.setAttribute("readonly","");
+  input.style.position="fixed";
+  input.style.left="-9999px";
+  document.body.appendChild(input);
+  input.select();
+  document.execCommand("copy");
+  input.remove();
+}
+
 function renderCommunityProfile(profile){
   const box=$("#communityProfileContent");
   if(!box)return;
@@ -10583,6 +10719,10 @@ function renderCommunityProfile(profile){
       <div>
         <h3>${escapeHtml(profile?.pseudo||"Profil")}</h3>
         <p>Compte créé le ${profile?.createdAt?formatDateShort(profile.createdAt):"date inconnue"}</p>
+        <div class="community-profile-hero-actions">
+          <button class="btn btn-blue" type="button" data-community-copy-link="${escapeHtml(profile?.pseudo||"")}">Copier le lien public</button>
+          <button class="btn btn-gray" type="button" data-community-open-search>Rechercher un membre</button>
+        </div>
       </div>
       <span class="community-role-badge">${authRoleLabel(profile?.role)}</span>
     </section>
@@ -10624,17 +10764,91 @@ function renderCommunityProfile(profile){
         : `<p>Aucun succès public visible pour le moment.</p>`}
     </section>
   `;
+  box.querySelector("[data-community-copy-link]")?.addEventListener("click",async event=>{
+    const pseudo=event.currentTarget.dataset.communityCopyLink;
+    try{
+      await copyTextToClipboard(communityProfileUrl(pseudo));
+      toast("Lien du profil public copié.","success","click");
+    }catch{
+      toast("Impossible de copier le lien automatiquement.","warning","warning");
+    }
+  });
+  box.querySelector("[data-community-open-search]")?.addEventListener("click",openCommunityDirectory);
 }
 
-async function openCommunityProfilePreview(){
-  if(!authState.user)return authOpen("login");
+async function openCommunityProfileByPseudo(pseudo,{updateUrl=false}={}){
+  const clean=(pseudo||"").trim();
+  if(!clean)return;
   try{
-    const result=await authFetch(`/community/users/${encodeURIComponent(authState.user.pseudo)}`);
+    const result=await authFetch(`/community/users/${encodeURIComponent(clean)}`);
     renderCommunityProfile(result.profile);
+    if(updateUrl){
+      const url=communityProfileUrl(result.profile?.pseudo||clean);
+      history.replaceState(null,"",url);
+    }
     openModal("communityProfileModal");
   }catch(error){
     toast(error.message||"Profil public indisponible.","warning","warning");
   }
+}
+
+async function openCommunityProfilePreview(){
+  if(!authState.user)return authOpen("login");
+  openCommunityProfileByPseudo(authState.user.pseudo);
+}
+
+function openCommunityDirectory(){
+  openModal("communityDirectoryModal");
+  setTimeout(()=>$("#communitySearchInput")?.focus(),60);
+}
+
+function renderCommunitySearchResults(users,query=""){
+  const box=$("#communitySearchResults");
+  if(!box)return;
+  if(!query || query.trim().length<2){
+    box.innerHTML=`<div class="community-profile-empty">Saisissez au moins 2 caractères pour rechercher un membre.</div>`;
+    return;
+  }
+  if(!users.length){
+    box.innerHTML=`<div class="community-profile-empty">Aucun profil public trouvé.</div>`;
+    return;
+  }
+  box.innerHTML=users.map(user=>`
+    <article class="community-search-result">
+      <div>
+        <strong>${escapeHtml(user.pseudo)}</strong>
+        <small>${authRoleLabel(user.role)} · inscrit le ${user.createdAt?formatDateShort(user.createdAt):"date inconnue"}</small>
+      </div>
+      <button class="btn btn-blue" type="button" data-community-user="${escapeHtml(user.pseudo)}">Voir</button>
+    </article>
+  `).join("");
+  box.querySelectorAll("[data-community-user]").forEach(button=>{
+    button.addEventListener("click",()=>openCommunityProfileByPseudo(button.dataset.communityUser,{updateUrl:true}));
+  });
+}
+
+let communitySearchTimer=null;
+async function runCommunitySearch(){
+  const input=$("#communitySearchInput");
+  const query=(input?.value||"").trim();
+  if(query.length<2){
+    renderCommunitySearchResults([],query);
+    return;
+  }
+  const box=$("#communitySearchResults");
+  if(box)box.innerHTML=`<div class="community-profile-empty">Recherche en cours...</div>`;
+  try{
+    const result=await authFetch(`/community/users?q=${encodeURIComponent(query)}`);
+    renderCommunitySearchResults(result.users||[],query);
+  }catch(error){
+    if(box)box.innerHTML=`<div class="community-profile-empty">${escapeHtml(error.message||"Recherche indisponible.")}</div>`;
+  }
+}
+
+function checkCommunityProfileLink(){
+  const params=new URLSearchParams(location.search);
+  const pseudo=params.get("user")||params.get("profil")||params.get("profile");
+  if(pseudo)setTimeout(()=>openCommunityProfileByPseudo(pseudo),250);
 }
 
 function openAccountProfile(){
@@ -19546,6 +19760,28 @@ if($("#passwordResetConfirmForm"))$("#passwordResetConfirmForm").onsubmit=confir
 if($("#accountEmailForm"))$("#accountEmailForm").onsubmit=saveAccountEmail;
 if($("#accountPasswordForm"))$("#accountPasswordForm").onsubmit=saveAccountPassword;
 if($("#previewCommunityProfile"))$("#previewCommunityProfile").onclick=openCommunityProfilePreview;
+if($("#openCommunitySearch"))$("#openCommunitySearch").onclick=openCommunityDirectory;
+if($("#copyMyCommunityLink"))$("#copyMyCommunityLink").onclick=async()=>{
+  if(!authState.user)return authOpen("login");
+  if(!accountPreferences().publicProfile){
+    toast("Activez Profil public pour partager votre page.","warning","warning");
+    return;
+  }
+  try{
+    await copyTextToClipboard(communityProfileUrl(authState.user.pseudo));
+    toast("Lien de votre profil public copié.","success","click");
+  }catch{
+    toast("Impossible de copier le lien automatiquement.","warning","warning");
+  }
+};
+if($("#communitySearchForm"))$("#communitySearchForm").onsubmit=event=>{
+  event.preventDefault();
+  runCommunitySearch();
+};
+if($("#communitySearchInput"))$("#communitySearchInput").addEventListener("input",()=>{
+  clearTimeout(communitySearchTimer);
+  communitySearchTimer=setTimeout(runCommunitySearch,280);
+});
 if($("#hiddenSecretEgg"))$("#hiddenSecretEgg").onclick=collectHiddenSecretEgg;
 if($("#openRunTimes"))$("#openRunTimes").onclick=()=>{renderRunTimesPanel();openModal("runTimesPanel")};
 if($("#closeRunTimes"))$("#closeRunTimes").onclick=()=>closeModal("runTimesPanel");
@@ -19896,6 +20132,7 @@ load();
 authRefresh();
 checkPasswordResetLink();
 checkEmailVerificationLink();
+checkCommunityProfileLink();
 livingBuildAdmin();
 livingResetScheduler();
 passiveSchedule();
