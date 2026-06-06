@@ -10696,7 +10696,11 @@ async function cloudSyncNow(options={}){
   cloudState.error=null;
   renderCloudStatus();
   try{
-    await authFetch("/cloud/save",{method:"PUT",body:JSON.stringify({payload:cloudPayload()})});
+    const result=await authFetch("/cloud/save",{method:"PUT",body:JSON.stringify({payload:cloudPayload()})});
+    if(result?.payload?.store){
+      store=Object.assign({},store,result.payload.store);
+      localStorage.setItem("pykur_clean_v1",JSON.stringify(store));
+    }
     cloudState.lastSyncAt=new Date();
     cloudState.error=null;
     markSaveStatus(true);

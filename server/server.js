@@ -183,6 +183,101 @@ function buildCommunityProfile(user, savePayload) {
   };
 }
 
+function safeParseJson(value, fallback = null) {
+  try {
+    return typeof value === "string" ? JSON.parse(value) : value ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function mergeEventDiscoveries(base = {}, extra = {}) {
+  const merged = Object.assign({}, base || {});
+  Object.entries(extra || {}).forEach(([id, item]) => {
+    if (!item) return;
+    const current = merged[id];
+    if (!current) {
+      merged[id] = Object.assign({}, item);
+      return;
+    }
+    current.count = Math.max(Number(current.count) || 0, Number(item.count) || 0);
+    current.firstSeen = [current.firstSeen, item.firstSeen].filter(Boolean).sort()[0] || current.firstSeen || item.firstSeen || null;
+    current.lastSeen = [current.lastSeen, item.lastSeen].filter(Boolean).sort().pop() || current.lastSeen || item.lastSeen || null;
+  });
+  return merged;
+}
+
+function mergeGalleries(baseGallery = {}, extraGallery = {}) {
+  const merged = Object.assign({
+    completedPykurs: [],
+    eventsDiscovered: {},
+    currentCycleArchived: false,
+    currentCycleCompletionSeen: false
+  }, baseGallery || {});
+  const completed = Array.isArray(merged.completedPykurs) ? merged.completedPykurs.slice() : [];
+  const seen = new Set(completed.map((item) => item?.id).filter(Boolean));
+  (Array.isArray(extraGallery?.completedPykurs) ? extraGallery.completedPykurs : []).forEach((item) => {
+    if (!item) return;
+    if (item.id && seen.has(item.id)) return;
+    completed.push(item);
+    if (item.id) seen.add(item.id);
+  });
+  merged.completedPykurs = completed.map((item, index) => Object.assign({}, item, { number: index + 1 }));
+  merged.eventsDiscovered = mergeEventDiscoveries(merged.eventsDiscovered, extraGallery?.eventsDiscovered);
+  merged.currentCycleArchived = !!(merged.currentCycleArchived || extraGallery?.currentCycleArchived);
+  merged.currentCycleCompletionSeen = !!(merged.currentCycleCompletionSeen || extraGallery?.currentCycleCompletionSeen);
+  return merged;
+}
+
+function mergeAchievements(baseAchievements = {}, extraAchievements = {}) {
+  const merged = {
+    unlocked: Object.assign({}, baseAchievements?.unlocked || {}),
+    secretCategoriesUnlocked: !!baseAchievements?.secretCategoriesUnlocked,
+    eggCollected: !!baseAchievements?.eggCollected,
+    counters: Object.assign({}, baseAchievements?.counters || {})
+  };
+  Object.entries(extraAchievements?.unlocked || {}).forEach(([id, value]) => {
+    if (value) merged.unlocked[id] = value;
+  });
+  merged.secretCategoriesUnlocked = merged.secretCategoriesUnlocked || !!extraAchievements?.secretCategoriesUnlocked;
+  merged.eggCollected = merged.eggCollected || !!extraAchievements?.eggCollected;
+  Object.entries(extraAchievements?.counters || {}).forEach(([id, value]) => {
+    merged.counters[id] = Math.max(Number(merged.counters[id]) || 0, Number(value) || 0);
+  });
+  return merged;
+}
+
+function mergeStores(baseStore = {}, extraStore = {}) {
+  const merged = Object.assign({}, baseStore || {}, extraStore || {});
+  const baseProfiles = baseStore?.profiles || {};
+  const extraProfiles = extraStore?.profiles || {};
+  merged.profiles = Object.assign({}, baseProfiles, extraProfiles);
+  merged.galleryShared = extraStore?.galleryShared !== undefined ? extraStore.galleryShared : baseStore?.galleryShared;
+  merged.achievementsShared = extraStore?.achievementsShared !== undefined ? extraStore.achievementsShared : baseStore?.achievementsShared;
+  merged.sharedGallery = mergeGalleries(baseStore?.sharedGallery, extraStore?.sharedGallery);
+  merged.sharedAchievements = mergeAchievements(baseStore?.sharedAchievements, extraStore?.sharedAchievements);
+
+  Object.keys(merged.profiles || {}).forEach((profileId) => {
+    const baseProfile = baseProfiles[profileId] || {};
+    const extraProfile = extraProfiles[profileId] || {};
+    const profile = Object.assign({}, baseProfile, extraProfile);
+    const baseData = baseProfile.data || {};
+    const extraData = extraProfile.data || {};
+    profile.data = Object.assign({}, baseData, extraData);
+    profile.data.gallery = mergeGalleries(baseData.gallery, extraData.gallery);
+    profile.data.achievements = mergeAchievements(baseData.achievements, extraData.achievements);
+    merged.profiles[profileId] = profile;
+  });
+  return merged;
+}
+
+function mergeCloudPayloads(basePayload = {}, extraPayload = {}) {
+  const merged = Object.assign({}, basePayload || {}, extraPayload || {});
+  merged.store = mergeStores(basePayload?.store, extraPayload?.store);
+  merged.savedAt = new Date().toISOString();
+  return merged;
+}
+
 function cleanPseudo(value) {
   return String(value || "").trim().replace(/\s+/g, " ");
 }
@@ -462,13 +557,16 @@ app.put("/api/account/preferences", requireAuth, (req, res) => {
 });
 
 app.put("/api/cloud/save", requireAuth, (req, res) => {
-  const payload = JSON.stringify(req.body.payload || {});
+  const incomingPayload = req.body.payload || {};
+  const current = db.prepare("SELECT payload FROM cloud_saves WHERE user_id = ?").get(req.user.id);
+  const currentPayload = safeParseJson(current?.payload, {});
+  const mergedPayload = mergeCloudPayloads(currentPayload || {}, incomingPayload || {});
   db.prepare(`
     INSERT INTO cloud_saves(user_id,payload,updated_at)
     VALUES(?,?,CURRENT_TIMESTAMP)
     ON CONFLICT(user_id) DO UPDATE SET payload = excluded.payload, updated_at = CURRENT_TIMESTAMP
-  `).run(req.user.id, payload);
-  res.json({ ok: true });
+  `).run(req.user.id, JSON.stringify(mergedPayload));
+  res.json({ ok: true, payload: mergedPayload });
 });
 
 app.get("/api/cloud/save", requireAuth, (req, res) => {

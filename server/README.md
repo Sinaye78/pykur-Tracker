@@ -64,6 +64,8 @@ Sans SMTP configuré, les liens sont affichés dans les logs serveur pour les te
 - `GET /api/cloud/save`
 - `PUT /api/cloud/save`
 
+La sauvegarde cloud fusionne côté serveur les archives de galerie, événements découverts et succès afin d'éviter qu'un autre appareil avec un état local plus ancien supprime la mémoire du compte.
+
 ## Déploiement VPS
 
 1. Installer Node.js, Nginx et Certbot.
