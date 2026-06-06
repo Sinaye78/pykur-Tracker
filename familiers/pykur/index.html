@@ -10456,12 +10456,27 @@ async function authRefresh(){
 }
 
 function cloudPayload(){
+  store.lastCloudPreparedAt=new Date().toISOString();
   return {
     app:"pykur-tracker",
     version:"1.5.0-preview",
     savedAt:new Date().toISOString(),
     store:clone(store)
   };
+}
+
+function getPayloadTime(payload){
+  if(!payload)return 0;
+  const candidates=[
+    payload.savedAt,
+    payload.store?.updatedAt,
+    payload.store?.lastSavedAt,
+    payload.store?.lastCloudPreparedAt
+  ];
+  return candidates.reduce((max,value)=>{
+    const time=value ? new Date(value).getTime() || 0 : 0;
+    return Math.max(max,time);
+  },0);
 }
 
 function applyCloudPayload(payload){
@@ -10563,7 +10578,9 @@ async function cloudAfterLogin(options={}){
   try{
     const result=await authFetch("/cloud/save");
     const remotePayload=result?.payload;
-    if(remotePayload?.store){
+    const remoteTime=getPayloadTime(remotePayload);
+    const localTime=getPayloadTime({store});
+    if(remotePayload?.store && (!localTime || remoteTime >= localTime)){
       cloudState.loading=false;
       const applied=applyCloudPayload(remotePayload);
       if(applied && !options.silent)toast("Sauvegarde cloud récupérée.","success","success");
@@ -14534,6 +14551,8 @@ function save(){
     if(store.achievementsShared)savedData.achievements=clone(store.sharedAchievements);
     if(savedData.ui)savedData.ui.capyMode=false;
     store.profiles[activeProfile].data=savedData;
+    store.updatedAt=new Date().toISOString();
+    store.lastSavedAt=store.updatedAt;
     syncSharedSettingsFromData();
     syncSharedAchievementsFromData();
     localStorage.setItem("pykur_clean_v1",JSON.stringify(store));
@@ -19222,9 +19241,6 @@ if($("#passwordResetRequestForm"))$("#passwordResetRequestForm").onsubmit=reques
 if($("#passwordResetConfirmForm"))$("#passwordResetConfirmForm").onsubmit=confirmPasswordReset;
 if($("#accountEmailForm"))$("#accountEmailForm").onsubmit=saveAccountEmail;
 if($("#accountPasswordForm"))$("#accountPasswordForm").onsubmit=saveAccountPassword;
-authRefresh();
-checkPasswordResetLink();
-checkEmailVerificationLink();
 if($("#hiddenSecretEgg"))$("#hiddenSecretEgg").onclick=collectHiddenSecretEgg;
 if($("#openRunTimes"))$("#openRunTimes").onclick=()=>{renderRunTimesPanel();openModal("runTimesPanel")};
 if($("#closeRunTimes"))$("#closeRunTimes").onclick=()=>closeModal("runTimesPanel");
@@ -19572,6 +19588,9 @@ if($("#toggleAutoMark"))$("#toggleAutoMark").onclick=()=>{
 if($("#projectionButton"))$("#projectionButton").onclick=()=>{unlockAchievement("open_projection");renderProjection();openModal("projectionModal")};
 applyHelpfulTooltips();
 load();
+authRefresh();
+checkPasswordResetLink();
+checkEmailVerificationLink();
 livingBuildAdmin();
 livingResetScheduler();
 passiveSchedule();
