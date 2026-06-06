@@ -3770,80 +3770,95 @@ body.no-anim .app.milestone-flash{
 
 #authModal.modal-bg,
 #passwordResetModal.modal-bg,
-#accountProfileModal.modal-bg{
-  background:rgba(18,12,7,.72);
-  backdrop-filter:blur(7px) saturate(.9);
+#accountProfileModal.modal-bg,
+#communityProfileModal.modal-bg{
+  background:rgba(15,18,24,.72);
+  backdrop-filter:blur(10px) saturate(.86);
 }
 
 #authModal .modal,
 #passwordResetModal .modal,
-#accountProfileModal .modal{
-  width:min(820px,calc(100vw - 28px));
-  border:1px solid rgba(175,126,52,.78);
+#accountProfileModal .modal,
+#communityProfileModal .modal{
+  width:min(560px,calc(100vw - 28px));
+  border:1px solid rgba(198,148,68,.42);
+  border-radius:18px;
   background:
-    radial-gradient(circle at 12% 0%,rgba(255,214,111,.16),transparent 30%),
-    linear-gradient(145deg,rgba(255,252,244,.99),rgba(238,224,195,.985));
-  box-shadow:0 28px 80px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.72);
+    radial-gradient(circle at 0% 0%,rgba(245,158,11,.13),transparent 34%),
+    linear-gradient(180deg,#fffdf8,#f4efe6);
+  box-shadow:0 30px 90px rgba(0,0,0,.48),0 0 0 1px rgba(255,255,255,.52) inset;
+  color:#23160a;
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
 }
 
 #authModal .modal-head,
 #passwordResetModal .modal-head,
-#accountProfileModal .modal-head{
-  min-height:76px;
-  padding:16px 20px;
+#accountProfileModal .modal-head,
+#communityProfileModal .modal-head{
+  min-height:62px;
+  padding:14px 18px;
   background:
-    radial-gradient(circle at 8% 0%,rgba(255,217,120,.26),transparent 32%),
-    linear-gradient(135deg,#8a571d 0%,#5a310e 52%,#2f190b 100%);
+    linear-gradient(135deg,rgba(120,73,21,.98),rgba(64,35,15,.98)),
+    radial-gradient(circle at 12% 0%,rgba(255,214,111,.18),transparent 32%);
 }
 
 #authModal .modal-head h2,
 #passwordResetModal .modal-head h2,
-#accountProfileModal .modal-head h2{
-  font-size:25px;
-  letter-spacing:.1px;
+#accountProfileModal .modal-head h2,
+#communityProfileModal .modal-head h2{
+  font-size:22px;
+  letter-spacing:.05px;
+  font-weight:850;
 }
 
 #authModal .modal-head p,
 #passwordResetModal .modal-head p,
-#accountProfileModal .modal-head p{
+#accountProfileModal .modal-head p,
+#communityProfileModal .modal-head p{
   max-width:620px;
-  color:rgba(255,244,214,.86);
-  font-size:13px;
+  color:rgba(255,244,214,.82);
+  font-size:12px;
+  font-weight:650;
 }
 
 #authModal .modal-body,
 #passwordResetModal .modal-body,
-#accountProfileModal .modal-body{
-  padding:20px;
+#accountProfileModal .modal-body,
+#communityProfileModal .modal-body{
+  padding:18px;
   background:
-    linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0) 28%),
-    radial-gradient(circle at 88% 12%,rgba(59,130,246,.08),transparent 24%);
+    linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 36%),
+    radial-gradient(circle at 100% 0%,rgba(37,99,235,.055),transparent 28%);
 }
 
 #authModal .modal-foot,
 #passwordResetModal .modal-foot,
-#accountProfileModal .modal-foot{
+#accountProfileModal .modal-foot,
+#communityProfileModal .modal-foot{
   min-height:0;
-  padding:0 20px 20px;
+  padding:0 18px 18px;
   border-top:0;
   background:transparent;
 }
 
 #authModal .auth-form,
 #passwordResetModal .auth-form{
-  gap:14px;
+  gap:12px;
 }
 
 #authModal .auth-tabs{
-  padding:4px;
-  border:1px solid rgba(119,79,28,.18);
-  border-radius:16px;
-  background:rgba(255,255,255,.55);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.68);
+  padding:3px;
+  border:1px solid rgba(107,70,31,.18);
+  border-radius:12px;
+  background:rgba(255,255,255,.72);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.78);
 }
 
 #authModal .auth-tabs .btn{
-  border-radius:12px!important;
+  min-height:36px!important;
+  border-radius:9px!important;
+  font-size:13px!important;
+  font-weight:750!important;
 }
 
 #authModal .auth-tabs .btn:not(.active){
@@ -3854,28 +3869,56 @@ body.no-anim .app.milestone-flash{
 
 #authModal .auth-help,
 #passwordResetModal .auth-help{
-  border-color:rgba(59,130,246,.26);
-  background:linear-gradient(135deg,rgba(239,246,255,.92),rgba(219,234,254,.64));
+  padding:9px 11px;
+  border-color:rgba(59,130,246,.22);
+  background:linear-gradient(135deg,rgba(239,246,255,.86),rgba(219,234,254,.5));
   color:#475569;
-  font-size:13px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.auth-cloud-note{
+  display:grid;
+  gap:3px;
+  padding:10px 12px;
+  border:1px solid rgba(37,99,235,.18);
+  border-radius:12px;
+  background:linear-gradient(135deg,rgba(239,246,255,.88),rgba(255,255,255,.72));
+  color:#475569;
+}
+
+.auth-cloud-note strong{
+  color:#1e3a8a;
+  font-size:12px;
+  font-weight:850;
+}
+
+.auth-cloud-note span{
+  font-size:12px;
+  font-weight:650;
+  line-height:1.35;
 }
 
 #authModal .auth-field,
 #passwordResetModal .auth-field{
-  gap:7px;
+  gap:6px;
   color:#5a3b18;
-  font-size:14px;
-  letter-spacing:.1px;
+  font-size:13px;
+  font-weight:750;
+  letter-spacing:0;
 }
 
 #authModal .auth-field input,
 #passwordResetModal .auth-field input,
 #accountProfileModal .account-form input{
-  min-height:48px;
-  border:1px solid rgba(111,82,45,.34);
-  border-radius:14px;
-  background:rgba(255,255,255,.86);
+  min-height:40px;
+  border:1px solid rgba(111,82,45,.28);
+  border-radius:11px;
+  padding:0 12px;
+  background:rgba(255,255,255,.92);
   color:#2f1d0d;
+  font-size:13px;
+  font-weight:700;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 1px 0 rgba(255,255,255,.5);
 }
 
@@ -3889,37 +3932,41 @@ body.no-anim .app.milestone-flash{
 #authModal .auth-secondary-action{
   width:max-content;
   color:#2563eb;
-  font-size:13px;
+  font-size:12px;
+  font-weight:750;
 }
 
 #authModal #authSubmit,
 #passwordResetModal .auth-form .btn{
-  min-height:44px!important;
-  border-radius:12px!important;
+  min-height:40px!important;
+  border-radius:10px!important;
+  font-size:13px!important;
+  font-weight:800!important;
 }
 
 #accountProfileModal .modal{
-  width:min(900px,calc(100vw - 28px));
+  width:min(760px,calc(100vw - 28px));
+  grid-template-rows:auto minmax(0,1fr);
 }
 
 #accountProfileModal .modal-body{
-  max-height:calc(100vh - 156px);
+  max-height:calc(100vh - 136px);
   overflow:auto;
 }
 
 #accountProfileModal .account-profile-grid{
-  gap:16px;
+  gap:12px;
 }
 
 #accountProfileModal .account-panel{
-  gap:14px;
-  padding:16px;
-  border-color:rgba(140,100,48,.28);
-  border-radius:16px;
+  gap:12px;
+  padding:14px;
+  border-color:rgba(140,100,48,.20);
+  border-radius:14px;
   background:
-    linear-gradient(145deg,rgba(255,252,244,.94),rgba(243,228,197,.82)),
-    radial-gradient(circle at 92% 0%,rgba(255,214,111,.12),transparent 32%);
-  box-shadow:0 10px 24px rgba(66,42,18,.08),inset 0 1px 0 rgba(255,255,255,.72);
+    linear-gradient(145deg,rgba(255,255,255,.82),rgba(247,237,216,.68)),
+    radial-gradient(circle at 92% 0%,rgba(255,214,111,.08),transparent 30%);
+  box-shadow:0 8px 18px rgba(66,42,18,.06),inset 0 1px 0 rgba(255,255,255,.72);
 }
 
 #accountProfileModal .account-panel h3{
@@ -3927,32 +3974,35 @@ body.no-anim .app.milestone-flash{
   align-items:center;
   gap:8px;
   color:#2f1d0d;
-  font-size:17px;
+  font-size:15px;
+  font-weight:850;
 }
 
 #accountProfileModal .account-meta{
-  gap:10px;
+  gap:8px;
 }
 
 #accountProfileModal .account-meta span{
-  min-height:58px;
+  min-height:50px;
   display:flex;
   flex-direction:column;
   justify-content:center;
-  padding:11px 12px;
-  border-color:rgba(140,100,48,.2);
-  background:rgba(255,255,255,.64);
+  padding:9px 10px;
+  border-color:rgba(140,100,48,.16);
+  border-radius:11px;
+  background:rgba(255,255,255,.72);
   color:#6b461f;
-  font-size:12px;
+  font-size:10px;
   text-transform:uppercase;
-  letter-spacing:.2px;
+  letter-spacing:.45px;
+  font-weight:800;
 }
 
 #accountProfileModal .account-meta small{
-  margin-top:4px;
+  margin-top:3px;
   color:#2f1d0d;
-  font-size:13px;
-  font-weight:950;
+  font-size:12px;
+  font-weight:760;
   text-transform:none;
   letter-spacing:0;
 }
@@ -3962,20 +4012,23 @@ body.no-anim .app.milestone-flash{
 }
 
 #accountProfileModal .account-form .btn{
-  min-height:42px!important;
-  border-radius:12px!important;
+  min-height:38px!important;
+  border-radius:10px!important;
+  font-size:12px!important;
+  font-weight:800!important;
 }
 
 #accountProfileModal .privacy-list{
-  gap:10px;
+  gap:8px;
 }
 
 #accountProfileModal .privacy-toggle{
-  min-height:76px;
-  gap:11px;
-  padding:12px;
-  border-color:rgba(140,100,48,.2);
-  background:rgba(255,255,255,.58);
+  min-height:62px;
+  gap:10px;
+  padding:10px;
+  border-color:rgba(140,100,48,.16);
+  background:rgba(255,255,255,.68);
+  border-radius:12px;
   transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease;
 }
 
@@ -3987,21 +4040,23 @@ body.no-anim .app.milestone-flash{
 }
 
 #accountProfileModal .privacy-toggle input{
-  width:16px;
-  height:16px;
+  width:15px;
+  height:15px;
   accent-color:#2563eb;
 }
 
 #accountProfileModal .privacy-toggle span{
   color:#2f1d0d;
   line-height:1.15;
+  font-size:13px;
+  font-weight:800;
 }
 
 #accountProfileModal .privacy-toggle small{
-  margin-top:6px;
+  margin-top:5px;
   color:#6b7280;
-  font-size:12px;
-  font-weight:800;
+  font-size:11px;
+  font-weight:650;
 }
 
 #accountProfileModal .options-note{
@@ -4015,6 +4070,12 @@ body.no-anim .app.milestone-flash{
   display:flex;
   gap:10px;
   flex-wrap:wrap;
+}
+.community-profile-actions .btn{
+  min-height:36px!important;
+  border-radius:10px!important;
+  font-size:12px!important;
+  font-weight:800!important;
 }
 
 .community-profile-view{
@@ -9532,7 +9593,10 @@ body.no-anim .pykur-sparkle{
           <button class="btn btn-blue active" id="authLoginTab" type="button">Connexion</button>
           <button class="btn btn-orange" id="authRegisterTab" type="button">Inscription</button>
         </div>
-        <div class="auth-help" id="authHelp">Le mode cloud est optionnel. Le tracker local continue de fonctionner même si le serveur n'est pas lancé.</div>
+        <div class="auth-cloud-note" id="authHelp">
+          <strong>Compte cloud optionnel</strong>
+          <span>Synchronisez votre Pykur entre vos appareils. Le mode local reste disponible sans compte.</span>
+        </div>
         <div class="auth-error" id="authError"></div>
         <label class="auth-field" id="authPseudoField">
           Pseudo
@@ -9630,7 +9694,6 @@ body.no-anim .pykur-sparkle{
         </section>
       </div>
     </div>
-    <div class="modal-foot"><button class="btn btn-gray" data-close="accountProfileModal">Fermer</button></div>
   </div>
 </div>
 
