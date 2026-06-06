@@ -3612,9 +3612,12 @@ body.no-anim .app.milestone-flash{
 
 @media(max-width:900px){
   .auth-widget{
+    position:static!important;
     width:100%;
     justify-content:flex-end;
     flex-wrap:wrap;
+    margin:8px auto;
+    max-width:calc(100vw - 24px);
   }
 }
 .auth-form{
@@ -8865,6 +8868,10 @@ body.no-anim .pykur-sparkle{
 </div>
 <div class="raj-egg-layer" id="rajEasterEggLayer" aria-hidden="true"></div>
 <div class="brako-egg-layer" id="brakoEasterEggLayer" aria-hidden="true"></div>
+<div class="auth-widget" id="authWidget" aria-live="polite">
+  <button class="btn btn-blue" id="openLogin" type="button">Connexion</button>
+  <button class="btn btn-orange" id="openRegister" type="button">Inscription</button>
+</div>
 
 <main class="app">
   <div class="top-tools">
@@ -8874,10 +8881,6 @@ body.no-anim .pykur-sparkle{
     <button class="btn btn-blue tooltip top-tool-btn" id="achievementsButton" data-tooltip="Ouvre les succès du tracker." type="button">Succès</button>
     <button class="btn btn-orange tooltip top-tool-btn" id="galleryButton" data-tooltip="Ouvre la galerie des Pykurs terminés et événements découverts." type="button">Galerie</button>
     <button class="btn btn-gray tooltip top-tool-btn" id="optionsButton" data-tooltip="Ouvre les réglages : thème, sons, notifications, sauvegarde et options de confort." aria-label="Options">Options</button>
-    <div class="auth-widget" id="authWidget" aria-live="polite">
-      <button class="btn btn-blue" id="openLogin" type="button">Connexion</button>
-      <button class="btn btn-orange" id="openRegister" type="button">Inscription</button>
-    </div>
   </div>
   <div class="layout">
     <aside class="side">
