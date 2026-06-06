@@ -4141,6 +4141,67 @@ body.no-anim .app.milestone-flash{
 
 .community-profile-card .progress-bar{
   margin:10px 0 6px;
+  height:12px!important;
+  border:1px solid rgba(94,72,38,.42)!important;
+  background:rgba(63,50,32,.22)!important;
+}
+
+.community-profile-progress-fill{
+  display:block;
+  height:100%;
+  width:0;
+  border-radius:999px;
+  background:linear-gradient(90deg,#16a34a,#86efac 58%,#facc15);
+  box-shadow:0 0 10px rgba(34,197,94,.25);
+  transition:width .25s ease;
+}
+
+.community-profile-summary-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:10px;
+}
+
+.community-profile-summary-item{
+  padding:10px 12px;
+  border:1px solid rgba(140,100,48,.18);
+  border-radius:12px;
+  background:rgba(255,255,255,.52);
+  color:#4b3219;
+  font-weight:950;
+}
+
+.community-profile-summary-item small{
+  display:block;
+  margin-bottom:3px;
+  color:#7a5a31;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+
+.community-achievement-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:8px;
+  margin-top:10px;
+}
+
+.community-achievement-pill{
+  padding:9px 10px;
+  border:1px solid rgba(217,119,6,.22);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(255,247,214,.86),rgba(255,255,255,.58));
+  color:#3d2814;
+  font-weight:950;
+}
+
+.community-achievement-pill small{
+  display:block;
+  margin-top:2px;
+  color:#7a5a31;
+  font-size:11px;
+  font-weight:850;
 }
 
 .community-profile-empty{
@@ -10501,10 +10562,22 @@ function renderAccountProfile(){
   }
 }
 
+function communityAchievementEntries(profile){
+  const unlocked=Array.isArray(profile?.achievements?.unlocked)?profile.achievements.unlocked:[];
+  const hiddenSecrets=!!profile?.achievements?.hiddenSecrets;
+  return unlocked
+    .map(item=>({item,achievement:ACHIEVEMENTS?.[item.id]}))
+    .filter(entry=>entry.achievement)
+    .filter(entry=>!hiddenSecrets || !["SECRETS","EASTER EGGS"].includes(entry.achievement.category))
+    .sort((a,b)=>new Date(b.item.date||0)-new Date(a.item.date||0));
+}
+
 function renderCommunityProfile(profile){
   const box=$("#communityProfileContent");
   if(!box)return;
   const profiles=Array.isArray(profile?.profiles)?profile.profiles:[];
+  const achievements=communityAchievementEntries(profile);
+  const hiddenAchievementCount=(Array.isArray(profile?.achievements?.unlocked)?profile.achievements.unlocked.length:0)-achievements.length;
   box.innerHTML=`
     <section class="community-profile-hero">
       <div>
@@ -10515,10 +10588,10 @@ function renderCommunityProfile(profile){
     </section>
     <section class="community-profile-grid">
       ${profiles.length ? profiles.map(item=>`
-        <article class="community-profile-card">
-          <h4>${escapeHtml(item.name)}${item.isMain?" · Principal":""}</h4>
-          <p><strong>${item.pp || 0} / 90 PP</strong></p>
-          <div class="progress-bar"><span class="progress-fill" style="width:${Math.max(0,Math.min(100,item.progress||0))}%"></span></div>
+          <article class="community-profile-card">
+            <h4>${escapeHtml(item.name)}${item.isMain?" · Principal":""}</h4>
+            <p><strong>${item.pp || 0} / 90 PP</strong></p>
+          <div class="progress-bar"><span class="community-profile-progress-fill" style="width:${Math.max(0,Math.min(100,item.progress||0))}%"></span></div>
           <p>Morose : ${item.runs?.morose || 0}</p>
           <p>Tynril : ${item.runs?.tynril || 0}</p>
           ${item.stats?`<p>Temps chrono : ${item.stats.chronoTotalSeconds?formatDuration(item.stats.chronoTotalSeconds):"—"}</p>`:""}
@@ -10526,10 +10599,29 @@ function renderCommunityProfile(profile){
       `).join("") : `<div class="community-profile-empty">Aucun profil Pykur visible publiquement.</div>`}
     </section>
     <section class="community-profile-card">
-      <h4>Galerie publique</h4>
-      ${profile?.gallery
-        ? `<p>Pykurs terminés : ${profile.gallery.completedPykurs || 0}</p><p>Événements découverts : ${profile.gallery.eventsDiscovered || 0}</p>`
-        : `<p>Galerie masquée par l'utilisateur.</p>`}
+      <h4>Résumé public</h4>
+      <div class="community-profile-summary-grid">
+        ${profile?.gallery
+          ? `<div class="community-profile-summary-item"><small>Pykurs terminés</small>${profile.gallery.completedPykurs || 0}</div>
+             <div class="community-profile-summary-item"><small>Événements découverts</small>${profile.gallery.eventsDiscovered || 0}</div>`
+          : `<div class="community-profile-summary-item"><small>Galerie</small>Masquée</div>`}
+        <div class="community-profile-summary-item"><small>Succès visibles</small>${achievements.length}</div>
+      </div>
+    </section>
+    <section class="community-profile-card">
+      <h4>Succès visibles</h4>
+      ${achievements.length
+        ? `<div class="community-achievement-list">
+            ${achievements.slice(0,6).map(({item,achievement})=>`
+              <div class="community-achievement-pill">
+                ${escapeHtml(achievement.title)}
+                <small>${escapeHtml(achievement.category)}${item.date?` · ${formatDateShort(item.date)}`:""}</small>
+              </div>
+            `).join("")}
+          </div>
+          ${achievements.length>6?`<p>${achievements.length-6} autres succès visibles.</p>`:""}
+          ${hiddenAchievementCount>0?`<p>${hiddenAchievementCount} succès secret${hiddenAchievementCount>1?"s":""} masqué${hiddenAchievementCount>1?"s":""}.</p>`:""}`
+        : `<p>Aucun succès public visible pour le moment.</p>`}
     </section>
   `;
 }

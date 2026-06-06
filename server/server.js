@@ -107,6 +107,23 @@ const PUBLIC_MOBS = {
   tynrilDeconcerte: 3,
   tynrilConsterne: 3
 };
+const PUBLIC_SECRET_ACHIEVEMENT_IDS = new Set([
+  "egg_charlie",
+  "egg_toom",
+  "egg_aina",
+  "egg_raj",
+  "egg_brako",
+  "egg_alhass",
+  "egg_capy",
+  "egg_dimeh",
+  "secret_brako_drop",
+  "secret_brako_no_drop",
+  "secret_egg_war",
+  "secret_raj_ban",
+  "secret_happios_hover",
+  "master_secrets",
+  "true_100"
+]);
 const PP_MAX = 90;
 
 function publicPpFromMobs(mobs) {
@@ -162,6 +179,16 @@ function buildCommunityProfile(user, savePayload) {
     .map((entry, index) => publicProfileSummary(entry, index, activeId, preferences));
   const sharedGallery = store.galleryShared !== false ? store.sharedGallery : null;
   const gallerySource = sharedGallery || profileEntries.find((entry) => entry.id === activeId)?.data?.gallery || null;
+  const achievementSource = store.achievementsShared
+    ? store.sharedAchievements
+    : profileEntries.find((entry) => entry.id === activeId)?.data?.achievements;
+  const unlockedAchievements = Object.entries(achievementSource?.unlocked || {})
+    .filter(([, item]) => item)
+    .filter(([id]) => !preferences.hideSecretAchievements || !PUBLIC_SECRET_ACHIEVEMENT_IDS.has(id))
+    .map(([id, item]) => ({
+      id,
+      date: item?.date || null
+    }));
   return {
     pseudo: user.pseudo,
     role: user.role,
@@ -179,6 +206,10 @@ function buildCommunityProfile(user, savePayload) {
     gallery: preferences.hideGallery ? null : {
       completedPykurs: Array.isArray(gallerySource?.completedPykurs) ? gallerySource.completedPykurs.length : 0,
       eventsDiscovered: gallerySource?.eventsDiscovered ? Object.keys(gallerySource.eventsDiscovered).length : 0
+    },
+    achievements: {
+      hiddenSecrets: !!preferences.hideSecretAchievements,
+      unlocked: unlockedAchievements
     }
   };
 }
