@@ -3768,6 +3768,260 @@ body.no-anim .app.milestone-flash{
   .account-meta{grid-template-columns:1fr}
 }
 
+#authModal.modal-bg,
+#passwordResetModal.modal-bg,
+#accountProfileModal.modal-bg{
+  background:rgba(18,12,7,.72);
+  backdrop-filter:blur(7px) saturate(.9);
+}
+
+#authModal .modal,
+#passwordResetModal .modal,
+#accountProfileModal .modal{
+  width:min(820px,calc(100vw - 28px));
+  border:1px solid rgba(175,126,52,.78);
+  background:
+    radial-gradient(circle at 12% 0%,rgba(255,214,111,.16),transparent 30%),
+    linear-gradient(145deg,rgba(255,252,244,.99),rgba(238,224,195,.985));
+  box-shadow:0 28px 80px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.72);
+}
+
+#authModal .modal-head,
+#passwordResetModal .modal-head,
+#accountProfileModal .modal-head{
+  min-height:76px;
+  padding:16px 20px;
+  background:
+    radial-gradient(circle at 8% 0%,rgba(255,217,120,.26),transparent 32%),
+    linear-gradient(135deg,#8a571d 0%,#5a310e 52%,#2f190b 100%);
+}
+
+#authModal .modal-head h2,
+#passwordResetModal .modal-head h2,
+#accountProfileModal .modal-head h2{
+  font-size:25px;
+  letter-spacing:.1px;
+}
+
+#authModal .modal-head p,
+#passwordResetModal .modal-head p,
+#accountProfileModal .modal-head p{
+  max-width:620px;
+  color:rgba(255,244,214,.86);
+  font-size:13px;
+}
+
+#authModal .modal-body,
+#passwordResetModal .modal-body,
+#accountProfileModal .modal-body{
+  padding:20px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0) 28%),
+    radial-gradient(circle at 88% 12%,rgba(59,130,246,.08),transparent 24%);
+}
+
+#authModal .modal-foot,
+#passwordResetModal .modal-foot,
+#accountProfileModal .modal-foot{
+  min-height:0;
+  padding:0 20px 20px;
+  border-top:0;
+  background:transparent;
+}
+
+#authModal .auth-form,
+#passwordResetModal .auth-form{
+  gap:14px;
+}
+
+#authModal .auth-tabs{
+  padding:4px;
+  border:1px solid rgba(119,79,28,.18);
+  border-radius:16px;
+  background:rgba(255,255,255,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.68);
+}
+
+#authModal .auth-tabs .btn{
+  border-radius:12px!important;
+}
+
+#authModal .auth-tabs .btn:not(.active){
+  background:transparent!important;
+  color:#6b461f!important;
+  box-shadow:none!important;
+}
+
+#authModal .auth-help,
+#passwordResetModal .auth-help{
+  border-color:rgba(59,130,246,.26);
+  background:linear-gradient(135deg,rgba(239,246,255,.92),rgba(219,234,254,.64));
+  color:#475569;
+  font-size:13px;
+}
+
+#authModal .auth-field,
+#passwordResetModal .auth-field{
+  gap:7px;
+  color:#5a3b18;
+  font-size:14px;
+  letter-spacing:.1px;
+}
+
+#authModal .auth-field input,
+#passwordResetModal .auth-field input,
+#accountProfileModal .account-form input{
+  min-height:48px;
+  border:1px solid rgba(111,82,45,.34);
+  border-radius:14px;
+  background:rgba(255,255,255,.86);
+  color:#2f1d0d;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 1px 0 rgba(255,255,255,.5);
+}
+
+#authModal .auth-field input:focus,
+#passwordResetModal .auth-field input:focus,
+#accountProfileModal .account-form input:focus{
+  outline:3px solid rgba(37,99,235,.2);
+  border-color:rgba(37,99,235,.48);
+}
+
+#authModal .auth-secondary-action{
+  width:max-content;
+  color:#2563eb;
+  font-size:13px;
+}
+
+#authModal #authSubmit,
+#passwordResetModal .auth-form .btn{
+  min-height:44px!important;
+  border-radius:12px!important;
+}
+
+#accountProfileModal .modal{
+  width:min(900px,calc(100vw - 28px));
+}
+
+#accountProfileModal .modal-body{
+  max-height:calc(100vh - 156px);
+  overflow:auto;
+}
+
+#accountProfileModal .account-profile-grid{
+  gap:16px;
+}
+
+#accountProfileModal .account-panel{
+  gap:14px;
+  padding:16px;
+  border-color:rgba(140,100,48,.28);
+  border-radius:16px;
+  background:
+    linear-gradient(145deg,rgba(255,252,244,.94),rgba(243,228,197,.82)),
+    radial-gradient(circle at 92% 0%,rgba(255,214,111,.12),transparent 32%);
+  box-shadow:0 10px 24px rgba(66,42,18,.08),inset 0 1px 0 rgba(255,255,255,.72);
+}
+
+#accountProfileModal .account-panel h3{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#2f1d0d;
+  font-size:17px;
+}
+
+#accountProfileModal .account-meta{
+  gap:10px;
+}
+
+#accountProfileModal .account-meta span{
+  min-height:58px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:11px 12px;
+  border-color:rgba(140,100,48,.2);
+  background:rgba(255,255,255,.64);
+  color:#6b461f;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.2px;
+}
+
+#accountProfileModal .account-meta small{
+  margin-top:4px;
+  color:#2f1d0d;
+  font-size:13px;
+  font-weight:950;
+  text-transform:none;
+  letter-spacing:0;
+}
+
+#accountProfileModal .account-form{
+  gap:10px;
+}
+
+#accountProfileModal .account-form .btn{
+  min-height:42px!important;
+  border-radius:12px!important;
+}
+
+#accountProfileModal .privacy-list{
+  gap:10px;
+}
+
+#accountProfileModal .privacy-toggle{
+  min-height:76px;
+  gap:11px;
+  padding:12px;
+  border-color:rgba(140,100,48,.2);
+  background:rgba(255,255,255,.58);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease;
+}
+
+#accountProfileModal .privacy-toggle:hover{
+  transform:translateY(-1px);
+  border-color:rgba(37,99,235,.28);
+  background:rgba(255,255,255,.76);
+  box-shadow:0 8px 18px rgba(66,42,18,.08);
+}
+
+#accountProfileModal .privacy-toggle input{
+  width:16px;
+  height:16px;
+  accent-color:#2563eb;
+}
+
+#accountProfileModal .privacy-toggle span{
+  color:#2f1d0d;
+  line-height:1.15;
+}
+
+#accountProfileModal .privacy-toggle small{
+  margin-top:6px;
+  color:#6b7280;
+  font-size:12px;
+  font-weight:800;
+}
+
+#accountProfileModal .options-note{
+  margin-top:2px;
+  border-color:rgba(59,130,246,.2);
+  background:rgba(239,246,255,.72);
+  color:#475569;
+}
+
+@media(max-width:760px){
+  #authModal .modal-body,
+  #passwordResetModal .modal-body,
+  #accountProfileModal .modal-body{
+    padding:14px;
+  }
+  #accountProfileModal .account-panel{
+    padding:14px;
+  }
+}
+
 .dashboard-options-btn{
   position:static!important;
   width:auto!important;
