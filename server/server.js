@@ -1,7 +1,6 @@
-require("dotenv").config();
-
 const fs = require("fs");
 const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
@@ -14,7 +13,7 @@ const nodemailer = require("nodemailer");
 
 const PORT = Number(process.env.PORT || 3000);
 const JWT_SECRET = process.env.JWT_SECRET || "dev-only-change-me";
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, "data", "pykur.sqlite");
+const DB_PATH = process.env.DB_PATH ? path.resolve(__dirname, process.env.DB_PATH) : path.join(__dirname, "data", "pykur.sqlite");
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://127.0.0.1:8765";
 const APP_PUBLIC_URL = process.env.APP_PUBLIC_URL || CLIENT_ORIGIN;
 const ROLE_ORDER = { user: 1, moderator: 2, admin: 3 };
@@ -32,6 +31,7 @@ function ensureColumn(table, column, definition) {
 ensureColumn("users", "preferences", "TEXT NOT NULL DEFAULT '{}'");
 
 const app = express();
+app.set("trust proxy", 1);
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
 app.use(express.json({ limit: "2mb" }));
