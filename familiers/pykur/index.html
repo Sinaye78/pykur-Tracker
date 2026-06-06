@@ -10458,7 +10458,7 @@ function renderCommunityProfile(profile){
           <div class="progress-bar"><span class="progress-fill" style="width:${Math.max(0,Math.min(100,item.progress||0))}%"></span></div>
           <p>Morose : ${item.runs?.morose || 0}</p>
           <p>Tynril : ${item.runs?.tynril || 0}</p>
-          ${item.stats?`<p>Temps chrono : ${fmtTime(item.stats.chronoTotalSeconds||0)}</p>`:""}
+          ${item.stats?`<p>Temps chrono : ${item.stats.chronoTotalSeconds?formatDuration(item.stats.chronoTotalSeconds):"—"}</p>`:""}
         </article>
       `).join("") : `<div class="community-profile-empty">Aucun profil Pykur visible publiquement.</div>`}
     </section>
