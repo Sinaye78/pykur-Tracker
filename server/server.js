@@ -47,6 +47,7 @@ const DEFAULT_ACCOUNT_PREFERENCES = {
   hideGallery: false,
   hideSecretAchievements: true,
   showOnlyMainProfile: false,
+  showSecondaryProfiles: false,
   allowPrivateMessages: true
 };
 
@@ -66,7 +67,8 @@ function cleanPreferences(value) {
     hideDetailedStats: !!input.hideDetailedStats,
     hideGallery: !!input.hideGallery,
     hideSecretAchievements: input.hideSecretAchievements !== false,
-    showOnlyMainProfile: !!input.showOnlyMainProfile,
+    showSecondaryProfiles: !!input.showSecondaryProfiles,
+    showOnlyMainProfile: !input.showSecondaryProfiles,
     allowPrivateMessages: input.allowPrivateMessages !== false
   };
 }
@@ -90,6 +92,95 @@ function publicUser(user) {
 
 function signUser(user) {
   return jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
+}
+
+const PUBLIC_MOBS = {
+  chiendent: 80,
+  nerbe: 80,
+  fecorce: 60,
+  abrakleur: 40,
+  bitouf: 40,
+  floribonde: 40,
+  brouture: 60,
+  tynrilAhuri: 3,
+  tynrilPerfide: 3,
+  tynrilDeconcerte: 3,
+  tynrilConsterne: 3
+};
+const PP_MAX = 90;
+
+function publicPpFromMobs(mobs) {
+  let pp = 0;
+  Object.entries(PUBLIC_MOBS).forEach(([id, need]) => {
+    pp += Math.floor((Number(mobs?.[id]) || 0) / need);
+  });
+  return Math.min(PP_MAX, Math.max(0, pp));
+}
+
+function publicTotalMobs(mobs) {
+  const total = {};
+  Object.keys(PUBLIC_MOBS).forEach((id) => {
+    total[id] = (Number(mobs?.morose?.[id]) || 0) + (Number(mobs?.tynril?.[id]) || 0) + (Number(mobs?.zone?.[id]) || 0);
+  });
+  return total;
+}
+
+function publicProfileSummary(entry, index, activeId, preferences) {
+  const profileData = entry?.data || {};
+  const totalMobs = publicTotalMobs(profileData.mobs || {});
+  const pp = publicPpFromMobs(totalMobs);
+  const morose = Number(profileData.runs?.morose) || 0;
+  const tynril = Number(profileData.runs?.tynril) || 0;
+  const safeName = preferences.hidePykurProfileNames ? `Profil Pykur #${index + 1}` : String(entry?.name || `Profil Pykur #${index + 1}`);
+  const profile = {
+    id: entry?.id,
+    name: safeName,
+    isMain: entry?.id === activeId,
+    createdAt: profileData.createdAt || null,
+    pp,
+    progress: Math.min(100, Math.round((pp / PP_MAX) * 10000) / 100),
+    runs: { morose, tynril }
+  };
+  if (!preferences.hideDetailedStats) {
+    profile.stats = {
+      chronoTotalSeconds: Number(profileData.chrono?.seconds) || 0,
+      bestRunSeconds: Number(profileData.session?.lastSummary?.bestSeconds) || null,
+      completedPykurs: Array.isArray(profileData.gallery?.completedPykurs) ? profileData.gallery.completedPykurs.length : 0
+    };
+  }
+  return profile;
+}
+
+function buildCommunityProfile(user, savePayload) {
+  const preferences = parsePreferences(user.preferences);
+  if (!preferences.publicProfile) return null;
+  const store = savePayload?.store || {};
+  const profileEntries = Object.entries(store.profiles || {}).map(([id, entry]) => ({ id, ...(entry || {}) }));
+  const activeId = store.active || profileEntries[0]?.id || null;
+  const visibleProfiles = profileEntries
+    .filter((entry) => entry.id === activeId || preferences.showSecondaryProfiles)
+    .map((entry, index) => publicProfileSummary(entry, index, activeId, preferences));
+  const sharedGallery = store.galleryShared !== false ? store.sharedGallery : null;
+  const gallerySource = sharedGallery || profileEntries.find((entry) => entry.id === activeId)?.data?.gallery || null;
+  return {
+    pseudo: user.pseudo,
+    role: user.role,
+    createdAt: user.created_at,
+    preferences: {
+      publicProfile: true,
+      showSecondaryProfiles: !!preferences.showSecondaryProfiles,
+      hidePykurProfileNames: !!preferences.hidePykurProfileNames,
+      hideDetailedStats: !!preferences.hideDetailedStats,
+      hideGallery: !!preferences.hideGallery,
+      hideSecretAchievements: !!preferences.hideSecretAchievements,
+      allowPrivateMessages: !!preferences.allowPrivateMessages
+    },
+    profiles: visibleProfiles,
+    gallery: preferences.hideGallery ? null : {
+      completedPykurs: Array.isArray(gallerySource?.completedPykurs) ? gallerySource.completedPykurs.length : 0,
+      eventsDiscovered: gallerySource?.eventsDiscovered ? Object.keys(gallerySource.eventsDiscovered).length : 0
+    }
+  };
 }
 
 function cleanPseudo(value) {
@@ -383,6 +474,22 @@ app.put("/api/cloud/save", requireAuth, (req, res) => {
 app.get("/api/cloud/save", requireAuth, (req, res) => {
   const row = db.prepare("SELECT payload, updated_at FROM cloud_saves WHERE user_id = ?").get(req.user.id);
   res.json({ payload: row ? JSON.parse(row.payload) : null, updatedAt: row?.updated_at || null });
+});
+
+app.get("/api/community/users/:pseudo", (req, res) => {
+  const pseudo = cleanPseudo(req.params.pseudo);
+  const user = db.prepare("SELECT * FROM users WHERE lower(pseudo) = lower(?)").get(pseudo);
+  if (!user || user.is_banned || !user.email_verified_at) return res.status(404).json({ error: "Profil introuvable." });
+  const row = db.prepare("SELECT payload FROM cloud_saves WHERE user_id = ?").get(user.id);
+  let payload = null;
+  try {
+    payload = row ? JSON.parse(row.payload) : null;
+  } catch {
+    payload = null;
+  }
+  const profile = buildCommunityProfile(user, payload);
+  if (!profile) return res.status(404).json({ error: "Profil public désactivé." });
+  res.json({ profile });
 });
 
 app.get("/api/moderation/users", requireAuth, requireRole("moderator"), (req, res) => {

@@ -54,6 +54,7 @@ Sans SMTP configuré, les liens sont affichés dans les logs serveur pour les te
 - `PUT /api/account/email`
 - `PUT /api/account/password`
 - `PUT /api/account/preferences`
+- `GET /api/community/users/:pseudo`
 - `GET /api/moderation/users`
 - `POST /api/moderation/users/:id/ban`
 - `POST /api/moderation/users/:id/unban`
