@@ -18,6 +18,7 @@ http://127.0.0.1:3000/api
 ```
 
 Le premier compte créé reçoit automatiquement le rôle `admin`.
+Les nouveaux comptes doivent confirmer leur email avant de pouvoir se connecter.
 
 ## Rôles
 
@@ -25,9 +26,10 @@ Le premier compte créé reçoit automatiquement le rôle `admin`.
 - `moderator` : peut bannir, timeban, mute, unmute et unban les utilisateurs de rôle inférieur.
 - `admin` : peut faire toute la modération, promouvoir/rétrograder les rôles et accéder au panel admin in-game.
 
-## Récupération de mot de passe
+## Emails transactionnels
 
-La récupération utilise un token temporaire valable 1 heure.
+L'inscription envoie un lien de confirmation valable 24 heures.
+La récupération de mot de passe utilise un token temporaire valable 1 heure.
 
 Variables à configurer dans `.env` :
 
@@ -46,6 +48,7 @@ Sans SMTP configuré, les liens sont affichés dans les logs serveur pour les te
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/auth/me`
+- `POST /api/auth/verify-email/confirm`
 - `POST /api/auth/password-reset/request`
 - `POST /api/auth/password-reset/confirm`
 - `PUT /api/account/email`

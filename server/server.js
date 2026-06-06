@@ -29,6 +29,8 @@ function ensureColumn(table, column, definition) {
 }
 
 ensureColumn("users", "preferences", "TEXT NOT NULL DEFAULT '{}'");
+ensureColumn("users", "email_verified_at", "TEXT");
+db.prepare("UPDATE users SET email_verified_at = COALESCE(email_verified_at, created_at) WHERE email_verified_at IS NULL AND last_login_at IS NOT NULL").run();
 
 const app = express();
 app.set("trust proxy", 1);
@@ -76,6 +78,7 @@ function publicUser(user) {
     pseudo: user.pseudo,
     email: user.email,
     role: user.role,
+    emailVerifiedAt: user.email_verified_at,
     isBanned: !!user.is_banned,
     banUntil: user.ban_until,
     muteUntil: user.mute_until,
@@ -163,6 +166,12 @@ function resetLink(token) {
   return url.toString();
 }
 
+function verificationLink(token) {
+  const url = new URL("/familiers/pykur/index.html", APP_PUBLIC_URL);
+  url.searchParams.set("verifyToken", token);
+  return url.toString();
+}
+
 function mailTransport() {
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) return null;
   return nodemailer.createTransport({
@@ -191,6 +200,21 @@ async function sendPasswordResetEmail(user, link) {
   });
 }
 
+async function sendEmailVerificationEmail(user, link) {
+  const transporter = mailTransport();
+  if (!transporter) {
+    console.warn(`[email-verification] SMTP non configure. Lien pour ${user.email}: ${link}`);
+    return;
+  }
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || "Pykur Tracker <no-reply@pykur-tracker.fr>",
+    to: user.email,
+    subject: "Confirmez votre compte Pykur Tracker",
+    text: `Bonjour ${user.pseudo},\n\nBienvenue sur Pykur Tracker.\n\nPour activer votre compte, confirmez votre email avec ce lien valable 24 heures :\n${link}\n\nSi vous n'avez pas cree ce compte, ignorez cet email.`,
+    html: `<p>Bonjour <strong>${user.pseudo}</strong>,</p><p>Bienvenue sur Pykur Tracker.</p><p>Pour activer votre compte, confirmez votre email :</p><p><a href="${link}">Activer mon compte</a></p><p>Ce lien est valable 24 heures.</p><p>Si vous n'avez pas cree ce compte, ignorez cet email.</p>`
+  });
+}
+
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "pykur-tracker", version: "1.5.0-preview" });
 });
@@ -208,17 +232,52 @@ app.post("/api/auth/register", async (req, res) => {
   const hash = await bcrypt.hash(password, 12);
   try {
     const info = db.prepare(`
-      INSERT INTO users(pseudo,email,password_hash,role,last_login_at)
-      VALUES(?,?,?,?,CURRENT_TIMESTAMP)
+      INSERT INTO users(pseudo,email,password_hash,role)
+      VALUES(?,?,?,?)
     `).run(pseudo, email, hash, role);
     const user = getUserById(info.lastInsertRowid);
-    res.status(201).json({ token: signUser(user), user: publicUser(user), bootstrapAdmin: role === "admin" });
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    db.prepare("DELETE FROM email_verification_tokens WHERE user_id = ? AND used_at IS NULL").run(user.id);
+    db.prepare(`
+      INSERT INTO email_verification_tokens(user_id,token_hash,expires_at)
+      VALUES(?,?,?)
+    `).run(user.id, tokenHash(token), expiresAt);
+    try {
+      await sendEmailVerificationEmail(user, verificationLink(token));
+    } catch (mailError) {
+      db.prepare("DELETE FROM users WHERE id = ?").run(user.id);
+      console.error(mailError);
+      return res.status(502).json({ error: "Compte non cree : email de confirmation impossible a envoyer." });
+    }
+    res.status(201).json({ ok: true, pendingVerification: true, bootstrapAdmin: role === "admin" });
   } catch (error) {
     if (String(error.message).includes("UNIQUE")) {
       return res.status(409).json({ error: "Pseudo ou email déjà utilisé." });
     }
     throw error;
   }
+});
+
+app.post("/api/auth/verify-email/confirm", passwordResetLimiter, (req, res) => {
+  const token = String(req.body.token || "");
+  if (token.length < 32) return res.status(400).json({ error: "Lien de confirmation invalide." });
+  const row = db.prepare(`
+    SELECT evt.*, users.id AS user_id
+    FROM email_verification_tokens evt
+    JOIN users ON users.id = evt.user_id
+    WHERE evt.token_hash = ? AND evt.used_at IS NULL
+  `).get(tokenHash(token));
+  if (!row || new Date(row.expires_at).getTime() <= Date.now()) {
+    return res.status(400).json({ error: "Lien de confirmation expire ou deja utilise." });
+  }
+  const transaction = db.transaction(() => {
+    db.prepare("UPDATE users SET email_verified_at = CURRENT_TIMESTAMP, last_login_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(row.user_id);
+    db.prepare("UPDATE email_verification_tokens SET used_at = CURRENT_TIMESTAMP WHERE id = ?").run(row.id);
+  });
+  transaction();
+  const user = getUserById(row.user_id);
+  res.json({ token: signUser(user), user: publicUser(user) });
 });
 
 app.post("/api/auth/login", async (req, res) => {
@@ -230,6 +289,9 @@ app.post("/api/auth/login", async (req, res) => {
   }
   if (user.is_banned && !isExpired(user.ban_until)) {
     return res.status(403).json({ error: user.ban_until ? `Compte banni jusqu'au ${user.ban_until}.` : "Compte banni." });
+  }
+  if (!user.email_verified_at) {
+    return res.status(403).json({ error: "Veuillez confirmer votre email avant de vous connecter." });
   }
   db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?").run(user.id);
   const refreshed = getUserById(user.id);

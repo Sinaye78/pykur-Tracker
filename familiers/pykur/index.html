@@ -10283,6 +10283,30 @@ function checkPasswordResetLink(){
   if(token)openPasswordResetConfirm(token);
 }
 
+async function confirmEmailVerificationToken(token){
+  try{
+    const result=await authFetch("/auth/verify-email/confirm",{method:"POST",body:JSON.stringify({token})});
+    authState.token=result.token;
+    authState.user=result.user;
+    authState.apiOnline=true;
+    localStorage.setItem(AUTH_TOKEN_KEY,authState.token);
+    authRender();
+    toast("Email confirmé. Votre compte est activé.","success","success");
+    cloudAfterLogin({silent:true});
+  }catch(error){
+    toast(error.message||"Lien de confirmation invalide.","error","error");
+  }finally{
+    const url=new URL(location.href);
+    url.searchParams.delete("verifyToken");
+    history.replaceState(null,"",url.toString());
+  }
+}
+
+function checkEmailVerificationLink(){
+  const token=new URLSearchParams(location.search).get("verifyToken");
+  if(token)confirmEmailVerificationToken(token);
+}
+
 function renderAccountProfile(){
   const user=authState.user;
   if(!user)return;
@@ -10382,6 +10406,12 @@ async function authSubmit(event){
       method:"POST",
       body:JSON.stringify(payload)
     });
+    if(authMode==="register" && result.pendingVerification){
+      closeModal("authModal");
+      authSetMode("login");
+      toast(result.bootstrapAdmin?"Compte créé. Confirmez votre email pour activer le rôle admin.":"Compte créé. Vérifiez vos emails pour l'activer.","success","success");
+      return;
+    }
     authState.token=result.token;
     authState.user=result.user;
     authState.apiOnline=true;
@@ -19156,6 +19186,7 @@ if($("#accountEmailForm"))$("#accountEmailForm").onsubmit=saveAccountEmail;
 if($("#accountPasswordForm"))$("#accountPasswordForm").onsubmit=saveAccountPassword;
 authRefresh();
 checkPasswordResetLink();
+checkEmailVerificationLink();
 if($("#hiddenSecretEgg"))$("#hiddenSecretEgg").onclick=collectHiddenSecretEgg;
 if($("#openRunTimes"))$("#openRunTimes").onclick=()=>{renderRunTimesPanel();openModal("runTimesPanel")};
 if($("#closeRunTimes"))$("#closeRunTimes").onclick=()=>closeModal("runTimesPanel");
