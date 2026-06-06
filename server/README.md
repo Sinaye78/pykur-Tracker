@@ -1,6 +1,6 @@
 # Pykur Tracker API
 
-Backend de préparation pour la version 1.5 : comptes, rôles, modération et sauvegarde cloud.
+Backend de préparation pour la version 1.5 : comptes, rôles, modération, récupération de mot de passe et sauvegarde cloud.
 
 ## Installation locale
 
@@ -25,11 +25,32 @@ Le premier compte créé reçoit automatiquement le rôle `admin`.
 - `moderator` : peut bannir, timeban, mute, unmute et unban les utilisateurs de rôle inférieur.
 - `admin` : peut faire toute la modération, promouvoir/rétrograder les rôles et accéder au panel admin in-game.
 
+## Récupération de mot de passe
+
+La récupération utilise un token temporaire valable 1 heure.
+
+Variables à configurer dans `.env` :
+
+- `APP_PUBLIC_URL` : URL publique du site, par exemple `https://pykur-tracker.fr`.
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_SECURE`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `SMTP_FROM`
+
+Sans SMTP configuré, les liens sont affichés dans les logs serveur pour les tests, mais aucun email réel n'est envoyé.
+
 ## Routes principales
 
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/auth/me`
+- `POST /api/auth/password-reset/request`
+- `POST /api/auth/password-reset/confirm`
+- `PUT /api/account/email`
+- `PUT /api/account/password`
+- `PUT /api/account/preferences`
 - `GET /api/moderation/users`
 - `POST /api/moderation/users/:id/ban`
 - `POST /api/moderation/users/:id/unban`
@@ -45,12 +66,13 @@ Le premier compte créé reçoit automatiquement le rôle `admin`.
 2. Copier le projet sur le VPS.
 3. Dans `server`, créer `.env` depuis `.env.example`.
 4. Remplacer `JWT_SECRET` par une longue valeur aléatoire.
-5. Lancer `npm install`.
-6. Démarrer avec `pm2` :
+5. Configurer `APP_PUBLIC_URL` et les variables SMTP si les emails doivent être envoyés réellement.
+6. Lancer `npm install`.
+7. Démarrer avec `pm2` :
 
 ```bash
 pm2 start server.js --name pykur-api
 pm2 save
 ```
 
-7. Configurer Nginx pour servir le site statique et proxifier `/api/` vers `http://127.0.0.1:3000/api/`.
+8. Configurer Nginx pour servir le site statique et proxifier `/api/` vers `http://127.0.0.1:3000/api/`.

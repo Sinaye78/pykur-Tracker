@@ -3682,6 +3682,16 @@ body.no-anim .app.milestone-flash{
   font-weight:900;
 }
 .auth-error.show{display:block}
+.auth-secondary-action{
+  border:0;
+  background:transparent;
+  color:var(--blue);
+  font-weight:900;
+  text-align:left;
+  cursor:pointer;
+  padding:0;
+}
+.auth-secondary-action:hover{text-decoration:underline}
 
 .account-profile-grid{
   display:grid;
@@ -9203,9 +9213,42 @@ body.no-anim .pykur-sparkle{
           Mot de passe
           <input id="authPassword" name="password" type="password" autocomplete="current-password" placeholder="Minimum 8 caractères">
         </label>
+        <button class="auth-secondary-action" id="forgotPasswordButton" type="button">Mot de passe oublié ?</button>
         <button class="btn btn-green" id="authSubmit" type="submit">Se connecter</button>
       </form>
     </div>
+  </div>
+</div>
+
+<!-- RECUPERATION MOT DE PASSE -->
+<div class="modal-bg" id="passwordResetModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2>🔐 Mot de passe oublié</h2>
+        <p id="passwordResetSubtitle">Recevez un lien sécurisé pour réinitialiser votre mot de passe.</p>
+      </div>
+      <button class="btn btn-red modal-close" data-close="passwordResetModal">X</button>
+    </div>
+    <div class="modal-body">
+      <form class="auth-form" id="passwordResetRequestForm">
+        <div class="auth-help">Indiquez votre email ou votre pseudo. Si un compte correspond, un lien valable 1 heure sera envoyé par email.</div>
+        <label class="auth-field">
+          Email ou pseudo
+          <input id="passwordResetIdentifier" autocomplete="username" placeholder="Email ou pseudo">
+        </label>
+        <button class="btn btn-blue" type="submit">Envoyer le lien</button>
+      </form>
+      <form class="auth-form hidden" id="passwordResetConfirmForm">
+        <div class="auth-help">Choisissez un nouveau mot de passe. Après validation, vous serez connecté automatiquement.</div>
+        <label class="auth-field">
+          Nouveau mot de passe
+          <input id="passwordResetNewPassword" type="password" autocomplete="new-password" placeholder="Minimum 8 caractères">
+        </label>
+        <button class="btn btn-green" type="submit">Réinitialiser et se connecter</button>
+      </form>
+    </div>
+    <div class="modal-foot"><button class="btn btn-gray" data-close="passwordResetModal">Fermer</button></div>
   </div>
 </div>
 
@@ -9841,6 +9884,7 @@ const AUTH_TOKEN_KEY="pykur_auth_token";
 let authMode="login";
 let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null};
 const cloudState={timer:null,syncing:false,pending:false,lastSyncAt:null,error:null,loading:false};
+let passwordResetToken="";
 
 async function authFetch(path,options={}){
   const headers=Object.assign({"Content-Type":"application/json"},options.headers||{});
@@ -9896,6 +9940,7 @@ function authSetMode(mode){
   $("#authEmailField").style.display=isRegister?"grid":"none";
   $("#authIdentifier").closest(".auth-field").style.display=isRegister?"none":"grid";
   $("#authPassword").autocomplete=isRegister?"new-password":"current-password";
+  if($("#forgotPasswordButton"))$("#forgotPasswordButton").style.display=isRegister?"none":"block";
   authSetError("");
 }
 
@@ -9922,6 +9967,63 @@ function authOpen(mode="login"){
   authSetMode(mode);
   openModal("authModal");
   setTimeout(()=>$(authMode==="register"?"#authPseudo":"#authIdentifier")?.focus?.(),0);
+}
+
+function openPasswordResetRequest(){
+  passwordResetToken="";
+  $("#passwordResetSubtitle").textContent="Recevez un lien sécurisé pour réinitialiser votre mot de passe.";
+  $("#passwordResetRequestForm")?.classList.remove("hidden");
+  $("#passwordResetConfirmForm")?.classList.add("hidden");
+  closeModal("authModal");
+  openModal("passwordResetModal");
+  setTimeout(()=>$("#passwordResetIdentifier")?.focus?.(),0);
+}
+
+function openPasswordResetConfirm(token){
+  passwordResetToken=String(token||"");
+  $("#passwordResetSubtitle").textContent="Définissez votre nouveau mot de passe pour récupérer votre compte.";
+  $("#passwordResetRequestForm")?.classList.add("hidden");
+  $("#passwordResetConfirmForm")?.classList.remove("hidden");
+  openModal("passwordResetModal");
+  setTimeout(()=>$("#passwordResetNewPassword")?.focus?.(),0);
+}
+
+async function requestPasswordReset(event){
+  event.preventDefault();
+  const identifier=$("#passwordResetIdentifier")?.value||"";
+  try{
+    await authFetch("/auth/password-reset/request",{method:"POST",body:JSON.stringify({identifier})});
+    toast("Si un compte correspond, un email de récupération a été envoyé.","success","success");
+    closeModal("passwordResetModal");
+  }catch(error){
+    toast(error.message||"Demande impossible pour le moment.","error","error");
+  }
+}
+
+async function confirmPasswordReset(event){
+  event.preventDefault();
+  const newPassword=$("#passwordResetNewPassword")?.value||"";
+  try{
+    const result=await authFetch("/auth/password-reset/confirm",{method:"POST",body:JSON.stringify({token:passwordResetToken,newPassword})});
+    authState.token=result.token;
+    authState.user=result.user;
+    authState.apiOnline=true;
+    localStorage.setItem(AUTH_TOKEN_KEY,authState.token);
+    authRender();
+    closeModal("passwordResetModal");
+    toast("Mot de passe réinitialisé. Vous êtes connecté.","success","success");
+    cloudAfterLogin({silent:true});
+    const url=new URL(location.href);
+    url.searchParams.delete("resetToken");
+    history.replaceState(null,"",url.toString());
+  }catch(error){
+    toast(error.message||"Lien de récupération invalide.","error","error");
+  }
+}
+
+function checkPasswordResetLink(){
+  const token=new URLSearchParams(location.search).get("resetToken");
+  if(token)openPasswordResetConfirm(token);
 }
 
 function renderAccountProfile(){
@@ -18790,9 +18892,13 @@ if($("#resetAchievements"))$("#resetAchievements").onclick=resetAchievements;
 if($("#authLoginTab"))$("#authLoginTab").onclick=()=>authSetMode("login");
 if($("#authRegisterTab"))$("#authRegisterTab").onclick=()=>authSetMode("register");
 if($("#authForm"))$("#authForm").onsubmit=authSubmit;
+if($("#forgotPasswordButton"))$("#forgotPasswordButton").onclick=openPasswordResetRequest;
+if($("#passwordResetRequestForm"))$("#passwordResetRequestForm").onsubmit=requestPasswordReset;
+if($("#passwordResetConfirmForm"))$("#passwordResetConfirmForm").onsubmit=confirmPasswordReset;
 if($("#accountEmailForm"))$("#accountEmailForm").onsubmit=saveAccountEmail;
 if($("#accountPasswordForm"))$("#accountPasswordForm").onsubmit=saveAccountPassword;
 authRefresh();
+checkPasswordResetLink();
 if($("#hiddenSecretEgg"))$("#hiddenSecretEgg").onclick=collectHiddenSecretEgg;
 if($("#openRunTimes"))$("#openRunTimes").onclick=()=>{renderRunTimesPanel();openModal("runTimesPanel")};
 if($("#closeRunTimes"))$("#closeRunTimes").onclick=()=>closeModal("runTimesPanel");
