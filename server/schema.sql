@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'user' CHECK(role IN ('user','moderator','admin')),
+  preferences TEXT NOT NULL DEFAULT '{}',
   is_banned INTEGER NOT NULL DEFAULT 0,
   ban_until TEXT,
   mute_until TEXT,

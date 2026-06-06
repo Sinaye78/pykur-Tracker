@@ -21,11 +21,49 @@ const db = new Database(DB_PATH);
 db.pragma("foreign_keys = ON");
 db.exec(fs.readFileSync(path.join(__dirname, "schema.sql"), "utf8"));
 
+function ensureColumn(table, column, definition) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all().map((item) => item.name);
+  if (!columns.includes(column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+}
+
+ensureColumn("users", "preferences", "TEXT NOT NULL DEFAULT '{}'");
+
 const app = express();
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
 app.use(express.json({ limit: "2mb" }));
 app.use(rateLimit({ windowMs: 60 * 1000, max: 120 }));
+
+const DEFAULT_ACCOUNT_PREFERENCES = {
+  publicProfile: false,
+  hidePykurProfileNames: true,
+  hideDetailedStats: false,
+  hideGallery: false,
+  hideSecretAchievements: true,
+  showOnlyMainProfile: false,
+  allowPrivateMessages: true
+};
+
+function parsePreferences(value) {
+  try {
+    return Object.assign({}, DEFAULT_ACCOUNT_PREFERENCES, JSON.parse(value || "{}"));
+  } catch {
+    return Object.assign({}, DEFAULT_ACCOUNT_PREFERENCES);
+  }
+}
+
+function cleanPreferences(value) {
+  const input = value && typeof value === "object" ? value : {};
+  return {
+    publicProfile: !!input.publicProfile,
+    hidePykurProfileNames: input.hidePykurProfileNames !== false,
+    hideDetailedStats: !!input.hideDetailedStats,
+    hideGallery: !!input.hideGallery,
+    hideSecretAchievements: input.hideSecretAchievements !== false,
+    showOnlyMainProfile: !!input.showOnlyMainProfile,
+    allowPrivateMessages: input.allowPrivateMessages !== false
+  };
+}
 
 function publicUser(user) {
   if (!user) return null;
@@ -37,6 +75,7 @@ function publicUser(user) {
     isBanned: !!user.is_banned,
     banUntil: user.ban_until,
     muteUntil: user.mute_until,
+    preferences: parsePreferences(user.preferences),
     createdAt: user.created_at,
     lastLoginAt: user.last_login_at
   };
@@ -153,6 +192,34 @@ app.post("/api/auth/login", async (req, res) => {
 
 app.get("/api/auth/me", requireAuth, (req, res) => {
   res.json({ user: publicUser(req.user), muted: !!req.user.mute_until, muteUntil: req.user.mute_until });
+});
+
+app.put("/api/account/email", requireAuth, (req, res) => {
+  const email = String(req.body.email || "").trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "Email invalide." });
+  try {
+    db.prepare("UPDATE users SET email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(email, req.user.id);
+    res.json({ user: publicUser(getUserById(req.user.id)) });
+  } catch (error) {
+    if (String(error.message).includes("UNIQUE")) return res.status(409).json({ error: "Email déjà utilisé." });
+    throw error;
+  }
+});
+
+app.put("/api/account/password", requireAuth, async (req, res) => {
+  const currentPassword = String(req.body.currentPassword || "");
+  const newPassword = String(req.body.newPassword || "");
+  if (!(await bcrypt.compare(currentPassword, req.user.password_hash))) return res.status(401).json({ error: "Mot de passe actuel incorrect." });
+  if (newPassword.length < 8) return res.status(400).json({ error: "Le nouveau mot de passe doit contenir au moins 8 caractères." });
+  const hash = await bcrypt.hash(newPassword, 12);
+  db.prepare("UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(hash, req.user.id);
+  res.json({ ok: true });
+});
+
+app.put("/api/account/preferences", requireAuth, (req, res) => {
+  const preferences = cleanPreferences(req.body.preferences);
+  db.prepare("UPDATE users SET preferences = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(JSON.stringify(preferences), req.user.id);
+  res.json({ user: publicUser(getUserById(req.user.id)) });
 });
 
 app.put("/api/cloud/save", requireAuth, (req, res) => {

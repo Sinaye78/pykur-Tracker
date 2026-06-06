@@ -3571,6 +3571,16 @@ body.no-anim .app.milestone-flash{
   font-weight:900;
   line-height:1.1;
 }
+.auth-user-chip.account-open{
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  text-align:left;
+  border-radius:10px;
+}
+.auth-user-chip.account-open:hover{
+  background:rgba(255,255,255,.34);
+}
 .auth-user-chip strong{font-size:13px}
 .auth-user-chip span{color:#74512a;text-transform:uppercase}
 .auth-widget .btn{
@@ -3672,6 +3682,78 @@ body.no-anim .app.milestone-flash{
   font-weight:900;
 }
 .auth-error.show{display:block}
+
+.account-profile-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.account-panel{
+  display:grid;
+  gap:10px;
+  padding:14px;
+  border:1px solid rgba(119,79,28,.22);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(255,252,242,.88),rgba(244,225,185,.58));
+}
+.account-panel.full{grid-column:1/-1}
+.account-panel h3{
+  margin:0;
+  font-size:16px;
+}
+.account-meta{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.account-meta span,
+.privacy-toggle{
+  padding:9px 10px;
+  border:1px solid rgba(119,79,28,.18);
+  border-radius:12px;
+  background:rgba(255,255,255,.42);
+  font-weight:850;
+}
+.account-meta small,
+.privacy-toggle small{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.3;
+}
+.account-form{
+  display:grid;
+  gap:8px;
+}
+.account-form input{
+  width:100%;
+  min-height:38px;
+  padding:0 10px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:rgba(255,255,255,.62);
+  color:var(--text);
+  font-weight:800;
+}
+.privacy-list{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.privacy-toggle{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:9px;
+  align-items:start;
+  cursor:pointer;
+}
+.privacy-toggle input{margin-top:2px}
+@media(max-width:760px){
+  .account-profile-grid,
+  .privacy-list,
+  .account-meta{grid-template-columns:1fr}
+}
 
 .dashboard-options-btn{
   position:static!important;
@@ -9127,6 +9209,48 @@ body.no-anim .pykur-sparkle{
   </div>
 </div>
 
+<!-- PROFIL UTILISATEUR -->
+<div class="modal-bg" id="accountProfileModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2>👤 Profil utilisateur</h2>
+        <p>Gérez votre compte et préparez vos préférences communautaires.</p>
+      </div>
+      <button class="btn btn-red modal-close" data-close="accountProfileModal">X</button>
+    </div>
+    <div class="modal-body">
+      <div class="account-profile-grid">
+        <section class="account-panel full">
+          <h3>Compte</h3>
+          <div class="account-meta" id="accountProfileMeta"></div>
+        </section>
+        <section class="account-panel">
+          <h3>Modifier l'email</h3>
+          <form class="account-form" id="accountEmailForm">
+            <input id="accountEmailInput" type="email" autocomplete="email" placeholder="nouvel@email.fr">
+            <button class="btn btn-blue" type="submit">Enregistrer l'email</button>
+          </form>
+        </section>
+        <section class="account-panel">
+          <h3>Modifier le mot de passe</h3>
+          <form class="account-form" id="accountPasswordForm">
+            <input id="accountCurrentPassword" type="password" autocomplete="current-password" placeholder="Mot de passe actuel">
+            <input id="accountNewPassword" type="password" autocomplete="new-password" placeholder="Nouveau mot de passe">
+            <button class="btn btn-orange" type="submit">Changer le mot de passe</button>
+          </form>
+        </section>
+        <section class="account-panel full">
+          <h3>Confidentialité communautaire</h3>
+          <div class="privacy-list" id="accountPrivacyList"></div>
+          <div class="options-note">Ces réglages préparent les futurs profils publics, messages privés et partages de galerie. Ils n'affectent pas votre progression actuelle.</div>
+        </section>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-gray" data-close="accountProfileModal">Fermer</button></div>
+  </div>
+</div>
+
 <!-- CHANGELOG -->
 <div class="modal-bg" id="changelogModal">
   <div class="modal changelog-modal">
@@ -9731,6 +9855,28 @@ function authRoleLabel(role){
   return role==="admin"?"Admin":role==="moderator"?"Modérateur":"Utilisateur";
 }
 
+const ACCOUNT_PRIVACY_OPTIONS=[
+  {key:"publicProfile",label:"Profil public",description:"Autoriser l'affichage d'une page profil communautaire."},
+  {key:"hidePykurProfileNames",label:"Masquer les noms de profils Pykur",description:"Remplace les noms de profils par des intitulés neutres dans les vues publiques."},
+  {key:"hideDetailedStats",label:"Masquer les statistiques détaillées",description:"Affiche seulement les grandes lignes de progression."},
+  {key:"hideGallery",label:"Masquer la galerie publique",description:"Ne partage pas vos anciens Pykurs dans le futur profil public."},
+  {key:"hideSecretAchievements",label:"Masquer les succès secrets",description:"Évite de révéler les succès et easter eggs cachés."},
+  {key:"showOnlyMainProfile",label:"Afficher seulement le profil principal",description:"Les profils secondaires resteront privés."},
+  {key:"allowPrivateMessages",label:"Autoriser les messages privés",description:"Prépare la messagerie communautaire de la v1.5."}
+];
+
+function accountPreferences(){
+  return Object.assign({
+    publicProfile:false,
+    hidePykurProfileNames:true,
+    hideDetailedStats:false,
+    hideGallery:false,
+    hideSecretAchievements:true,
+    showOnlyMainProfile:false,
+    allowPrivateMessages:true
+  },authState.user?.preferences||{});
+}
+
 function authSetError(message=""){
   const box=$("#authError");
   if(!box)return;
@@ -9765,7 +9911,8 @@ function authRender(){
   }
   const user=authState.user;
   const adminButton=user.role==="admin" ? '<button class="btn btn-orange" id="authAdminPanel" type="button">Admin panel</button>' : "";
-  box.innerHTML='<div class="auth-user-chip"><strong>'+user.pseudo+'</strong><span>'+authRoleLabel(user.role)+'</span></div>'+adminButton+'<button class="btn btn-gray" id="authLogout" type="button">Déconnexion</button>';
+  box.innerHTML='<button class="auth-user-chip account-open" id="accountProfileOpen" type="button" title="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button>'+adminButton+'<button class="btn btn-gray" id="authLogout" type="button">Déconnexion</button>';
+  if($("#accountProfileOpen"))$("#accountProfileOpen").onclick=openAccountProfile;
   if($("#authLogout"))$("#authLogout").onclick=authLogout;
   if($("#authAdminPanel"))$("#authAdminPanel").onclick=()=>livingOpenAdmin();
   renderCloudStatus();
@@ -9775,6 +9922,93 @@ function authOpen(mode="login"){
   authSetMode(mode);
   openModal("authModal");
   setTimeout(()=>$(authMode==="register"?"#authPseudo":"#authIdentifier")?.focus?.(),0);
+}
+
+function renderAccountProfile(){
+  const user=authState.user;
+  if(!user)return;
+  const meta=$("#accountProfileMeta");
+  if(meta){
+    meta.innerHTML=[
+      ["Pseudo",user.pseudo],
+      ["Email",user.email],
+      ["Rôle",authRoleLabel(user.role)],
+      ["Compte créé",user.createdAt?formatDateShort(user.createdAt):"-"],
+      ["Dernière connexion",user.lastLoginAt?formatDateShort(user.lastLoginAt):"-"]
+    ].map(([label,value])=>`<span>${label}<small>${escapeHtml(value)}</small></span>`).join("");
+  }
+  const email=$("#accountEmailInput");
+  if(email)email.value=user.email||"";
+  const prefs=accountPreferences();
+  const list=$("#accountPrivacyList");
+  if(list){
+    list.innerHTML=ACCOUNT_PRIVACY_OPTIONS.map(option=>`
+      <label class="privacy-toggle">
+        <input type="checkbox" data-account-pref="${option.key}" ${prefs[option.key]?"checked":""}>
+        <span>${option.label}<small>${option.description}</small></span>
+      </label>
+    `).join("");
+    list.querySelectorAll("[data-account-pref]").forEach(input=>{
+      input.addEventListener("change",saveAccountPreferences);
+    });
+  }
+}
+
+function openAccountProfile(){
+  if(!authState.user){
+    authOpen("login");
+    return;
+  }
+  renderAccountProfile();
+  openModal("accountProfileModal");
+}
+
+async function saveAccountEmail(event){
+  event.preventDefault();
+  if(!authState.user)return authOpen("login");
+  const email=$("#accountEmailInput")?.value||"";
+  try{
+    const result=await authFetch("/account/email",{method:"PUT",body:JSON.stringify({email})});
+    authState.user=result.user;
+    authRender();
+    renderAccountProfile();
+    toast("Email mis à jour.","success","success");
+  }catch(error){
+    toast(error.message||"Email impossible à modifier.","error","error");
+  }
+}
+
+async function saveAccountPassword(event){
+  event.preventDefault();
+  if(!authState.user)return authOpen("login");
+  const currentPassword=$("#accountCurrentPassword")?.value||"";
+  const newPassword=$("#accountNewPassword")?.value||"";
+  try{
+    await authFetch("/account/password",{method:"PUT",body:JSON.stringify({currentPassword,newPassword})});
+    if($("#accountCurrentPassword"))$("#accountCurrentPassword").value="";
+    if($("#accountNewPassword"))$("#accountNewPassword").value="";
+    toast("Mot de passe mis à jour.","success","success");
+  }catch(error){
+    toast(error.message||"Mot de passe impossible à modifier.","error","error");
+  }
+}
+
+async function saveAccountPreferences(){
+  if(!authState.user)return;
+  const preferences=accountPreferences();
+  $$("[data-account-pref]").forEach(input=>{
+    preferences[input.dataset.accountPref]=!!input.checked;
+  });
+  try{
+    const result=await authFetch("/account/preferences",{method:"PUT",body:JSON.stringify({preferences})});
+    authState.user=result.user;
+    authRender();
+    renderAccountProfile();
+    toast("Préférences communautaires sauvegardées.","success","success");
+  }catch(error){
+    toast(error.message||"Préférences impossibles à sauvegarder.","error","error");
+    renderAccountProfile();
+  }
 }
 
 async function authSubmit(event){
@@ -18556,6 +18790,8 @@ if($("#resetAchievements"))$("#resetAchievements").onclick=resetAchievements;
 if($("#authLoginTab"))$("#authLoginTab").onclick=()=>authSetMode("login");
 if($("#authRegisterTab"))$("#authRegisterTab").onclick=()=>authSetMode("register");
 if($("#authForm"))$("#authForm").onsubmit=authSubmit;
+if($("#accountEmailForm"))$("#accountEmailForm").onsubmit=saveAccountEmail;
+if($("#accountPasswordForm"))$("#accountPasswordForm").onsubmit=saveAccountPassword;
 authRefresh();
 if($("#hiddenSecretEgg"))$("#hiddenSecretEgg").onclick=collectHiddenSecretEgg;
 if($("#openRunTimes"))$("#openRunTimes").onclick=()=>{renderRunTimesPanel();openModal("runTimesPanel")};
