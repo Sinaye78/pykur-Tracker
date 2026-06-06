@@ -53,9 +53,27 @@ CREATE TABLE IF NOT EXISTS email_verification_tokens (
   FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS friendships (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_a_id INTEGER NOT NULL,
+  user_b_id INTEGER NOT NULL,
+  requester_id INTEGER NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','accepted')),
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CHECK(user_a_id < user_b_id),
+  UNIQUE(user_a_id,user_b_id),
+  FOREIGN KEY(user_a_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY(user_b_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY(requester_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_moderation_target ON moderation_actions(target_user_id);
 CREATE INDEX IF NOT EXISTS idx_password_reset_user ON password_reset_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_password_reset_hash ON password_reset_tokens(token_hash);
 CREATE INDEX IF NOT EXISTS idx_email_verification_user ON email_verification_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_email_verification_hash ON email_verification_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_friendships_user_a ON friendships(user_a_id);
+CREATE INDEX IF NOT EXISTS idx_friendships_user_b ON friendships(user_b_id);
+CREATE INDEX IF NOT EXISTS idx_friendships_requester ON friendships(requester_id);

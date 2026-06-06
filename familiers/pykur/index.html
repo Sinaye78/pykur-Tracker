@@ -3771,6 +3771,7 @@ body.no-anim .app.milestone-flash{
 #authModal.modal-bg,
 #passwordResetModal.modal-bg,
 #accountProfileModal.modal-bg,
+#friendsModal.modal-bg,
 #communityDirectoryModal.modal-bg,
 #communityProfileModal.modal-bg{
   background:rgba(15,18,24,.72);
@@ -3780,6 +3781,7 @@ body.no-anim .app.milestone-flash{
 #authModal .modal,
 #passwordResetModal .modal,
 #accountProfileModal .modal,
+#friendsModal .modal,
 #communityDirectoryModal .modal,
 #communityProfileModal .modal{
   width:min(560px,calc(100vw - 28px));
@@ -3796,6 +3798,7 @@ body.no-anim .app.milestone-flash{
 #authModal .modal-head,
 #passwordResetModal .modal-head,
 #accountProfileModal .modal-head,
+#friendsModal .modal-head,
 #communityDirectoryModal .modal-head,
 #communityProfileModal .modal-head{
   min-height:62px;
@@ -3808,6 +3811,7 @@ body.no-anim .app.milestone-flash{
 #authModal .modal-head h2,
 #passwordResetModal .modal-head h2,
 #accountProfileModal .modal-head h2,
+#friendsModal .modal-head h2,
 #communityDirectoryModal .modal-head h2,
 #communityProfileModal .modal-head h2{
   font-size:22px;
@@ -3818,6 +3822,7 @@ body.no-anim .app.milestone-flash{
 #authModal .modal-head p,
 #passwordResetModal .modal-head p,
 #accountProfileModal .modal-head p,
+#friendsModal .modal-head p,
 #communityDirectoryModal .modal-head p,
 #communityProfileModal .modal-head p{
   max-width:620px;
@@ -3829,6 +3834,7 @@ body.no-anim .app.milestone-flash{
 #authModal .modal-body,
 #passwordResetModal .modal-body,
 #accountProfileModal .modal-body,
+#friendsModal .modal-body,
 #communityDirectoryModal .modal-body,
 #communityProfileModal .modal-body{
   padding:18px;
@@ -3840,6 +3846,7 @@ body.no-anim .app.milestone-flash{
 #authModal .modal-foot,
 #passwordResetModal .modal-foot,
 #accountProfileModal .modal-foot,
+#friendsModal .modal-foot,
 #communityDirectoryModal .modal-foot,
 #communityProfileModal .modal-foot{
   min-height:0;
@@ -4146,6 +4153,61 @@ body.no-anim .app.milestone-flash{
   font-weight:850;
 }
 
+.community-friend-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
+
+.community-private-note{
+  padding:14px;
+  border:1px dashed rgba(140,100,48,.34);
+  border-radius:14px;
+  background:rgba(255,255,255,.45);
+  color:#5f4323;
+  font-weight:850;
+}
+
+.friends-section{
+  display:grid;
+  gap:10px;
+  margin-bottom:16px;
+}
+
+.friends-section h3{
+  margin:0;
+  font-size:17px;
+}
+
+.friend-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px;
+  border:1px solid rgba(140,100,48,.22);
+  border-radius:13px;
+  background:rgba(255,255,255,.64);
+}
+
+.friend-row strong{
+  display:block;
+}
+
+.friend-row small{
+  display:block;
+  color:#73522d;
+  font-weight:800;
+}
+
+.friend-row-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
 .community-profile-view{
   display:grid;
   gap:14px;
@@ -4302,6 +4364,10 @@ body.no-anim .app.milestone-flash{
     grid-template-columns:1fr;
   }
   .community-search-result{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .friend-row{
     align-items:stretch;
     flex-direction:column;
   }
@@ -9815,6 +9881,7 @@ body.no-anim .pykur-sparkle{
           <div class="community-profile-actions">
             <button class="btn btn-blue" id="previewCommunityProfile" type="button">Voir mon profil public</button>
             <button class="btn btn-gray" id="openCommunitySearch" type="button">Rechercher un membre</button>
+            <button class="btn btn-blue" id="openFriendsPanel" type="button">Amis</button>
             <button class="btn btn-orange" id="copyMyCommunityLink" type="button">Copier mon lien public</button>
           </div>
         </section>
@@ -9840,6 +9907,23 @@ body.no-anim .pykur-sparkle{
         </section>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- AMIS -->
+<div class="modal-bg" id="friendsModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2>Amis</h2>
+        <p>Gérez vos demandes et préparez les futures interactions communautaires.</p>
+      </div>
+      <button class="btn btn-red modal-close" data-close="friendsModal">X</button>
+    </div>
+    <div class="modal-body">
+      <div id="friendsContent"></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-gray" data-close="friendsModal">Fermer</button></div>
   </div>
 </div>
 
@@ -10714,18 +10798,26 @@ function renderCommunityProfile(profile){
   const profiles=Array.isArray(profile?.profiles)?profile.profiles:[];
   const achievements=communityAchievementEntries(profile);
   const hiddenAchievementCount=(Array.isArray(profile?.achievements?.unlocked)?profile.achievements.unlocked.length:0)-achievements.length;
+  const social=profile?.social||{};
   box.innerHTML=`
     <section class="community-profile-hero">
       <div>
         <h3>${escapeHtml(profile?.pseudo||"Profil")}</h3>
-        <p>Compte créé le ${profile?.createdAt?formatDateShort(profile.createdAt):"date inconnue"}</p>
+        <p>${profile?.isPrivate?"Profil privé · ":""}Compte créé le ${profile?.createdAt?formatDateShort(profile.createdAt):"date inconnue"}</p>
         <div class="community-profile-hero-actions">
           <button class="btn btn-blue" type="button" data-community-copy-link="${escapeHtml(profile?.pseudo||"")}">Copier le lien public</button>
           <button class="btn btn-gray" type="button" data-community-open-search>Rechercher un membre</button>
         </div>
+        <div class="community-friend-actions" data-community-social-actions></div>
       </div>
       <span class="community-role-badge">${authRoleLabel(profile?.role)}</span>
     </section>
+    ${profile?.isPrivate?`
+      <section class="community-private-note">
+        Ce membre a choisi de garder ses informations privées. Vous pouvez tout de même l'ajouter en ami et, plus tard, lui envoyer un message si ses préférences l'autorisent.
+      </section>
+    `:""}
+    ${!profile?.isPrivate?`
     <section class="community-profile-grid">
       ${profiles.length ? profiles.map(item=>`
           <article class="community-profile-card">
@@ -10763,7 +10855,9 @@ function renderCommunityProfile(profile){
           ${hiddenAchievementCount>0?`<p>${hiddenAchievementCount} succès secret${hiddenAchievementCount>1?"s":""} masqué${hiddenAchievementCount>1?"s":""}.</p>`:""}`
         : `<p>Aucun succès public visible pour le moment.</p>`}
     </section>
+    `:""}
   `;
+  renderCommunitySocialActions(box.querySelector("[data-community-social-actions]"),profile?.pseudo,social);
   box.querySelector("[data-community-copy-link]")?.addEventListener("click",async event=>{
     const pseudo=event.currentTarget.dataset.communityCopyLink;
     try{
@@ -10774,6 +10868,118 @@ function renderCommunityProfile(profile){
     }
   });
   box.querySelector("[data-community-open-search]")?.addEventListener("click",openCommunityDirectory);
+}
+
+function renderCommunitySocialActions(container,pseudo,social={}){
+  if(!container)return;
+  if(!authState.user){
+    container.innerHTML=`<button class="btn btn-blue" type="button" data-social-login>Se connecter pour ajouter</button>`;
+    container.querySelector("[data-social-login]")?.addEventListener("click",()=>authOpen("login"));
+    return;
+  }
+  if(social.isSelf || social.status==="self"){
+    container.innerHTML=`<span class="community-profile-summary-item"><small>Profil</small>Votre compte</span>`;
+    return;
+  }
+  const disabledMessage=`<button class="btn btn-gray" type="button" disabled>Message bientôt</button>`;
+  if(social.status==="friends"){
+    container.innerHTML=`<button class="btn btn-green" type="button" disabled>Ami</button>${social.canMessage?disabledMessage:""}<button class="btn btn-red" type="button" data-social-action="remove">Retirer</button>`;
+  }else if(social.status==="pending_sent"){
+    container.innerHTML=`<button class="btn btn-gray" type="button" disabled>Demande envoyée</button><button class="btn btn-red" type="button" data-social-action="remove">Annuler</button>`;
+  }else if(social.status==="pending_received"){
+    container.innerHTML=`<button class="btn btn-green" type="button" data-social-action="accept">Accepter</button><button class="btn btn-gray" type="button" data-social-action="reject">Refuser</button>`;
+  }else{
+    container.innerHTML=`<button class="btn btn-blue" type="button" data-social-action="request">Ajouter en ami</button>`;
+  }
+  container.querySelectorAll("[data-social-action]").forEach(button=>{
+    button.addEventListener("click",()=>communitySocialAction(pseudo,button.dataset.socialAction));
+  });
+}
+
+async function communitySocialAction(pseudo,action){
+  if(!authState.user)return authOpen("login");
+  const clean=(pseudo||"").trim();
+  if(!clean)return;
+  const method=action==="remove"?"DELETE":"POST";
+  const suffix=action==="remove"?"":`/${action}`;
+  try{
+    await authFetch(`/social/friends/${encodeURIComponent(clean)}${suffix}`,{method});
+    const messages={
+      request:"Demande d'ami envoyée.",
+      accept:"Demande d'ami acceptée.",
+      reject:"Demande d'ami refusée.",
+      remove:"Relation d'ami retirée."
+    };
+    toast(messages[action]||"Action effectuée.","success","success");
+    await openCommunityProfileByPseudo(clean);
+    if($("#friendsModal")?.classList.contains("show"))loadFriendsPanel();
+  }catch(error){
+    toast(error.message||"Action sociale impossible.","error","error");
+  }
+}
+
+function friendRow(item,actions=[]){
+  const user=item?.user||{};
+  return `
+    <article class="friend-row">
+      <div>
+        <strong>${escapeHtml(user.pseudo||"Utilisateur")}</strong>
+        <small>${authRoleLabel(user.role)} · inscrit le ${user.createdAt?formatDateShort(user.createdAt):"date inconnue"}</small>
+      </div>
+      <div class="friend-row-actions">
+        <button class="btn btn-blue" type="button" data-friend-view="${escapeHtml(user.pseudo||"")}">Voir</button>
+        ${actions.map(action=>`<button class="btn ${action.className}" type="button" data-friend-action="${action.action}" data-friend-pseudo="${escapeHtml(user.pseudo||"")}">${action.label}</button>`).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function friendsSection(title,items,empty,actions=[]){
+  return `
+    <section class="friends-section">
+      <h3>${title}</h3>
+      ${items.length?items.map(item=>friendRow(item,actions)).join(""):`<div class="community-profile-empty">${empty}</div>`}
+    </section>
+  `;
+}
+
+async function loadFriendsPanel(){
+  const box=$("#friendsContent");
+  if(!box)return;
+  if(!authState.user){
+    box.innerHTML=`<div class="community-profile-empty">Connectez-vous pour gérer vos amis.</div>`;
+    return;
+  }
+  box.innerHTML=`<div class="community-profile-empty">Chargement des amis...</div>`;
+  try{
+    const data=await authFetch("/social/friends");
+    box.innerHTML=[
+      friendsSection("Demandes reçues",data.incoming||[],"Aucune demande reçue.",[
+        {action:"accept",label:"Accepter",className:"btn-green"},
+        {action:"reject",label:"Refuser",className:"btn-gray"}
+      ]),
+      friendsSection("Demandes envoyées",data.outgoing||[],"Aucune demande envoyée.",[
+        {action:"remove",label:"Annuler",className:"btn-red"}
+      ]),
+      friendsSection("Amis",data.friends||[],"Aucun ami pour le moment.",[
+        {action:"remove",label:"Retirer",className:"btn-red"}
+      ])
+    ].join("");
+    box.querySelectorAll("[data-friend-view]").forEach(button=>{
+      button.addEventListener("click",()=>openCommunityProfileByPseudo(button.dataset.friendView,{updateUrl:true}));
+    });
+    box.querySelectorAll("[data-friend-action]").forEach(button=>{
+      button.addEventListener("click",()=>communitySocialAction(button.dataset.friendPseudo,button.dataset.friendAction));
+    });
+  }catch(error){
+    box.innerHTML=`<div class="community-profile-empty">${escapeHtml(error.message||"Liste d'amis indisponible.")}</div>`;
+  }
+}
+
+function openFriendsPanel(){
+  if(!authState.user)return authOpen("login");
+  openModal("friendsModal");
+  loadFriendsPanel();
 }
 
 async function openCommunityProfileByPseudo(pseudo,{updateUrl=false}={}){
@@ -10817,7 +11023,7 @@ function renderCommunitySearchResults(users,query=""){
     <article class="community-search-result">
       <div>
         <strong>${escapeHtml(user.pseudo)}</strong>
-        <small>${authRoleLabel(user.role)} · inscrit le ${user.createdAt?formatDateShort(user.createdAt):"date inconnue"}</small>
+        <small>${authRoleLabel(user.role)} · ${user.publicProfile?"Profil public":"Profil privé"} · inscrit le ${user.createdAt?formatDateShort(user.createdAt):"date inconnue"}</small>
       </div>
       <button class="btn btn-blue" type="button" data-community-user="${escapeHtml(user.pseudo)}">Voir</button>
     </article>
@@ -19761,6 +19967,7 @@ if($("#accountEmailForm"))$("#accountEmailForm").onsubmit=saveAccountEmail;
 if($("#accountPasswordForm"))$("#accountPasswordForm").onsubmit=saveAccountPassword;
 if($("#previewCommunityProfile"))$("#previewCommunityProfile").onclick=openCommunityProfilePreview;
 if($("#openCommunitySearch"))$("#openCommunitySearch").onclick=openCommunityDirectory;
+if($("#openFriendsPanel"))$("#openFriendsPanel").onclick=openFriendsPanel;
 if($("#copyMyCommunityLink"))$("#copyMyCommunityLink").onclick=async()=>{
   if(!authState.user)return authOpen("login");
   if(!accountPreferences().publicProfile){

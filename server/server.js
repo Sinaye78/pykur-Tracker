@@ -32,6 +32,26 @@ ensureColumn("users", "preferences", "TEXT NOT NULL DEFAULT '{}'");
 ensureColumn("users", "email_verified_at", "TEXT");
 db.prepare("UPDATE users SET email_verified_at = COALESCE(email_verified_at, created_at) WHERE email_verified_at IS NULL AND last_login_at IS NOT NULL").run();
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS friendships (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_a_id INTEGER NOT NULL,
+    user_b_id INTEGER NOT NULL,
+    requester_id INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','accepted')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK(user_a_id < user_b_id),
+    UNIQUE(user_a_id,user_b_id),
+    FOREIGN KEY(user_a_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(user_b_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(requester_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  CREATE INDEX IF NOT EXISTS idx_friendships_user_a ON friendships(user_a_id);
+  CREATE INDEX IF NOT EXISTS idx_friendships_user_b ON friendships(user_b_id);
+  CREATE INDEX IF NOT EXISTS idx_friendships_requester ON friendships(requester_id);
+`);
+
 const app = express();
 app.set("trust proxy", 1);
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -87,6 +107,17 @@ function publicUser(user) {
     preferences: parsePreferences(user.preferences),
     createdAt: user.created_at,
     lastLoginAt: user.last_login_at
+  };
+}
+
+function publicCommunityUser(user) {
+  const preferences = parsePreferences(user.preferences);
+  return {
+    pseudo: user.pseudo,
+    role: user.role,
+    createdAt: user.created_at,
+    publicProfile: !!preferences.publicProfile,
+    allowPrivateMessages: !!preferences.allowPrivateMessages
   };
 }
 
@@ -170,7 +201,21 @@ function publicProfileSummary(entry, index, activeId, preferences) {
 
 function buildCommunityProfile(user, savePayload) {
   const preferences = parsePreferences(user.preferences);
-  if (!preferences.publicProfile) return null;
+  if (!preferences.publicProfile) {
+    return {
+      pseudo: user.pseudo,
+      role: user.role,
+      createdAt: user.created_at,
+      isPrivate: true,
+      preferences: {
+        publicProfile: false,
+        allowPrivateMessages: !!preferences.allowPrivateMessages
+      },
+      profiles: [],
+      gallery: null,
+      achievements: { hiddenSecrets: true, unlocked: [] }
+    };
+  }
   const store = savePayload?.store || {};
   const profileEntries = Object.entries(store.profiles || {}).map(([id, entry]) => ({ id, ...(entry || {}) }));
   const activeId = store.active || profileEntries[0]?.id || null;
@@ -357,6 +402,20 @@ function requireAuth(req, res, next) {
   }
 }
 
+function optionalAuth(req, res, next) {
+  const header = req.headers.authorization || "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+  if (!token) return next();
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    const user = getUserById(payload.id);
+    if (user && !user.is_banned) req.user = user;
+  } catch {
+    req.user = null;
+  }
+  next();
+}
+
 function requireRole(role) {
   return (req, res, next) => {
     if (!req.user || ROLE_ORDER[req.user.role] < ROLE_ORDER[role]) {
@@ -364,6 +423,38 @@ function requireRole(role) {
     }
     next();
   };
+}
+
+function friendshipPair(idA, idB) {
+  const a = Number(idA);
+  const b = Number(idB);
+  return a < b ? { userA: a, userB: b } : { userA: b, userB: a };
+}
+
+function getFriendshipBetween(idA, idB) {
+  if (!idA || !idB || Number(idA) === Number(idB)) return null;
+  const pair = friendshipPair(idA, idB);
+  return db.prepare("SELECT * FROM friendships WHERE user_a_id = ? AND user_b_id = ?").get(pair.userA, pair.userB) || null;
+}
+
+function friendStatus(viewerId, targetId) {
+  if (!viewerId || !targetId) return { isSelf: false, status: "anonymous" };
+  if (Number(viewerId) === Number(targetId)) return { isSelf: true, status: "self" };
+  const friendship = getFriendshipBetween(viewerId, targetId);
+  if (!friendship) return { isSelf: false, status: "none" };
+  if (friendship.status === "accepted") return { isSelf: false, status: "friends" };
+  return {
+    isSelf: false,
+    status: Number(friendship.requester_id) === Number(viewerId) ? "pending_sent" : "pending_received"
+  };
+}
+
+function socialProfileMeta(viewer, target, preferences) {
+  const state = friendStatus(viewer?.id, target.id);
+  return Object.assign(state, {
+    canRequestFriend: !!viewer && !state.isSelf && ["none", "pending_received"].includes(state.status),
+    canMessage: !!viewer && !state.isSelf && !!preferences.allowPrivateMessages && state.status === "friends"
+  });
 }
 
 function moderationLog({ targetId, actorId, type, reason, expiresAt = null }) {
@@ -617,18 +708,11 @@ app.get("/api/community/users", (req, res) => {
     ORDER BY pseudo COLLATE NOCASE ASC
     LIMIT 30
   `).all(`%${query}%`);
-  const users = rows
-    .filter((user) => parsePreferences(user.preferences).publicProfile)
-    .slice(0, 12)
-    .map((user) => ({
-      pseudo: user.pseudo,
-      role: user.role,
-      createdAt: user.created_at
-    }));
+  const users = rows.slice(0, 12).map(publicCommunityUser);
   res.json({ users });
 });
 
-app.get("/api/community/users/:pseudo", (req, res) => {
+app.get("/api/community/users/:pseudo", optionalAuth, (req, res) => {
   const pseudo = cleanPseudo(req.params.pseudo);
   const user = db.prepare("SELECT * FROM users WHERE lower(pseudo) = lower(?)").get(pseudo);
   if (!user || user.is_banned || !user.email_verified_at) return res.status(404).json({ error: "Profil introuvable." });
@@ -640,8 +724,90 @@ app.get("/api/community/users/:pseudo", (req, res) => {
     payload = null;
   }
   const profile = buildCommunityProfile(user, payload);
+  profile.social = socialProfileMeta(req.user, user, parsePreferences(user.preferences));
   if (!profile) return res.status(404).json({ error: "Profil public désactivé." });
   res.json({ profile });
+});
+
+function getTargetUserByPseudo(pseudo) {
+  const user = db.prepare("SELECT * FROM users WHERE lower(pseudo) = lower(?)").get(cleanPseudo(pseudo));
+  if (!user || user.is_banned || !user.email_verified_at) return null;
+  return user;
+}
+
+app.get("/api/social/friends", requireAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT f.*, ua.pseudo AS user_a_pseudo, ua.role AS user_a_role, ua.created_at AS user_a_created_at,
+           ub.pseudo AS user_b_pseudo, ub.role AS user_b_role, ub.created_at AS user_b_created_at
+    FROM friendships f
+    JOIN users ua ON ua.id = f.user_a_id
+    JOIN users ub ON ub.id = f.user_b_id
+    WHERE f.user_a_id = ? OR f.user_b_id = ?
+    ORDER BY f.updated_at DESC
+  `).all(req.user.id, req.user.id);
+  const result = { friends: [], incoming: [], outgoing: [] };
+  rows.forEach((row) => {
+    const otherIsA = Number(row.user_a_id) !== Number(req.user.id);
+    const other = {
+      pseudo: otherIsA ? row.user_a_pseudo : row.user_b_pseudo,
+      role: otherIsA ? row.user_a_role : row.user_b_role,
+      createdAt: otherIsA ? row.user_a_created_at : row.user_b_created_at
+    };
+    const item = { user: other, createdAt: row.created_at, updatedAt: row.updated_at };
+    if (row.status === "accepted") result.friends.push(item);
+    else if (Number(row.requester_id) === Number(req.user.id)) result.outgoing.push(item);
+    else result.incoming.push(item);
+  });
+  res.json(result);
+});
+
+app.post("/api/social/friends/:pseudo/request", requireAuth, (req, res) => {
+  const target = getTargetUserByPseudo(req.params.pseudo);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (Number(target.id) === Number(req.user.id)) return res.status(400).json({ error: "Impossible de vous ajouter vous-même." });
+  const pair = friendshipPair(req.user.id, target.id);
+  const existing = getFriendshipBetween(req.user.id, target.id);
+  if (existing?.status === "accepted") return res.json({ status: "friends" });
+  if (existing?.status === "pending") {
+    if (Number(existing.requester_id) !== Number(req.user.id)) {
+      db.prepare("UPDATE friendships SET status = 'accepted', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(existing.id);
+      return res.json({ status: "friends" });
+    }
+    return res.json({ status: "pending_sent" });
+  }
+  db.prepare(`
+    INSERT INTO friendships(user_a_id,user_b_id,requester_id,status)
+    VALUES(?,?,?,'pending')
+  `).run(pair.userA, pair.userB, req.user.id);
+  res.json({ status: "pending_sent" });
+});
+
+app.post("/api/social/friends/:pseudo/accept", requireAuth, (req, res) => {
+  const target = getTargetUserByPseudo(req.params.pseudo);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  const friendship = getFriendshipBetween(req.user.id, target.id);
+  if (!friendship || friendship.status !== "pending" || Number(friendship.requester_id) === Number(req.user.id)) {
+    return res.status(400).json({ error: "Aucune demande reçue à accepter." });
+  }
+  db.prepare("UPDATE friendships SET status = 'accepted', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(friendship.id);
+  res.json({ status: "friends" });
+});
+
+app.post("/api/social/friends/:pseudo/reject", requireAuth, (req, res) => {
+  const target = getTargetUserByPseudo(req.params.pseudo);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  const friendship = getFriendshipBetween(req.user.id, target.id);
+  if (!friendship || friendship.status !== "pending") return res.status(400).json({ error: "Aucune demande à refuser." });
+  db.prepare("DELETE FROM friendships WHERE id = ?").run(friendship.id);
+  res.json({ status: "none" });
+});
+
+app.delete("/api/social/friends/:pseudo", requireAuth, (req, res) => {
+  const target = getTargetUserByPseudo(req.params.pseudo);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  const friendship = getFriendshipBetween(req.user.id, target.id);
+  if (friendship) db.prepare("DELETE FROM friendships WHERE id = ?").run(friendship.id);
+  res.json({ status: "none" });
 });
 
 app.get("/api/moderation/users", requireAuth, requireRole("moderator"), (req, res) => {
