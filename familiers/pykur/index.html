@@ -5534,6 +5534,94 @@ body[data-fx="premium"] .milestone-flash{box-shadow:0 0 0 9999px rgba(212,167,60
 .cloud-save-state.local::before{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.16)}
 .cloud-save-state.error::before{background:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.16)}
 
+.cloud-migration-panel{
+  margin-top:12px;
+  padding:14px;
+  border:1px solid rgba(180,130,45,.3);
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 0% 0%,rgba(96,165,250,.12),transparent 34%),
+    linear-gradient(135deg,rgba(255,252,242,.92),rgba(239,228,205,.86));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.42);
+}
+
+.cloud-migration-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+
+.cloud-migration-head strong{
+  display:block;
+  font-size:15px;
+  color:#2f1b10;
+}
+
+.cloud-migration-head small{
+  display:block;
+  margin-top:3px;
+  color:#6f5333;
+  font-weight:800;
+  line-height:1.35;
+}
+
+.cloud-migration-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+
+.cloud-migration-card{
+  padding:11px 12px;
+  border:1px solid rgba(122,78,24,.18);
+  border-radius:12px;
+  background:rgba(255,255,255,.58);
+  min-width:0;
+}
+
+.cloud-migration-card b{
+  display:block;
+  color:#5a331a;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.02em;
+}
+
+.cloud-migration-card span{
+  display:block;
+  margin-top:5px;
+  color:#231306;
+  font-weight:900;
+  line-height:1.35;
+}
+
+.cloud-migration-card small{
+  display:block;
+  margin-top:4px;
+  color:#73583a;
+  font-weight:800;
+  line-height:1.35;
+}
+
+.cloud-migration-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+}
+
+.cloud-migration-actions .btn{
+  min-height:38px;
+}
+
+@media(max-width:720px){
+  .cloud-migration-grid{grid-template-columns:1fr}
+  .cloud-migration-head{display:block}
+  .cloud-migration-actions .btn{width:100%}
+}
+
 .dialog-bg{
   position:fixed;
   inset:0;
@@ -10272,6 +10360,31 @@ body.no-anim .pykur-sparkle{
               </div>
             </div>
             <div class="cloud-save-state local" id="cloudSaveState">Sauvegarde locale active</div>
+            <div class="cloud-migration-panel" id="cloudMigrationPanel">
+              <div class="cloud-migration-head">
+                <div>
+                  <strong>Migration et récupération cloud</strong>
+                  <small>Utile après un changement d'adresse, de navigateur ou le passage en HTTPS.</small>
+                </div>
+              </div>
+              <div class="cloud-migration-grid">
+                <div class="cloud-migration-card">
+                  <b>Sauvegarde de ce navigateur</b>
+                  <span id="cloudLocalSummary">Analyse locale...</span>
+                  <small id="cloudLocalDetail">-</small>
+                </div>
+                <div class="cloud-migration-card">
+                  <b>Sauvegarde cloud</b>
+                  <span id="cloudRemoteSummary">Connectez-vous pour vérifier.</span>
+                  <small id="cloudRemoteDetail">-</small>
+                </div>
+              </div>
+              <div class="cloud-migration-actions">
+                <button class="btn btn-blue tooltip" id="cloudInspectNow" type="button" data-tooltip="Lit uniquement la sauvegarde cloud et affiche son résumé.">Vérifier le cloud</button>
+                <button class="btn btn-green tooltip" id="cloudUploadNow" type="button" data-tooltip="Envoie la sauvegarde de ce navigateur vers votre compte cloud.">Envoyer ce navigateur vers le cloud</button>
+                <button class="btn btn-orange tooltip" id="cloudDownloadNow" type="button" data-tooltip="Remplace ce navigateur par la sauvegarde cloud après une sauvegarde de sécurité locale.">Récupérer le cloud ici</button>
+              </div>
+            </div>
             <div class="options-note">Chaque action est sauvegardée localement. Si vous êtes connecté, elle est aussi envoyée automatiquement dans le cloud. En invité, le tracker reste local à vos risques.</div>
           </section>
 
@@ -11199,6 +11312,94 @@ function getPayloadTime(payload){
   },0);
 }
 
+function profilePPFromData(profileData){
+  const src={};
+  const profileMobs=profileData?.mobs || {};
+  for(const id in mobs){
+    src[id]=(profileMobs.morose?.[id]||0)+(profileMobs.tynril?.[id]||0)+(profileMobs.zone?.[id]||0);
+  }
+  return ppFrom(src);
+}
+
+function countDiscoveredEvents(gallery){
+  return Object.values(gallery?.eventsDiscovered||{}).filter(Boolean).length;
+}
+
+function formatCloudDateTime(value){
+  const d=value ? new Date(value) : null;
+  if(!d || isNaN(d))return "date inconnue";
+  return d.toLocaleString("fr-FR",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+
+function cloudStoreSummary(inputStore){
+  const profiles=inputStore?.profiles || {};
+  const ids=Object.keys(profiles);
+  const activeId=inputStore?.active && profiles[inputStore.active] ? inputStore.active : ids[0];
+  const active=activeId ? profiles[activeId] : null;
+  const activeData=active?.data || {};
+  const activePP=active ? profilePPFromData(activeData) : 0;
+  const runs=activeData.runs || {};
+  const gallery=inputStore?.galleryShared!==false ? inputStore?.sharedGallery : activeData.gallery;
+  const updatedAt=inputStore?.lastSavedAt || inputStore?.updatedAt || inputStore?.lastCloudPreparedAt;
+  return {
+    profileCount:ids.length,
+    activeName:active?.name || "Aucun profil",
+    activePP,
+    morose:runs.morose||0,
+    tynril:runs.tynril||0,
+    completed:Array.isArray(gallery?.completedPykurs) ? gallery.completedPykurs.length : 0,
+    events:countDiscoveredEvents(gallery),
+    updatedAt
+  };
+}
+
+function isEmptyStarterStore(inputStore){
+  const summary=cloudStoreSummary(inputStore);
+  if(summary.profileCount!==1)return false;
+  if(summary.activePP>0 || summary.morose>0 || summary.tynril>0)return false;
+  if(summary.completed>0 || summary.events>0)return false;
+  return true;
+}
+
+function summaryTitle(summary){
+  if(!summary.profileCount)return "Aucune donnée détectée";
+  return `${summary.activeName} · ${summary.activePP} / ${PP_MAX} PP`;
+}
+
+function summaryDetail(summary){
+  if(!summary.profileCount)return "Aucun profil dans cette sauvegarde.";
+  const pieces=[
+    `${summary.profileCount} profil${summary.profileCount>1?"s":""}`,
+    `Morose ${summary.morose}`,
+    `Tynril ${summary.tynril}`,
+    `${summary.completed} Pykur${summary.completed>1?"s":""} archivé${summary.completed>1?"s":""}`,
+    `${summary.events} événement${summary.events>1?"s":""}`
+  ];
+  return `${pieces.join(" · ")} · ${formatCloudDateTime(summary.updatedAt)}`;
+}
+
+function renderCloudMigrationTools(remotePayload=null){
+  const localTitle=$("#cloudLocalSummary");
+  const localDetail=$("#cloudLocalDetail");
+  const remoteTitle=$("#cloudRemoteSummary");
+  const remoteDetail=$("#cloudRemoteDetail");
+  const inspectBtn=$("#cloudInspectNow");
+  const uploadBtn=$("#cloudUploadNow");
+  const downloadBtn=$("#cloudDownloadNow");
+  const logged=!!authState.user;
+  const localSummary=cloudStoreSummary(store);
+  const remoteSummary=remotePayload?.store ? cloudStoreSummary(remotePayload.store) : null;
+
+  if(localTitle)localTitle.textContent=summaryTitle(localSummary);
+  if(localDetail)localDetail.textContent=summaryDetail(localSummary);
+  if(remoteTitle)remoteTitle.textContent=logged ? (remoteSummary ? summaryTitle(remoteSummary) : "Cloud non vérifié") : "Connectez-vous pour vérifier.";
+  if(remoteDetail)remoteDetail.textContent=logged ? (remoteSummary ? summaryDetail(remoteSummary) : "Cliquez sur Vérifier le cloud pour lire la sauvegarde en ligne.") : "La migration cloud nécessite un compte connecté.";
+
+  [inspectBtn,uploadBtn,downloadBtn].forEach(btn=>{
+    if(btn)btn.disabled=!logged || cloudState.syncing || cloudState.loading;
+  });
+}
+
 function applyCloudPayload(payload){
   if(!payload?.store || typeof payload.store!=="object")return false;
   cloudState.loading=true;
@@ -11216,6 +11417,20 @@ function applyCloudPayload(payload){
   }finally{
     cloudState.loading=false;
     renderCloudStatus();
+  }
+}
+
+function createCloudSafetyBackup(reason="cloud-download"){
+  try{
+    const backup={createdAt:new Date().toISOString(),reason,store:clone(store)};
+    localStorage.setItem("pykur_safety_backup_before_cloud",JSON.stringify(backup));
+    const list=JSON.parse(localStorage.getItem("pykur_safety_backup_list")||"[]").filter(Boolean);
+    list.unshift({createdAt:backup.createdAt,reason});
+    localStorage.setItem("pykur_safety_backup_list",JSON.stringify(list.slice(0,5)));
+    return true;
+  }catch(error){
+    console.warn("Sauvegarde locale de sécurité impossible",error);
+    return false;
   }
 }
 
@@ -11249,6 +11464,7 @@ function renderCloudStatus(){
     syncBtn.disabled=!logged || cloudState.syncing;
     syncBtn.textContent=cloudState.syncing?"Synchronisation...":"Synchroniser maintenant";
   }
+  renderCloudMigrationTools(cloudState.remotePayload);
 }
 
 function scheduleCloudSave(){
@@ -11273,6 +11489,7 @@ async function cloudSyncNow(options={}){
   try{
     const result=await authFetch("/cloud/save",{method:"PUT",body:JSON.stringify({payload:cloudPayload()})});
     if(result?.payload?.store){
+      cloudState.remotePayload=result.payload;
       store=Object.assign({},store,result.payload.store);
       localStorage.setItem("pykur_clean_v1",JSON.stringify(store));
     }
@@ -11295,6 +11512,76 @@ async function cloudSyncNow(options={}){
   }
 }
 
+async function cloudInspectNow(options={}){
+  if(!authState.user){
+    if(!options.silent)toast("Connectez-vous pour vérifier le cloud.","warning","warning");
+    renderCloudStatus();
+    return null;
+  }
+  cloudState.loading=true;
+  cloudState.error=null;
+  renderCloudStatus();
+  try{
+    const result=await authFetch("/cloud/save");
+    const payload=result?.payload || null;
+    if(payload && result?.updatedAt && !payload.savedAt)payload.savedAt=result.updatedAt;
+    cloudState.remotePayload=payload;
+    if(!options.silent){
+      toast(cloudState.remotePayload?.store ? "Sauvegarde cloud vérifiée." : "Aucune sauvegarde cloud trouvée.","info","click");
+    }
+    return cloudState.remotePayload;
+  }catch(error){
+    cloudState.error=error.message||"Erreur cloud";
+    if(!options.silent)toast("Vérification cloud impossible.","error","error");
+    return null;
+  }finally{
+    cloudState.loading=false;
+    renderCloudStatus();
+  }
+}
+
+async function cloudUploadNow(){
+  if(!authState.user)return cloudSyncNow({silent:false});
+  const ok=await showConfirm("Envoyer la sauvegarde de ce navigateur vers votre compte cloud ?",{
+    title:"Envoyer vers le cloud",
+    subtitle:"La sauvegarde cloud sera fusionnée avec les données de ce navigateur.",
+    okLabel:"Envoyer",
+    okClass:"btn-green",
+    html:`<p>Cette action sert surtout à migrer un ancien navigateur ou une ancienne adresse vers votre compte.</p><p>Elle ne modifie pas vos calculs, mais elle peut ajouter les profils présents ici au cloud.</p>`
+  });
+  if(!ok)return false;
+  const synced=await cloudSyncNow({silent:false});
+  if(synced)await cloudInspectNow({silent:true});
+  return synced;
+}
+
+async function cloudDownloadNow(){
+  let payload=cloudState.remotePayload;
+  if(!payload?.store)payload=await cloudInspectNow({silent:true});
+  if(!payload?.store){
+    toast("Aucune sauvegarde cloud à récupérer.","warning","warning");
+    return false;
+  }
+  const remoteSummary=cloudStoreSummary(payload.store);
+  const localSummary=cloudStoreSummary(store);
+  const ok=await showConfirm("Récupérer la sauvegarde cloud sur ce navigateur ?",{
+    title:"Récupérer le cloud",
+    subtitle:"Une sauvegarde locale de sécurité sera créée avant le remplacement.",
+    okLabel:"Récupérer",
+    okClass:"btn-orange",
+    html:`<p><strong>Cloud :</strong> ${escapeHtml(summaryTitle(remoteSummary))}<br><small>${escapeHtml(summaryDetail(remoteSummary))}</small></p><p><strong>Ce navigateur :</strong> ${escapeHtml(summaryTitle(localSummary))}<br><small>${escapeHtml(summaryDetail(localSummary))}</small></p><p>Après validation, ce navigateur utilisera la sauvegarde cloud.</p>`
+  });
+  if(!ok)return false;
+  const backedUp=createCloudSafetyBackup("before-cloud-download");
+  const applied=applyCloudPayload(payload);
+  if(applied){
+    toast(backedUp?"Sauvegarde cloud récupérée. Backup local créé.":"Sauvegarde cloud récupérée.","success","success");
+    renderAll();
+    return true;
+  }
+  return false;
+}
+
 async function cloudAfterLogin(options={}){
   if(!authState.user)return;
   cloudState.loading=true;
@@ -11302,9 +11589,12 @@ async function cloudAfterLogin(options={}){
   try{
     const result=await authFetch("/cloud/save");
     const remotePayload=result?.payload;
+    if(remotePayload && result?.updatedAt && !remotePayload.savedAt)remotePayload.savedAt=result.updatedAt;
+    cloudState.remotePayload=remotePayload || null;
     const remoteTime=getPayloadTime(remotePayload);
     const localTime=getPayloadTime({store});
-    if(remotePayload?.store && (!localTime || remoteTime >= localTime)){
+    const preferRemote=remotePayload?.store && (!localTime || remoteTime >= localTime || isEmptyStarterStore(store));
+    if(preferRemote){
       cloudState.loading=false;
       const applied=applyCloudPayload(remotePayload);
       if(applied && !options.silent)toast("Sauvegarde cloud récupérée.","success","success");
@@ -20140,6 +20430,9 @@ if($("#dofusThresholdInput"))$("#dofusThresholdInput").oninput=e=>{
   dofusUpdateConfigReadout();
 };
 if($("#cloudSyncNow"))$("#cloudSyncNow").onclick=()=>cloudSyncNow({silent:false});
+if($("#cloudInspectNow"))$("#cloudInspectNow").onclick=()=>cloudInspectNow({silent:false});
+if($("#cloudUploadNow"))$("#cloudUploadNow").onclick=cloudUploadNow;
+if($("#cloudDownloadNow"))$("#cloudDownloadNow").onclick=cloudDownloadNow;
 if($("#exportSave"))$("#exportSave").onclick=exportSave;
 if($("#importSave"))$("#importSave").onclick=()=>$("#importSaveInput")?.click();
 if($("#resetHudLayout"))$("#resetHudLayout").onclick=resetHudLayout;
