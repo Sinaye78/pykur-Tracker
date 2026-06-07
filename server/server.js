@@ -522,6 +522,45 @@ function publicMessage(row, viewerId) {
   };
 }
 
+function canModerateTarget(actor, target) {
+  if (!actor || !target) return false;
+  if (Number(actor.id) === Number(target.id)) return false;
+  return ROLE_ORDER[target.role] < ROLE_ORDER[actor.role];
+}
+
+function moderationUserView(user, actor) {
+  const base = publicUser(user);
+  if (!base) return null;
+  if (actor?.role !== "admin" && base.email) {
+    const [name, domain] = String(base.email).split("@");
+    base.email = `${name ? name.slice(0, 2) : "**"}***@${domain || "***"}`;
+  }
+  base.canModerate = canModerateTarget(actor, user);
+  base.canDelete = actor?.role === "admin" && user.role !== "admin" && Number(actor.id) !== Number(user.id);
+  return base;
+}
+
+function moderationHistory(targetId) {
+  return db.prepare(`
+    SELECT a.*, actor.pseudo AS actor_pseudo, actor.role AS actor_role
+    FROM moderation_actions a
+    LEFT JOIN users actor ON actor.id = a.actor_user_id
+    WHERE a.target_user_id = ?
+    ORDER BY a.created_at DESC
+    LIMIT 30
+  `).all(targetId).map((row) => ({
+    id: row.id,
+    type: row.type,
+    reason: row.reason,
+    expiresAt: row.expires_at,
+    createdAt: row.created_at,
+    actor: {
+      pseudo: row.actor_pseudo || "Système",
+      role: row.actor_role || "moderator"
+    }
+  }));
+}
+
 function moderationLog({ targetId, actorId, type, reason, expiresAt = null }) {
   db.prepare(`
     INSERT INTO moderation_actions(target_user_id, actor_user_id, type, reason, expires_at)
@@ -957,6 +996,15 @@ app.get("/api/moderation/users", requireAuth, requireRole("moderator"), (req, re
   res.json({ users });
 });
 
+app.get("/api/moderation/users/:pseudo", requireAuth, requireRole("moderator"), (req, res) => {
+  const target = db.prepare("SELECT * FROM users WHERE lower(pseudo) = lower(?)").get(cleanPseudo(req.params.pseudo));
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  res.json({
+    user: moderationUserView(target, req.user),
+    history: moderationHistory(target.id)
+  });
+});
+
 app.post("/api/moderation/users/:id/ban", requireAuth, requireRole("moderator"), (req, res) => {
   const target = getUserById(req.params.id);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
@@ -997,6 +1045,28 @@ app.post("/api/moderation/users/:id/unmute", requireAuth, requireRole("moderator
 });
 
 app.post("/api/admin/users/:id/role", requireAuth, requireRole("admin"), (req, res) => {
+  const target = getUserById(req.params.id);
+  const role = String(req.body.role || "");
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (Number(target.id) === Number(req.user.id)) return res.status(400).json({ error: "Vous ne pouvez pas modifier votre propre rôle." });
+  if (target.role === "admin") return res.status(403).json({ error: "Impossible de modifier un admin depuis cette interface." });
+  if (!["user", "moderator"].includes(role)) return res.status(400).json({ error: "Rôle invalide." });
+  db.prepare("UPDATE users SET role = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(role, target.id);
+  moderationLog({ targetId: target.id, actorId: req.user.id, type: ROLE_ORDER[role] > ROLE_ORDER[target.role] ? "promote" : "demote", reason: req.body.reason });
+  res.json({ user: publicUser(getUserById(target.id)) });
+});
+
+app.delete("/api/admin/users/:id", requireAuth, requireRole("admin"), (req, res) => {
+  const target = getUserById(req.params.id);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (Number(target.id) === Number(req.user.id)) return res.status(400).json({ error: "Vous ne pouvez pas supprimer votre propre compte." });
+  if (target.role === "admin") return res.status(403).json({ error: "Impossible de supprimer un admin depuis cette interface." });
+  db.prepare("DELETE FROM users WHERE id = ?").run(target.id);
+  res.json({ ok: true });
+});
+
+app.post("/api/admin/users/:id/role-legacy-disabled", requireAuth, requireRole("admin"), (req, res) => {
+  return res.status(410).json({ error: "Route désactivée." });
   const target = getUserById(req.params.id);
   const role = String(req.body.role || "");
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });

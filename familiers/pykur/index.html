@@ -3786,7 +3786,8 @@ body.no-anim .app.milestone-flash{
 #friendsModal.modal-bg,
 #messagesModal.modal-bg,
 #communityDirectoryModal.modal-bg,
-#communityProfileModal.modal-bg{
+#communityProfileModal.modal-bg,
+#moderationModal.modal-bg{
   background:rgba(15,18,24,.72);
   backdrop-filter:blur(10px) saturate(.86);
 }
@@ -3797,7 +3798,8 @@ body.no-anim .app.milestone-flash{
 #friendsModal .modal,
 #messagesModal .modal,
 #communityDirectoryModal .modal,
-#communityProfileModal .modal{
+#communityProfileModal .modal,
+#moderationModal .modal{
   width:min(560px,calc(100vw - 28px));
   border:1px solid rgba(198,148,68,.42);
   border-radius:18px;
@@ -3815,7 +3817,8 @@ body.no-anim .app.milestone-flash{
 #friendsModal .modal-head,
 #messagesModal .modal-head,
 #communityDirectoryModal .modal-head,
-#communityProfileModal .modal-head{
+#communityProfileModal .modal-head,
+#moderationModal .modal-head{
   min-height:62px;
   padding:14px 18px;
   background:
@@ -3829,7 +3832,8 @@ body.no-anim .app.milestone-flash{
 #friendsModal .modal-head h2,
 #messagesModal .modal-head h2,
 #communityDirectoryModal .modal-head h2,
-#communityProfileModal .modal-head h2{
+#communityProfileModal .modal-head h2,
+#moderationModal .modal-head h2{
   font-size:22px;
   letter-spacing:.05px;
   font-weight:850;
@@ -3841,7 +3845,8 @@ body.no-anim .app.milestone-flash{
 #friendsModal .modal-head p,
 #messagesModal .modal-head p,
 #communityDirectoryModal .modal-head p,
-#communityProfileModal .modal-head p{
+#communityProfileModal .modal-head p,
+#moderationModal .modal-head p{
   max-width:620px;
   color:rgba(255,244,214,.82);
   font-size:12px;
@@ -3854,7 +3859,8 @@ body.no-anim .app.milestone-flash{
 #friendsModal .modal-body,
 #messagesModal .modal-body,
 #communityDirectoryModal .modal-body,
-#communityProfileModal .modal-body{
+#communityProfileModal .modal-body,
+#moderationModal .modal-body{
   padding:18px;
   background:
     linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,0) 36%),
@@ -3867,7 +3873,8 @@ body.no-anim .app.milestone-flash{
 #friendsModal .modal-foot,
 #messagesModal .modal-foot,
 #communityDirectoryModal .modal-foot,
-#communityProfileModal .modal-foot{
+#communityProfileModal .modal-foot,
+#moderationModal .modal-foot{
   min-height:0;
   padding:0 18px 18px;
   border-top:0;
@@ -4547,6 +4554,125 @@ body.no-anim .app.milestone-flash{
   text-align:center;
 }
 
+#moderationModal .modal{
+  width:min(820px,calc(100vw - 28px));
+}
+
+.moderation-panel{
+  display:grid;
+  gap:14px;
+}
+
+.moderation-target{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:12px;
+  align-items:center;
+  padding:14px;
+  border:1px solid rgba(120,73,21,.2);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(255,255,255,.88),rgba(255,247,225,.72));
+}
+
+.moderation-target h3{
+  margin:0 0 4px;
+  font-size:20px;
+  color:#24170b;
+}
+
+.moderation-target p{
+  margin:0;
+  color:#64748b;
+  font-size:12px;
+  font-weight:700;
+}
+
+.moderation-status-grid,
+.moderation-action-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+
+.moderation-info,
+.moderation-action-card{
+  padding:12px;
+  border:1px solid rgba(111,82,45,.17);
+  border-radius:13px;
+  background:rgba(255,255,255,.68);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+}
+
+.moderation-info small,
+.moderation-action-card small{
+  display:block;
+  margin-bottom:5px;
+  color:#7c5a2c;
+  font-size:10px;
+  font-weight:850;
+  text-transform:uppercase;
+}
+
+.moderation-info strong{
+  color:#201408;
+  font-size:14px;
+}
+
+.moderation-action-card{
+  display:grid;
+  gap:8px;
+}
+
+.moderation-action-card p{
+  margin:0;
+  min-height:34px;
+  color:#64748b;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.35;
+}
+
+.moderation-action-card .btn{
+  width:100%;
+}
+
+.moderation-history{
+  display:grid;
+  gap:8px;
+  max-height:220px;
+  overflow:auto;
+}
+
+.moderation-history-row{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:10px;
+  align-items:center;
+  padding:10px;
+  border:1px solid rgba(111,82,45,.14);
+  border-radius:11px;
+  background:rgba(255,255,255,.55);
+  color:#2f1d0d;
+  font-size:12px;
+  font-weight:700;
+}
+
+.moderation-history-type{
+  min-width:78px;
+  padding:5px 8px;
+  border-radius:999px;
+  background:rgba(37,99,235,.12);
+  color:#1d4ed8;
+  text-align:center;
+  font-weight:850;
+  text-transform:uppercase;
+}
+
+.moderation-danger-zone{
+  border-color:rgba(185,28,28,.24);
+  background:linear-gradient(135deg,rgba(254,242,242,.9),rgba(255,255,255,.62));
+}
+
 @media(max-width:760px){
   #authModal .modal-body,
   #passwordResetModal .modal-body,
@@ -4571,6 +4697,12 @@ body.no-anim .app.milestone-flash{
     grid-template-columns:1fr;
   }
   .messages-layout{
+    grid-template-columns:1fr;
+  }
+  .moderation-target,
+  .moderation-status-grid,
+  .moderation-action-grid,
+  .moderation-history-row{
     grid-template-columns:1fr;
   }
   .message-compose{
@@ -10293,6 +10425,25 @@ body.no-anim .pykur-sparkle{
   </div>
 </div>
 
+<!-- MODERATION -->
+<div class="modal-bg" id="moderationModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2>Modération</h2>
+        <p>Gérez les sanctions et les accès d'un membre avec les droits adaptés à votre rôle.</p>
+      </div>
+      <button class="btn btn-red modal-close" data-close="moderationModal">X</button>
+    </div>
+    <div class="modal-body">
+      <div id="moderationContent" class="moderation-panel">
+        <div class="community-profile-empty">Chargement des informations de modération...</div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-gray" data-close="moderationModal">Fermer</button></div>
+  </div>
+</div>
+
 <!-- CHANGELOG -->
 <div class="modal-bg" id="changelogModal">
   <div class="modal changelog-modal">
@@ -11131,6 +11282,12 @@ function communityProfileUrl(pseudo){
   return url.toString();
 }
 
+function canOpenModerationTools(profile){
+  if(!authState.user || !profile)return false;
+  if(!["moderator","admin"].includes(authState.user.role))return false;
+  return String(authState.user.pseudo||"").toLowerCase()!==String(profile.pseudo||"").toLowerCase();
+}
+
 async function copyTextToClipboard(text){
   if(navigator.clipboard?.writeText){
     await navigator.clipboard.writeText(text);
@@ -11162,6 +11319,7 @@ function renderCommunityProfile(profile){
         <div class="community-profile-hero-actions">
           <button class="btn btn-blue" type="button" data-community-copy-link="${escapeHtml(profile?.pseudo||"")}">Copier le lien public</button>
           <button class="btn btn-gray" type="button" data-community-open-search>Rechercher un membre</button>
+          ${canOpenModerationTools(profile)?`<button class="btn btn-orange" type="button" data-community-moderate="${escapeHtml(profile?.pseudo||"")}">Modérer</button>`:""}
         </div>
         <div class="community-friend-actions" data-community-social-actions></div>
       </div>
@@ -11223,6 +11381,173 @@ function renderCommunityProfile(profile){
     }
   });
   box.querySelector("[data-community-open-search]")?.addEventListener("click",openCommunityDirectory);
+  box.querySelector("[data-community-moderate]")?.addEventListener("click",event=>openModerationPanel(event.currentTarget.dataset.communityModerate));
+}
+
+function moderationActionLabel(type){
+  return ({
+    ban:"Ban",
+    timeban:"Timeban",
+    unban:"Unban",
+    mute:"Mute",
+    unmute:"Unmute",
+    promote:"Promotion",
+    demote:"Rétrogradation",
+    delete:"Suppression"
+  })[type]||type;
+}
+
+function moderationDateText(value){
+  if(!value)return "Permanent";
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime()))return "-";
+  return date.toLocaleString("fr-FR",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+}
+
+function moderationUntil(hours){
+  return new Date(Date.now()+hours*60*60*1000).toISOString();
+}
+
+function renderModerationPanel(data,pseudo){
+  const box=$("#moderationContent");
+  if(!box)return;
+  const user=data?.user||{};
+  const history=Array.isArray(data?.history)?data.history:[];
+  const canAct=!!user.canModerate;
+  const canAdmin=authState.user?.role==="admin";
+  const disabled=canAct?"":"disabled";
+  box.innerHTML=`
+    <section class="moderation-target">
+      <div>
+        <h3>${escapeHtml(user.pseudo||pseudo||"Membre")}</h3>
+        <p>${escapeHtml(user.email||"Email masqué")} · ${authRoleLabel(user.role)} · inscrit le ${user.createdAt?formatDateShort(user.createdAt):"-"}</p>
+      </div>
+      <span class="community-role-badge">${authRoleLabel(user.role)}</span>
+    </section>
+    <section class="moderation-status-grid">
+      <div class="moderation-info"><small>Ban</small><strong>${user.isBanned?"Actif":"Aucun"}</strong></div>
+      <div class="moderation-info"><small>Fin ban</small><strong>${moderationDateText(user.banUntil)}</strong></div>
+      <div class="moderation-info"><small>Mute</small><strong>${user.muteUntil?moderationDateText(user.muteUntil):"Aucun"}</strong></div>
+    </section>
+    ${canAct?`
+    <section class="moderation-action-grid">
+      <article class="moderation-action-card">
+        <small>Sanction compte</small>
+        <p>Empêche temporairement ou définitivement la connexion du membre.</p>
+        <button class="btn btn-red" type="button" data-moderation-action="ban24" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${disabled}>Ban 24h</button>
+        <button class="btn btn-red" type="button" data-moderation-action="banPermanent" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${disabled}>Ban permanent</button>
+        <button class="btn btn-gray" type="button" data-moderation-action="unban" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${disabled}>Retirer le ban</button>
+      </article>
+      <article class="moderation-action-card">
+        <small>Messagerie</small>
+        <p>Empêche le membre d'envoyer des messages privés pendant une durée donnée.</p>
+        <button class="btn btn-orange" type="button" data-moderation-action="mute1" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${disabled}>Mute 1h</button>
+        <button class="btn btn-orange" type="button" data-moderation-action="mute24" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${disabled}>Mute 24h</button>
+        <button class="btn btn-gray" type="button" data-moderation-action="unmute" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${disabled}>Retirer le mute</button>
+      </article>
+      ${canAdmin?`
+      <article class="moderation-action-card ${user.canDelete?"moderation-danger-zone":""}">
+        <small>Administration</small>
+        <p>Gère le rôle du membre ou supprime définitivement son compte.</p>
+        ${user.role==="moderator"
+          ? `<button class="btn btn-gray" type="button" data-moderation-action="roleUser" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}">Retirer modo</button>`
+          : `<button class="btn btn-blue" type="button" data-moderation-action="roleModerator" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}">Passer modo</button>`}
+        <button class="btn btn-red" type="button" data-moderation-action="deleteUser" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${user.canDelete?"":"disabled"}>Supprimer le compte</button>
+      </article>`:""}
+    </section>`:`<div class="community-profile-empty">Vous ne pouvez pas modérer ce membre avec votre rôle actuel.</div>`}
+    <section class="community-profile-card">
+      <h4>Historique récent</h4>
+      <div class="moderation-history">
+        ${history.length?history.map(row=>`
+          <div class="moderation-history-row">
+            <span class="moderation-history-type">${moderationActionLabel(row.type)}</span>
+            <span>${escapeHtml(row.reason||"Aucune raison indiquée")}<br><small>Par ${escapeHtml(row.actor?.pseudo||"Système")}</small></span>
+            <time>${row.createdAt?formatDateShort(row.createdAt):"-"}</time>
+          </div>
+        `).join(""):`<div class="community-profile-empty">Aucune action de modération récente.</div>`}
+      </div>
+    </section>
+  `;
+  box.querySelectorAll("[data-moderation-action]").forEach(button=>{
+    button.addEventListener("click",()=>runModerationAction(button.dataset.moderationAction,button.dataset.userId,button.dataset.pseudo));
+  });
+}
+
+async function openModerationPanel(pseudo){
+  if(!authState.user || !["moderator","admin"].includes(authState.user.role))return;
+  const box=$("#moderationContent");
+  openModal("moderationModal");
+  if(box)box.innerHTML=`<div class="community-profile-empty">Chargement des informations de modération...</div>`;
+  try{
+    const data=await authFetch(`/moderation/users/${encodeURIComponent(pseudo||"")}`);
+    renderModerationPanel(data,pseudo);
+  }catch(error){
+    if(box)box.innerHTML=`<div class="community-profile-empty">${escapeHtml(error.message||"Modération indisponible.")}</div>`;
+  }
+}
+
+async function moderationReason(action,pseudo){
+  return showPrompt(`Indiquez une raison courte pour ${pseudo||"ce membre"}.`,{
+    title:"Raison de modération",
+    placeholder:"Raison courte",
+    okLabel:"Continuer"
+  });
+}
+
+async function runModerationAction(action,userId,pseudo){
+  if(!userId)return;
+  try{
+    let endpoint="";
+    let method="POST";
+    let body={};
+    if(action==="deleteUser"){
+      const typed=await showPrompt("",{
+        title:"Supprimer le compte",
+        subtitle:"Cette action supprime définitivement le compte de la base de données.",
+        html:`<p>Pour confirmer la suppression définitive, tapez le pseudo exact :</p><p><strong>${escapeHtml(pseudo)}</strong></p>`,
+        placeholder:pseudo,
+        okLabel:"Supprimer définitivement",
+        danger:true
+      });
+      if(typed!==pseudo)return toast("Suppression annulée : pseudo différent.","warning","warning");
+      const reason=await moderationReason(action,pseudo);
+      if(reason===null)return;
+      endpoint=`/admin/users/${encodeURIComponent(userId)}`;
+      method="DELETE";
+      body={reason};
+    }else if(action==="roleUser" || action==="roleModerator"){
+      const reason=await moderationReason(action,pseudo);
+      if(reason===null)return;
+      endpoint=`/admin/users/${encodeURIComponent(userId)}/role`;
+      body={role:action==="roleModerator"?"moderator":"user",reason};
+    }else{
+      const reason=await moderationReason(action,pseudo);
+      if(reason===null)return;
+      const map={
+        ban24:{path:"ban",until:moderationUntil(24)},
+        banPermanent:{path:"ban",until:null},
+        unban:{path:"unban"},
+        mute1:{path:"mute",until:moderationUntil(1)},
+        mute24:{path:"mute",until:moderationUntil(24)},
+        unmute:{path:"unmute"}
+      }[action];
+      if(!map)return;
+      endpoint=`/moderation/users/${encodeURIComponent(userId)}/${map.path}`;
+      body={reason};
+      if(map.until)body.until=map.until;
+    }
+    await authFetch(endpoint,{method,body:JSON.stringify(body)});
+    toast(action==="deleteUser"?"Compte supprimé définitivement.":"Action de modération appliquée.","success","success");
+    if(action==="deleteUser"){
+      closeModal("moderationModal");
+      closeModal("communityProfileModal");
+      runCommunitySearch();
+      return;
+    }
+    await openModerationPanel(pseudo);
+  }catch(error){
+    toast(error.message||"Action de modération impossible.","error","error");
+  }
 }
 
 function renderCommunitySocialActions(container,pseudo,social={}){
