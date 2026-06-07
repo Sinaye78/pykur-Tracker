@@ -9800,6 +9800,355 @@ body.no-anim .pykur-sparkle{
 .gallery-event-card h4,.gallery-card.locked h4{display:flex;align-items:center;gap:7px}
 @media(max-width:768px){#galleryButton{display:none!important}.gallery-grid,.gallery-grid.events{grid-template-columns:1fr}.gallery-card.gallery-pykur-card{grid-template-columns:72px minmax(0,1fr)}.gallery-pykur-stats{grid-template-columns:1fr}.gallery-collection-entry{grid-template-columns:1fr}.gallery-collection-entry .btn{width:100%}}
 
+/* Secondary interface polish */
+#accountProfileModal .modal-head,
+#friendsModal .modal-head,
+#messagesModal .modal-head,
+#communityDirectoryModal .modal-head,
+#communityProfileModal .modal-head,
+#moderationModal .modal-head,
+.gallery-modal .modal-head,
+.achievements-modal .modal-head{
+  min-height:56px;
+  padding:11px 16px;
+  border-bottom:1px solid rgba(255,232,170,.18);
+}
+
+#accountProfileModal .modal-head h2,
+#friendsModal .modal-head h2,
+#messagesModal .modal-head h2,
+#communityDirectoryModal .modal-head h2,
+#communityProfileModal .modal-head h2,
+#moderationModal .modal-head h2,
+.gallery-modal .modal-head h2,
+.achievements-modal .modal-head h2{
+  font-size:21px;
+  line-height:1.08;
+}
+
+#accountProfileModal .modal-head p,
+#friendsModal .modal-head p,
+#messagesModal .modal-head p,
+#communityDirectoryModal .modal-head p,
+#communityProfileModal .modal-head p,
+#moderationModal .modal-head p,
+.gallery-modal .modal-head p,
+.achievements-modal .modal-head p{
+  margin-top:3px;
+  font-size:11px;
+  line-height:1.28;
+}
+
+#accountProfileModal .modal-close,
+#friendsModal .modal-close,
+#messagesModal .modal-close,
+#communityDirectoryModal .modal-close,
+#communityProfileModal .modal-close,
+#moderationModal .modal-close,
+.gallery-modal .modal-close,
+.achievements-modal .modal-close{
+  min-width:34px!important;
+  min-height:34px!important;
+  border-radius:10px!important;
+}
+
+#accountProfileModal .modal-body,
+#friendsModal .modal-body,
+#messagesModal .modal-body,
+#communityDirectoryModal .modal-body,
+#communityProfileModal .modal-body,
+#moderationModal .modal-body,
+.gallery-modal .modal-body,
+.achievements-modal .modal-body{
+  padding:16px;
+}
+
+.account-profile-grid,
+.community-profile-view,
+.moderation-panel,
+.friends-section,
+.messages-layout,
+.achievements-shell,
+#galleryMemoryView,
+#galleryEventsView{
+  gap:16px;
+}
+
+#accountProfileModal .account-panel{
+  border:1px solid rgba(120,73,21,.14);
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(255,255,255,.82),rgba(250,240,217,.66));
+  box-shadow:0 14px 32px rgba(80,48,12,.07),inset 0 1px 0 rgba(255,255,255,.55);
+}
+
+#accountProfileModal .account-panel.full:first-child{
+  background:
+    radial-gradient(circle at 100% 0%,rgba(37,99,235,.08),transparent 32%),
+    linear-gradient(135deg,rgba(255,248,225,.95),rgba(241,221,178,.76));
+}
+
+#accountProfileModal .account-panel h3,
+.community-profile-card h4,
+.gallery-section-head h3,
+.friends-section h3{
+  color:#28180b;
+  letter-spacing:0;
+}
+
+#accountProfileModal .account-meta span,
+#accountProfileModal .privacy-toggle{
+  border-color:rgba(120,73,21,.12);
+  background:rgba(255,255,255,.58);
+}
+
+#accountProfileModal .community-profile-actions{
+  gap:9px;
+  justify-content:flex-start;
+}
+
+#accountProfileModal .community-profile-actions .btn,
+.community-profile-hero-actions .btn,
+.friend-row-actions .btn,
+.gallery-tools .btn{
+  min-height:34px!important;
+  padding-inline:12px!important;
+  border-radius:10px!important;
+}
+
+.privacy-toggle{
+  min-height:66px;
+  align-items:flex-start;
+}
+
+.community-search-form{
+  padding:12px;
+  border:1px solid rgba(120,73,21,.14);
+  border-radius:16px;
+  background:rgba(255,255,255,.56);
+}
+
+.community-search-result,
+.friend-row,
+.message-conversation,
+.community-profile-card,
+.moderation-action-card,
+.moderation-info{
+  border-color:rgba(120,73,21,.14);
+  background:rgba(255,255,255,.66);
+  box-shadow:0 10px 24px rgba(80,48,12,.055);
+}
+
+.community-search-result,
+.friend-row{
+  padding:13px 14px;
+}
+
+.community-search-result strong,
+.friend-row strong,
+.message-conversation strong{
+  color:#24170b;
+  font-size:15px;
+}
+
+.community-profile-hero,
+.moderation-target{
+  border-color:rgba(184,122,24,.24);
+  background:
+    radial-gradient(circle at 100% 0%,rgba(250,204,21,.16),transparent 30%),
+    linear-gradient(135deg,rgba(255,252,244,.97),rgba(243,225,188,.78));
+  box-shadow:0 14px 34px rgba(80,48,12,.08),inset 0 1px 0 rgba(255,255,255,.55);
+}
+
+.auth-widget{
+  gap:7px;
+  padding:6px 7px;
+  border-color:rgba(255,255,255,.22);
+  background:
+    linear-gradient(135deg,rgba(35,28,22,.88),rgba(70,45,20,.82)),
+    radial-gradient(circle at 0% 0%,rgba(250,204,21,.12),transparent 36%);
+}
+
+.auth-widget .btn{
+  background:rgba(255,255,255,.11)!important;
+  color:#fff8dc!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+}
+
+.auth-widget .btn:hover{
+  background:rgba(255,255,255,.18)!important;
+}
+
+.auth-widget .btn.btn-green{
+  background:rgba(22,163,74,.85)!important;
+}
+
+.auth-widget .btn.btn-orange{
+  background:rgba(202,105,12,.88)!important;
+}
+
+.auth-widget #openLogin{
+  background:rgba(37,99,235,.92)!important;
+}
+
+.auth-widget #openRegister{
+  background:rgba(202,105,12,.92)!important;
+}
+
+.auth-widget .auth-danger-btn{
+  color:#fef2f2!important;
+}
+
+.auth-user-chip{
+  padding:5px 10px;
+  border-right:1px solid rgba(255,255,255,.12);
+}
+
+.auth-user-chip span{
+  color:rgba(255,234,178,.78);
+  font-size:10px;
+  letter-spacing:.02em;
+}
+
+.achievement-summary{
+  border-radius:18px;
+  padding:14px;
+  background:
+    radial-gradient(circle at 0% 0%,rgba(250,204,21,.16),transparent 30%),
+    rgba(255,255,255,.76);
+}
+
+.achievement-cats{
+  gap:9px;
+}
+
+.achievement-cat{
+  position:relative;
+  overflow:hidden;
+  min-height:54px;
+  align-items:flex-start;
+  padding:10px 12px 14px;
+  border-color:rgba(120,73,21,.14);
+}
+
+.achievement-cat i{
+  position:absolute;
+  left:12px;
+  right:12px;
+  bottom:7px;
+  height:4px;
+  border-radius:999px;
+  background:rgba(82,54,21,.14);
+  overflow:hidden;
+}
+
+.achievement-cat i::before{
+  content:"";
+  display:block;
+  width:var(--cat-progress);
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#f59e0b,#fde68a);
+}
+
+.achievement-card{
+  border-radius:16px;
+  padding:14px;
+  border-color:rgba(120,73,21,.14);
+}
+
+.achievement-card.unlocked{
+  background:
+    radial-gradient(circle at 0% 0%,rgba(250,204,21,.16),transparent 28%),
+    rgba(255,255,255,.82);
+}
+
+.achievement-card.locked{
+  opacity:1;
+  filter:saturate(.62);
+  background:rgba(246,241,232,.62);
+}
+
+.achievement-card h3{
+  font-size:16px;
+  margin-bottom:4px;
+}
+
+.achievement-card p{
+  font-size:12px;
+}
+
+.gallery-section{
+  border-color:rgba(120,73,21,.18);
+  background:linear-gradient(180deg,rgba(255,253,246,.82),rgba(246,232,203,.56));
+  box-shadow:0 14px 32px rgba(80,48,12,.06),inset 0 1px 0 rgba(255,255,255,.52);
+}
+
+.gallery-global-grid{
+  grid-template-columns:repeat(auto-fit,minmax(128px,1fr));
+}
+
+.gallery-global-card{
+  padding:10px 11px;
+  border-color:rgba(120,73,21,.14);
+  background:rgba(255,255,255,.58);
+}
+
+.gallery-global-card span{
+  font-size:10px;
+  color:#7a5a31;
+}
+
+.gallery-global-card strong{
+  font-size:16px;
+}
+
+.gallery-card{
+  border-color:rgba(120,73,21,.18);
+  box-shadow:0 12px 26px rgba(80,48,12,.07),inset 0 1px 0 rgba(255,255,255,.52);
+}
+
+.gallery-card.locked{
+  min-height:96px;
+  background:linear-gradient(180deg,rgba(238,234,226,.74),rgba(212,205,192,.48));
+}
+
+.gallery-card.locked p:not(:first-of-type){
+  display:none;
+}
+
+.gallery-event-category{
+  border-color:rgba(120,73,21,.16);
+  background:rgba(255,255,255,.42);
+}
+
+.gallery-event-category summary{
+  background:linear-gradient(90deg,rgba(255,246,214,.76),rgba(255,255,255,.42));
+}
+
+.gallery-collection-entry{
+  border-color:rgba(184,122,24,.24);
+  background:linear-gradient(135deg,rgba(255,248,223,.94),rgba(239,248,255,.66));
+}
+
+.gallery-empty,
+.community-profile-empty{
+  background:rgba(255,255,255,.50);
+  color:#64748b;
+}
+
+.community-profile-empty strong{
+  display:block;
+  color:#3b2a16;
+  font-size:14px;
+}
+
+.community-profile-empty span{
+  display:block;
+  margin-top:4px;
+  color:#64748b;
+  font-size:12px;
+}
+
 .completion-modal{
   width:min(920px,calc(100vw - 24px))!important;
   max-height:min(90vh,780px);
@@ -11940,7 +12289,7 @@ function renderCommunitySearchResults(users,query=""){
     return;
   }
   if(!users.length){
-    box.innerHTML=`<div class="community-profile-empty">Aucun profil public trouvé.</div>`;
+    box.innerHTML=`<div class="community-profile-empty"><strong>Aucun membre trouvé.</strong><br><span>Essayez avec un autre pseudo.</span></div>`;
     return;
   }
   box.innerHTML=users.map(user=>`
@@ -17647,8 +17996,10 @@ function renderAchievements(){
   cats.innerHTML=visible.map(category=>{
     const entries=achievementList().filter(([id,achievement])=>achievement.category===category && isAchievementVisibleToPlayer(id,achievement));
     const done=entries.filter(([id])=>isAchievementUnlocked(id)).length;
+    const percent=entries.length?Math.round(done/entries.length*100):0;
     return `<button class="achievement-cat ${category===activeAchievementCategory?"active":""}" type="button" data-achievement-category="${category}">
       <span>${category}</span><small>${done}/${entries.length}</small>
+      <i style="--cat-progress:${percent}%"></i>
     </button>`;
   }).join("");
   const entries=achievementList().filter(([id,achievement])=>achievement.category===activeAchievementCategory && isAchievementVisibleToPlayer(id,achievement));
