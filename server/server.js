@@ -30,6 +30,7 @@ function ensureColumn(table, column, definition) {
 
 ensureColumn("users", "preferences", "TEXT NOT NULL DEFAULT '{}'");
 ensureColumn("users", "email_verified_at", "TEXT");
+ensureColumn("users", "avatar_url", "TEXT");
 db.prepare("UPDATE users SET email_verified_at = COALESCE(email_verified_at, created_at) WHERE email_verified_at IS NULL AND last_login_at IS NOT NULL").run();
 
 db.exec(`
@@ -73,6 +74,17 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_private_conversations_user_a ON private_conversations(user_a_id);
   CREATE INDEX IF NOT EXISTS idx_private_conversations_user_b ON private_conversations(user_b_id);
   CREATE INDEX IF NOT EXISTS idx_private_messages_conversation ON private_messages(conversation_id, created_at);
+  CREATE TABLE IF NOT EXISTS chat_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    type TEXT NOT NULL DEFAULT 'message' CHECK(type IN ('message','achievement','pykur')),
+    body TEXT NOT NULL,
+    meta TEXT,
+    deleted_at TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_chat_messages_created ON chat_messages(created_at);
 `);
 
 const app = express();
@@ -118,14 +130,16 @@ function cleanPreferences(value) {
 
 function publicUser(user) {
   if (!user) return null;
-  const online = isRecentlyOnline(user.last_login_at);
+  const banned = !!user.is_banned;
+  const online = !banned && isRecentlyOnline(user.last_login_at);
   return {
     id: user.id,
     pseudo: user.pseudo,
     email: user.email,
     role: user.role,
+    avatarUrl: user.avatar_url || "",
     emailVerifiedAt: user.email_verified_at,
-    isBanned: !!user.is_banned,
+    isBanned: banned,
     banUntil: user.ban_until,
     muteUntil: user.mute_until,
     isOnline: online,
@@ -143,13 +157,15 @@ function isRecentlyOnline(value) {
 
 function publicCommunityUser(user) {
   const preferences = parsePreferences(user.preferences);
+  const banned = !!user.is_banned;
   return {
     pseudo: user.pseudo,
     role: user.role,
+    avatarUrl: user.avatar_url || "",
     createdAt: user.created_at,
     lastLoginAt: user.last_login_at,
-    isOnline: isRecentlyOnline(user.last_login_at),
-    isBanned: !!user.is_banned,
+    isOnline: !banned && isRecentlyOnline(user.last_login_at),
+    isBanned: banned,
     banUntil: user.ban_until,
     publicProfile: !!preferences.publicProfile,
     allowPrivateMessages: !!preferences.allowPrivateMessages
@@ -236,14 +252,16 @@ function publicProfileSummary(entry, index, activeId, preferences) {
 
 function buildCommunityProfile(user, savePayload) {
   const preferences = parsePreferences(user.preferences);
+  const banned = !!user.is_banned;
   if (!preferences.publicProfile) {
     return {
       pseudo: user.pseudo,
       role: user.role,
+      avatarUrl: user.avatar_url || "",
       createdAt: user.created_at,
       lastLoginAt: user.last_login_at,
-      isOnline: isRecentlyOnline(user.last_login_at),
-      isBanned: !!user.is_banned,
+      isOnline: !banned && isRecentlyOnline(user.last_login_at),
+      isBanned: banned,
       banUntil: user.ban_until,
       isPrivate: true,
       preferences: {
@@ -276,10 +294,11 @@ function buildCommunityProfile(user, savePayload) {
   return {
     pseudo: user.pseudo,
     role: user.role,
+    avatarUrl: user.avatar_url || "",
     createdAt: user.created_at,
     lastLoginAt: user.last_login_at,
-    isOnline: isRecentlyOnline(user.last_login_at),
-    isBanned: !!user.is_banned,
+    isOnline: !banned && isRecentlyOnline(user.last_login_at),
+    isBanned: banned,
     banUntil: user.ban_until,
     preferences: {
       publicProfile: true,
@@ -370,13 +389,19 @@ function mergeStores(baseStore = {}, extraStore = {}) {
   const merged = Object.assign({}, baseStore || {}, extraStore || {});
   const baseProfiles = baseStore?.profiles || {};
   const extraProfiles = extraStore?.profiles || {};
+  merged.deletedProfiles = Object.assign({}, baseStore?.deletedProfiles || {}, extraStore?.deletedProfiles || {});
+  const deletedProfiles = new Set(Object.keys(merged.deletedProfiles || {}));
   merged.profiles = Object.assign({}, baseProfiles, extraProfiles);
+  deletedProfiles.forEach((profileId) => {
+    delete merged.profiles[profileId];
+  });
   merged.galleryShared = extraStore?.galleryShared !== undefined ? extraStore.galleryShared : baseStore?.galleryShared;
   merged.achievementsShared = extraStore?.achievementsShared !== undefined ? extraStore.achievementsShared : baseStore?.achievementsShared;
   merged.sharedGallery = mergeGalleries(baseStore?.sharedGallery, extraStore?.sharedGallery);
   merged.sharedAchievements = mergeAchievements(baseStore?.sharedAchievements, extraStore?.sharedAchievements);
 
   Object.keys(merged.profiles || {}).forEach((profileId) => {
+    if (deletedProfiles.has(profileId)) return;
     const baseProfile = baseProfiles[profileId] || {};
     const extraProfile = extraProfiles[profileId] || {};
     const profile = Object.assign({}, baseProfile, extraProfile);
@@ -403,6 +428,14 @@ function cleanPseudo(value) {
 
 function cleanIdentifier(value) {
   return String(value || "").trim();
+}
+
+function cleanAvatarUrl(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  if (text.length > 500) throw new Error("URL de photo trop longue.");
+  if (/^https?:\/\/[^\s]+$/i.test(text) || /^data:image\/(png|jpe?g|webp);base64,[a-z0-9+/=]+$/i.test(text)) return text;
+  throw new Error("URL de photo invalide.");
 }
 
 function isValidPseudo(value) {
@@ -523,13 +556,15 @@ function canMessageUser(viewer, target) {
 function conversationOtherUser(row, viewerId) {
   const otherIsA = Number(row.user_a_id) !== Number(viewerId);
   const lastLoginAt = otherIsA ? row.user_a_last_login_at : row.user_b_last_login_at;
+  const banned = !!(otherIsA ? row.user_a_is_banned : row.user_b_is_banned);
   return {
     pseudo: otherIsA ? row.user_a_pseudo : row.user_b_pseudo,
     role: otherIsA ? row.user_a_role : row.user_b_role,
+    avatarUrl: otherIsA ? row.user_a_avatar_url : row.user_b_avatar_url,
     createdAt: otherIsA ? row.user_a_created_at : row.user_b_created_at,
     lastLoginAt,
-    isOnline: isRecentlyOnline(lastLoginAt),
-    isBanned: !!(otherIsA ? row.user_a_is_banned : row.user_b_is_banned),
+    isOnline: !banned && isRecentlyOnline(lastLoginAt),
+    isBanned: banned,
     banUntil: otherIsA ? row.user_a_ban_until : row.user_b_ban_until
   };
 }
@@ -545,6 +580,41 @@ function publicMessage(row, viewerId) {
       role: row.sender_role
     }
   };
+}
+
+function publicChatMessage(row, viewerId) {
+  const banned = !!row.sender_is_banned;
+  return {
+    id: row.id,
+    type: row.type || "message",
+    body: row.body,
+    meta: safeParseJson(row.meta, {}),
+    createdAt: row.created_at,
+    isMine: Number(row.user_id) === Number(viewerId),
+    sender: row.sender_pseudo ? {
+      pseudo: row.sender_pseudo,
+      role: row.sender_role,
+      avatarUrl: row.sender_avatar_url || "",
+      isBanned: banned,
+      isOnline: !banned && isRecentlyOnline(row.sender_last_login_at)
+    } : {
+      pseudo: "Compte supprimé",
+      role: "user",
+      avatarUrl: "",
+      isBanned: false,
+      isOnline: false
+    }
+  };
+}
+
+function chatMessageSelect(where = "m.deleted_at IS NULL") {
+  return `
+    SELECT m.*, u.pseudo AS sender_pseudo, u.role AS sender_role, u.avatar_url AS sender_avatar_url,
+           u.last_login_at AS sender_last_login_at, u.is_banned AS sender_is_banned
+    FROM chat_messages m
+    LEFT JOIN users u ON u.id = m.user_id
+    WHERE ${where}
+  `;
 }
 
 function canModerateTarget(actor, target) {
@@ -809,6 +879,16 @@ app.put("/api/account/preferences", requireAuth, (req, res) => {
   res.json({ user: publicUser(getUserById(req.user.id)) });
 });
 
+app.put("/api/account/avatar", requireAuth, (req, res) => {
+  try {
+    const avatarUrl = cleanAvatarUrl(req.body.avatarUrl);
+    db.prepare("UPDATE users SET avatar_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(avatarUrl || null, req.user.id);
+    res.json({ user: publicUser(getUserById(req.user.id)) });
+  } catch (error) {
+    res.status(400).json({ error: error.message || "Photo de profil invalide." });
+  }
+});
+
 app.put("/api/cloud/save", requireAuth, (req, res) => {
   const incomingPayload = req.body.payload || {};
   const current = db.prepare("SELECT payload FROM cloud_saves WHERE user_id = ?").get(req.user.id);
@@ -831,7 +911,7 @@ app.get("/api/community/users", (req, res) => {
   const query = cleanPseudo(req.query.q || "");
   if (query.length < 2) return res.json({ users: [] });
   const rows = db.prepare(`
-    SELECT pseudo, role, preferences, created_at, last_login_at, is_banned, ban_until
+    SELECT pseudo, role, avatar_url, preferences, created_at, last_login_at, is_banned, ban_until
     FROM users
     WHERE email_verified_at IS NOT NULL
       AND is_banned = 0
@@ -867,11 +947,62 @@ function getTargetUserByPseudo(pseudo) {
   return user;
 }
 
+app.get("/api/social/online", requireAuth, (req, res) => {
+  db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.user.id);
+  const rows = db.prepare(`
+    SELECT pseudo, role, avatar_url, preferences, created_at, last_login_at, is_banned, ban_until
+    FROM users
+    WHERE email_verified_at IS NOT NULL
+      AND is_banned = 0
+      AND last_login_at IS NOT NULL
+      AND datetime(last_login_at) >= datetime('now','-15 minutes')
+    ORDER BY last_login_at DESC
+    LIMIT 80
+  `).all().map(publicCommunityUser);
+  res.json({ users: rows });
+});
+
+app.get("/api/social/chat", requireAuth, (req, res) => {
+  db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.user.id);
+  const limit = Math.max(20, Math.min(120, Number(req.query.limit) || 80));
+  const rows = db.prepare(`
+    ${chatMessageSelect()}
+    ORDER BY m.created_at DESC, m.id DESC
+    LIMIT ?
+  `).all(limit).reverse();
+  res.json({ messages: rows.map((row) => publicChatMessage(row, req.user.id)) });
+});
+
+app.post("/api/social/chat", requireAuth, (req, res) => {
+  db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.user.id);
+  if (req.user.mute_until && !isExpired(req.user.mute_until)) {
+    return res.status(403).json({ error: `Vous êtes mute jusqu'au ${req.user.mute_until}.` });
+  }
+  const type = ["message", "achievement", "pykur"].includes(req.body.type) ? req.body.type : "message";
+  const body = String(req.body.body || "").trim();
+  const meta = req.body.meta && typeof req.body.meta === "object" ? req.body.meta : {};
+  if (body.length < 1) return res.status(400).json({ error: "Message vide." });
+  if (body.length > 500) return res.status(400).json({ error: "Message trop long." });
+  const result = db.prepare(`
+    INSERT INTO chat_messages(user_id,type,body,meta)
+    VALUES(?,?,?,?)
+  `).run(req.user.id, type, body, JSON.stringify(meta));
+  const row = db.prepare(`${chatMessageSelect("m.id = ?")}`).get(result.lastInsertRowid);
+  res.json({ message: publicChatMessage(row, req.user.id) });
+});
+
+app.delete("/api/social/chat/:id", requireAuth, requireRole("moderator"), (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: "Message invalide." });
+  db.prepare("UPDATE chat_messages SET deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND deleted_at IS NULL").run(id);
+  res.json({ ok: true });
+});
+
 app.get("/api/social/friends", requireAuth, (req, res) => {
   const rows = db.prepare(`
-    SELECT f.*, ua.pseudo AS user_a_pseudo, ua.role AS user_a_role, ua.created_at AS user_a_created_at,
+    SELECT f.*, ua.pseudo AS user_a_pseudo, ua.role AS user_a_role, ua.avatar_url AS user_a_avatar_url, ua.created_at AS user_a_created_at,
            ua.last_login_at AS user_a_last_login_at, ua.is_banned AS user_a_is_banned, ua.ban_until AS user_a_ban_until,
-           ub.pseudo AS user_b_pseudo, ub.role AS user_b_role, ub.created_at AS user_b_created_at,
+           ub.pseudo AS user_b_pseudo, ub.role AS user_b_role, ub.avatar_url AS user_b_avatar_url, ub.created_at AS user_b_created_at,
            ub.last_login_at AS user_b_last_login_at, ub.is_banned AS user_b_is_banned, ub.ban_until AS user_b_ban_until
     FROM friendships f
     JOIN users ua ON ua.id = f.user_a_id
@@ -882,13 +1013,15 @@ app.get("/api/social/friends", requireAuth, (req, res) => {
   const result = { friends: [], incoming: [], outgoing: [] };
   rows.forEach((row) => {
     const otherIsA = Number(row.user_a_id) !== Number(req.user.id);
+    const otherBanned = !!(otherIsA ? row.user_a_is_banned : row.user_b_is_banned);
     const other = {
       pseudo: otherIsA ? row.user_a_pseudo : row.user_b_pseudo,
       role: otherIsA ? row.user_a_role : row.user_b_role,
+      avatarUrl: otherIsA ? row.user_a_avatar_url : row.user_b_avatar_url,
       createdAt: otherIsA ? row.user_a_created_at : row.user_b_created_at,
       lastLoginAt: otherIsA ? row.user_a_last_login_at : row.user_b_last_login_at,
-      isOnline: isRecentlyOnline(otherIsA ? row.user_a_last_login_at : row.user_b_last_login_at),
-      isBanned: !!(otherIsA ? row.user_a_is_banned : row.user_b_is_banned),
+      isOnline: !otherBanned && isRecentlyOnline(otherIsA ? row.user_a_last_login_at : row.user_b_last_login_at),
+      isBanned: otherBanned,
       banUntil: otherIsA ? row.user_a_ban_until : row.user_b_ban_until
     };
     const item = { user: other, createdAt: row.created_at, updatedAt: row.updated_at };
@@ -950,9 +1083,9 @@ app.delete("/api/social/friends/:pseudo", requireAuth, (req, res) => {
 
 app.get("/api/social/messages", requireAuth, (req, res) => {
   const rows = db.prepare(`
-    SELECT c.*, ua.pseudo AS user_a_pseudo, ua.role AS user_a_role, ua.created_at AS user_a_created_at,
+    SELECT c.*, ua.pseudo AS user_a_pseudo, ua.role AS user_a_role, ua.avatar_url AS user_a_avatar_url, ua.created_at AS user_a_created_at,
            ua.last_login_at AS user_a_last_login_at, ua.is_banned AS user_a_is_banned, ua.ban_until AS user_a_ban_until,
-           ub.pseudo AS user_b_pseudo, ub.role AS user_b_role, ub.created_at AS user_b_created_at,
+           ub.pseudo AS user_b_pseudo, ub.role AS user_b_role, ub.avatar_url AS user_b_avatar_url, ub.created_at AS user_b_created_at,
            ub.last_login_at AS user_b_last_login_at, ub.is_banned AS user_b_is_banned, ub.ban_until AS user_b_ban_until,
            m.body AS last_body, m.created_at AS last_message_at, s.pseudo AS last_sender_pseudo
     FROM private_conversations c
@@ -1023,13 +1156,42 @@ app.get("/api/social/messages/:pseudo", requireAuth, (req, res) => {
 });
 
 app.get("/api/moderation/users", requireAuth, requireRole("moderator"), (req, res) => {
+  db.prepare("UPDATE users SET is_banned = 0, ban_until = NULL WHERE is_banned = 1 AND ban_until IS NOT NULL AND datetime(ban_until) <= datetime('now')").run();
+  db.prepare("UPDATE users SET mute_until = NULL WHERE mute_until IS NOT NULL AND datetime(mute_until) <= datetime('now')").run();
   const users = db.prepare(`
-    SELECT id,pseudo,email,role,is_banned,ban_until,mute_until,created_at,last_login_at
+    SELECT id,pseudo,email,role,avatar_url,is_banned,ban_until,mute_until,created_at,last_login_at
     FROM users
     ORDER BY created_at DESC
     LIMIT 200
   `).all().map(publicUser);
   res.json({ users });
+});
+
+app.get("/api/moderation/overview", requireAuth, requireRole("moderator"), (req, res) => {
+  db.prepare("UPDATE users SET is_banned = 0, ban_until = NULL WHERE is_banned = 1 AND ban_until IS NOT NULL AND datetime(ban_until) <= datetime('now')").run();
+  db.prepare("UPDATE users SET mute_until = NULL WHERE mute_until IS NOT NULL AND datetime(mute_until) <= datetime('now')").run();
+  const banned = db.prepare(`
+    SELECT id,pseudo,email,role,avatar_url,is_banned,ban_until,mute_until,created_at,last_login_at
+    FROM users
+    WHERE is_banned = 1
+    ORDER BY COALESCE(ban_until,'9999-12-31') DESC, updated_at DESC
+    LIMIT 100
+  `).all().map((user) => moderationUserView(user, req.user));
+  const muted = db.prepare(`
+    SELECT id,pseudo,email,role,avatar_url,is_banned,ban_until,mute_until,created_at,last_login_at
+    FROM users
+    WHERE mute_until IS NOT NULL AND datetime(mute_until) > datetime('now')
+    ORDER BY mute_until DESC
+    LIMIT 100
+  `).all().map((user) => moderationUserView(user, req.user));
+  const moderators = db.prepare(`
+    SELECT id,pseudo,email,role,avatar_url,is_banned,ban_until,mute_until,created_at,last_login_at
+    FROM users
+    WHERE role IN ('moderator','admin')
+    ORDER BY role DESC, pseudo ASC
+    LIMIT 100
+  `).all().map((user) => moderationUserView(user, req.user));
+  res.json({ banned, muted, moderators });
 });
 
 app.get("/api/moderation/users/:pseudo", requireAuth, requireRole("moderator"), (req, res) => {
