@@ -83,6 +83,32 @@ CREATE TABLE IF NOT EXISTS moderation_warnings (
   FOREIGN KEY(actor_user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_warnings_target ON moderation_warnings(target_user_id, created_at);
+
+CREATE TABLE IF NOT EXISTS community_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  type TEXT NOT NULL,
+  body TEXT,
+  meta TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_community_logs_created ON community_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_community_logs_user ON community_logs(user_id, created_at);
+
+CREATE TABLE IF NOT EXISTS security_settings (
+  id INTEGER PRIMARY KEY CHECK(id = 1),
+  mode TEXT NOT NULL DEFAULT 'normal' CHECK(mode IN ('soft','normal','strict')),
+  achievement_cooldown_seconds INTEGER NOT NULL DEFAULT 120,
+  pykur_cooldown_seconds INTEGER NOT NULL DEFAULT 86400,
+  max_achievement_shares_per_hour INTEGER NOT NULL DEFAULT 8,
+  max_pykur_shares_per_day INTEGER NOT NULL DEFAULT 2,
+  min_pykur_age_hours INTEGER NOT NULL DEFAULT 12,
+  allow_unverified_public INTEGER NOT NULL DEFAULT 1,
+  show_unverified_badges INTEGER NOT NULL DEFAULT 1,
+  auto_share_enabled INTEGER NOT NULL DEFAULT 1,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 CREATE INDEX IF NOT EXISTS idx_password_reset_user ON password_reset_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_password_reset_hash ON password_reset_tokens(token_hash);
 CREATE INDEX IF NOT EXISTS idx_email_verification_user ON email_verification_tokens(user_id);

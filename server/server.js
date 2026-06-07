@@ -62,6 +62,30 @@ db.exec(`
     FOREIGN KEY(actor_user_id) REFERENCES users(id) ON DELETE CASCADE
   );
   CREATE INDEX IF NOT EXISTS idx_warnings_target ON moderation_warnings(target_user_id, created_at);
+  CREATE TABLE IF NOT EXISTS community_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    type TEXT NOT NULL,
+    body TEXT,
+    meta TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+  );
+  CREATE INDEX IF NOT EXISTS idx_community_logs_created ON community_logs(created_at);
+  CREATE INDEX IF NOT EXISTS idx_community_logs_user ON community_logs(user_id, created_at);
+  CREATE TABLE IF NOT EXISTS security_settings (
+    id INTEGER PRIMARY KEY CHECK(id = 1),
+    mode TEXT NOT NULL DEFAULT 'normal' CHECK(mode IN ('soft','normal','strict')),
+    achievement_cooldown_seconds INTEGER NOT NULL DEFAULT 120,
+    pykur_cooldown_seconds INTEGER NOT NULL DEFAULT 86400,
+    max_achievement_shares_per_hour INTEGER NOT NULL DEFAULT 8,
+    max_pykur_shares_per_day INTEGER NOT NULL DEFAULT 2,
+    min_pykur_age_hours INTEGER NOT NULL DEFAULT 12,
+    allow_unverified_public INTEGER NOT NULL DEFAULT 1,
+    show_unverified_badges INTEGER NOT NULL DEFAULT 1,
+    auto_share_enabled INTEGER NOT NULL DEFAULT 1,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
   CREATE TABLE IF NOT EXISTS private_conversations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_a_id INTEGER NOT NULL,
@@ -139,6 +163,7 @@ ensureColumn("private_messages", "deleted_at", "TEXT");
 ensureColumn("chat_messages", "edited_at", "TEXT");
 ensureColumn("chat_messages", "deleted_by_user_id", "INTEGER");
 db.prepare("INSERT OR IGNORE INTO chat_settings(id,locked,slow_mode_seconds) VALUES(1,0,0)").run();
+db.prepare("INSERT OR IGNORE INTO security_settings(id) VALUES(1)").run();
 
 const app = express();
 app.set("trust proxy", 1);
@@ -309,10 +334,11 @@ function publicProfileSummary(entry, index, activeId, preferences) {
   return profile;
 }
 
-function buildCommunityProfile(user, savePayload) {
+function buildCommunityProfile(user, savePayload, options = {}) {
   const preferences = parsePreferences(user.preferences);
   const banned = !!user.is_banned;
-  if (!preferences.publicProfile) {
+  const moderationView = !!options.moderationView;
+  if (!preferences.publicProfile && !moderationView) {
     return {
       pseudo: user.pseudo,
       role: user.role,
@@ -360,8 +386,9 @@ function buildCommunityProfile(user, savePayload) {
     isOnline: !banned && isRecentlyOnline(user.last_login_at),
     isBanned: banned,
     banUntil: user.ban_until,
+    isPrivate: !preferences.publicProfile,
     preferences: {
-      publicProfile: true,
+      publicProfile: !!preferences.publicProfile,
       showSecondaryProfiles: !!preferences.showSecondaryProfiles,
       hidePykurProfileNames: !!preferences.hidePykurProfileNames,
       hideDetailedStats: !!preferences.hideDetailedStats,
@@ -370,6 +397,7 @@ function buildCommunityProfile(user, savePayload) {
       hideNormalAchievements: !!preferences.hideNormalAchievements,
       allowPrivateMessages: !!preferences.allowPrivateMessages
     },
+    moderationView,
     profiles: visibleProfiles,
     gallery: preferences.hideGallery ? null : {
       completedPykurs: Array.isArray(gallerySource?.completedPykurs) ? gallerySource.completedPykurs.length : 0,
@@ -503,12 +531,81 @@ function chatSettings() {
   return db.prepare("SELECT locked, slow_mode_seconds AS slowModeSeconds, updated_at AS updatedAt FROM chat_settings WHERE id = 1").get() || { locked: 0, slowModeSeconds: 0 };
 }
 
+function securitySettings() {
+  const row = db.prepare(`
+    SELECT mode,
+           achievement_cooldown_seconds AS achievementCooldownSeconds,
+           pykur_cooldown_seconds AS pykurCooldownSeconds,
+           max_achievement_shares_per_hour AS maxAchievementSharesPerHour,
+           max_pykur_shares_per_day AS maxPykurSharesPerDay,
+           min_pykur_age_hours AS minPykurAgeHours,
+           allow_unverified_public AS allowUnverifiedPublic,
+           show_unverified_badges AS showUnverifiedBadges,
+           auto_share_enabled AS autoShareEnabled,
+           updated_at AS updatedAt
+    FROM security_settings WHERE id = 1
+  `).get();
+  return row || {
+    mode: "normal",
+    achievementCooldownSeconds: 120,
+    pykurCooldownSeconds: 86400,
+    maxAchievementSharesPerHour: 8,
+    maxPykurSharesPerDay: 2,
+    minPykurAgeHours: 12,
+    allowUnverifiedPublic: 1,
+    showUnverifiedBadges: 1,
+    autoShareEnabled: 1
+  };
+}
+
+function logCommunity({ userId = null, type, body = "", meta = {} }) {
+  try {
+    db.prepare("INSERT INTO community_logs(user_id,type,body,meta) VALUES(?,?,?,?)").run(userId, type, String(body || "").slice(0, 1000), JSON.stringify(meta || {}));
+  } catch {
+    // Les logs communautaires ne doivent jamais bloquer l'action principale.
+  }
+}
+
+function shareLimitError(userId, type, meta = {}) {
+  const settings = securitySettings();
+  if (!settings.autoShareEnabled && type !== "message") return "Les partages publics automatiques sont désactivés.";
+  if (type !== "achievement" && type !== "pykur") return "";
+  const cooldown = type === "achievement" ? Number(settings.achievementCooldownSeconds) : Number(settings.pykurCooldownSeconds);
+  const maxCount = type === "achievement" ? Number(settings.maxAchievementSharesPerHour) : Number(settings.maxPykurSharesPerDay);
+  const windowSql = type === "achievement" ? "-1 hour" : "-1 day";
+  const last = db.prepare("SELECT created_at FROM chat_messages WHERE user_id = ? AND type = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1").get(userId, type);
+  if (last && cooldown > 0) {
+    const elapsed = (Date.now() - new Date(String(last.created_at).replace(" ", "T") + "Z").getTime()) / 1000;
+    if (elapsed < cooldown) return `Partage trop rapide. Attendez encore ${Math.ceil(cooldown - elapsed)}s.`;
+  }
+  const count = db.prepare(`SELECT COUNT(*) AS total FROM chat_messages WHERE user_id = ? AND type = ? AND deleted_at IS NULL AND datetime(created_at) >= datetime('now', ?)`).get(userId, type, windowSql)?.total || 0;
+  if (maxCount > 0 && count >= maxCount) return "Limite de partages publics atteinte pour le moment.";
+  if (type === "pykur" && Number(settings.minPykurAgeHours) > 0) {
+    const createdAt = meta?.createdAt || meta?.created || meta?.startDate || meta?.cycleStart || "";
+    const createdTime = createdAt ? new Date(createdAt).getTime() : 0;
+    if (createdTime && Date.now() - createdTime < Number(settings.minPykurAgeHours) * 60 * 60 * 1000) {
+      return "Pykur termine trop rapidement pour etre partage publiquement.";
+    }
+  }
+  const marker = meta?.id || meta?.number || meta?.title || "";
+  if (marker) {
+    const duplicate = db.prepare(`
+      SELECT id FROM chat_messages
+      WHERE user_id = ? AND type = ? AND deleted_at IS NULL AND meta LIKE ?
+      ORDER BY created_at DESC LIMIT 1
+    `).get(userId, type, `%${String(marker).replace(/[%_]/g, "")}%`);
+    if (duplicate) return "Ce partage existe déjà.";
+  }
+  return "";
+}
+
 function announceFirstLogin(user) {
   if (!user || user.first_login_announcement_at) return;
   db.prepare(`
     INSERT INTO chat_messages(user_id,type,body,meta)
     VALUES(?,?,?,?)
   `).run(user.id, "message", `${user.pseudo} vient de rejoindre Familier Tracker.`, JSON.stringify({ system: "first_login" }));
+  logCommunity({ userId: user.id, type: "first_login", body: `${user.pseudo} a rejoint Familier Tracker.` });
   db.prepare("UPDATE users SET first_login_announcement_at = CURRENT_TIMESTAMP WHERE id = ?").run(user.id);
 }
 
@@ -758,6 +855,7 @@ function moderationLog({ targetId, actorId, type, reason, expiresAt = null }) {
     INSERT INTO moderation_actions(target_user_id, actor_user_id, type, reason, expires_at)
     VALUES(?,?,?,?,?)
   `).run(targetId, actorId, type, reason || null, expiresAt || null);
+  logCommunity({ userId: actorId, type: "moderation_action", body: type, meta: { targetId, reason: reason || "", expiresAt } });
 }
 
 function tokenHash(token) {
@@ -901,6 +999,7 @@ app.post("/api/auth/login", async (req, res) => {
   db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?").run(user.id);
   const refreshed = getUserById(user.id);
   announceFirstLogin(refreshed);
+  logCommunity({ userId: refreshed.id, type: "login", body: "Connexion au compte." });
   res.json({ token: signUser(refreshed), user: publicUser(refreshed) });
 });
 
@@ -955,6 +1054,7 @@ app.put("/api/account/email", requireAuth, (req, res) => {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "Email invalide." });
   try {
     db.prepare("UPDATE users SET email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(email, req.user.id);
+    logCommunity({ userId: req.user.id, type: "account_email", body: "Email du compte modifie." });
     res.json({ user: publicUser(getUserById(req.user.id)) });
   } catch (error) {
     if (String(error.message).includes("UNIQUE")) return res.status(409).json({ error: "Email déjà utilisé." });
@@ -969,6 +1069,7 @@ app.put("/api/account/password", requireAuth, async (req, res) => {
   if (newPassword.length < 8) return res.status(400).json({ error: "Le nouveau mot de passe doit contenir au moins 8 caractères." });
   const hash = await bcrypt.hash(newPassword, 12);
   db.prepare("UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(hash, req.user.id);
+  logCommunity({ userId: req.user.id, type: "account_password", body: "Mot de passe modifie." });
   res.json({ ok: true });
 });
 
@@ -982,10 +1083,31 @@ app.put("/api/account/avatar", requireAuth, (req, res) => {
   try {
     const avatarUrl = cleanAvatarUrl(req.body.avatarUrl);
     db.prepare("UPDATE users SET avatar_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(avatarUrl || null, req.user.id);
+    logCommunity({ userId: req.user.id, type: "avatar", body: avatarUrl ? "Photo de profil modifiee." : "Photo de profil supprimee." });
     res.json({ user: publicUser(getUserById(req.user.id)) });
   } catch (error) {
     res.status(400).json({ error: error.message || "Photo de profil invalide." });
   }
+});
+
+app.get("/api/account/warnings", requireAuth, (req, res) => {
+  const warnings = db.prepare(`
+    SELECT w.*, actor.pseudo AS actor_pseudo, actor.role AS actor_role
+    FROM moderation_warnings w
+    LEFT JOIN users actor ON actor.id = w.actor_user_id
+    WHERE w.target_user_id = ?
+    ORDER BY w.created_at DESC
+    LIMIT 30
+  `).all(req.user.id).map((row) => ({
+    id: row.id,
+    reason: row.reason,
+    createdAt: row.created_at,
+    actor: {
+      pseudo: row.actor_pseudo || "Moderation",
+      role: row.actor_role || "moderator"
+    }
+  }));
+  res.json({ warnings });
 });
 
 app.put("/api/cloud/save", requireAuth, (req, res) => {
@@ -1034,7 +1156,8 @@ app.get("/api/community/users/:pseudo", optionalAuth, (req, res) => {
   } catch {
     payload = null;
   }
-  const profile = buildCommunityProfile(user, payload);
+  const moderationView = ["moderator", "admin"].includes(req.user?.role);
+  const profile = buildCommunityProfile(user, payload, { moderationView });
   profile.social = socialProfileMeta(req.user, user, parsePreferences(user.preferences));
   if (!profile) return res.status(404).json({ error: "Profil public désactivé." });
   res.json({ profile });
@@ -1103,10 +1226,13 @@ app.post("/api/social/chat", requireAuth, (req, res) => {
   }
   if (body.length < 1) return res.status(400).json({ error: "Message vide." });
   if (body.length > 500) return res.status(400).json({ error: "Message trop long." });
+  const shareError = shareLimitError(req.user.id, type, meta);
+  if (shareError) return res.status(429).json({ error: shareError });
   const result = db.prepare(`
     INSERT INTO chat_messages(user_id,type,body,meta)
     VALUES(?,?,?,?)
   `).run(req.user.id, type, body, JSON.stringify(meta));
+  logCommunity({ userId: req.user.id, type: type === "message" ? "chat_message" : `share_${type}`, body, meta });
   const row = db.prepare(`${chatMessageSelect("m.id = ?")}`).get(result.lastInsertRowid);
   res.json({ message: publicChatMessage(row, req.user.id) });
 });
@@ -1145,6 +1271,7 @@ app.post("/api/social/chat/:id/report", requireAuth, (req, res) => {
     INSERT INTO message_reports(reporter_user_id,target_user_id,chat_message_id,reason)
     VALUES(?,?,?,?)
   `).run(req.user.id, row.user_id, id, reason || "Signalement chatbox");
+  logCommunity({ userId: req.user.id, type: "report_chat", body: "Signalement chatbox.", meta: { messageId: id, targetId: row.user_id } });
   res.json({ ok: true });
 });
 
@@ -1294,6 +1421,7 @@ app.post("/api/social/messages/:pseudo", requireAuth, (req, res) => {
     VALUES(?,?,?)
   `).run(conversation.id, req.user.id, body);
   db.prepare("UPDATE private_conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(conversation.id);
+  logCommunity({ userId: req.user.id, type: "private_message", body: "Message prive envoye.", meta: { to: target.pseudo } });
   res.json({ conversationId: conversation.id });
 });
 
@@ -1341,6 +1469,7 @@ app.post("/api/social/messages/:pseudo/:id/report", requireAuth, (req, res) => {
     INSERT INTO message_reports(reporter_user_id,target_user_id,private_message_id,reason)
     VALUES(?,?,?,?)
   `).run(req.user.id, row.sender_id, id, reason || "Signalement message prive");
+  logCommunity({ userId: req.user.id, type: "report_private", body: "Signalement message prive.", meta: { messageId: id, targetId: row.sender_id } });
   res.json({ ok: true });
 });
 
@@ -1432,7 +1561,53 @@ app.get("/api/moderation/overview", requireAuth, requireRole("moderator"), (req,
     reporter: { pseudo: row.reporter_pseudo, role: row.reporter_role },
     target: row.target_pseudo ? { pseudo: row.target_pseudo, role: row.target_role } : null
   }));
-  res.json({ banned, muted, moderators, reports, chatSettings: chatSettings() });
+  const communityLogs = db.prepare(`
+    SELECT l.*, u.pseudo, u.role, u.avatar_url
+    FROM community_logs l
+    LEFT JOIN users u ON u.id = l.user_id
+    ORDER BY l.created_at DESC
+    LIMIT 160
+  `).all().map((row) => ({
+    id: row.id,
+    type: row.type,
+    body: row.body,
+    meta: safeParseJson(row.meta, {}),
+    createdAt: row.created_at,
+    user: row.user_id ? {
+      id: row.user_id,
+      pseudo: row.pseudo || "Compte supprime",
+      role: row.role || "user",
+      avatarUrl: row.avatar_url || ""
+    } : null
+  }));
+  const moderationLogs = req.user.role === "admin" ? db.prepare(`
+    SELECT a.id, a.type, a.reason, a.expires_at, a.created_at,
+           actor.pseudo AS actor_pseudo, actor.role AS actor_role,
+           target.pseudo AS target_pseudo, target.role AS target_role
+    FROM moderation_actions a
+    LEFT JOIN users actor ON actor.id = a.actor_user_id
+    LEFT JOIN users target ON target.id = a.target_user_id
+    ORDER BY a.created_at DESC
+    LIMIT 120
+  `).all().map((row) => ({
+    id: row.id,
+    type: row.type,
+    reason: row.reason,
+    expiresAt: row.expires_at,
+    createdAt: row.created_at,
+    actor: { pseudo: row.actor_pseudo || "Systeme", role: row.actor_role || "moderator" },
+    target: { pseudo: row.target_pseudo || "Compte supprime", role: row.target_role || "user" }
+  })) : [];
+  res.json({
+    banned,
+    muted,
+    moderators,
+    reports,
+    chatSettings: chatSettings(),
+    securitySettings: securitySettings(),
+    communityLogs,
+    moderationLogs
+  });
 });
 
 app.post("/api/moderation/chat/clear", requireAuth, requireRole("moderator"), (req, res) => {
@@ -1445,6 +1620,51 @@ app.put("/api/moderation/chat-settings", requireAuth, requireRole("moderator"), 
   const slow = Math.max(0, Math.min(300, Number(req.body.slowModeSeconds) || 0));
   db.prepare("UPDATE chat_settings SET locked = ?, slow_mode_seconds = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1").run(locked, slow);
   res.json({ settings: chatSettings() });
+});
+
+app.put("/api/admin/security-settings", requireAuth, requireRole("admin"), (req, res) => {
+  const mode = ["soft", "normal", "strict"].includes(req.body.mode) ? req.body.mode : "normal";
+  const clamp = (value, min, max, fallback) => {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return fallback;
+    return Math.max(min, Math.min(max, Math.round(number)));
+  };
+  const values = {
+    achievementCooldownSeconds: clamp(req.body.achievementCooldownSeconds, 0, 3600, 120),
+    pykurCooldownSeconds: clamp(req.body.pykurCooldownSeconds, 0, 604800, 86400),
+    maxAchievementSharesPerHour: clamp(req.body.maxAchievementSharesPerHour, 1, 100, 8),
+    maxPykurSharesPerDay: clamp(req.body.maxPykurSharesPerDay, 1, 20, 2),
+    minPykurAgeHours: clamp(req.body.minPykurAgeHours, 0, 720, 12),
+    allowUnverifiedPublic: req.body.allowUnverifiedPublic ? 1 : 0,
+    showUnverifiedBadges: req.body.showUnverifiedBadges ? 1 : 0,
+    autoShareEnabled: req.body.autoShareEnabled === false ? 0 : 1
+  };
+  db.prepare(`
+    UPDATE security_settings
+    SET mode = ?,
+        achievement_cooldown_seconds = ?,
+        pykur_cooldown_seconds = ?,
+        max_achievement_shares_per_hour = ?,
+        max_pykur_shares_per_day = ?,
+        min_pykur_age_hours = ?,
+        allow_unverified_public = ?,
+        show_unverified_badges = ?,
+        auto_share_enabled = ?,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = 1
+  `).run(
+    mode,
+    values.achievementCooldownSeconds,
+    values.pykurCooldownSeconds,
+    values.maxAchievementSharesPerHour,
+    values.maxPykurSharesPerDay,
+    values.minPykurAgeHours,
+    values.allowUnverifiedPublic,
+    values.showUnverifiedBadges,
+    values.autoShareEnabled
+  );
+  logCommunity({ userId: req.user.id, type: "security_settings", body: "Reglages anti-abus modifies.", meta: { mode } });
+  res.json({ settings: securitySettings() });
 });
 
 app.post("/api/moderation/reports/:id/resolve", requireAuth, requireRole("moderator"), (req, res) => {
@@ -1473,6 +1693,7 @@ app.post("/api/moderation/reports/:id/action", requireAuth, requireRole("moderat
   }
   if (action === "warn") {
     db.prepare("INSERT INTO moderation_warnings(target_user_id, actor_user_id, reason) VALUES(?,?,?)").run(target.id, req.user.id, reason || "Avertissement modÃ©ration");
+    logCommunity({ userId: req.user.id, type: "moderation_warn", body: "Avertissement envoye.", meta: { targetId: target.id, reason: reason || "" } });
   } else if (action === "mute1" || action === "mute24") {
     const hours = action === "mute1" ? 1 : 24;
     const until = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
@@ -1499,6 +1720,40 @@ app.get("/api/moderation/users/:pseudo", requireAuth, requireRole("moderator"), 
     user: moderationUserView(target, req.user),
     history: moderationHistory(target.id)
   });
+});
+
+app.delete("/api/moderation/actions/:id", requireAuth, requireRole("moderator"), (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: "Action invalide." });
+  const action = db.prepare("SELECT * FROM moderation_actions WHERE id = ?").get(id);
+  if (!action) return res.status(404).json({ error: "Action introuvable." });
+  const target = getUserById(action.target_user_id);
+  if (target && !canModerateTarget(req.user, target)) return res.status(403).json({ error: "Suppression non autorisee." });
+  db.prepare("DELETE FROM moderation_actions WHERE id = ?").run(id);
+  logCommunity({ userId: req.user.id, type: "moderation_history_delete", body: "Action de moderation retiree.", meta: { actionId: id } });
+  res.json({ ok: true });
+});
+
+app.delete("/api/moderation/warnings/:id", requireAuth, requireRole("moderator"), (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: "Avertissement invalide." });
+  const warning = db.prepare("SELECT * FROM moderation_warnings WHERE id = ?").get(id);
+  if (!warning) return res.status(404).json({ error: "Avertissement introuvable." });
+  const target = getUserById(warning.target_user_id);
+  if (target && !canModerateTarget(req.user, target)) return res.status(403).json({ error: "Suppression non autorisee." });
+  db.prepare("DELETE FROM moderation_warnings WHERE id = ?").run(id);
+  logCommunity({ userId: req.user.id, type: "moderation_history_delete", body: "Avertissement retire.", meta: { warningId: id } });
+  res.json({ ok: true });
+});
+
+app.delete("/api/moderation/users/:id/history", requireAuth, requireRole("moderator"), (req, res) => {
+  const target = getUserById(req.params.id);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Suppression non autorisee." });
+  db.prepare("DELETE FROM moderation_actions WHERE target_user_id = ?").run(target.id);
+  db.prepare("DELETE FROM moderation_warnings WHERE target_user_id = ?").run(target.id);
+  logCommunity({ userId: req.user.id, type: "moderation_history_reset", body: "Historique recent de sanctions vide.", meta: { targetId: target.id } });
+  res.json({ ok: true });
 });
 
 app.post("/api/moderation/users/:id/ban", requireAuth, requireRole("moderator"), (req, res) => {
@@ -1537,6 +1792,7 @@ app.post("/api/moderation/users/:id/warn", requireAuth, requireRole("moderator")
   if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Vous ne pouvez pas avertir ce membre." });
   const reason = String(req.body.reason || "").trim().slice(0, 300);
   db.prepare("INSERT INTO moderation_warnings(target_user_id, actor_user_id, reason) VALUES(?,?,?)").run(target.id, req.user.id, reason || "Avertissement modÃ©ration");
+  logCommunity({ userId: req.user.id, type: "moderation_warn", body: "Avertissement envoye.", meta: { targetId: target.id, reason: reason || "" } });
   res.json({ ok: true });
 });
 

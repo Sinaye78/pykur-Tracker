@@ -4263,6 +4263,18 @@ body.no-anim .app.milestone-flash{
   box-shadow:0 3px 9px rgba(185,28,28,.22);
 }
 
+.community-moderation-badge{
+  display:inline-flex;
+  align-items:center;
+  min-height:32px;
+  padding:0 12px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#8f1d18,#dc2626);
+  color:#fff;
+  font-weight:950;
+  box-shadow:0 8px 18px rgba(220,38,38,.18);
+}
+
 .community-friend-actions{
   display:flex;
   gap:8px;
@@ -4561,6 +4573,20 @@ body.no-anim .app.milestone-flash{
   justify-content:flex-end;
 }
 
+.message-bubble.mine .message-actions{
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(2px);
+  transition:opacity .18s ease,transform .18s ease;
+}
+
+.message-bubble.mine:hover .message-actions,
+.message-bubble.mine:focus-within .message-actions{
+  opacity:1;
+  pointer-events:auto;
+  transform:translateY(0);
+}
+
 .chat-message-actions .btn,
 .message-actions .btn{
   min-height:28px!important;
@@ -4659,12 +4685,21 @@ body.no-anim .app.milestone-flash{
 .friend-row{
   display:flex;
   align-items:center;
-  justify-content:space-between;
+  justify-content:flex-start;
   gap:12px;
   padding:12px;
   border:1px solid rgba(140,100,48,.22);
   border-radius:13px;
   background:rgba(255,255,255,.64);
+}
+
+.friend-row > div:first-of-type{
+  min-width:0;
+  flex:1;
+}
+
+.friend-avatar{
+  flex:0 0 auto;
 }
 
 .friend-row strong{
@@ -10388,6 +10423,54 @@ body.no-anim .pykur-sparkle{
   min-height:auto;
 }
 
+#accountProfileModal .account-tabs{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+  padding:8px;
+  border:1px solid rgba(122,84,35,.22);
+  border-radius:14px;
+  background:rgba(255,250,238,.72);
+}
+
+#accountProfileModal .account-tabs button{
+  border:0;
+  border-radius:10px;
+  padding:10px 14px;
+  font-weight:900;
+  color:#5b3a1c;
+  background:transparent;
+  cursor:pointer;
+}
+
+#accountProfileModal .account-tabs button.active{
+  color:#fff;
+  background:linear-gradient(135deg,#2f6df0,#1d55ca);
+  box-shadow:0 8px 18px rgba(47,109,240,.22);
+}
+
+#accountProfileModal [data-account-section].hidden{
+  display:none;
+}
+
+#accountProfileModal .account-warning-list{
+  display:grid;
+  gap:10px;
+}
+
+#accountProfileModal .account-warning-item{
+  padding:12px;
+  border:1px solid rgba(190,92,24,.25);
+  border-radius:12px;
+  background:rgba(255,246,225,.82);
+}
+
+#accountProfileModal .account-warning-item strong{
+  display:block;
+  color:#7b2e16;
+}
+
 .dialog-counter{
   display:block;
   margin:8px 18px 0;
@@ -11126,8 +11209,15 @@ body.no-anim .pykur-sparkle{
       <button class="btn btn-red modal-close" data-close="accountProfileModal">X</button>
     </div>
     <div class="modal-body">
+      <div class="account-tabs" id="accountSectionTabs">
+        <button class="active" type="button" data-account-section-tab="account">Compte</button>
+        <button type="button" data-account-section-tab="privacy">Confidentialité</button>
+        <button type="button" data-account-section-tab="security">Sécurité</button>
+        <button type="button" data-account-section-tab="photo">Photo</button>
+        <button type="button" data-account-section-tab="warnings">Avertissements</button>
+      </div>
       <div class="account-profile-grid">
-        <section class="account-panel full">
+        <section class="account-panel full" data-account-section="account">
           <h3>Compte</h3>
           <div class="account-meta" id="accountProfileMeta"></div>
           <div class="community-profile-actions">
@@ -11139,7 +11229,7 @@ body.no-anim .pykur-sparkle{
             <button class="btn btn-orange" id="copyMyCommunityLink" type="button">Copier mon lien public</button>
           </div>
         </section>
-        <section class="account-panel full">
+        <section class="account-panel full" data-account-section="photo">
           <h3>Photo de profil</h3>
           <form class="account-form account-avatar-form" id="accountAvatarForm">
             <span class="account-avatar-preview" id="accountAvatarPreview" aria-hidden="true"></span>
@@ -11148,14 +11238,14 @@ body.no-anim .pykur-sparkle{
             <button class="btn btn-blue" type="submit">Enregistrer la photo</button>
           </form>
         </section>
-        <section class="account-panel">
+        <section class="account-panel" data-account-section="security">
           <h3>Modifier l'email</h3>
           <form class="account-form" id="accountEmailForm">
             <input id="accountEmailInput" type="email" autocomplete="email" placeholder="nouvel@email.fr">
             <button class="btn btn-blue" type="submit">Enregistrer l'email</button>
           </form>
         </section>
-        <section class="account-panel">
+        <section class="account-panel" data-account-section="security">
           <h3>Modifier le mot de passe</h3>
           <form class="account-form" id="accountPasswordForm">
             <input id="accountCurrentPassword" type="password" autocomplete="current-password" placeholder="Mot de passe actuel">
@@ -11163,11 +11253,17 @@ body.no-anim .pykur-sparkle{
             <button class="btn btn-orange" type="submit">Changer le mot de passe</button>
           </form>
         </section>
-        <section class="account-panel full">
+        <section class="account-panel full" data-account-section="privacy">
           <h3>Confidentialité communautaire</h3>
           <div class="account-privacy-intro">Choisissez ce que les autres membres peuvent voir sur votre profil public et ce qui peut être partagé automatiquement dans la communauté.</div>
           <div class="privacy-list" id="accountPrivacyList"></div>
           <div class="options-note">Ces réglages préparent les futurs profils publics, messages privés et partages de galerie. Ils n'affectent pas votre progression actuelle.</div>
+        </section>
+        <section class="account-panel full" data-account-section="warnings">
+          <h3>Avertissements reçus</h3>
+          <div class="account-warning-list" id="accountWarningsList">
+            <div class="community-profile-empty">Aucun avertissement reçu.</div>
+          </div>
         </section>
       </div>
     </div>
@@ -11961,6 +12057,8 @@ const socialState={friends:0,incoming:0,outgoing:0,loaded:false};
 const messageState={activePseudo:null,conversations:[],unread:0,lastSeenAt:localStorage.getItem("pykur_messages_seen_at")||"",timer:null,lastNotifiedAt:localStorage.getItem("pykur_messages_notified_at")||""};
 const chatState={messages:[],online:[],ignored:[],settings:{locked:0,slowModeSeconds:0},lastPingSeenAt:localStorage.getItem("pykur_chat_ping_seen_at")||"",timer:null,hideShares:false,hideText:false};
 const cloudState={timer:null,syncing:false,pending:false,lastSyncAt:null,error:null,loading:false};
+let accountProfileSection="account";
+let accountWarnings=[];
 let passwordResetToken="";
 
 async function authFetch(path,options={}){
@@ -11981,7 +12079,7 @@ const ACCOUNT_PRIVACY_OPTIONS=[
   {group:"Visibilité",key:"showSecondaryProfiles",label:"Afficher mes profils secondaires",description:"Permet aux autres membres de consulter vos autres profils Pykur."},
   {group:"Visibilité",key:"hidePykurProfileNames",label:"Masquer les noms de profils Pykur",description:"Remplace les noms de profils par des intitulés neutres dans les vues publiques."},
   {group:"Visibilité",key:"hideDetailedStats",label:"Masquer les statistiques détaillées",description:"Affiche seulement les grandes lignes de progression."},
-  {group:"Galerie",key:"hideGallery",label:"Masquer la galerie publique",description:"Ne partage pas vos anciens Pykurs sur le profil public."},
+  {group:"Visibilité",key:"hideGallery",label:"Masquer la galerie publique",description:"Ne partage pas vos anciens Pykurs sur le profil public."},
   {group:"Succès",key:"hideSecretAchievements",label:"Masquer les succès secrets",description:"Évite de révéler les succès et easter eggs cachés."},
   {group:"Succès",key:"hideNormalAchievements",label:"Masquer les succès normaux",description:"Cache aussi les succès classiques sur le profil public."},
   {group:"Partages automatiques",key:"shareAchievements",label:"Partager mes succès dans le chat",description:"Annonce automatiquement les succès débloqués dans la chatbox."},
@@ -12142,6 +12240,44 @@ function checkEmailVerificationLink(){
   if(token)confirmEmailVerificationToken(token);
 }
 
+function setAccountProfileSection(section="account"){
+  accountProfileSection=section;
+  $$("#accountSectionTabs [data-account-section-tab]").forEach(button=>{
+    button.classList.toggle("active",button.dataset.accountSectionTab===section);
+  });
+  $$("#accountProfileModal [data-account-section]").forEach(panel=>{
+    panel.classList.toggle("hidden",panel.dataset.accountSection!==section);
+  });
+  if(section==="warnings")loadAccountWarnings();
+}
+
+function renderAccountWarnings(){
+  const list=$("#accountWarningsList");
+  if(!list)return;
+  if(!accountWarnings.length){
+    list.innerHTML=`<div class="community-profile-empty">Aucun avertissement reçu.</div>`;
+    return;
+  }
+  list.innerHTML=accountWarnings.map(item=>`
+    <div class="account-warning-item">
+      <strong>${escapeHtml(item.reason||"Avertissement")}</strong>
+      <small>Par ${escapeHtml(item.actor?.pseudo||"Modération")} · ${formatCloudDateTime(item.createdAt)}</small>
+    </div>
+  `).join("");
+}
+
+async function loadAccountWarnings(){
+  const list=$("#accountWarningsList");
+  if(list)list.innerHTML=`<div class="community-profile-empty">Chargement des avertissements...</div>`;
+  try{
+    const result=await authFetch("/account/warnings");
+    accountWarnings=result.warnings||[];
+    renderAccountWarnings();
+  }catch(error){
+    if(list)list.innerHTML=`<div class="community-profile-empty">${escapeHtml(error.message||"Avertissements indisponibles.")}</div>`;
+  }
+}
+
 function renderAccountProfile(){
   const user=authState.user;
   if(!user)return;
@@ -12183,6 +12319,7 @@ function renderAccountProfile(){
       input.addEventListener("change",saveAccountPreferences);
     });
   }
+  setAccountProfileSection(accountProfileSection);
 }
 
 function communityAchievementEntries(profile){
@@ -12263,6 +12400,7 @@ function renderCommunityProfile(profile){
   const achievements=communityAchievementEntries(profile);
   const hiddenAchievementCount=(Array.isArray(profile?.achievements?.unlocked)?profile.achievements.unlocked.length:0)-achievements.length;
   const social=profile?.social||{};
+  const canSeeDetails=!profile?.isPrivate || !!profile?.moderationView;
   box.innerHTML=`
     <section class="community-profile-hero role-${escapeHtml(profile?.role||"user")}">
       ${avatarMarkup(profile,"chat-avatar community-avatar")}
@@ -12272,18 +12410,19 @@ function renderCommunityProfile(profile){
         <div class="community-profile-hero-actions">
           <button class="btn btn-blue" type="button" data-community-copy-link="${escapeHtml(profile?.pseudo||"")}">Copier le lien public</button>
           <button class="btn btn-gray" type="button" data-community-open-search>Rechercher un membre</button>
+          ${profile?.moderationView?`<span class="community-moderation-badge">Vue modération</span>`:""}
           ${canOpenModerationTools(profile)?`<button class="btn btn-orange" type="button" data-community-moderate="${escapeHtml(profile?.pseudo||"")}">Modérer</button>`:""}
         </div>
         <div class="community-friend-actions" data-community-social-actions></div>
       </div>
       <span class="community-role-badge role-${escapeHtml(profile?.role||"user")}">${authRoleLabel(profile?.role)}</span>
     </section>
-    ${profile?.isPrivate?`
+    ${profile?.isPrivate && !profile?.moderationView?`
       <section class="community-private-note">
         Ce membre a choisi de garder ses informations privées. Vous pouvez tout de même l'ajouter en ami et, plus tard, lui envoyer un message si ses préférences l'autorisent.
       </section>
     `:""}
-    ${!profile?.isPrivate?`
+    ${canSeeDetails?`
     <section class="community-profile-grid">
       ${profiles.length ? profiles.map(item=>`
           <article class="community-profile-card">
@@ -12411,13 +12550,14 @@ function renderModerationPanel(data,pseudo){
       </article>`:""}
     </section>`:`<div class="community-profile-empty">Vous ne pouvez pas modérer ce membre avec votre rôle actuel.</div>`}
     <section class="community-profile-card">
-      <h4>Historique récent</h4>
+      <h4>Historique récent ${history.length?`<button class="btn btn-red" type="button" data-reset-moderation-history="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}">Vider l'historique</button>`:""}</h4>
       <div class="moderation-history">
         ${history.length?history.map(row=>`
           <div class="moderation-history-row">
             <span class="moderation-history-type">${moderationActionLabel(row.type)}</span>
             <span>${escapeHtml(row.reason||"Aucune raison indiquée")}<br><small>Par ${escapeHtml(row.actor?.pseudo||"Système")}</small></span>
             <time>${row.createdAt?formatDateShort(row.createdAt):"-"}</time>
+            <button class="btn btn-gray" type="button" data-delete-moderation-history="${escapeHtml(String(row.id))}" data-pseudo="${escapeHtml(user.pseudo)}">Retirer</button>
           </div>
         `).join(""):`<div class="community-profile-empty">Aucune action de modération récente.</div>`}
       </div>
@@ -12425,6 +12565,12 @@ function renderModerationPanel(data,pseudo){
   `;
   box.querySelectorAll("[data-moderation-action]").forEach(button=>{
     button.addEventListener("click",()=>runModerationAction(button.dataset.moderationAction,button.dataset.userId,button.dataset.pseudo));
+  });
+  box.querySelectorAll("[data-delete-moderation-history]").forEach(button=>{
+    button.addEventListener("click",()=>deleteModerationHistoryEntry(button.dataset.deleteModerationHistory,button.dataset.pseudo));
+  });
+  box.querySelector("[data-reset-moderation-history]")?.addEventListener("click",event=>{
+    resetModerationHistory(event.currentTarget.dataset.resetModerationHistory,event.currentTarget.dataset.pseudo);
   });
 }
 
@@ -12461,6 +12607,50 @@ function moderationListSection(title,items,empty){
   `;
 }
 
+function moderationLogSection(title,items,empty){
+  return `
+    <section class="community-profile-card">
+      <h4>${escapeHtml(title)} <span class="gallery-count-badge">${items.length}</span></h4>
+      <div class="moderation-history">
+        ${items.length?items.map(item=>`
+          <div class="moderation-history-row">
+            ${item.user?avatarMarkup(item.user):""}
+            <span>
+              <strong>${escapeHtml(item.user?.pseudo||item.actor?.pseudo||"Système")}</strong>
+              <small>${escapeHtml(item.type||"log")} · ${item.createdAt?formatCloudDateTime(item.createdAt):"-"}</small><br>
+              ${escapeHtml(item.body||item.reason||"Action enregistrée.")}
+            </span>
+            ${item.target?`<small>Cible : ${escapeHtml(item.target.pseudo||"Compte")}</small>`:""}
+          </div>
+        `).join(""):`<div class="community-profile-empty">${escapeHtml(empty)}</div>`}
+      </div>
+    </section>
+  `;
+}
+
+function securitySettingsPanel(settings={}){
+  if(authState.user?.role!=="admin")return "";
+  return `
+    <section class="community-profile-card security-settings-card">
+      <h4>Sécurité publique anti-abus</h4>
+      <div class="moderation-status-grid">
+        <label class="auth-field">Mode
+          <select id="securityMode">
+            ${["soft","normal","strict"].map(mode=>`<option value="${mode}" ${settings.mode===mode?"selected":""}>${mode}</option>`).join("")}
+          </select>
+        </label>
+        <label class="auth-field">Cooldown succès (s)<input id="securityAchievementCooldown" type="number" min="0" max="3600" value="${Number(settings.achievementCooldownSeconds)||0}"></label>
+        <label class="auth-field">Cooldown Pykur (s)<input id="securityPykurCooldown" type="number" min="0" max="604800" value="${Number(settings.pykurCooldownSeconds)||0}"></label>
+        <label class="auth-field">Succès / heure<input id="securityAchievementHour" type="number" min="1" max="100" value="${Number(settings.maxAchievementSharesPerHour)||8}"></label>
+        <label class="auth-field">Pykurs / jour<input id="securityPykurDay" type="number" min="1" max="20" value="${Number(settings.maxPykurSharesPerDay)||2}"></label>
+        <label class="auth-field">Âge mini Pykur (h)<input id="securityPykurAge" type="number" min="0" max="720" value="${Number(settings.minPykurAgeHours)||0}"></label>
+        <label class="privacy-toggle"><input type="checkbox" id="securityAutoShare" ${settings.autoShareEnabled!==false?"checked":""}><span>Partages automatiques autorisés<small>Coupe les annonces publiques si désactivé.</small></span></label>
+        <button class="btn btn-orange" id="saveSecuritySettings" type="button">Enregistrer la sécurité</button>
+      </div>
+    </section>
+  `;
+}
+
 function renderModerationOverview(payload={}){
   const box=$("#moderationOverviewContent");
   if(!box)return;
@@ -12469,6 +12659,9 @@ function renderModerationOverview(payload={}){
   const moderators=payload.moderators||[];
   const reports=payload.reports||[];
   const settings=payload.chatSettings||{};
+  const securitySettings=payload.securitySettings||{};
+  const communityLogs=payload.communityLogs||[];
+  const moderationLogs=payload.moderationLogs||[];
   box.innerHTML=`
     <section class="moderation-status-grid">
       <div class="moderation-info"><small>Comptes bannis</small><strong>${banned.length}</strong></div>
@@ -12484,6 +12677,7 @@ function renderModerationOverview(payload={}){
         <button class="btn btn-red" id="clearChatboxMessages" type="button">Vider la chatbox</button>
       </div>
     </section>
+    ${securitySettingsPanel(securitySettings)}
     <section class="community-profile-card">
       <h4>Signalements ouverts <span class="gallery-count-badge">${reports.length}</span></h4>
       <div class="moderation-history">
@@ -12523,11 +12717,14 @@ function renderModerationOverview(payload={}){
     ${moderationListSection("Comptes bannis",banned,"Aucun compte banni.")}
     ${moderationListSection("Comptes mute",muted,"Aucun compte mute actuellement.")}
     ${moderationListSection("Modérateurs",moderators,"Aucun modérateur listé.")}
+    ${moderationLogSection("Logs utilisateurs",communityLogs,"Aucun log utilisateur récent.")}
+    ${authState.user?.role==="admin"?moderationLogSection("Logs modération admin",moderationLogs,"Aucun log de modération récent."):""}
   `;
   box.querySelectorAll("[data-overview-moderate]").forEach(button=>{
     button.addEventListener("click",()=>openModerationPanel(button.dataset.overviewModerate));
   });
   $("#saveChatModerationSettings")?.addEventListener("click",saveChatModerationSettings);
+  $("#saveSecuritySettings")?.addEventListener("click",saveSecuritySettings);
   $("#clearChatboxMessages")?.addEventListener("click",clearChatboxMessages);
   box.querySelectorAll("[data-report-action]").forEach(button=>button.addEventListener("click",()=>moderationReportAction(button.dataset.reportId,button.dataset.reportAction)));
 }
@@ -12541,6 +12738,25 @@ async function saveChatModerationSettings(){
     openModerationOverview();
   }catch(error){
     toast(error.message||"Réglages impossibles à sauvegarder.","error","error");
+  }
+}
+
+async function saveSecuritySettings(){
+  try{
+    const payload={
+      mode:$("#securityMode")?.value||"normal",
+      achievementCooldownSeconds:parseInt($("#securityAchievementCooldown")?.value,10)||0,
+      pykurCooldownSeconds:parseInt($("#securityPykurCooldown")?.value,10)||0,
+      maxAchievementSharesPerHour:parseInt($("#securityAchievementHour")?.value,10)||8,
+      maxPykurSharesPerDay:parseInt($("#securityPykurDay")?.value,10)||2,
+      minPykurAgeHours:parseInt($("#securityPykurAge")?.value,10)||0,
+      autoShareEnabled:!!$("#securityAutoShare")?.checked
+    };
+    await authFetch("/admin/security-settings",{method:"PUT",body:JSON.stringify(payload)});
+    toast("Sécurité anti-abus sauvegardée.","success","success");
+    openModerationOverview();
+  }catch(error){
+    toast(error.message||"Réglages de sécurité impossibles à sauvegarder.","error","error");
   }
 }
 
@@ -12671,6 +12887,45 @@ async function runModerationAction(action,userId,pseudo){
   }
 }
 
+async function deleteModerationHistoryEntry(id,pseudo){
+  const clean=String(id||"");
+  if(!clean)return;
+  const ok=await showConfirm("Retirer cette ligne d'historique ?",{
+    title:"Corriger l'historique",
+    subtitle:"Cette action retire uniquement la trace récente affichée dans le profil de modération.",
+    okLabel:"Retirer",
+    okClass:"btn-red"
+  });
+  if(!ok)return;
+  const endpoint=clean.startsWith("warn-")
+    ? `/moderation/warnings/${encodeURIComponent(clean.replace("warn-",""))}`
+    : `/moderation/actions/${encodeURIComponent(clean)}`;
+  try{
+    await authFetch(endpoint,{method:"DELETE"});
+    toast("Ligne d'historique retirée.","success","success");
+    await openModerationPanel(pseudo);
+  }catch(error){
+    toast(error.message||"Suppression de l'historique impossible.","error","error");
+  }
+}
+
+async function resetModerationHistory(userId,pseudo){
+  const ok=await showConfirm("Vider l'historique récent de ce membre ?",{
+    title:"Réinitialiser l'historique",
+    subtitle:"Les sanctions actives ne sont pas retirées automatiquement. Cette action nettoie seulement les traces récentes et les avertissements.",
+    okLabel:"Vider",
+    okClass:"btn-red"
+  });
+  if(!ok)return;
+  try{
+    await authFetch(`/moderation/users/${encodeURIComponent(userId)}/history`,{method:"DELETE"});
+    toast("Historique récent vidé.","success","success");
+    await openModerationPanel(pseudo);
+  }catch(error){
+    toast(error.message||"Impossible de vider l'historique.","error","error");
+  }
+}
+
 function renderCommunitySocialActions(container,pseudo,social={}){
   if(!container)return;
   if(!authState.user){
@@ -12752,6 +13007,7 @@ function friendRow(item,actions=[]){
   const user=item?.user||{};
   return `
     <article class="friend-row role-${escapeHtml(user.role||"user")}">
+      ${avatarMarkup(user,"chat-avatar friend-avatar")}
       <div>
         <strong>${escapeHtml(user.pseudo||"Utilisateur")}</strong>
         <small>${authRoleLabel(user.role)} · inscrit le ${user.createdAt?formatDateShort(user.createdAt):"date inconnue"}</small>
@@ -12790,11 +13046,6 @@ async function loadFriendsPanel(){
     updateSocialStateFromFriends(data);
     authRender();
     box.innerHTML=[
-      `<div class="friends-summary">
-        <div class="friends-summary-card"><small>Amis</small><strong>${socialState.friends}</strong></div>
-        <div class="friends-summary-card"><small>Reçues</small><strong>${socialState.incoming}</strong></div>
-        <div class="friends-summary-card"><small>Envoyées</small><strong>${socialState.outgoing}</strong></div>
-      </div>`,
       friendsSection("Demandes reçues",data.incoming||[],"Aucune demande reçue.",[
         {action:"accept",label:"Accepter",className:"btn-green"},
         {action:"reject",label:"Refuser",className:"btn-gray"}
@@ -12930,7 +13181,10 @@ async function refreshMessageNotifications({silent=false}={}){
       toast(`Nouveau message privé de ${newest.other?.pseudo||"un membre"}.`,"info","click");
     }
     authRender();
-    if($("#messagesModal")?.classList.contains("show"))renderMessagesList();
+    if($("#messagesModal")?.classList.contains("show")){
+      renderMessagesList();
+      if(messageState.activePseudo)loadMessageThread(messageState.activePseudo,{silent:true,preserveScroll:true});
+    }
   }catch(error){
     if(!silent)toast(error.message||"Messages indisponibles.","error","error");
   }
@@ -12940,20 +13194,22 @@ function startSocialPolling(){
   stopMessagePolling();
   if(!authState.user)return;
   refreshMessageNotifications({silent:true});
-  messageState.timer=setInterval(()=>refreshMessageNotifications(),20000);
+  messageState.timer=setInterval(()=>refreshMessageNotifications(),8000);
 }
 
-async function loadMessageThread(pseudo){
+async function loadMessageThread(pseudo,{silent=false,preserveScroll=false}={}){
   const clean=(pseudo||"").trim();
   if(!clean)return;
   messageState.activePseudo=clean;
   renderMessagesList();
   const feed=$("#messagesFeed");
-  if(feed)feed.innerHTML=`<div class="community-profile-empty">Chargement de la conversation...</div>`;
-  resetMessageCompose(true);
+  const previousScroll=feed ? feed.scrollTop : 0;
+  if(feed && !silent)feed.innerHTML=`<div class="community-profile-empty">Chargement de la conversation...</div>`;
+  if(!silent)resetMessageCompose(true);
   try{
     const result=await authFetch(`/social/messages/${encodeURIComponent(clean)}`);
     renderMessageThread(result);
+    if(preserveScroll && feed)feed.scrollTop=previousScroll;
   }catch(error){
     if(feed)feed.innerHTML=`<div class="community-profile-empty">${escapeHtml(error.message||"Conversation indisponible.")}</div>`;
   }
@@ -13168,7 +13424,7 @@ async function openChatboxPanel(){
   if($("#chatHideText"))$("#chatHideText").checked=chatState.hideText;
   await loadChatbox();
   stopChatboxPolling();
-  chatState.timer=setInterval(()=>loadChatbox({silent:true}),15000);
+  chatState.timer=setInterval(()=>loadChatbox({silent:true}),5000);
 }
 
 async function sendChatMessage(event){
@@ -13359,6 +13615,7 @@ function openAccountProfile(){
     authOpen("login");
     return;
   }
+  accountProfileSection="account";
   renderAccountProfile();
   openModal("accountProfileModal");
 }
@@ -18460,7 +18717,7 @@ async function archiveAndRestartPykur(){
   renderAll();
   renderGallery();
   toast(archived?`Pykur #${archived.number} archivé. Nouvelle aventure lancée.`:"Nouvelle aventure lancée.","success","unlock");
-  if(archived)shareCommunityMilestone("pykur",{number:archived.number,title:archived.title,pp:archived.pp,method:archived.method});
+  if(archived)shareCommunityMilestone("pykur",{number:archived.number,title:archived.title,pp:archived.pp,method:archived.method,createdAt:archived.createdAt,finishedAt:archived.finishedAt});
 }
 
 function maybeArchiveCompletedPykur(){
@@ -21104,11 +21361,14 @@ function bringHudToFront(id){
   bg.classList.add("hud-front");
 }
 
+let modalZIndexSeed=3000;
+
 function openModal(id){
   const bg=$("#"+id);
   if(!bg)return;
   const isStacked=["dofusConfigModal","dofusTutorialModal"].includes(id) && $("#optionsModal")?.classList.contains("show");
   bg.classList.toggle("stacked-modal",isStacked);
+  bg.style.zIndex=String(++modalZIndexSeed);
   bg.classList.add("show");
   if(data.settings.hudMode){
     applyHudRect(id);
@@ -21123,8 +21383,19 @@ function closeModal(id){
   if(id==="dofusTutorialModal")resetDofusTutorialVideo();
   if(id==="projectionModal")resetProjectionSimulation();
   if(id==="chatboxModal")stopChatboxPolling();
+  if(id==="communityProfileModal")clearCommunityProfileUrl();
   saveHudRect(id);
   $("#"+id)?.classList.remove("show","hud-front","stacked-modal");
+}
+
+function clearCommunityProfileUrl(){
+  const url=new URL(location.href);
+  const hadProfile=url.searchParams.has("user")||url.searchParams.has("profil")||url.searchParams.has("profile");
+  if(!hadProfile)return;
+  url.searchParams.delete("user");
+  url.searchParams.delete("profil");
+  url.searchParams.delete("profile");
+  history.replaceState(null,"",url.toString());
 }
 
 function resetDofusTutorialVideo(){
@@ -22514,6 +22785,9 @@ if($("#passwordResetConfirmForm"))$("#passwordResetConfirmForm").onsubmit=confir
 if($("#accountEmailForm"))$("#accountEmailForm").onsubmit=saveAccountEmail;
 if($("#accountPasswordForm"))$("#accountPasswordForm").onsubmit=saveAccountPassword;
 if($("#accountAvatarForm"))$("#accountAvatarForm").onsubmit=saveAccountAvatar;
+$$("#accountSectionTabs [data-account-section-tab]").forEach(button=>{
+  button.addEventListener("click",()=>setAccountProfileSection(button.dataset.accountSectionTab));
+});
 if($("#accountAvatarInput"))$("#accountAvatarInput").addEventListener("input",e=>{
   const preview=$("#accountAvatarPreview");
   if(!preview)return;
