@@ -52,6 +52,16 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_friendships_user_a ON friendships(user_a_id);
   CREATE INDEX IF NOT EXISTS idx_friendships_user_b ON friendships(user_b_id);
   CREATE INDEX IF NOT EXISTS idx_friendships_requester ON friendships(requester_id);
+  CREATE TABLE IF NOT EXISTS moderation_warnings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    target_user_id INTEGER NOT NULL,
+    actor_user_id INTEGER NOT NULL,
+    reason TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(target_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(actor_user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  CREATE INDEX IF NOT EXISTS idx_warnings_target ON moderation_warnings(target_user_id, created_at);
   CREATE TABLE IF NOT EXISTS private_conversations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_a_id INTEGER NOT NULL,
@@ -702,7 +712,7 @@ function moderationUserView(user, actor) {
 }
 
 function moderationHistory(targetId) {
-  return db.prepare(`
+  const actions = db.prepare(`
     SELECT a.*, actor.pseudo AS actor_pseudo, actor.role AS actor_role
     FROM moderation_actions a
     LEFT JOIN users actor ON actor.id = a.actor_user_id
@@ -720,6 +730,27 @@ function moderationHistory(targetId) {
       role: row.actor_role || "moderator"
     }
   }));
+  const warnings = db.prepare(`
+    SELECT w.*, actor.pseudo AS actor_pseudo, actor.role AS actor_role
+    FROM moderation_warnings w
+    LEFT JOIN users actor ON actor.id = w.actor_user_id
+    WHERE w.target_user_id = ?
+    ORDER BY w.created_at DESC
+    LIMIT 30
+  `).all(targetId).map((row) => ({
+    id: `warn-${row.id}`,
+    type: "warn",
+    reason: row.reason,
+    expiresAt: null,
+    createdAt: row.created_at,
+    actor: {
+      pseudo: row.actor_pseudo || "SystÃ¨me",
+      role: row.actor_role || "moderator"
+    }
+  }));
+  return actions.concat(warnings)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 30);
 }
 
 function moderationLog({ targetId, actorId, type, reason, expiresAt = null }) {
@@ -1374,7 +1405,7 @@ app.get("/api/moderation/overview", requireAuth, requireRole("moderator"), (req,
   const reports = db.prepare(`
     SELECT r.*, reporter.pseudo AS reporter_pseudo, reporter.role AS reporter_role,
            target.pseudo AS target_pseudo, target.role AS target_role,
-           cm.body AS chat_body, pm.body AS private_body
+           cm.body AS chat_body, pm.body AS private_body, pm.conversation_id AS private_conversation_id
     FROM message_reports r
     JOIN users reporter ON reporter.id = r.reporter_user_id
     LEFT JOIN users target ON target.id = r.target_user_id
@@ -1390,10 +1421,23 @@ app.get("/api/moderation/overview", requireAuth, requireRole("moderator"), (req,
     createdAt: row.created_at,
     type: row.chat_message_id ? "chatbox" : "message prive",
     body: row.chat_body || row.private_body || "",
+    context: row.private_conversation_id ? db.prepare(`
+      SELECT m.id, m.body, m.created_at AS createdAt, m.edited_at AS editedAt, u.pseudo AS senderPseudo, u.role AS senderRole
+      FROM private_messages m
+      JOIN users u ON u.id = m.sender_id
+      WHERE m.conversation_id = ? AND m.deleted_at IS NULL
+      ORDER BY m.created_at DESC, m.id DESC
+      LIMIT 12
+    `).all(row.private_conversation_id).reverse() : [],
     reporter: { pseudo: row.reporter_pseudo, role: row.reporter_role },
     target: row.target_pseudo ? { pseudo: row.target_pseudo, role: row.target_role } : null
   }));
   res.json({ banned, muted, moderators, reports, chatSettings: chatSettings() });
+});
+
+app.post("/api/moderation/chat/clear", requireAuth, requireRole("moderator"), (req, res) => {
+  db.prepare("UPDATE chat_messages SET deleted_at = CURRENT_TIMESTAMP, deleted_by_user_id = ? WHERE deleted_at IS NULL").run(req.user.id);
+  res.json({ ok: true });
 });
 
 app.put("/api/moderation/chat-settings", requireAuth, requireRole("moderator"), (req, res) => {
@@ -1406,6 +1450,44 @@ app.put("/api/moderation/chat-settings", requireAuth, requireRole("moderator"), 
 app.post("/api/moderation/reports/:id/resolve", requireAuth, requireRole("moderator"), (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: "Signalement invalide." });
+  db.prepare("UPDATE message_reports SET status = 'resolved', resolved_by_user_id = ?, resolved_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.user.id, id);
+  res.json({ ok: true });
+});
+
+app.post("/api/moderation/reports/:id/action", requireAuth, requireRole("moderator"), (req, res) => {
+  const id = Number(req.params.id);
+  const action = String(req.body.action || "");
+  const reason = String(req.body.reason || "").trim().slice(0, 300);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: "Signalement invalide." });
+  const report = db.prepare(`
+    SELECT r.*
+    FROM message_reports r
+    WHERE r.id = ? AND r.status = 'open'
+  `).get(id);
+  if (!report) return res.status(404).json({ error: "Signalement introuvable." });
+  const targetId = report.target_user_id;
+  const target = targetId ? getUserById(targetId) : null;
+  if (["warn", "mute1", "mute24", "ban24", "ban"].includes(action)) {
+    if (!target) return res.status(404).json({ error: "Utilisateur cible introuvable." });
+    if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Vous ne pouvez pas sanctionner ce membre." });
+  }
+  if (action === "warn") {
+    db.prepare("INSERT INTO moderation_warnings(target_user_id, actor_user_id, reason) VALUES(?,?,?)").run(target.id, req.user.id, reason || "Avertissement modÃ©ration");
+  } else if (action === "mute1" || action === "mute24") {
+    const hours = action === "mute1" ? 1 : 24;
+    const until = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+    db.prepare("UPDATE users SET mute_until = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(until, target.id);
+    moderationLog({ targetId: target.id, actorId: req.user.id, type: "mute", reason: reason || `Mute depuis signalement (${hours}h)`, expiresAt: until });
+  } else if (action === "ban24") {
+    const until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    db.prepare("UPDATE users SET is_banned = 1, ban_until = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(until, target.id);
+    moderationLog({ targetId: target.id, actorId: req.user.id, type: "timeban", reason: reason || "Ban 24h depuis signalement", expiresAt: until });
+  } else if (action === "ban") {
+    db.prepare("UPDATE users SET is_banned = 1, ban_until = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(target.id);
+    moderationLog({ targetId: target.id, actorId: req.user.id, type: "ban", reason: reason || "Ban depuis signalement" });
+  } else if (action !== "close") {
+    return res.status(400).json({ error: "Action inconnue." });
+  }
   db.prepare("UPDATE message_reports SET status = 'resolved', resolved_by_user_id = ?, resolved_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.user.id, id);
   res.json({ ok: true });
 });
@@ -1447,6 +1529,15 @@ app.post("/api/moderation/users/:id/mute", requireAuth, requireRole("moderator")
   db.prepare("UPDATE users SET mute_until = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(until, target.id);
   moderationLog({ targetId: target.id, actorId: req.user.id, type: "mute", reason: req.body.reason, expiresAt: until });
   res.json({ user: publicUser(getUserById(target.id)) });
+});
+
+app.post("/api/moderation/users/:id/warn", requireAuth, requireRole("moderator"), (req, res) => {
+  const target = getUserById(req.params.id);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Vous ne pouvez pas avertir ce membre." });
+  const reason = String(req.body.reason || "").trim().slice(0, 300);
+  db.prepare("INSERT INTO moderation_warnings(target_user_id, actor_user_id, reason) VALUES(?,?,?)").run(target.id, req.user.id, reason || "Avertissement modÃ©ration");
+  res.json({ ok: true });
 });
 
 app.post("/api/moderation/users/:id/unmute", requireAuth, requireRole("moderator"), (req, res) => {

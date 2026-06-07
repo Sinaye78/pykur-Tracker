@@ -10218,6 +10218,184 @@ body.no-anim .pykur-sparkle{
   background:rgba(202,105,12,.88)!important;
 }
 
+#chatboxModal .modal-body{
+  padding:12px!important;
+}
+
+.chatbox-layout{
+  grid-template-columns:minmax(0,1fr) 280px;
+  min-height:680px;
+}
+
+.chatbox-main{
+  grid-template-rows:auto minmax(0,1fr) auto;
+  background:linear-gradient(180deg,rgba(255,255,255,.74),rgba(248,238,216,.62));
+}
+
+.chatbox-tools{
+  position:sticky;
+  top:0;
+  z-index:2;
+  justify-content:space-between;
+  background:linear-gradient(135deg,rgba(255,250,238,.96),rgba(242,225,190,.9));
+}
+
+.chatbox-filter-group,
+.chatbox-status-group{
+  display:flex;
+  gap:9px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+.chatbox-feed{
+  min-height:460px;
+}
+
+.chatbox-feed:has(.community-profile-empty){
+  min-height:360px;
+}
+
+.chat-message{
+  grid-template-columns:auto minmax(0,1fr);
+  position:relative;
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+
+.chat-message:hover{
+  transform:translateY(-1px);
+  box-shadow:0 12px 26px rgba(80,48,12,.08);
+}
+
+.chat-message-actions{
+  grid-column:2;
+  justify-content:flex-start;
+  opacity:.78;
+}
+
+.chat-message.role-moderator,
+.online-user-row.role-moderator,
+.community-search-result.role-moderator,
+.friend-row.role-moderator{
+  border-color:rgba(194,65,12,.38)!important;
+  background:linear-gradient(135deg,rgba(255,247,237,.96),rgba(254,215,170,.7))!important;
+}
+
+.chat-message.role-admin,
+.online-user-row.role-admin,
+.community-search-result.role-admin,
+.friend-row.role-admin{
+  border-color:rgba(185,28,28,.42)!important;
+  background:linear-gradient(135deg,rgba(254,242,242,.98),rgba(254,202,202,.62),rgba(250,204,21,.22))!important;
+}
+
+.community-profile-hero.role-moderator,
+.moderation-target.role-moderator{
+  border-color:rgba(194,65,12,.42)!important;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(248,113,113,.18),transparent 34%),
+    linear-gradient(135deg,rgba(255,247,237,.98),rgba(254,215,170,.8))!important;
+}
+
+.community-profile-hero.role-admin,
+.moderation-target.role-admin{
+  border-color:rgba(185,28,28,.48)!important;
+  background:
+    radial-gradient(circle at 100% 0%,rgba(239,68,68,.2),transparent 34%),
+    linear-gradient(135deg,rgba(254,242,242,.98),rgba(254,202,202,.72),rgba(250,204,21,.24))!important;
+}
+
+.community-role-badge.role-moderator{
+  background:linear-gradient(180deg,#fed7aa,#ea580c)!important;
+  color:#fff7ed!important;
+}
+
+.community-role-badge.role-admin{
+  background:linear-gradient(180deg,#fecaca,#b91c1c)!important;
+  color:#fff7ed!important;
+}
+
+.moderation-report{
+  display:grid;
+  gap:10px;
+  padding:12px;
+  border:1px solid rgba(140,100,48,.2);
+  border-radius:14px;
+  background:rgba(255,255,255,.68);
+}
+
+.moderation-report-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+
+.moderation-report-message{
+  padding:10px 12px;
+  border-radius:12px;
+  background:rgba(255,247,237,.74);
+  border:1px solid rgba(217,119,6,.18);
+  color:#3b2410;
+  font-weight:850;
+}
+
+.moderation-report-context{
+  display:grid;
+  gap:7px;
+  padding:9px;
+  border-radius:12px;
+  background:rgba(255,255,255,.46);
+  border:1px dashed rgba(140,100,48,.25);
+}
+
+.moderation-report-context-row{
+  display:grid;
+  grid-template-columns:120px minmax(0,1fr);
+  gap:8px;
+  font-size:12px;
+  color:#4b3217;
+}
+
+.moderation-report-actions{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+}
+
+.moderation-report-actions .btn{
+  min-height:30px!important;
+  padding-inline:10px!important;
+  font-size:12px!important;
+}
+
+.account-privacy-intro{
+  padding:11px 13px;
+  border-radius:13px;
+  background:linear-gradient(135deg,rgba(219,234,254,.78),rgba(255,255,255,.55));
+  color:#334155;
+  font-weight:850;
+}
+
+#accountProfileModal .privacy-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:12px;
+}
+
+#accountProfileModal .privacy-group{
+  align-content:start;
+  min-height:auto;
+}
+
+.dialog-counter{
+  display:block;
+  margin:8px 18px 0;
+  color:#6b7280;
+  font-weight:850;
+  text-align:right;
+}
+
 .auth-widget #openLogin{
   background:rgba(37,99,235,.92)!important;
 }
@@ -10987,6 +11165,7 @@ body.no-anim .pykur-sparkle{
         </section>
         <section class="account-panel full">
           <h3>Confidentialité communautaire</h3>
+          <div class="account-privacy-intro">Choisissez ce que les autres membres peuvent voir sur votre profil public et ce qui peut être partagé automatiquement dans la communauté.</div>
           <div class="privacy-list" id="accountPrivacyList"></div>
           <div class="options-note">Ces réglages préparent les futurs profils publics, messages privés et partages de galerie. Ils n'affectent pas votre progression actuelle.</div>
         </section>
@@ -11055,9 +11234,13 @@ body.no-anim .pykur-sparkle{
       <div class="chatbox-layout">
         <section class="chatbox-main">
           <div class="chatbox-tools">
-            <label><input type="checkbox" id="chatHideShares"> Masquer les partages</label>
-            <label><input type="checkbox" id="chatHideText"> Masquer le texte</label>
-            <span id="chatboxStateLabel" class="member-presence offline">Chat ouvert</span>
+            <div class="chatbox-filter-group">
+              <label><input type="checkbox" id="chatHideShares"> Masquer les partages</label>
+              <label><input type="checkbox" id="chatHideText"> Masquer le texte</label>
+            </div>
+            <div class="chatbox-status-group">
+              <span id="chatboxStateLabel" class="member-presence offline">Chat ouvert</span>
+            </div>
           </div>
           <div class="chatbox-feed" id="chatboxFeed">
             <div class="community-profile-empty">Chargement du chat...</div>
@@ -12093,7 +12276,7 @@ function renderCommunityProfile(profile){
         </div>
         <div class="community-friend-actions" data-community-social-actions></div>
       </div>
-      <span class="community-role-badge">${authRoleLabel(profile?.role)}</span>
+      <span class="community-role-badge role-${escapeHtml(profile?.role||"user")}">${authRoleLabel(profile?.role)}</span>
     </section>
     ${profile?.isPrivate?`
       <section class="community-private-note">
@@ -12161,6 +12344,7 @@ function moderationActionLabel(type){
     unban:"Unban",
     mute:"Mute",
     unmute:"Unmute",
+    warn:"Avertissement",
     promote:"Promotion",
     demote:"Rétrogradation",
     delete:"Suppression"
@@ -12187,12 +12371,12 @@ function renderModerationPanel(data,pseudo){
   const canAdmin=authState.user?.role==="admin";
   const disabled=canAct?"":"disabled";
   box.innerHTML=`
-    <section class="moderation-target">
+    <section class="moderation-target role-${escapeHtml(user.role||"user")}">
       <div>
         <h3 class="community-profile-title">${escapeHtml(user.pseudo||pseudo||"Membre")} ${memberStatusMarkup(user)}</h3>
         <p>${escapeHtml(user.email||"Email masqué")} · ${authRoleLabel(user.role)} · inscrit le ${user.createdAt?formatDateShort(user.createdAt):"-"}</p>
       </div>
-      <span class="community-role-badge">${authRoleLabel(user.role)}</span>
+      <span class="community-role-badge role-${escapeHtml(user.role||"user")}">${authRoleLabel(user.role)}</span>
     </section>
     <section class="moderation-status-grid">
       <div class="moderation-info"><small>Ban</small><strong>${user.isBanned?"Actif":"Aucun"}</strong></div>
@@ -12211,6 +12395,7 @@ function renderModerationPanel(data,pseudo){
       <article class="moderation-action-card">
         <small>Messagerie</small>
         <p>Empêche le membre d'envoyer des messages privés pendant une durée donnée.</p>
+        <button class="btn btn-blue" type="button" data-moderation-action="warn" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${disabled}>Avertir</button>
         <button class="btn btn-orange" type="button" data-moderation-action="mute1" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${disabled}>Mute 1h</button>
         <button class="btn btn-orange" type="button" data-moderation-action="mute24" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${disabled}>Mute 24h</button>
         <button class="btn btn-gray" type="button" data-moderation-action="unmute" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${disabled}>Retirer le mute</button>
@@ -12296,17 +12481,42 @@ function renderModerationOverview(payload={}){
         <label class="privacy-toggle"><input type="checkbox" id="moderationChatLocked" ${settings.locked?"checked":""}><span>Fermer la chatbox<small>Les membres ne peuvent plus écrire.</small></span></label>
         <label class="auth-field">Mode lent<input id="moderationSlowMode" type="number" min="0" max="300" value="${Number(settings.slowModeSeconds)||0}" placeholder="Secondes"></label>
         <button class="btn btn-orange" id="saveChatModerationSettings" type="button">Enregistrer</button>
+        <button class="btn btn-red" id="clearChatboxMessages" type="button">Vider la chatbox</button>
       </div>
     </section>
     <section class="community-profile-card">
       <h4>Signalements ouverts <span class="gallery-count-badge">${reports.length}</span></h4>
       <div class="moderation-history">
         ${reports.length?reports.map(report=>`
-          <div class="moderation-history-row">
-            <span class="moderation-history-type">${escapeHtml(report.type)}</span>
-            <span><strong>${escapeHtml(report.target?.pseudo||"Cible inconnue")}</strong><br>${escapeHtml(report.body||"Message indisponible")}<br><small>Signalé par ${escapeHtml(report.reporter?.pseudo||"Utilisateur")} · ${escapeHtml(report.reason||"Aucune raison")}</small></span>
-            <button class="btn btn-green" type="button" data-report-resolve="${report.id}">Résoudre</button>
-          </div>
+          <article class="moderation-report">
+            <div class="moderation-report-head">
+              <span class="moderation-history-type">${escapeHtml(report.type)}</span>
+              <span><strong>${escapeHtml(report.target?.pseudo||"Cible inconnue")}</strong><br><small>Signalé par ${escapeHtml(report.reporter?.pseudo||"Utilisateur")} · ${escapeHtml(report.reason||"Aucune raison")}</small></span>
+            </div>
+            <div class="moderation-report-message">${escapeHtml(report.body||"Message indisponible")}</div>
+            ${report.context?.length?`
+              <details class="moderation-report-context">
+                <summary>Voir la conversation privée signalée</summary>
+                ${report.context.map(line=>`
+                  <div class="moderation-report-context-row">
+                    <strong>${escapeHtml(line.senderPseudo||"Membre")}</strong>
+                    <span>${escapeHtml(line.body||"")}<br><small>${line.createdAt?formatCloudDateTime(line.createdAt):""}${line.editedAt?" · modifié":""}</small></span>
+                  </div>
+                `).join("")}
+              </details>
+            `:""}
+            <div class="moderation-report-actions">
+              <button class="btn btn-gray" type="button" data-report-action="close" data-report-id="${report.id}">Fermer</button>
+              ${report.target?.pseudo?`
+                <button class="btn btn-blue" type="button" data-report-action="warn" data-report-id="${report.id}">Avertir</button>
+                <button class="btn btn-orange" type="button" data-report-action="mute1" data-report-id="${report.id}">Mute 1h</button>
+                <button class="btn btn-orange" type="button" data-report-action="mute24" data-report-id="${report.id}">Mute 24h</button>
+                <button class="btn btn-red" type="button" data-report-action="ban24" data-report-id="${report.id}">Ban 24h</button>
+                <button class="btn btn-red" type="button" data-report-action="ban" data-report-id="${report.id}">Ban permanent</button>
+                <button class="btn btn-blue" type="button" data-overview-moderate="${escapeHtml(report.target.pseudo)}">Profil modération</button>
+              `:""}
+            </div>
+          </article>
         `).join(""):`<div class="community-profile-empty">Aucun signalement ouvert.</div>`}
       </div>
     </section>
@@ -12318,7 +12528,8 @@ function renderModerationOverview(payload={}){
     button.addEventListener("click",()=>openModerationPanel(button.dataset.overviewModerate));
   });
   $("#saveChatModerationSettings")?.addEventListener("click",saveChatModerationSettings);
-  box.querySelectorAll("[data-report-resolve]").forEach(button=>button.addEventListener("click",()=>resolveModerationReport(button.dataset.reportResolve)));
+  $("#clearChatboxMessages")?.addEventListener("click",clearChatboxMessages);
+  box.querySelectorAll("[data-report-action]").forEach(button=>button.addEventListener("click",()=>moderationReportAction(button.dataset.reportId,button.dataset.reportAction)));
 }
 
 async function saveChatModerationSettings(){
@@ -12330,6 +12541,45 @@ async function saveChatModerationSettings(){
     openModerationOverview();
   }catch(error){
     toast(error.message||"Réglages impossibles à sauvegarder.","error","error");
+  }
+}
+
+async function clearChatboxMessages(){
+  const ok=await showConfirm("Vider toute la chatbox ?",{
+    title:"Vider la chatbox",
+    subtitle:"Tous les messages visibles seront supprimés pour les utilisateurs. Cette action ne supprime pas les comptes.",
+    okLabel:"Vider",
+    okClass:"btn-red"
+  });
+  if(!ok)return;
+  try{
+    await authFetch("/moderation/chat/clear",{method:"POST",body:JSON.stringify({})});
+    toast("Chatbox vidée.","success","success");
+    openModerationOverview();
+    if($("#chatboxModal")?.classList.contains("show"))loadChatbox({silent:true});
+  }catch(error){
+    toast(error.message||"Impossible de vider la chatbox.","error","error");
+  }
+}
+
+async function moderationReportAction(id,action){
+  if(!id || !action)return;
+  const labels={close:"Fermer",warn:"Avertir",mute1:"Mute 1h",mute24:"Mute 24h",ban24:"Ban 24h",ban:"Ban permanent"};
+  let reason="";
+  if(action!=="close"){
+    reason=await showPrompt(`Raison pour ${labels[action]||"cette action"} :`,{
+      title:"Action sur signalement",
+      placeholder:"Raison courte",
+      okLabel:labels[action]||"Appliquer"
+    });
+    if(reason===null)return;
+  }
+  try{
+    await authFetch(`/moderation/reports/${encodeURIComponent(id)}/action`,{method:"POST",body:JSON.stringify({action,reason})});
+    toast(action==="close"?"Signalement fermé.":"Action appliquée depuis le signalement.","success","success");
+    openModerationOverview();
+  }catch(error){
+    toast(error.message||"Action impossible sur ce signalement.","error","error");
   }
 }
 
@@ -12397,6 +12647,7 @@ async function runModerationAction(action,userId,pseudo){
         ban24:{path:"ban",until:moderationUntil(24)},
         banPermanent:{path:"ban",until:null},
         unban:{path:"unban"},
+        warn:{path:"warn"},
         mute1:{path:"mute",until:moderationUntil(1)},
         mute24:{path:"mute",until:moderationUntil(24)},
         unmute:{path:"unmute"}
@@ -12500,7 +12751,7 @@ async function refreshFriendSummary(options={}){
 function friendRow(item,actions=[]){
   const user=item?.user||{};
   return `
-    <article class="friend-row">
+    <article class="friend-row role-${escapeHtml(user.role||"user")}">
       <div>
         <strong>${escapeHtml(user.pseudo||"Utilisateur")}</strong>
         <small>${authRoleLabel(user.role)} · inscrit le ${user.createdAt?formatDateShort(user.createdAt):"date inconnue"}</small>
@@ -12729,11 +12980,7 @@ async function editPrivateMessage(id){
   const pseudo=messageState.activePseudo;
   if(!pseudo || !id)return;
   const current=[...$("#messagesFeed")?.querySelectorAll(`[data-private-edit="${CSS.escape(String(id))}"]`)||[]][0]?.closest(".message-bubble")?.childNodes?.[0]?.textContent?.trim()||"";
-  const body=await showPrompt("Modifier le message privé :",{
-    title:"Modifier le message",
-    defaultValue:current,
-    okLabel:"Enregistrer"
-  });
+  const body=await showMessageEditor(current,1000);
   if(body===null)return;
   try{
     await authFetch(`/social/messages/${encodeURIComponent(pseudo)}/${encodeURIComponent(id)}`,{method:"PATCH",body:JSON.stringify({body})});
@@ -12795,6 +13042,14 @@ function renderChatbox(){
     stateLabel.classList.toggle("online",!chatState.settings?.locked);
     stateLabel.classList.toggle("offline",!!chatState.settings?.locked);
   }
+  const chatLocked=!!chatState.settings?.locked && !["moderator","admin"].includes(authState.user?.role);
+  const chatInput=$("#chatboxInput");
+  const chatSubmit=$("#chatboxComposeForm button[type='submit']");
+  if(chatInput){
+    chatInput.disabled=chatLocked;
+    chatInput.placeholder=chatLocked?"La chatbox est temporairement fermée par la modération.":"Écrire dans le chat global...";
+  }
+  if(chatSubmit)chatSubmit.disabled=chatLocked;
   if(feed){
     const visible=chatState.messages.filter(item=>{
       const isShare=item.type==="achievement" || item.type==="pykur" || item.meta?.system;
@@ -12808,7 +13063,7 @@ function renderChatbox(){
       const canModerate=["moderator","admin"].includes(authState.user?.role);
       const canOwn=item.isMine;
       return `
-        <article class="chat-message ${system?"system":""}">
+        <article class="chat-message ${system?"system":""} role-${escapeHtml(sender.role||"user")}">
           ${avatarMarkup(sender)}
           <div class="chat-message-body">
             <strong data-chat-profile="${escapeHtml(sender.pseudo||"")}">${escapeHtml(sender.pseudo||"Utilisateur")}</strong>
@@ -12848,7 +13103,7 @@ function renderChatbox(){
     const ignored=chatState.ignored||[];
     online.innerHTML=`
       ${chatState.online.length ? chatState.online.map(user=>`
-        <button class="online-user-row" type="button" data-online-profile="${escapeHtml(user.pseudo)}">
+        <button class="online-user-row role-${escapeHtml(user.role||"user")}" type="button" data-online-profile="${escapeHtml(user.pseudo)}">
           ${avatarMarkup(user)}
           <span><strong>${escapeHtml(user.pseudo)}</strong><small>${authRoleLabel(user.role)}</small></span>
         </button>
@@ -12945,11 +13200,7 @@ async function deleteChatMessage(id){
 async function editChatMessage(id){
   const item=chatState.messages.find(message=>String(message.id)===String(id));
   if(!item)return;
-  const body=await showPrompt("Modifier le message :",{
-    title:"Modifier le message",
-    defaultValue:item.body||"",
-    okLabel:"Enregistrer"
-  });
+  const body=await showMessageEditor(item.body||"",500);
   if(body===null)return;
   try{
     await authFetch(`/social/chat/${encodeURIComponent(id)}`,{method:"PATCH",body:JSON.stringify({body})});
@@ -13065,7 +13316,7 @@ function renderCommunitySearchResults(users,query=""){
     return;
   }
   box.innerHTML=users.map(user=>`
-    <article class="community-search-result">
+    <article class="community-search-result role-${escapeHtml(user.role||"user")}">
       <div>
         <strong>${escapeHtml(user.pseudo)}</strong>
         <small>${authRoleLabel(user.role)} · ${user.publicProfile?"Profil public":"Profil privé"} · inscrit le ${user.createdAt?formatDateShort(user.createdAt):"date inconnue"}</small>
@@ -13692,11 +13943,18 @@ function showDialog(message,options={}){
     const bg=$("#appDialog");
     const title=$("#dialogTitle");
     const msg=$("#dialogMessage");
-    const input=$("#dialogInput");
+    let input=$("#dialogInput");
     const actions=$("#dialogActions");
     if(!bg || !title || !msg || !input || !actions){
       resolve(options.type==="prompt" ? null : true);
       return;
+    }
+    if(input.tagName?.toLowerCase()!=="input"){
+      const fresh=document.createElement("input");
+      fresh.id=input.id;
+      fresh.className=input.className;
+      input.replaceWith(fresh);
+      input=fresh;
     }
 
     const type=options.type||"alert";
@@ -13706,6 +13964,7 @@ function showDialog(message,options={}){
     title.innerHTML=`<span aria-hidden="true">${options.icon||meta.icon}</span> ${baseTitle}`;
     const head=title.closest(".dialog-head");
     head?.querySelector(".dialog-subtitle")?.remove();
+    bg.querySelector(".dialog-counter")?.remove();
     const subtitle=document.createElement("p");
     subtitle.className="dialog-subtitle";
     subtitle.textContent=options.subtitle||meta.subtitle;
@@ -13766,6 +14025,32 @@ function closeDialog(value){
 
 const showConfirm=(message,options={})=>showDialog(message,{...options,type:"confirm"});
 const showPrompt=(message,options={})=>showDialog(message,{...options,type:"prompt"});
+
+function showMessageEditor(defaultValue="",maxLength=500){
+  return showPrompt("Modifiez le contenu du message :",{
+    title:"Modifier le message",
+    subtitle:"Corrigez votre message sans changer le reste de la conversation.",
+    defaultValue,
+    okLabel:"Enregistrer",
+    onRender:({input,msg})=>{
+      const textarea=document.createElement("textarea");
+      textarea.id=input.id;
+      textarea.className=input.className;
+      textarea.value=defaultValue||"";
+      textarea.maxLength=maxLength;
+      textarea.rows=5;
+      textarea.style.resize="vertical";
+      textarea.style.minHeight="112px";
+      input.replaceWith(textarea);
+      const counter=document.createElement("small");
+      counter.className="dialog-counter";
+      const update=()=>counter.textContent=`${textarea.value.length} / ${maxLength}`;
+      textarea.addEventListener("input",update);
+      update();
+      msg.insertAdjacentElement("afterend",counter);
+    }
+  });
+}
 
 function positionCharlie(clientX,clientY){
   const cursor=$("#charlieCursor");
