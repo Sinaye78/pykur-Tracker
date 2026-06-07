@@ -118,6 +118,7 @@ function cleanPreferences(value) {
 
 function publicUser(user) {
   if (!user) return null;
+  const online = isRecentlyOnline(user.last_login_at);
   return {
     id: user.id,
     pseudo: user.pseudo,
@@ -127,10 +128,17 @@ function publicUser(user) {
     isBanned: !!user.is_banned,
     banUntil: user.ban_until,
     muteUntil: user.mute_until,
+    isOnline: online,
     preferences: parsePreferences(user.preferences),
     createdAt: user.created_at,
     lastLoginAt: user.last_login_at
   };
+}
+
+function isRecentlyOnline(value) {
+  const text = value ? String(value) : "";
+  const date = text ? new Date(text.includes("T") ? text : `${text.replace(" ", "T")}Z`) : null;
+  return !!date && !Number.isNaN(date.getTime()) && Date.now() - date.getTime() < 15 * 60 * 1000;
 }
 
 function publicCommunityUser(user) {
@@ -139,6 +147,10 @@ function publicCommunityUser(user) {
     pseudo: user.pseudo,
     role: user.role,
     createdAt: user.created_at,
+    lastLoginAt: user.last_login_at,
+    isOnline: isRecentlyOnline(user.last_login_at),
+    isBanned: !!user.is_banned,
+    banUntil: user.ban_until,
     publicProfile: !!preferences.publicProfile,
     allowPrivateMessages: !!preferences.allowPrivateMessages
   };
@@ -229,6 +241,10 @@ function buildCommunityProfile(user, savePayload) {
       pseudo: user.pseudo,
       role: user.role,
       createdAt: user.created_at,
+      lastLoginAt: user.last_login_at,
+      isOnline: isRecentlyOnline(user.last_login_at),
+      isBanned: !!user.is_banned,
+      banUntil: user.ban_until,
       isPrivate: true,
       preferences: {
         publicProfile: false,
@@ -261,6 +277,10 @@ function buildCommunityProfile(user, savePayload) {
     pseudo: user.pseudo,
     role: user.role,
     createdAt: user.created_at,
+    lastLoginAt: user.last_login_at,
+    isOnline: isRecentlyOnline(user.last_login_at),
+    isBanned: !!user.is_banned,
+    banUntil: user.ban_until,
     preferences: {
       publicProfile: true,
       showSecondaryProfiles: !!preferences.showSecondaryProfiles,
@@ -502,10 +522,15 @@ function canMessageUser(viewer, target) {
 
 function conversationOtherUser(row, viewerId) {
   const otherIsA = Number(row.user_a_id) !== Number(viewerId);
+  const lastLoginAt = otherIsA ? row.user_a_last_login_at : row.user_b_last_login_at;
   return {
     pseudo: otherIsA ? row.user_a_pseudo : row.user_b_pseudo,
     role: otherIsA ? row.user_a_role : row.user_b_role,
-    createdAt: otherIsA ? row.user_a_created_at : row.user_b_created_at
+    createdAt: otherIsA ? row.user_a_created_at : row.user_b_created_at,
+    lastLoginAt,
+    isOnline: isRecentlyOnline(lastLoginAt),
+    isBanned: !!(otherIsA ? row.user_a_is_banned : row.user_b_is_banned),
+    banUntil: otherIsA ? row.user_a_ban_until : row.user_b_ban_until
   };
 }
 
@@ -751,7 +776,9 @@ app.post("/api/auth/password-reset/confirm", passwordResetLimiter, async (req, r
 });
 
 app.get("/api/auth/me", requireAuth, (req, res) => {
-  res.json({ user: publicUser(req.user), muted: !!req.user.mute_until, muteUntil: req.user.mute_until });
+  db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.user.id);
+  const user = getUserById(req.user.id);
+  res.json({ user: publicUser(user), muted: !!user.mute_until, muteUntil: user.mute_until });
 });
 
 app.put("/api/account/email", requireAuth, (req, res) => {
@@ -804,7 +831,7 @@ app.get("/api/community/users", (req, res) => {
   const query = cleanPseudo(req.query.q || "");
   if (query.length < 2) return res.json({ users: [] });
   const rows = db.prepare(`
-    SELECT pseudo, role, preferences, created_at
+    SELECT pseudo, role, preferences, created_at, last_login_at, is_banned, ban_until
     FROM users
     WHERE email_verified_at IS NOT NULL
       AND is_banned = 0
@@ -819,7 +846,8 @@ app.get("/api/community/users", (req, res) => {
 app.get("/api/community/users/:pseudo", optionalAuth, (req, res) => {
   const pseudo = cleanPseudo(req.params.pseudo);
   const user = db.prepare("SELECT * FROM users WHERE lower(pseudo) = lower(?)").get(pseudo);
-  if (!user || user.is_banned || !user.email_verified_at) return res.status(404).json({ error: "Profil introuvable." });
+  if (!user || !user.email_verified_at) return res.status(404).json({ error: "Profil introuvable." });
+  if (user.is_banned && !["moderator", "admin"].includes(req.user?.role)) return res.status(404).json({ error: "Profil introuvable." });
   const row = db.prepare("SELECT payload FROM cloud_saves WHERE user_id = ?").get(user.id);
   let payload = null;
   try {
@@ -842,7 +870,9 @@ function getTargetUserByPseudo(pseudo) {
 app.get("/api/social/friends", requireAuth, (req, res) => {
   const rows = db.prepare(`
     SELECT f.*, ua.pseudo AS user_a_pseudo, ua.role AS user_a_role, ua.created_at AS user_a_created_at,
-           ub.pseudo AS user_b_pseudo, ub.role AS user_b_role, ub.created_at AS user_b_created_at
+           ua.last_login_at AS user_a_last_login_at, ua.is_banned AS user_a_is_banned, ua.ban_until AS user_a_ban_until,
+           ub.pseudo AS user_b_pseudo, ub.role AS user_b_role, ub.created_at AS user_b_created_at,
+           ub.last_login_at AS user_b_last_login_at, ub.is_banned AS user_b_is_banned, ub.ban_until AS user_b_ban_until
     FROM friendships f
     JOIN users ua ON ua.id = f.user_a_id
     JOIN users ub ON ub.id = f.user_b_id
@@ -855,7 +885,11 @@ app.get("/api/social/friends", requireAuth, (req, res) => {
     const other = {
       pseudo: otherIsA ? row.user_a_pseudo : row.user_b_pseudo,
       role: otherIsA ? row.user_a_role : row.user_b_role,
-      createdAt: otherIsA ? row.user_a_created_at : row.user_b_created_at
+      createdAt: otherIsA ? row.user_a_created_at : row.user_b_created_at,
+      lastLoginAt: otherIsA ? row.user_a_last_login_at : row.user_b_last_login_at,
+      isOnline: isRecentlyOnline(otherIsA ? row.user_a_last_login_at : row.user_b_last_login_at),
+      isBanned: !!(otherIsA ? row.user_a_is_banned : row.user_b_is_banned),
+      banUntil: otherIsA ? row.user_a_ban_until : row.user_b_ban_until
     };
     const item = { user: other, createdAt: row.created_at, updatedAt: row.updated_at };
     if (row.status === "accepted") result.friends.push(item);
@@ -917,7 +951,9 @@ app.delete("/api/social/friends/:pseudo", requireAuth, (req, res) => {
 app.get("/api/social/messages", requireAuth, (req, res) => {
   const rows = db.prepare(`
     SELECT c.*, ua.pseudo AS user_a_pseudo, ua.role AS user_a_role, ua.created_at AS user_a_created_at,
+           ua.last_login_at AS user_a_last_login_at, ua.is_banned AS user_a_is_banned, ua.ban_until AS user_a_ban_until,
            ub.pseudo AS user_b_pseudo, ub.role AS user_b_role, ub.created_at AS user_b_created_at,
+           ub.last_login_at AS user_b_last_login_at, ub.is_banned AS user_b_is_banned, ub.ban_until AS user_b_ban_until,
            m.body AS last_body, m.created_at AS last_message_at, s.pseudo AS last_sender_pseudo
     FROM private_conversations c
     JOIN users ua ON ua.id = c.user_a_id

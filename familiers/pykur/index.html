@@ -3586,6 +3586,20 @@ body.no-anim .app.milestone-flash{
 }
 .auth-user-chip strong{font-size:13px}
 .auth-user-chip span{color:#facc15;text-transform:uppercase}
+.auth-user-chip strong{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.auth-user-chip strong::before{
+  content:"";
+  flex:0 0 auto;
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:#22c55e;
+  box-shadow:0 0 0 2px rgba(34,197,94,.18),0 0 8px rgba(34,197,94,.42);
+}
 .auth-widget .btn{
   min-width:0!important;
   min-height:32px!important;
@@ -4179,6 +4193,53 @@ body.no-anim .app.milestone-flash{
   font-weight:850;
 }
 
+.member-status-line{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  flex-wrap:wrap;
+}
+
+.member-presence{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  color:#64748b;
+  font-size:11px;
+  font-weight:900;
+}
+
+.member-presence::before{
+  content:"";
+  width:8px;
+  height:8px;
+  border-radius:999px;
+  background:#9ca3af;
+  box-shadow:0 0 0 2px rgba(156,163,175,.16);
+}
+
+.member-presence.online{
+  color:#15803d;
+}
+
+.member-presence.online::before{
+  background:#22c55e;
+  box-shadow:0 0 0 2px rgba(34,197,94,.16),0 0 8px rgba(34,197,94,.42);
+}
+
+.member-ban-badge{
+  display:inline-flex;
+  align-items:center;
+  padding:3px 7px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#ef4444,#b91c1c);
+  color:white;
+  font-size:10px;
+  font-weight:950;
+  text-transform:uppercase;
+  box-shadow:0 3px 9px rgba(185,28,28,.22);
+}
+
 .community-friend-actions{
   display:flex;
   gap:8px;
@@ -4430,6 +4491,13 @@ body.no-anim .app.milestone-flash{
 .community-profile-hero h3{
   margin:0 0 4px;
   font-size:22px;
+}
+
+.community-profile-title{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  flex-wrap:wrap;
 }
 
 .community-profile-hero p{
@@ -11288,6 +11356,27 @@ function canOpenModerationTools(profile){
   return String(authState.user.pseudo||"").toLowerCase()!==String(profile.pseudo||"").toLowerCase();
 }
 
+function parseServerDate(value){
+  if(!value)return null;
+  const text=String(value);
+  const date=new Date(text.includes("T")?text:text.replace(" ","T")+"Z");
+  return Number.isNaN(date.getTime())?null:date;
+}
+
+function memberIsOnline(user){
+  if(typeof user?.isOnline==="boolean")return user.isOnline;
+  const date=parseServerDate(user?.lastLoginAt);
+  return !!date && Date.now()-date.getTime()<15*60*1000;
+}
+
+function memberStatusMarkup(user,options={}){
+  const online=memberIsOnline(user);
+  const label=online?"En ligne":"Hors ligne";
+  const ban=user?.isBanned?`<span class="member-ban-badge">Banni</span>`:"";
+  const last=!online && options.showLastSeen && user?.lastLoginAt ? ` · vu le ${formatDateShort(user.lastLoginAt)}` : "";
+  return `<span class="member-status-line"><span class="member-presence ${online?"online":"offline"}">${label}${last}</span>${ban}</span>`;
+}
+
 async function copyTextToClipboard(text){
   if(navigator.clipboard?.writeText){
     await navigator.clipboard.writeText(text);
@@ -11314,7 +11403,7 @@ function renderCommunityProfile(profile){
   box.innerHTML=`
     <section class="community-profile-hero">
       <div>
-        <h3>${escapeHtml(profile?.pseudo||"Profil")}</h3>
+        <h3 class="community-profile-title">${escapeHtml(profile?.pseudo||"Profil")} ${memberStatusMarkup(profile)}</h3>
         <p>${profile?.isPrivate?"Profil privé · ":""}Compte créé le ${profile?.createdAt?formatDateShort(profile.createdAt):"date inconnue"}</p>
         <div class="community-profile-hero-actions">
           <button class="btn btn-blue" type="button" data-community-copy-link="${escapeHtml(profile?.pseudo||"")}">Copier le lien public</button>
@@ -11419,7 +11508,7 @@ function renderModerationPanel(data,pseudo){
   box.innerHTML=`
     <section class="moderation-target">
       <div>
-        <h3>${escapeHtml(user.pseudo||pseudo||"Membre")}</h3>
+        <h3 class="community-profile-title">${escapeHtml(user.pseudo||pseudo||"Membre")} ${memberStatusMarkup(user)}</h3>
         <p>${escapeHtml(user.email||"Email masqué")} · ${authRoleLabel(user.role)} · inscrit le ${user.createdAt?formatDateShort(user.createdAt):"-"}</p>
       </div>
       <span class="community-role-badge">${authRoleLabel(user.role)}</span>
@@ -11634,6 +11723,7 @@ function friendRow(item,actions=[]){
       <div>
         <strong>${escapeHtml(user.pseudo||"Utilisateur")}</strong>
         <small>${authRoleLabel(user.role)} · inscrit le ${user.createdAt?formatDateShort(user.createdAt):"date inconnue"}</small>
+        ${memberStatusMarkup(user)}
       </div>
       <div class="friend-row-actions">
         <button class="btn btn-blue" type="button" data-friend-view="${escapeHtml(user.pseudo||"")}">Voir</button>
@@ -11721,6 +11811,7 @@ function renderMessagesList(){
     return `
       <button class="message-conversation ${messageState.activePseudo===pseudo?"active":""}" type="button" data-message-pseudo="${escapeHtml(pseudo)}">
         <strong>${escapeHtml(pseudo)}</strong>
+        ${memberStatusMarkup(item.other)}
         <small>${escapeHtml(preview.slice(0,90))}${preview.length>90?"...":""}</small>
       </button>
     `;
@@ -11857,6 +11948,7 @@ function renderCommunitySearchResults(users,query=""){
       <div>
         <strong>${escapeHtml(user.pseudo)}</strong>
         <small>${authRoleLabel(user.role)} · ${user.publicProfile?"Profil public":"Profil privé"} · inscrit le ${user.createdAt?formatDateShort(user.createdAt):"date inconnue"}</small>
+        ${memberStatusMarkup(user)}
       </div>
       <button class="btn btn-blue" type="button" data-community-user="${escapeHtml(user.pseudo)}">Voir</button>
     </article>
