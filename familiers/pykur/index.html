@@ -4160,6 +4160,59 @@ body.no-anim .app.milestone-flash{
   margin-top:10px;
 }
 
+.auth-friends-button{
+  position:relative;
+}
+
+.auth-friends-badge{
+  position:absolute;
+  top:-8px;
+  right:-8px;
+  min-width:20px;
+  height:20px;
+  padding:0 6px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:linear-gradient(180deg,#facc15,#d97706);
+  color:#2b1606;
+  border:2px solid rgba(255,250,236,.95);
+  box-shadow:0 4px 12px rgba(0,0,0,.22);
+  font-size:11px;
+  font-weight:950;
+  line-height:1;
+}
+
+.friends-summary{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.friends-summary-card{
+  padding:12px;
+  border:1px solid rgba(140,100,48,.24);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(255,239,194,.5));
+}
+
+.friends-summary-card small{
+  display:block;
+  color:#71502c;
+  font-weight:850;
+  text-transform:uppercase;
+  font-size:11px;
+}
+
+.friends-summary-card strong{
+  display:block;
+  margin-top:4px;
+  color:#2f1d10;
+  font-size:24px;
+}
+
 .community-private-note{
   padding:14px;
   border:1px dashed rgba(140,100,48,.34);
@@ -4370,6 +4423,9 @@ body.no-anim .app.milestone-flash{
   .friend-row{
     align-items:stretch;
     flex-direction:column;
+  }
+  .friends-summary{
+    grid-template-columns:1fr;
   }
 }
 
@@ -10672,6 +10728,7 @@ const AUTH_API_BASE=localStorage.getItem("pykur_api_base")||(location.hostname==
 const AUTH_TOKEN_KEY="pykur_auth_token";
 let authMode="login";
 let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null};
+const socialState={friends:0,incoming:0,outgoing:0,loaded:false};
 const cloudState={timer:null,syncing:false,pending:false,lastSyncAt:null,error:null,loading:false};
 let passwordResetToken="";
 
@@ -10746,9 +10803,11 @@ function authRender(){
   }
   const user=authState.user;
   const adminButton=user.role==="admin" ? '<button class="btn btn-orange" id="authAdminPanel" type="button">Admin panel</button>' : "";
-  box.innerHTML='<button class="auth-user-chip account-open" id="accountProfileOpen" type="button" title="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-blue" id="authCommunitySearch" type="button">Membres</button>'+adminButton+'<button class="btn btn-gray" id="authLogout" type="button">Déconnexion</button>';
+  const friendsBadge=socialState.incoming>0 ? `<span class="auth-friends-badge">${socialState.incoming}</span>` : "";
+  box.innerHTML='<button class="auth-user-chip account-open" id="accountProfileOpen" type="button" title="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-blue" id="authCommunitySearch" type="button">Membres</button><button class="btn btn-blue auth-friends-button" id="authFriendsPanel" type="button">Amis'+friendsBadge+'</button>'+adminButton+'<button class="btn btn-gray" id="authLogout" type="button">Déconnexion</button>';
   if($("#accountProfileOpen"))$("#accountProfileOpen").onclick=openAccountProfile;
   if($("#authCommunitySearch"))$("#authCommunitySearch").onclick=openCommunityDirectory;
+  if($("#authFriendsPanel"))$("#authFriendsPanel").onclick=openFriendsPanel;
   if($("#authLogout"))$("#authLogout").onclick=authLogout;
   if($("#authAdminPanel"))$("#authAdminPanel").onclick=()=>livingOpenAdmin();
   renderCloudStatus();
@@ -10804,6 +10863,7 @@ async function confirmPasswordReset(event){
     closeModal("passwordResetModal");
     toast("Mot de passe réinitialisé. Vous êtes connecté.","success","success");
     cloudAfterLogin({silent:true});
+    refreshFriendSummary({silent:true});
     const url=new URL(location.href);
     url.searchParams.delete("resetToken");
     history.replaceState(null,"",url.toString());
@@ -10827,6 +10887,7 @@ async function confirmEmailVerificationToken(token){
     authRender();
     toast("Email confirmé. Votre compte est activé.","success","success");
     cloudAfterLogin({silent:true});
+    refreshFriendSummary({silent:true});
   }catch(error){
     toast(error.message||"Lien de confirmation invalide.","error","error");
   }finally{
@@ -11026,8 +11087,36 @@ async function communitySocialAction(pseudo,action){
     toast(messages[action]||"Action effectuée.","success","success");
     await openCommunityProfileByPseudo(clean);
     if($("#friendsModal")?.classList.contains("show"))loadFriendsPanel();
+    refreshFriendSummary({silent:true});
   }catch(error){
     toast(error.message||"Action sociale impossible.","error","error");
+  }
+}
+
+function updateSocialStateFromFriends(payload={}){
+  socialState.friends=(payload.friends||[]).length;
+  socialState.incoming=(payload.incoming||[]).length;
+  socialState.outgoing=(payload.outgoing||[]).length;
+  socialState.loaded=true;
+}
+
+async function refreshFriendSummary(options={}){
+  if(!authState.user){
+    socialState.friends=0;
+    socialState.incoming=0;
+    socialState.outgoing=0;
+    socialState.loaded=false;
+    authRender();
+    return null;
+  }
+  try{
+    const payload=await authFetch("/social/friends");
+    updateSocialStateFromFriends(payload);
+    authRender();
+    return payload;
+  }catch(error){
+    if(!options.silent)toast(error.message||"Résumé des amis indisponible.","warning","warning");
+    return null;
   }
 }
 
@@ -11066,7 +11155,14 @@ async function loadFriendsPanel(){
   box.innerHTML=`<div class="community-profile-empty">Chargement des amis...</div>`;
   try{
     const data=await authFetch("/social/friends");
+    updateSocialStateFromFriends(data);
+    authRender();
     box.innerHTML=[
+      `<div class="friends-summary">
+        <div class="friends-summary-card"><small>Amis</small><strong>${socialState.friends}</strong></div>
+        <div class="friends-summary-card"><small>Reçues</small><strong>${socialState.incoming}</strong></div>
+        <div class="friends-summary-card"><small>Envoyées</small><strong>${socialState.outgoing}</strong></div>
+      </div>`,
       friendsSection("Demandes reçues",data.incoming||[],"Aucune demande reçue.",[
         {action:"accept",label:"Accepter",className:"btn-green"},
         {action:"reject",label:"Refuser",className:"btn-gray"}
@@ -11253,6 +11349,7 @@ async function authSubmit(event){
     closeModal("authModal");
     toast(result.bootstrapAdmin?"Premier compte créé : rôle admin activé.":"Connexion réussie.","success","success");
     cloudAfterLogin();
+    refreshFriendSummary({silent:true});
   }catch(error){
     authSetError(error.message||"Connexion impossible.");
   }
@@ -11264,6 +11361,10 @@ function authLogout(){
     cloudState.timer=null;
   }
   authState={token:"",user:null,apiOnline:authState.apiOnline};
+  socialState.friends=0;
+  socialState.incoming=0;
+  socialState.outgoing=0;
+  socialState.loaded=false;
   localStorage.removeItem(AUTH_TOKEN_KEY);
   authRender();
   toast("Vous êtes déconnecté du compte cloud.","info","click");
@@ -11285,7 +11386,10 @@ async function authRefresh(){
     localStorage.removeItem(AUTH_TOKEN_KEY);
   }
   authRender();
-  if(authState.user)cloudAfterLogin({silent:true});
+  if(authState.user){
+    cloudAfterLogin({silent:true});
+    refreshFriendSummary({silent:true});
+  }
 }
 
 function cloudPayload(){
