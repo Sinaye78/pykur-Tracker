@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
   role TEXT NOT NULL DEFAULT 'user' CHECK(role IN ('user','moderator','admin')),
   avatar_url TEXT,
   first_login_announcement_at TEXT,
+  deletion_requested_at TEXT,
   preferences TEXT NOT NULL DEFAULT '{}',
   email_verified_at TEXT,
   is_banned INTEGER NOT NULL DEFAULT 0,

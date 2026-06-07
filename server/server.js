@@ -32,6 +32,7 @@ ensureColumn("users", "preferences", "TEXT NOT NULL DEFAULT '{}'");
 ensureColumn("users", "email_verified_at", "TEXT");
 ensureColumn("users", "avatar_url", "TEXT");
 ensureColumn("users", "first_login_announcement_at", "TEXT");
+ensureColumn("users", "deletion_requested_at", "TEXT");
 db.prepare("UPDATE users SET email_verified_at = COALESCE(email_verified_at, created_at) WHERE email_verified_at IS NULL AND last_login_at IS NOT NULL").run();
 
 db.exec(`
@@ -617,7 +618,16 @@ function isExpired(date) {
   return date && new Date(date).getTime() <= Date.now();
 }
 
+function purgeExpiredClosedAccounts() {
+  try {
+    db.prepare("DELETE FROM users WHERE deletion_requested_at IS NOT NULL AND datetime(deletion_requested_at) <= datetime('now','-30 days')").run();
+  } catch {
+    // La purge ne doit jamais bloquer les routes critiques.
+  }
+}
+
 function getUserById(id) {
+  purgeExpiredClosedAccounts();
   const user = db.prepare("SELECT * FROM users WHERE id = ?").get(id);
   if (user?.ban_until && isExpired(user.ban_until)) {
     db.prepare("UPDATE users SET is_banned = 0, ban_until = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(user.id);
@@ -984,6 +994,7 @@ app.post("/api/auth/verify-email/confirm", passwordResetLimiter, (req, res) => {
 });
 
 app.post("/api/auth/login", async (req, res) => {
+  purgeExpiredClosedAccounts();
   const identifier = String(req.body.identifier || "").trim();
   const password = String(req.body.password || "");
   const user = db.prepare("SELECT * FROM users WHERE lower(email) = lower(?) OR lower(pseudo) = lower(?)").get(identifier, identifier);
@@ -996,7 +1007,7 @@ app.post("/api/auth/login", async (req, res) => {
   if (!user.email_verified_at) {
     return res.status(403).json({ error: "Veuillez confirmer votre email avant de vous connecter." });
   }
-  db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?").run(user.id);
+  db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP, deletion_requested_at = NULL WHERE id = ?").run(user.id);
   const refreshed = getUserById(user.id);
   announceFirstLogin(refreshed);
   logCommunity({ userId: refreshed.id, type: "login", body: "Connexion au compte." });
@@ -1044,9 +1055,16 @@ app.post("/api/auth/password-reset/confirm", passwordResetLimiter, async (req, r
 });
 
 app.get("/api/auth/me", requireAuth, (req, res) => {
-  db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.user.id);
+  db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP, deletion_requested_at = NULL WHERE id = ?").run(req.user.id);
   const user = getUserById(req.user.id);
   res.json({ user: publicUser(user), muted: !!user.mute_until, muteUntil: user.mute_until });
+});
+
+app.post("/api/account/close", requireAuth, (req, res) => {
+  if (req.user.role === "admin") return res.status(403).json({ error: "Un admin ne peut pas fermer son compte depuis cette interface." });
+  db.prepare("UPDATE users SET deletion_requested_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.user.id);
+  logCommunity({ userId: req.user.id, type: "account_close_requested", body: "Fermeture de compte demandee." });
+  res.json({ ok: true, deletionDelayDays: 30 });
 });
 
 app.put("/api/account/email", requireAuth, (req, res) => {
@@ -1112,15 +1130,15 @@ app.get("/api/account/warnings", requireAuth, (req, res) => {
 
 app.put("/api/cloud/save", requireAuth, (req, res) => {
   const incomingPayload = req.body.payload || {};
-  const current = db.prepare("SELECT payload FROM cloud_saves WHERE user_id = ?").get(req.user.id);
-  const currentPayload = safeParseJson(current?.payload, {});
-  const mergedPayload = mergeCloudPayloads(currentPayload || {}, incomingPayload || {});
+  const nextPayload = Object.assign({}, incomingPayload || {}, {
+    savedAt: new Date().toISOString()
+  });
   db.prepare(`
     INSERT INTO cloud_saves(user_id,payload,updated_at)
     VALUES(?,?,CURRENT_TIMESTAMP)
     ON CONFLICT(user_id) DO UPDATE SET payload = excluded.payload, updated_at = CURRENT_TIMESTAMP
-  `).run(req.user.id, JSON.stringify(mergedPayload));
-  res.json({ ok: true, payload: mergedPayload });
+  `).run(req.user.id, JSON.stringify(nextPayload));
+  res.json({ ok: true, payload: nextPayload });
 });
 
 app.get("/api/cloud/save", requireAuth, (req, res) => {

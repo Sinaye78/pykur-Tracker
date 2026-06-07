@@ -4573,15 +4573,18 @@ body.no-anim .app.milestone-flash{
   justify-content:flex-end;
 }
 
-.message-bubble.mine .message-actions{
+.chat-message-actions,
+.message-bubble .message-actions{
   opacity:0;
   pointer-events:none;
   transform:translateY(2px);
   transition:opacity .18s ease,transform .18s ease;
 }
 
-.message-bubble.mine:hover .message-actions,
-.message-bubble.mine:focus-within .message-actions{
+.chat-message:hover .chat-message-actions,
+.chat-message:focus-within .chat-message-actions,
+.message-bubble:hover .message-actions,
+.message-bubble:focus-within .message-actions{
   opacity:1;
   pointer-events:auto;
   transform:translateY(0);
@@ -9982,6 +9985,20 @@ body.no-anim .pykur-sparkle{
   .monster-row,.monster-row.all{grid-template-columns:44px minmax(0,1fr) auto 34px!important}
   .monster-row.all span:nth-child(3),.monster-row.all span:nth-child(4),.monster-row.all span:nth-child(5){display:none!important}
 }
+.sound-settings-panel{display:grid;gap:14px;padding:8px}
+.sound-settings-value{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border:1px solid rgba(119,79,28,.24);border-radius:14px;background:linear-gradient(180deg,rgba(255,252,242,.9),rgba(242,223,184,.62))}
+.sound-settings-value span{font-weight:900;color:#65431d}
+.sound-settings-value strong{font-size:28px;color:#2563eb}
+#soundVolumeRange{width:100%;accent-color:#2563eb;cursor:pointer}
+.sound-settings-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.moderation-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;padding:8px;border:1px solid rgba(119,79,28,.20);border-radius:14px;background:rgba(255,252,242,.56)}
+.moderation-tabs button{min-height:36px;padding:0 12px;border-radius:10px}
+.moderation-tabs button.active{background:#2563eb;color:white}
+.moderation-section.hidden{display:none}
+.moderation-log-toolbar{display:flex;gap:10px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+.moderation-log-toolbar input{flex:1;min-width:220px;border:1px solid rgba(119,79,28,.28);border-radius:12px;padding:10px 12px;font-weight:850;background:rgba(255,252,242,.92)}
+.moderation-log-panel .moderation-history{max-height:min(58vh,620px);overflow:auto;padding-right:4px}
+.moderation-log-meta{display:block;margin-top:4px;color:#6b7280;font-size:11px;word-break:break-word}
 #galleryModal.modal-bg{
   background:rgba(18,12,7,.76);
   backdrop-filter:blur(7px) saturate(.86);
@@ -11122,6 +11139,30 @@ body.no-anim .pykur-sparkle{
   </div>
 </div>
 
+<!-- SON -->
+<div class="modal-bg" id="soundSettingsModal">
+  <div class="modal small">
+    <div class="modal-head">
+      <div>
+        <h2>🔊 Son du tracker</h2>
+        <p>Réglez le volume global des sons sans modifier votre progression.</p>
+      </div>
+      <button class="btn btn-red modal-close" data-close="soundSettingsModal">X</button>
+    </div>
+    <div class="modal-body">
+      <div class="sound-settings-panel">
+        <div class="sound-settings-value"><span id="soundSettingsState">Sons activés</span><strong id="soundVolumeValue">100%</strong></div>
+        <input id="soundVolumeRange" type="range" min="0" max="100" step="1" value="100" aria-label="Volume sonore">
+        <div class="sound-settings-actions">
+          <button class="btn btn-gray" id="soundMuteButton" type="button">Couper</button>
+          <button class="btn btn-blue" id="soundTestButton" type="button">Tester</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-gray" data-close="soundSettingsModal">Fermer</button></div>
+  </div>
+</div>
+
 <!-- COMPTE -->
 <div class="modal-bg" id="authModal">
   <div class="modal">
@@ -11227,6 +11268,7 @@ body.no-anim .pykur-sparkle{
             <button class="btn btn-green" id="openMessagesPanel" type="button">Messages</button>
             <button class="btn btn-green" id="openChatboxPanel" type="button">Chat global</button>
             <button class="btn btn-orange" id="copyMyCommunityLink" type="button">Copier mon lien public</button>
+            <button class="btn btn-red" id="closeAccountRequest" type="button">Fermer mon compte</button>
           </div>
         </section>
         <section class="account-panel full" data-account-section="photo">
@@ -12004,7 +12046,7 @@ const defaultData=()=>({
   runs:{morose:0,tynril:0},
   mobs:{morose:{},tynril:{},zone:{}},
   settings:{
-    night:false,animations:true,tooltips:true,notifications:true,sound:true,autoMarkOnPlus:false,chronoAutoStartOnRun:false,hudMode:false,
+    night:false,animations:true,tooltips:true,notifications:true,sound:true,soundVolume:100,autoMarkOnPlus:false,chronoAutoStartOnRun:false,hudMode:false,
     visualIntensity:"standard",uiOpacity:"medium",dashboardMode:"tryhard",
     chronoStyle:"technical",showMilliseconds:false,autoDungeonEstimate:false,notificationSize:"normal",notificationDuration:3200,
     notificationsPersistent:false,disableMinorNotifications:false,highContrast:false,reducedSaturation:false,largeFont:false,
@@ -12055,10 +12097,13 @@ let authMode="login";
 let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null};
 const socialState={friends:0,incoming:0,outgoing:0,loaded:false};
 const messageState={activePseudo:null,conversations:[],unread:0,lastSeenAt:localStorage.getItem("pykur_messages_seen_at")||"",timer:null,lastNotifiedAt:localStorage.getItem("pykur_messages_notified_at")||""};
-const chatState={messages:[],online:[],ignored:[],settings:{locked:0,slowModeSeconds:0},lastPingSeenAt:localStorage.getItem("pykur_chat_ping_seen_at")||"",timer:null,hideShares:false,hideText:false};
+const chatState={messages:[],online:[],ignored:[],settings:{locked:0,slowModeSeconds:0},lastPingSeenAt:localStorage.getItem("pykur_chat_ping_seen_at")||"",timer:null,pingTimer:null,hideShares:false,hideText:false};
 const cloudState={timer:null,syncing:false,pending:false,lastSyncAt:null,error:null,loading:false};
 let accountProfileSection="account";
 let accountWarnings=[];
+let lastWarningSeenAt=localStorage.getItem("pykur_warning_seen_at")||"";
+let moderationOverviewSection="reports";
+let moderationLogFilter="";
 let passwordResetToken="";
 
 async function authFetch(path,options={}){
@@ -12608,17 +12653,34 @@ function moderationListSection(title,items,empty){
 }
 
 function moderationLogSection(title,items,empty){
+  const needle=moderationLogFilter.trim().toLowerCase();
+  const visibleItems=needle ? items.filter(item=>{
+    const blob=[
+      item.user?.pseudo,
+      item.actor?.pseudo,
+      item.target?.pseudo,
+      item.type,
+      item.body,
+      item.reason,
+      JSON.stringify(item.meta||{})
+    ].join(" ").toLowerCase();
+    return blob.includes(needle);
+  }) : items;
   return `
-    <section class="community-profile-card">
-      <h4>${escapeHtml(title)} <span class="gallery-count-badge">${items.length}</span></h4>
+    <section class="community-profile-card moderation-log-panel">
+      <h4>${escapeHtml(title)} <span class="gallery-count-badge">${visibleItems.length}${needle?` / ${items.length}`:""}</span></h4>
+      <div class="moderation-log-toolbar">
+        <input class="moderation-log-filter" value="${escapeHtml(moderationLogFilter)}" placeholder="Filtrer par pseudo, action, cible...">
+      </div>
       <div class="moderation-history">
-        ${items.length?items.map(item=>`
+        ${visibleItems.length?visibleItems.map(item=>`
           <div class="moderation-history-row">
             ${item.user?avatarMarkup(item.user):""}
             <span>
               <strong>${escapeHtml(item.user?.pseudo||item.actor?.pseudo||"Système")}</strong>
               <small>${escapeHtml(item.type||"log")} · ${item.createdAt?formatCloudDateTime(item.createdAt):"-"}</small><br>
               ${escapeHtml(item.body||item.reason||"Action enregistrée.")}
+              ${item.meta?`<small class="moderation-log-meta">${escapeHtml(JSON.stringify(item.meta))}</small>`:""}
             </span>
             ${item.target?`<small>Cible : ${escapeHtml(item.target.pseudo||"Compte")}</small>`:""}
           </div>
@@ -12662,12 +12724,23 @@ function renderModerationOverview(payload={}){
   const securitySettings=payload.securitySettings||{};
   const communityLogs=payload.communityLogs||[];
   const moderationLogs=payload.moderationLogs||[];
+  const sections=[
+    ["reports","Signalements"],
+    ["accounts","Comptes"],
+    ["logs","Logs utilisateurs"],
+    ...(authState.user?.role==="admin"?[["adminLogs","Logs admin"],["security","Sécurité"]]:[]),
+    ["chat","Chatbox"]
+  ];
   box.innerHTML=`
     <section class="moderation-status-grid">
       <div class="moderation-info"><small>Comptes bannis</small><strong>${banned.length}</strong></div>
       <div class="moderation-info"><small>Comptes mute</small><strong>${muted.length}</strong></div>
       <div class="moderation-info"><small>Signalements</small><strong>${reports.length}</strong></div>
     </section>
+    <nav class="moderation-tabs">
+      ${sections.map(([id,label])=>`<button class="btn btn-gray ${moderationOverviewSection===id?"active":""}" type="button" data-moderation-tab="${id}">${label}</button>`).join("")}
+    </nav>
+    <div class="moderation-section ${moderationOverviewSection==="chat"?"":"hidden"}" data-moderation-section="chat">
     <section class="community-profile-card">
       <h4>Chatbox</h4>
       <div class="moderation-status-grid">
@@ -12677,7 +12750,11 @@ function renderModerationOverview(payload={}){
         <button class="btn btn-red" id="clearChatboxMessages" type="button">Vider la chatbox</button>
       </div>
     </section>
-    ${securitySettingsPanel(securitySettings)}
+    </div>
+    <div class="moderation-section ${moderationOverviewSection==="security"?"":"hidden"}" data-moderation-section="security">
+      ${securitySettingsPanel(securitySettings)}
+    </div>
+    <div class="moderation-section ${moderationOverviewSection==="reports"?"":"hidden"}" data-moderation-section="reports">
     <section class="community-profile-card">
       <h4>Signalements ouverts <span class="gallery-count-badge">${reports.length}</span></h4>
       <div class="moderation-history">
@@ -12714,12 +12791,34 @@ function renderModerationOverview(payload={}){
         `).join(""):`<div class="community-profile-empty">Aucun signalement ouvert.</div>`}
       </div>
     </section>
-    ${moderationListSection("Comptes bannis",banned,"Aucun compte banni.")}
-    ${moderationListSection("Comptes mute",muted,"Aucun compte mute actuellement.")}
-    ${moderationListSection("Modérateurs",moderators,"Aucun modérateur listé.")}
-    ${moderationLogSection("Logs utilisateurs",communityLogs,"Aucun log utilisateur récent.")}
-    ${authState.user?.role==="admin"?moderationLogSection("Logs modération admin",moderationLogs,"Aucun log de modération récent."):""}
+    </div>
+    <div class="moderation-section ${moderationOverviewSection==="accounts"?"":"hidden"}" data-moderation-section="accounts">
+      ${moderationListSection("Comptes bannis",banned,"Aucun compte banni.")}
+      ${moderationListSection("Comptes mute",muted,"Aucun compte mute actuellement.")}
+      ${moderationListSection("Modérateurs",moderators,"Aucun modérateur listé.")}
+    </div>
+    <div class="moderation-section ${moderationOverviewSection==="logs"?"":"hidden"}" data-moderation-section="logs">
+      ${moderationLogSection("Logs utilisateurs",communityLogs,"Aucun log utilisateur récent.")}
+    </div>
+    <div class="moderation-section ${moderationOverviewSection==="adminLogs"?"":"hidden"}" data-moderation-section="adminLogs">
+      ${authState.user?.role==="admin"?moderationLogSection("Logs modération admin",moderationLogs,"Aucun log de modération récent."):""}
+    </div>
   `;
+  box.querySelectorAll("[data-moderation-tab]").forEach(button=>{
+    button.addEventListener("click",()=>{
+      moderationOverviewSection=button.dataset.moderationTab||"reports";
+      renderModerationOverview(payload);
+    });
+  });
+  box.querySelectorAll(".moderation-log-filter").forEach(input=>{
+    input.addEventListener("input",e=>{
+      moderationLogFilter=e.target.value||"";
+      renderModerationOverview(payload);
+      const next=box.querySelector(".moderation-log-filter");
+      next?.focus();
+      next?.setSelectionRange(next.value.length,next.value.length);
+    });
+  });
   box.querySelectorAll("[data-overview-moderate]").forEach(button=>{
     button.addEventListener("click",()=>openModerationPanel(button.dataset.overviewModerate));
   });
@@ -13161,6 +13260,10 @@ function stopMessagePolling(){
     clearInterval(messageState.timer);
     messageState.timer=null;
   }
+  if(chatState.pingTimer){
+    clearInterval(chatState.pingTimer);
+    chatState.pingTimer=null;
+  }
 }
 
 async function refreshMessageNotifications({silent=false}={}){
@@ -13194,7 +13297,13 @@ function startSocialPolling(){
   stopMessagePolling();
   if(!authState.user)return;
   refreshMessageNotifications({silent:true});
-  messageState.timer=setInterval(()=>refreshMessageNotifications(),8000);
+  refreshChatPingNotifications({silent:true});
+  refreshWarningNotifications({silent:true});
+  messageState.timer=setInterval(()=>refreshMessageNotifications(),3000);
+  chatState.pingTimer=setInterval(()=>{
+    refreshChatPingNotifications({silent:true});
+    refreshWarningNotifications();
+  },4000);
 }
 
 async function loadMessageThread(pseudo,{silent=false,preserveScroll=false}={}){
@@ -13410,6 +13519,38 @@ function detectChatPings(){
   }
 }
 
+async function refreshChatPingNotifications({silent=false}={}){
+  if(!authState.user?.pseudo)return;
+  if($("#chatboxModal")?.classList.contains("show"))return;
+  try{
+    const chat=await authFetch("/social/chat?limit=30");
+    chatState.messages=chat.messages||[];
+    detectChatPings();
+  }catch(error){
+    if(!silent)toast(error.message||"Notifications chat indisponibles.","error","error");
+  }
+}
+
+async function refreshWarningNotifications({silent=false}={}){
+  if(!authState.user)return;
+  try{
+    const result=await authFetch("/account/warnings");
+    const warnings=result.warnings||[];
+    accountWarnings=warnings;
+    const newest=warnings.slice().sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime())[0];
+    const newestTime=newest?.createdAt ? new Date(newest.createdAt).getTime() : 0;
+    const seenTime=lastWarningSeenAt ? new Date(lastWarningSeenAt).getTime() : 0;
+    if(newest && newestTime>seenTime){
+      lastWarningSeenAt=newest.createdAt;
+      localStorage.setItem("pykur_warning_seen_at",lastWarningSeenAt);
+      if(!silent)toast(`Avertissement reçu : ${newest.reason||"consultez votre profil utilisateur"}.`,"warning","warning");
+      if($("#accountProfileModal")?.classList.contains("show"))renderAccountWarnings();
+    }
+  }catch(error){
+    if(!silent)toast(error.message||"Avertissements indisponibles.","error","error");
+  }
+}
+
 function stopChatboxPolling(){
   if(chatState.timer){
     clearInterval(chatState.timer);
@@ -13424,7 +13565,7 @@ async function openChatboxPanel(){
   if($("#chatHideText"))$("#chatHideText").checked=chatState.hideText;
   await loadChatbox();
   stopChatboxPolling();
-  chatState.timer=setInterval(()=>loadChatbox({silent:true}),5000);
+  chatState.timer=setInterval(()=>loadChatbox({silent:true}),3000);
 }
 
 async function sendChatMessage(event){
@@ -13680,6 +13821,26 @@ async function saveAccountPreferences(){
   }catch(error){
     toast(error.message||"Préférences impossibles à sauvegarder.","error","error");
     renderAccountProfile();
+  }
+}
+
+async function closeOwnAccount(){
+  if(!authState.user)return authOpen("login");
+  const ok=await showConfirm("Fermer votre compte ?",{
+    title:"Fermer le compte",
+    subtitle:"Vous serez déconnecté. Si vous ne vous reconnectez pas pendant 30 jours, le compte sera supprimé définitivement.",
+    okLabel:"Fermer mon compte",
+    okClass:"btn-red",
+    danger:true
+  });
+  if(!ok)return;
+  try{
+    await authFetch("/account/close",{method:"POST",body:JSON.stringify({})});
+    closeModal("accountProfileModal");
+    authLogout();
+    toast("Compte fermé. Reconnectez-vous sous 30 jours pour annuler la suppression.","warning","warning");
+  }catch(error){
+    toast(error.message||"Fermeture du compte impossible.","error","error");
   }
 }
 
@@ -14170,7 +14331,7 @@ const sounds={
   import:new Audio("./assets/sons/import_save.wav"),
   undo:new Audio("./assets/sons/undo_soft.wav")
 };
-Object.values(sounds).forEach(s=>{s.volume=.14});
+Object.values(sounds).forEach(s=>{s.volume=.14*soundVolumeRatio()});
 
 const $=s=>document.querySelector(s);
 const $$=s=>Array.from(document.querySelectorAll(s));
@@ -15457,7 +15618,7 @@ function livingSound(key){
   const sound=sounds[key]||sounds.click;
   if(!sound){playSound(key||"click");return}
   const previous=sound.volume;
-  sound.volume=.24;
+  sound.volume=.24*soundVolumeRatio();
   sound.currentTime=0;
   sound.play().catch(()=>{}).finally(()=>{sound.volume=previous});
 }
@@ -16237,7 +16398,7 @@ function passivePlay(srcs,volume=.08){
   const src=list[Math.floor(Math.random()*list.length)];
   if(!src)return null;
   const audio=new Audio(src);
-  audio.volume=volume;
+  audio.volume=volume*soundVolumeRatio();
   audio.onerror=()=>console.warn("[Ambiance passive] Asset audio introuvable:",src);
   passiveState.audios.push(audio);
   audio.play().catch(()=>{});
@@ -16511,14 +16672,14 @@ function livingSound(key){
   if(!key)return;
   if(typeof key==="string" && (key.startsWith("./") || key.includes("/"))){
     const audio=new Audio(key);
-    audio.volume=.25;
+    audio.volume=.25*soundVolumeRatio();
     audio.play().catch(err=>console.warn("[Evenements vivants] Son indisponible",key,err));
     return;
   }
   const sound=sounds[key]||sounds.click;
   if(!sound){playSound(key||"click");return}
   const previous=sound.volume;
-  sound.volume=.24;
+  sound.volume=.24*soundVolumeRatio();
   sound.currentTime=0;
   sound.play().catch(()=>{}).finally(()=>{sound.volume=previous});
 }
@@ -16553,7 +16714,7 @@ function livingStartKephSound(){
   const audio=new Audio(LIVE_ASSETS.ghostSound);
   livingState.kephAudio=audio;
   audio.loop=true;
-  audio.volume=.22;
+  audio.volume=.22*soundVolumeRatio();
   audio.play().catch(err=>console.warn("[Evenements vivants] Son Keph indisponible",err));
 }
 function livingStartResonanceSound(){
@@ -16562,7 +16723,7 @@ function livingStartResonanceSound(){
   const audio=new Audio(LIVE_ASSETS.energySound);
   livingState.resonanceAudio=audio;
   audio.loop=true;
-  audio.volume=.22;
+  audio.volume=.22*soundVolumeRatio();
   audio.play().catch(err=>console.warn("[Evenements vivants] Son résonance indisponible",err));
 }
 function livingRestoreSleepyImage(){
@@ -16580,7 +16741,7 @@ function livingStartHeatSound(){
   const audio=new Audio(LIVE_ASSETS.heatSound);
   livingState.heatAudio=audio;
   livingState.heatAudioPlays=0;
-  audio.volume=.25;
+  audio.volume=.25*soundVolumeRatio();
   const playOnce=()=>{
     if(livingState.current!=="heat" || livingState.heatAudio!==audio || livingState.heatAudioPlays>=2)return;
     livingState.heatAudioPlays++;
@@ -17843,11 +18004,20 @@ function ensureData(){
   for(const area of ["morose","tynril","zone"]){
     if(!data.mobs[area])data.mobs[area]={};
   }
+  data.runs=Object.assign({morose:0,tynril:0},data.runs||{});
+  data.runs.morose=clampRunsToLimit("morose",data.runs.morose||0);
+  data.runs.tynril=clampRunsToLimit("tynril",data.runs.tynril||0);
   for(const id in mobs){
     for(const area of ["morose","tynril","zone"]){
       if(data.mobs[area][id]===undefined)data.mobs[area][id]=0;
+      data.mobs[area][id]=Math.max(0,parseInt(data.mobs[area][id],10)||0);
     }
   }
+  ["morose","tynril"].forEach(farm=>{
+    for(const id in gains[farm]){
+      data.mobs[farm][id]=(data.runs[farm]||0)*gains[farm][id];
+    }
+  });
 }
 
 function makeStore(){
@@ -18114,6 +18284,20 @@ function markSaveStatus(success){
 function syncGlobalSoundSetting(){
   const muted=localStorage.getItem("pykur_global_muted");
   if(muted!==null)data.settings.sound=muted!=="1";
+  const storedVolume=localStorage.getItem("pykur_global_volume");
+  if(storedVolume!==null)data.settings.soundVolume=Math.max(0,Math.min(100,parseInt(storedVolume,10)||0));
+}
+
+function soundVolumeRatio(){
+  return Math.max(0,Math.min(100,parseInt(data.settings.soundVolume,10)||0))/100;
+}
+
+function applySoundVolume(){
+  const ratio=soundVolumeRatio();
+  Object.values(sounds||{}).forEach(sound=>{
+    if(sound)sound.volume=.14*ratio;
+  });
+  renderSoundSettings();
 }
 
 function setGlobalSound(enabled){
@@ -18121,6 +18305,29 @@ function setGlobalSound(enabled){
   localStorage.setItem("pykur_global_muted",enabled?"0":"1");
   applySettings();
   save();
+}
+
+function setGlobalSoundVolume(value){
+  data.settings.soundVolume=Math.max(0,Math.min(100,parseInt(value,10)||0));
+  if(data.settings.soundVolume>0)data.settings.sound=true;
+  localStorage.setItem("pykur_global_volume",String(data.settings.soundVolume));
+  localStorage.setItem("pykur_global_muted",data.settings.sound?"0":"1");
+  applySoundVolume();
+  applySettings();
+  save();
+}
+
+function renderSoundSettings(){
+  const value=Math.max(0,Math.min(100,parseInt(data.settings?.soundVolume,10)||0));
+  if($("#soundVolumeRange"))$("#soundVolumeRange").value=value;
+  if($("#soundVolumeValue"))$("#soundVolumeValue").textContent=`${value}%`;
+  if($("#soundSettingsState"))$("#soundSettingsState").textContent=data.settings?.sound ? "Sons activés" : "Sons coupés";
+  if($("#soundMuteButton"))$("#soundMuteButton").textContent=data.settings?.sound ? "Couper" : "Réactiver";
+}
+
+function openSoundSettings(){
+  renderSoundSettings();
+  openModal("soundSettingsModal");
 }
 
 const dofusState={
@@ -18930,7 +19137,11 @@ function playSound(type="click"){
   if(!data.settings.sound)return;
   const s=sounds[type]||sounds.click;
   if(!s)return;
-  try{s.currentTime=0;s.play().catch(()=>{})}catch(e){}
+  try{
+    s.volume=.14*soundVolumeRatio();
+    s.currentTime=0;
+    s.play().catch(()=>{});
+  }catch(e){}
 }
 
 function playFinalAchievementSound(){
@@ -18940,7 +19151,7 @@ function playFinalAchievementSound(){
   try{
     s.pause();
     s.currentTime=0;
-    s.volume=.24;
+    s.volume=.24*soundVolumeRatio();
     s.play().catch(err=>console.warn("[Succès FINAL] Son indisponible",err));
   }catch(e){}
 }
@@ -19961,13 +20172,14 @@ function applySettings(){
   $("#toggleTooltips").textContent=data.settings.tooltips?"Activées":"Désactivées";
   $("#toggleNotif").textContent=data.settings.notifications?"Activées":"Désactivées";
   if($("#toggleSound"))$("#toggleSound").textContent=data.settings.sound?"Activés":"Désactivés";
+  applySoundVolume();
   if(data.settings.sound===false && typeof passiveState!=="undefined"){
     passiveState.audios.forEach(audio=>{try{audio.pause();audio.currentTime=0}catch(e){}});
     passiveState.audios=[];
   }
   if($("#soundToggle")){
     $("#soundToggle").textContent=data.settings.sound?"🔊":"🔇";
-    $("#soundToggle").dataset.tooltip=data.settings.sound?"Son active : clique pour couper notifications, chrono et milestones.":"Son desactive : clique pour reactiver notifications, chrono et milestones.";
+    $("#soundToggle").dataset.tooltip=data.settings.sound?`Son activé (${Math.round(soundVolumeRatio()*100)}%) : clique pour régler le volume.`:"Son désactivé : clique pour régler ou réactiver.";
     $("#soundToggle").dataset.tooltipBase=$("#soundToggle").dataset.tooltip;
     $("#soundToggle").setAttribute("aria-label",data.settings.sound?"Son activé":"Son désactivé");
     $("#soundToggle").classList.toggle("muted",!data.settings.sound);
@@ -22785,6 +22997,7 @@ if($("#passwordResetConfirmForm"))$("#passwordResetConfirmForm").onsubmit=confir
 if($("#accountEmailForm"))$("#accountEmailForm").onsubmit=saveAccountEmail;
 if($("#accountPasswordForm"))$("#accountPasswordForm").onsubmit=saveAccountPassword;
 if($("#accountAvatarForm"))$("#accountAvatarForm").onsubmit=saveAccountAvatar;
+if($("#closeAccountRequest"))$("#closeAccountRequest").onclick=closeOwnAccount;
 $$("#accountSectionTabs [data-account-section-tab]").forEach(button=>{
   button.addEventListener("click",()=>setAccountProfileSection(button.dataset.accountSectionTab));
 });
@@ -22939,8 +23152,11 @@ $("#toggleHud").onclick=()=>{
   toast(data.settings.hudMode?"Mode HUD activé":"Mode HUD désactivé","info","click");
 };
 $("#toggleNotif").onclick=()=>{data.settings.notifications=!data.settings.notifications;applySettings();save()};
-$("#toggleSound").onclick=()=>{setGlobalSound(!data.settings.sound);playSound("click")};
-if($("#soundToggle"))$("#soundToggle").onclick=()=>{setGlobalSound(!data.settings.sound);playSound("click")};
+$("#toggleSound").onclick=()=>{openSoundSettings();playSound("click")};
+if($("#soundToggle"))$("#soundToggle").onclick=()=>{openSoundSettings();playSound("click")};
+if($("#soundVolumeRange"))$("#soundVolumeRange").oninput=e=>setGlobalSoundVolume(e.target.value);
+if($("#soundMuteButton"))$("#soundMuteButton").onclick=()=>{setGlobalSound(!data.settings.sound);renderSoundSettings();playSound("click")};
+if($("#soundTestButton"))$("#soundTestButton").onclick=()=>playSound("success");
 if($("#ainaDofus"))$("#ainaDofus").onclick=handleAinaDofusClick;
 bindSettingSelect("visualIntensitySelect","visualIntensity");
 bindSettingSelect("uiOpacitySelect","uiOpacity");
