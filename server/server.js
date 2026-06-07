@@ -50,6 +50,29 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_friendships_user_a ON friendships(user_a_id);
   CREATE INDEX IF NOT EXISTS idx_friendships_user_b ON friendships(user_b_id);
   CREATE INDEX IF NOT EXISTS idx_friendships_requester ON friendships(requester_id);
+  CREATE TABLE IF NOT EXISTS private_conversations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_a_id INTEGER NOT NULL,
+    user_b_id INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CHECK(user_a_id < user_b_id),
+    UNIQUE(user_a_id,user_b_id),
+    FOREIGN KEY(user_a_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(user_b_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  CREATE TABLE IF NOT EXISTS private_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    conversation_id INTEGER NOT NULL,
+    sender_id INTEGER NOT NULL,
+    body TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(conversation_id) REFERENCES private_conversations(id) ON DELETE CASCADE,
+    FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  CREATE INDEX IF NOT EXISTS idx_private_conversations_user_a ON private_conversations(user_a_id);
+  CREATE INDEX IF NOT EXISTS idx_private_conversations_user_b ON private_conversations(user_b_id);
+  CREATE INDEX IF NOT EXISTS idx_private_messages_conversation ON private_messages(conversation_id, created_at);
 `);
 
 const app = express();
@@ -457,6 +480,48 @@ function socialProfileMeta(viewer, target, preferences) {
   });
 }
 
+function getOrCreatePrivateConversation(idA, idB) {
+  const pair = friendshipPair(idA, idB);
+  let conversation = db.prepare("SELECT * FROM private_conversations WHERE user_a_id = ? AND user_b_id = ?").get(pair.userA, pair.userB);
+  if (!conversation) {
+    const info = db.prepare(`
+      INSERT INTO private_conversations(user_a_id,user_b_id)
+      VALUES(?,?)
+    `).run(pair.userA, pair.userB);
+    conversation = db.prepare("SELECT * FROM private_conversations WHERE id = ?").get(info.lastInsertRowid);
+  }
+  return conversation;
+}
+
+function canMessageUser(viewer, target) {
+  if (!viewer || !target || Number(viewer.id) === Number(target.id)) return false;
+  const friendship = getFriendshipBetween(viewer.id, target.id);
+  const preferences = parsePreferences(target.preferences);
+  return friendship?.status === "accepted" && !!preferences.allowPrivateMessages;
+}
+
+function conversationOtherUser(row, viewerId) {
+  const otherIsA = Number(row.user_a_id) !== Number(viewerId);
+  return {
+    pseudo: otherIsA ? row.user_a_pseudo : row.user_b_pseudo,
+    role: otherIsA ? row.user_a_role : row.user_b_role,
+    createdAt: otherIsA ? row.user_a_created_at : row.user_b_created_at
+  };
+}
+
+function publicMessage(row, viewerId) {
+  return {
+    id: row.id,
+    body: row.body,
+    createdAt: row.created_at,
+    isMine: Number(row.sender_id) === Number(viewerId),
+    sender: {
+      pseudo: row.sender_pseudo,
+      role: row.sender_role
+    }
+  };
+}
+
 function moderationLog({ targetId, actorId, type, reason, expiresAt = null }) {
   db.prepare(`
     INSERT INTO moderation_actions(target_user_id, actor_user_id, type, reason, expires_at)
@@ -808,6 +873,78 @@ app.delete("/api/social/friends/:pseudo", requireAuth, (req, res) => {
   const friendship = getFriendshipBetween(req.user.id, target.id);
   if (friendship) db.prepare("DELETE FROM friendships WHERE id = ?").run(friendship.id);
   res.json({ status: "none" });
+});
+
+app.get("/api/social/messages", requireAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT c.*, ua.pseudo AS user_a_pseudo, ua.role AS user_a_role, ua.created_at AS user_a_created_at,
+           ub.pseudo AS user_b_pseudo, ub.role AS user_b_role, ub.created_at AS user_b_created_at,
+           m.body AS last_body, m.created_at AS last_message_at, s.pseudo AS last_sender_pseudo
+    FROM private_conversations c
+    JOIN users ua ON ua.id = c.user_a_id
+    JOIN users ub ON ub.id = c.user_b_id
+    LEFT JOIN private_messages m ON m.id = (
+      SELECT id FROM private_messages
+      WHERE conversation_id = c.id
+      ORDER BY created_at DESC, id DESC
+      LIMIT 1
+    )
+    LEFT JOIN users s ON s.id = m.sender_id
+    WHERE c.user_a_id = ? OR c.user_b_id = ?
+    ORDER BY COALESCE(m.created_at,c.updated_at) DESC
+    LIMIT 50
+  `).all(req.user.id, req.user.id);
+  res.json({
+    conversations: rows.map((row) => ({
+      id: row.id,
+      other: conversationOtherUser(row, req.user.id),
+      updatedAt: row.updated_at,
+      lastMessageAt: row.last_message_at,
+      lastMessage: row.last_body ? {
+        body: row.last_body,
+        createdAt: row.last_message_at,
+        senderPseudo: row.last_sender_pseudo
+      } : null
+    }))
+  });
+});
+
+app.post("/api/social/messages/:pseudo", requireAuth, (req, res) => {
+  const target = getTargetUserByPseudo(req.params.pseudo);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canMessageUser(req.user, target)) return res.status(403).json({ error: "Vous devez être amis et les messages privés doivent être autorisés." });
+  const conversation = getOrCreatePrivateConversation(req.user.id, target.id);
+  const body = String(req.body.body || "").trim();
+  if (body.length < 1) return res.status(400).json({ error: "Message vide." });
+  if (body.length > 1000) return res.status(400).json({ error: "Message trop long." });
+  db.prepare(`
+    INSERT INTO private_messages(conversation_id,sender_id,body)
+    VALUES(?,?,?)
+  `).run(conversation.id, req.user.id, body);
+  db.prepare("UPDATE private_conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(conversation.id);
+  res.json({ conversationId: conversation.id });
+});
+
+app.get("/api/social/messages/:pseudo", requireAuth, (req, res) => {
+  const target = getTargetUserByPseudo(req.params.pseudo);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canMessageUser(req.user, target)) return res.status(403).json({ error: "Vous devez être amis pour consulter cette conversation." });
+  const conversation = getOrCreatePrivateConversation(req.user.id, target.id);
+  const rows = db.prepare(`
+    SELECT m.*, u.pseudo AS sender_pseudo, u.role AS sender_role
+    FROM private_messages m
+    JOIN users u ON u.id = m.sender_id
+    WHERE m.conversation_id = ?
+    ORDER BY m.created_at ASC, m.id ASC
+    LIMIT 100
+  `).all(conversation.id);
+  res.json({
+    conversation: {
+      id: conversation.id,
+      other: publicCommunityUser(target),
+      messages: rows.map((row) => publicMessage(row, req.user.id))
+    }
+  });
 });
 
 app.get("/api/moderation/users", requireAuth, requireRole("moderator"), (req, res) => {

@@ -3772,6 +3772,7 @@ body.no-anim .app.milestone-flash{
 #passwordResetModal.modal-bg,
 #accountProfileModal.modal-bg,
 #friendsModal.modal-bg,
+#messagesModal.modal-bg,
 #communityDirectoryModal.modal-bg,
 #communityProfileModal.modal-bg{
   background:rgba(15,18,24,.72);
@@ -3782,6 +3783,7 @@ body.no-anim .app.milestone-flash{
 #passwordResetModal .modal,
 #accountProfileModal .modal,
 #friendsModal .modal,
+#messagesModal .modal,
 #communityDirectoryModal .modal,
 #communityProfileModal .modal{
   width:min(560px,calc(100vw - 28px));
@@ -3799,6 +3801,7 @@ body.no-anim .app.milestone-flash{
 #passwordResetModal .modal-head,
 #accountProfileModal .modal-head,
 #friendsModal .modal-head,
+#messagesModal .modal-head,
 #communityDirectoryModal .modal-head,
 #communityProfileModal .modal-head{
   min-height:62px;
@@ -3812,6 +3815,7 @@ body.no-anim .app.milestone-flash{
 #passwordResetModal .modal-head h2,
 #accountProfileModal .modal-head h2,
 #friendsModal .modal-head h2,
+#messagesModal .modal-head h2,
 #communityDirectoryModal .modal-head h2,
 #communityProfileModal .modal-head h2{
   font-size:22px;
@@ -3823,6 +3827,7 @@ body.no-anim .app.milestone-flash{
 #passwordResetModal .modal-head p,
 #accountProfileModal .modal-head p,
 #friendsModal .modal-head p,
+#messagesModal .modal-head p,
 #communityDirectoryModal .modal-head p,
 #communityProfileModal .modal-head p{
   max-width:620px;
@@ -3835,6 +3840,7 @@ body.no-anim .app.milestone-flash{
 #passwordResetModal .modal-body,
 #accountProfileModal .modal-body,
 #friendsModal .modal-body,
+#messagesModal .modal-body,
 #communityDirectoryModal .modal-body,
 #communityProfileModal .modal-body{
   padding:18px;
@@ -3847,6 +3853,7 @@ body.no-anim .app.milestone-flash{
 #passwordResetModal .modal-foot,
 #accountProfileModal .modal-foot,
 #friendsModal .modal-foot,
+#messagesModal .modal-foot,
 #communityDirectoryModal .modal-foot,
 #communityProfileModal .modal-foot{
   min-height:0;
@@ -4213,6 +4220,130 @@ body.no-anim .app.milestone-flash{
   font-size:24px;
 }
 
+.messages-layout{
+  display:grid;
+  grid-template-columns:280px minmax(0,1fr);
+  gap:14px;
+  min-height:440px;
+}
+
+.messages-list,
+.messages-thread{
+  border:1px solid rgba(140,100,48,.22);
+  border-radius:16px;
+  background:rgba(255,255,255,.56);
+  overflow:hidden;
+}
+
+.messages-list{
+  display:grid;
+  align-content:start;
+}
+
+.message-conversation{
+  width:100%;
+  border:0;
+  border-bottom:1px solid rgba(140,100,48,.16);
+  padding:12px;
+  text-align:left;
+  background:transparent;
+  color:#2f1d10;
+  cursor:pointer;
+  font:inherit;
+}
+
+.message-conversation:hover,
+.message-conversation.active{
+  background:linear-gradient(135deg,rgba(255,247,214,.86),rgba(219,234,254,.58));
+}
+
+.message-conversation strong,
+.message-conversation small{
+  display:block;
+}
+
+.message-conversation small{
+  margin-top:4px;
+  color:#73522d;
+  font-weight:800;
+  line-height:1.35;
+}
+
+.messages-thread{
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+}
+
+.messages-thread-head{
+  padding:12px 14px;
+  border-bottom:1px solid rgba(140,100,48,.18);
+  background:linear-gradient(135deg,rgba(255,247,214,.78),rgba(255,255,255,.48));
+}
+
+.messages-thread-head strong,
+.messages-thread-head small{
+  display:block;
+}
+
+.messages-thread-head small{
+  color:#73522d;
+  font-weight:800;
+}
+
+.messages-feed{
+  display:grid;
+  align-content:start;
+  gap:8px;
+  padding:14px;
+  overflow:auto;
+  max-height:420px;
+}
+
+.message-bubble{
+  max-width:min(78%,520px);
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid rgba(140,100,48,.18);
+  background:rgba(255,255,255,.72);
+  color:#2f1d10;
+  font-weight:850;
+  line-height:1.35;
+}
+
+.message-bubble.mine{
+  justify-self:end;
+  background:linear-gradient(135deg,#2f6bea,#1d4ed8);
+  color:#fff;
+  border-color:rgba(37,99,235,.4);
+}
+
+.message-bubble small{
+  display:block;
+  margin-top:5px;
+  opacity:.78;
+  font-size:11px;
+}
+
+.message-compose{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  padding:12px;
+  border-top:1px solid rgba(140,100,48,.18);
+  background:rgba(255,255,255,.42);
+}
+
+.message-compose textarea{
+  min-height:44px;
+  max-height:120px;
+  resize:vertical;
+  border:1px solid rgba(140,100,48,.38);
+  border-radius:12px;
+  padding:10px 12px;
+  font:inherit;
+  font-weight:850;
+}
+
 .community-private-note{
   padding:14px;
   border:1px dashed rgba(140,100,48,.34);
@@ -4425,6 +4556,12 @@ body.no-anim .app.milestone-flash{
     flex-direction:column;
   }
   .friends-summary{
+    grid-template-columns:1fr;
+  }
+  .messages-layout{
+    grid-template-columns:1fr;
+  }
+  .message-compose{
     grid-template-columns:1fr;
   }
 }
@@ -10026,6 +10163,7 @@ body.no-anim .pykur-sparkle{
             <button class="btn btn-blue" id="previewCommunityProfile" type="button">Voir mon profil public</button>
             <button class="btn btn-gray" id="openCommunitySearch" type="button">Rechercher un membre</button>
             <button class="btn btn-blue" id="openFriendsPanel" type="button">Amis</button>
+            <button class="btn btn-green" id="openMessagesPanel" type="button">Messages</button>
             <button class="btn btn-orange" id="copyMyCommunityLink" type="button">Copier mon lien public</button>
           </div>
         </section>
@@ -10068,6 +10206,35 @@ body.no-anim .pykur-sparkle{
       <div id="friendsContent"></div>
     </div>
     <div class="modal-foot"><button class="btn btn-gray" data-close="friendsModal">Fermer</button></div>
+  </div>
+</div>
+
+<!-- MESSAGES PRIVES -->
+<div class="modal-bg" id="messagesModal">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2>Messages</h2>
+        <p>Échangez avec vos amis, simplement et sans temps réel pour le moment.</p>
+      </div>
+      <button class="btn btn-red modal-close" data-close="messagesModal">X</button>
+    </div>
+    <div class="modal-body">
+      <div class="messages-layout">
+        <div class="messages-list" id="messagesConversationList">
+          <div class="community-profile-empty">Chargement des conversations...</div>
+        </div>
+        <div class="messages-thread" id="messagesThread">
+          <div class="messages-thread-head"><strong>Conversation</strong><small>Sélectionnez un ami pour commencer.</small></div>
+          <div class="messages-feed" id="messagesFeed"><div class="community-profile-empty">Aucune conversation sélectionnée.</div></div>
+          <form class="message-compose" id="messageComposeForm">
+            <textarea id="messageComposeInput" maxlength="1000" placeholder="Écrire un message..." disabled></textarea>
+            <button class="btn btn-blue" type="submit" disabled>Envoyer</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-gray" data-close="messagesModal">Fermer</button></div>
   </div>
 </div>
 
@@ -10729,6 +10896,7 @@ const AUTH_TOKEN_KEY="pykur_auth_token";
 let authMode="login";
 let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null};
 const socialState={friends:0,incoming:0,outgoing:0,loaded:false};
+const messageState={activePseudo:null,conversations:[]};
 const cloudState={timer:null,syncing:false,pending:false,lastSyncAt:null,error:null,loading:false};
 let passwordResetToken="";
 
@@ -10804,10 +10972,11 @@ function authRender(){
   const user=authState.user;
   const adminButton=user.role==="admin" ? '<button class="btn btn-orange" id="authAdminPanel" type="button">Admin panel</button>' : "";
   const friendsBadge=socialState.incoming>0 ? `<span class="auth-friends-badge">${socialState.incoming}</span>` : "";
-  box.innerHTML='<button class="auth-user-chip account-open" id="accountProfileOpen" type="button" title="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-blue" id="authCommunitySearch" type="button">Membres</button><button class="btn btn-blue auth-friends-button" id="authFriendsPanel" type="button">Amis'+friendsBadge+'</button>'+adminButton+'<button class="btn btn-gray" id="authLogout" type="button">Déconnexion</button>';
+  box.innerHTML='<button class="auth-user-chip account-open" id="accountProfileOpen" type="button" title="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-blue" id="authCommunitySearch" type="button">Membres</button><button class="btn btn-blue auth-friends-button" id="authFriendsPanel" type="button">Amis'+friendsBadge+'</button><button class="btn btn-green" id="authMessagesPanel" type="button">Messages</button>'+adminButton+'<button class="btn btn-gray" id="authLogout" type="button">Déconnexion</button>';
   if($("#accountProfileOpen"))$("#accountProfileOpen").onclick=openAccountProfile;
   if($("#authCommunitySearch"))$("#authCommunitySearch").onclick=openCommunityDirectory;
   if($("#authFriendsPanel"))$("#authFriendsPanel").onclick=openFriendsPanel;
+  if($("#authMessagesPanel"))$("#authMessagesPanel").onclick=()=>openMessagesPanel();
   if($("#authLogout"))$("#authLogout").onclick=authLogout;
   if($("#authAdminPanel"))$("#authAdminPanel").onclick=()=>livingOpenAdmin();
   renderCloudStatus();
@@ -11055,9 +11224,9 @@ function renderCommunitySocialActions(container,pseudo,social={}){
     container.innerHTML=`<span class="community-profile-summary-item"><small>Profil</small>Votre compte</span>`;
     return;
   }
-  const disabledMessage=`<button class="btn btn-gray" type="button" disabled>Message bientôt</button>`;
+  const messageButton=`<button class="btn btn-green" type="button" data-social-message="${escapeHtml(pseudo||"")}">Message</button>`;
   if(social.status==="friends"){
-    container.innerHTML=`<button class="btn btn-green" type="button" disabled>Ami</button>${social.canMessage?disabledMessage:""}<button class="btn btn-red" type="button" data-social-action="remove">Retirer</button>`;
+    container.innerHTML=`<button class="btn btn-green" type="button" disabled>Ami</button>${social.canMessage?messageButton:""}<button class="btn btn-red" type="button" data-social-action="remove">Retirer</button>`;
   }else if(social.status==="pending_sent"){
     container.innerHTML=`<button class="btn btn-gray" type="button" disabled>Demande envoyée</button><button class="btn btn-red" type="button" data-social-action="remove">Annuler</button>`;
   }else if(social.status==="pending_received"){
@@ -11068,6 +11237,7 @@ function renderCommunitySocialActions(container,pseudo,social={}){
   container.querySelectorAll("[data-social-action]").forEach(button=>{
     button.addEventListener("click",()=>communitySocialAction(pseudo,button.dataset.socialAction));
   });
+  container.querySelector("[data-social-message]")?.addEventListener("click",()=>openMessagesPanel(pseudo));
 }
 
 async function communitySocialAction(pseudo,action){
@@ -11189,6 +11359,113 @@ function openFriendsPanel(){
   if(!authState.user)return authOpen("login");
   openModal("friendsModal");
   loadFriendsPanel();
+}
+
+function renderMessagesList(){
+  const list=$("#messagesConversationList");
+  if(!list)return;
+  if(!messageState.conversations.length){
+    list.innerHTML=`<div class="community-profile-empty">Aucune conversation pour le moment. Ouvrez un profil ami pour envoyer un premier message.</div>`;
+    return;
+  }
+  list.innerHTML=messageState.conversations.map(item=>{
+    const pseudo=item.other?.pseudo||"Utilisateur";
+    const preview=item.lastMessage?.body ? item.lastMessage.body : "Aucun message encore.";
+    return `
+      <button class="message-conversation ${messageState.activePseudo===pseudo?"active":""}" type="button" data-message-pseudo="${escapeHtml(pseudo)}">
+        <strong>${escapeHtml(pseudo)}</strong>
+        <small>${escapeHtml(preview.slice(0,90))}${preview.length>90?"...":""}</small>
+      </button>
+    `;
+  }).join("");
+  list.querySelectorAll("[data-message-pseudo]").forEach(button=>{
+    button.addEventListener("click",()=>loadMessageThread(button.dataset.messagePseudo));
+  });
+}
+
+function resetMessageCompose(disabled=true){
+  const input=$("#messageComposeInput");
+  const button=$("#messageComposeForm button[type='submit']");
+  if(input)input.disabled=disabled;
+  if(button)button.disabled=disabled;
+}
+
+function renderMessageThread(payload=null){
+  const head=$("#messagesThread .messages-thread-head");
+  const feed=$("#messagesFeed");
+  const conversation=payload?.conversation;
+  if(!head || !feed)return;
+  if(!conversation){
+    head.innerHTML=`<strong>Conversation</strong><small>Sélectionnez un ami pour commencer.</small>`;
+    feed.innerHTML=`<div class="community-profile-empty">Aucune conversation sélectionnée.</div>`;
+    resetMessageCompose(true);
+    return;
+  }
+  const pseudo=conversation.other?.pseudo||messageState.activePseudo||"Utilisateur";
+  head.innerHTML=`<strong>${escapeHtml(pseudo)}</strong><small>Messages privés entre amis.</small>`;
+  const messages=conversation.messages||[];
+  feed.innerHTML=messages.length ? messages.map(item=>`
+    <div class="message-bubble ${item.isMine?"mine":""}">
+      ${escapeHtml(item.body)}
+      <small>${escapeHtml(item.sender?.pseudo||"Utilisateur")} · ${formatCloudDateTime(item.createdAt)}</small>
+    </div>
+  `).join("") : `<div class="community-profile-empty">Aucun message dans cette conversation.</div>`;
+  feed.scrollTop=feed.scrollHeight;
+  resetMessageCompose(false);
+}
+
+async function loadMessagesList(){
+  const list=$("#messagesConversationList");
+  if(list)list.innerHTML=`<div class="community-profile-empty">Chargement des conversations...</div>`;
+  try{
+    const result=await authFetch("/social/messages");
+    messageState.conversations=result.conversations||[];
+    renderMessagesList();
+  }catch(error){
+    if(list)list.innerHTML=`<div class="community-profile-empty">${escapeHtml(error.message||"Messages indisponibles.")}</div>`;
+  }
+}
+
+async function loadMessageThread(pseudo){
+  const clean=(pseudo||"").trim();
+  if(!clean)return;
+  messageState.activePseudo=clean;
+  renderMessagesList();
+  const feed=$("#messagesFeed");
+  if(feed)feed.innerHTML=`<div class="community-profile-empty">Chargement de la conversation...</div>`;
+  resetMessageCompose(true);
+  try{
+    const result=await authFetch(`/social/messages/${encodeURIComponent(clean)}`);
+    renderMessageThread(result);
+  }catch(error){
+    if(feed)feed.innerHTML=`<div class="community-profile-empty">${escapeHtml(error.message||"Conversation indisponible.")}</div>`;
+  }
+}
+
+async function sendPrivateMessage(event){
+  event.preventDefault();
+  if(!authState.user)return authOpen("login");
+  const pseudo=messageState.activePseudo;
+  const input=$("#messageComposeInput");
+  const body=(input?.value||"").trim();
+  if(!pseudo || !body)return;
+  try{
+    await authFetch(`/social/messages/${encodeURIComponent(pseudo)}`,{method:"POST",body:JSON.stringify({body})});
+    if(input)input.value="";
+    await loadMessagesList();
+    await loadMessageThread(pseudo);
+  }catch(error){
+    toast(error.message||"Message impossible à envoyer.","error","error");
+  }
+}
+
+async function openMessagesPanel(pseudo=null){
+  if(!authState.user)return authOpen("login");
+  openModal("messagesModal");
+  await loadMessagesList();
+  const clean=(pseudo||messageState.activePseudo||"").trim();
+  if(clean)await loadMessageThread(clean);
+  else renderMessageThread(null);
 }
 
 async function openCommunityProfileByPseudo(pseudo,{updateUrl=false}={}){
@@ -20362,6 +20639,7 @@ if($("#accountPasswordForm"))$("#accountPasswordForm").onsubmit=saveAccountPassw
 if($("#previewCommunityProfile"))$("#previewCommunityProfile").onclick=openCommunityProfilePreview;
 if($("#openCommunitySearch"))$("#openCommunitySearch").onclick=openCommunityDirectory;
 if($("#openFriendsPanel"))$("#openFriendsPanel").onclick=openFriendsPanel;
+if($("#openMessagesPanel"))$("#openMessagesPanel").onclick=()=>openMessagesPanel();
 if($("#copyMyCommunityLink"))$("#copyMyCommunityLink").onclick=async()=>{
   if(!authState.user)return authOpen("login");
   if(!accountPreferences().publicProfile){
@@ -20379,6 +20657,7 @@ if($("#communitySearchForm"))$("#communitySearchForm").onsubmit=event=>{
   event.preventDefault();
   runCommunitySearch();
 };
+if($("#messageComposeForm"))$("#messageComposeForm").onsubmit=sendPrivateMessage;
 if($("#communitySearchInput"))$("#communitySearchInput").addEventListener("input",()=>{
   clearTimeout(communitySearchTimer);
   communitySearchTimer=setTimeout(runCommunitySearch,280);

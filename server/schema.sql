@@ -77,3 +77,29 @@ CREATE INDEX IF NOT EXISTS idx_email_verification_hash ON email_verification_tok
 CREATE INDEX IF NOT EXISTS idx_friendships_user_a ON friendships(user_a_id);
 CREATE INDEX IF NOT EXISTS idx_friendships_user_b ON friendships(user_b_id);
 CREATE INDEX IF NOT EXISTS idx_friendships_requester ON friendships(requester_id);
+
+CREATE TABLE IF NOT EXISTS private_conversations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_a_id INTEGER NOT NULL,
+  user_b_id INTEGER NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CHECK(user_a_id < user_b_id),
+  UNIQUE(user_a_id,user_b_id),
+  FOREIGN KEY(user_a_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY(user_b_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS private_messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  conversation_id INTEGER NOT NULL,
+  sender_id INTEGER NOT NULL,
+  body TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(conversation_id) REFERENCES private_conversations(id) ON DELETE CASCADE,
+  FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_private_conversations_user_a ON private_conversations(user_a_id);
+CREATE INDEX IF NOT EXISTS idx_private_conversations_user_b ON private_conversations(user_b_id);
+CREATE INDEX IF NOT EXISTS idx_private_messages_conversation ON private_messages(conversation_id, created_at);
