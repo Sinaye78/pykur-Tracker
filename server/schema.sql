@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'user' CHECK(role IN ('user','moderator','admin')),
   avatar_url TEXT,
+  first_login_announcement_at TEXT,
   preferences TEXT NOT NULL DEFAULT '{}',
   email_verified_at TEXT,
   is_banned INTEGER NOT NULL DEFAULT 0,
@@ -96,6 +97,8 @@ CREATE TABLE IF NOT EXISTS private_messages (
   conversation_id INTEGER NOT NULL,
   sender_id INTEGER NOT NULL,
   body TEXT NOT NULL,
+  edited_at TEXT,
+  deleted_at TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(conversation_id) REFERENCES private_conversations(id) ON DELETE CASCADE,
   FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE
@@ -111,9 +114,48 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   type TEXT NOT NULL DEFAULT 'message' CHECK(type IN ('message','achievement','pykur')),
   body TEXT NOT NULL,
   meta TEXT,
+  edited_at TEXT,
   deleted_at TEXT,
+  deleted_by_user_id INTEGER,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY(deleted_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_chat_messages_created ON chat_messages(created_at);
+
+CREATE TABLE IF NOT EXISTS ignored_users (
+  user_id INTEGER NOT NULL,
+  ignored_user_id INTEGER NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(user_id, ignored_user_id),
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY(ignored_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS message_reports (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  reporter_user_id INTEGER NOT NULL,
+  target_user_id INTEGER,
+  chat_message_id INTEGER,
+  private_message_id INTEGER,
+  reason TEXT,
+  status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','resolved')),
+  resolved_by_user_id INTEGER,
+  resolved_at TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(reporter_user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY(target_user_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY(chat_message_id) REFERENCES chat_messages(id) ON DELETE SET NULL,
+  FOREIGN KEY(private_message_id) REFERENCES private_messages(id) ON DELETE SET NULL,
+  FOREIGN KEY(resolved_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS chat_settings (
+  id INTEGER PRIMARY KEY CHECK(id = 1),
+  locked INTEGER NOT NULL DEFAULT 0,
+  slow_mode_seconds INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_reports_status ON message_reports(status, created_at);

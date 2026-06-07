@@ -31,6 +31,7 @@ function ensureColumn(table, column, definition) {
 ensureColumn("users", "preferences", "TEXT NOT NULL DEFAULT '{}'");
 ensureColumn("users", "email_verified_at", "TEXT");
 ensureColumn("users", "avatar_url", "TEXT");
+ensureColumn("users", "first_login_announcement_at", "TEXT");
 db.prepare("UPDATE users SET email_verified_at = COALESCE(email_verified_at, created_at) WHERE email_verified_at IS NULL AND last_login_at IS NOT NULL").run();
 
 db.exec(`
@@ -67,6 +68,8 @@ db.exec(`
     conversation_id INTEGER NOT NULL,
     sender_id INTEGER NOT NULL,
     body TEXT NOT NULL,
+    edited_at TEXT,
+    deleted_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(conversation_id) REFERENCES private_conversations(id) ON DELETE CASCADE,
     FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE
@@ -80,12 +83,52 @@ db.exec(`
     type TEXT NOT NULL DEFAULT 'message' CHECK(type IN ('message','achievement','pykur')),
     body TEXT NOT NULL,
     meta TEXT,
+    edited_at TEXT,
     deleted_at TEXT,
+    deleted_by_user_id INTEGER,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY(deleted_by_user_id) REFERENCES users(id) ON DELETE SET NULL
   );
   CREATE INDEX IF NOT EXISTS idx_chat_messages_created ON chat_messages(created_at);
+  CREATE TABLE IF NOT EXISTS ignored_users (
+    user_id INTEGER NOT NULL,
+    ignored_user_id INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(user_id, ignored_user_id),
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(ignored_user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  CREATE TABLE IF NOT EXISTS message_reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    reporter_user_id INTEGER NOT NULL,
+    target_user_id INTEGER,
+    chat_message_id INTEGER,
+    private_message_id INTEGER,
+    reason TEXT,
+    status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','resolved')),
+    resolved_by_user_id INTEGER,
+    resolved_at TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(reporter_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(target_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY(chat_message_id) REFERENCES chat_messages(id) ON DELETE SET NULL,
+    FOREIGN KEY(private_message_id) REFERENCES private_messages(id) ON DELETE SET NULL,
+    FOREIGN KEY(resolved_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+  );
+  CREATE TABLE IF NOT EXISTS chat_settings (
+    id INTEGER PRIMARY KEY CHECK(id = 1),
+    locked INTEGER NOT NULL DEFAULT 0,
+    slow_mode_seconds INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_reports_status ON message_reports(status, created_at);
 `);
+ensureColumn("private_messages", "edited_at", "TEXT");
+ensureColumn("private_messages", "deleted_at", "TEXT");
+ensureColumn("chat_messages", "edited_at", "TEXT");
+ensureColumn("chat_messages", "deleted_by_user_id", "INTEGER");
+db.prepare("INSERT OR IGNORE INTO chat_settings(id,locked,slow_mode_seconds) VALUES(1,0,0)").run();
 
 const app = express();
 app.set("trust proxy", 1);
@@ -101,6 +144,9 @@ const DEFAULT_ACCOUNT_PREFERENCES = {
   hideDetailedStats: false,
   hideGallery: false,
   hideSecretAchievements: true,
+  hideNormalAchievements: false,
+  shareAchievements: true,
+  shareGalleryMoments: true,
   showOnlyMainProfile: false,
   showSecondaryProfiles: false,
   allowPrivateMessages: true
@@ -122,6 +168,9 @@ function cleanPreferences(value) {
     hideDetailedStats: !!input.hideDetailedStats,
     hideGallery: !!input.hideGallery,
     hideSecretAchievements: input.hideSecretAchievements !== false,
+    hideNormalAchievements: !!input.hideNormalAchievements,
+    shareAchievements: input.shareAchievements !== false,
+    shareGalleryMoments: input.shareGalleryMoments !== false,
     showSecondaryProfiles: !!input.showSecondaryProfiles,
     showOnlyMainProfile: !input.showSecondaryProfiles,
     allowPrivateMessages: input.allowPrivateMessages !== false
@@ -287,6 +336,7 @@ function buildCommunityProfile(user, savePayload) {
   const unlockedAchievements = Object.entries(achievementSource?.unlocked || {})
     .filter(([, item]) => item)
     .filter(([id]) => !preferences.hideSecretAchievements || !PUBLIC_SECRET_ACHIEVEMENT_IDS.has(id))
+    .filter(([id]) => !preferences.hideNormalAchievements || PUBLIC_SECRET_ACHIEVEMENT_IDS.has(id))
     .map(([id, item]) => ({
       id,
       date: item?.date || null
@@ -307,6 +357,7 @@ function buildCommunityProfile(user, savePayload) {
       hideDetailedStats: !!preferences.hideDetailedStats,
       hideGallery: !!preferences.hideGallery,
       hideSecretAchievements: !!preferences.hideSecretAchievements,
+      hideNormalAchievements: !!preferences.hideNormalAchievements,
       allowPrivateMessages: !!preferences.allowPrivateMessages
     },
     profiles: visibleProfiles,
@@ -433,9 +484,22 @@ function cleanIdentifier(value) {
 function cleanAvatarUrl(value) {
   const text = String(value || "").trim();
   if (!text) return "";
-  if (text.length > 500) throw new Error("URL de photo trop longue.");
+  if (text.length > 650000) throw new Error("Image trop lourde. Utilisez une image de moins de 450 Ko.");
   if (/^https?:\/\/[^\s]+$/i.test(text) || /^data:image\/(png|jpe?g|webp);base64,[a-z0-9+/=]+$/i.test(text)) return text;
   throw new Error("URL de photo invalide.");
+}
+
+function chatSettings() {
+  return db.prepare("SELECT locked, slow_mode_seconds AS slowModeSeconds, updated_at AS updatedAt FROM chat_settings WHERE id = 1").get() || { locked: 0, slowModeSeconds: 0 };
+}
+
+function announceFirstLogin(user) {
+  if (!user || user.first_login_announcement_at) return;
+  db.prepare(`
+    INSERT INTO chat_messages(user_id,type,body,meta)
+    VALUES(?,?,?,?)
+  `).run(user.id, "message", `${user.pseudo} vient de rejoindre Familier Tracker.`, JSON.stringify({ system: "first_login" }));
+  db.prepare("UPDATE users SET first_login_announcement_at = CURRENT_TIMESTAMP WHERE id = ?").run(user.id);
 }
 
 function isValidPseudo(value) {
@@ -573,6 +637,7 @@ function publicMessage(row, viewerId) {
   return {
     id: row.id,
     body: row.body,
+    editedAt: row.edited_at,
     createdAt: row.created_at,
     isMine: Number(row.sender_id) === Number(viewerId),
     sender: {
@@ -589,6 +654,7 @@ function publicChatMessage(row, viewerId) {
     type: row.type || "message",
     body: row.body,
     meta: safeParseJson(row.meta, {}),
+    editedAt: row.edited_at,
     createdAt: row.created_at,
     isMine: Number(row.user_id) === Number(viewerId),
     sender: row.sender_pseudo ? {
@@ -784,6 +850,7 @@ app.post("/api/auth/verify-email/confirm", passwordResetLimiter, (req, res) => {
   });
   transaction();
   const user = getUserById(row.user_id);
+  announceFirstLogin(user);
   res.json({ token: signUser(user), user: publicUser(user) });
 });
 
@@ -802,6 +869,7 @@ app.post("/api/auth/login", async (req, res) => {
   }
   db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?").run(user.id);
   const refreshed = getUserById(user.id);
+  announceFirstLogin(refreshed);
   res.json({ token: signUser(refreshed), user: publicUser(refreshed) });
 });
 
@@ -966,11 +1034,21 @@ app.get("/api/social/chat", requireAuth, (req, res) => {
   db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.user.id);
   const limit = Math.max(20, Math.min(120, Number(req.query.limit) || 80));
   const rows = db.prepare(`
-    ${chatMessageSelect()}
+    ${chatMessageSelect(`m.deleted_at IS NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM ignored_users i
+        WHERE i.user_id = ${Number(req.user.id)} AND i.ignored_user_id = m.user_id
+      )`)}
     ORDER BY m.created_at DESC, m.id DESC
     LIMIT ?
   `).all(limit).reverse();
-  res.json({ messages: rows.map((row) => publicChatMessage(row, req.user.id)) });
+  const ignored = db.prepare(`
+    SELECT u.pseudo FROM ignored_users i
+    JOIN users u ON u.id = i.ignored_user_id
+    WHERE i.user_id = ?
+    ORDER BY u.pseudo ASC
+  `).all(req.user.id).map((row) => row.pseudo);
+  res.json({ messages: rows.map((row) => publicChatMessage(row, req.user.id)), settings: chatSettings(), ignored });
 });
 
 app.post("/api/social/chat", requireAuth, (req, res) => {
@@ -981,6 +1059,17 @@ app.post("/api/social/chat", requireAuth, (req, res) => {
   const type = ["message", "achievement", "pykur"].includes(req.body.type) ? req.body.type : "message";
   const body = String(req.body.body || "").trim();
   const meta = req.body.meta && typeof req.body.meta === "object" ? req.body.meta : {};
+  const settings = chatSettings();
+  if (type === "message" && settings.locked && !["moderator", "admin"].includes(req.user.role)) {
+    return res.status(403).json({ error: "La chatbox est temporairement fermee par l'equipe de moderation." });
+  }
+  if (type === "message" && Number(settings.slowModeSeconds) > 0 && !["moderator", "admin"].includes(req.user.role)) {
+    const last = db.prepare("SELECT created_at FROM chat_messages WHERE user_id = ? AND type = 'message' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1").get(req.user.id);
+    if (last) {
+      const elapsed = (Date.now() - new Date(String(last.created_at).replace(" ", "T") + "Z").getTime()) / 1000;
+      if (elapsed < Number(settings.slowModeSeconds)) return res.status(429).json({ error: `Mode lent actif. Attendez encore ${Math.ceil(Number(settings.slowModeSeconds) - elapsed)}s.` });
+    }
+  }
   if (body.length < 1) return res.status(400).json({ error: "Message vide." });
   if (body.length > 500) return res.status(400).json({ error: "Message trop long." });
   const result = db.prepare(`
@@ -991,10 +1080,54 @@ app.post("/api/social/chat", requireAuth, (req, res) => {
   res.json({ message: publicChatMessage(row, req.user.id) });
 });
 
-app.delete("/api/social/chat/:id", requireAuth, requireRole("moderator"), (req, res) => {
+app.patch("/api/social/chat/:id", requireAuth, (req, res) => {
+  const id = Number(req.params.id);
+  const body = String(req.body.body || "").trim();
+  if (!Number.isFinite(id)) return res.status(400).json({ error: "Message invalide." });
+  if (body.length < 1) return res.status(400).json({ error: "Message vide." });
+  if (body.length > 500) return res.status(400).json({ error: "Message trop long." });
+  const row = db.prepare("SELECT * FROM chat_messages WHERE id = ? AND deleted_at IS NULL").get(id);
+  if (!row) return res.status(404).json({ error: "Message introuvable." });
+  if (Number(row.user_id) !== Number(req.user.id) && !["moderator", "admin"].includes(req.user.role)) return res.status(403).json({ error: "Modification non autorisee." });
+  db.prepare("UPDATE chat_messages SET body = ?, edited_at = CURRENT_TIMESTAMP WHERE id = ?").run(body, id);
+  const updated = db.prepare(`${chatMessageSelect("m.id = ?")}`).get(id);
+  res.json({ message: publicChatMessage(updated, req.user.id) });
+});
+
+app.delete("/api/social/chat/:id", requireAuth, (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: "Message invalide." });
-  db.prepare("UPDATE chat_messages SET deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND deleted_at IS NULL").run(id);
+  const row = db.prepare("SELECT * FROM chat_messages WHERE id = ? AND deleted_at IS NULL").get(id);
+  if (!row) return res.status(404).json({ error: "Message introuvable." });
+  if (Number(row.user_id) !== Number(req.user.id) && !["moderator", "admin"].includes(req.user.role)) return res.status(403).json({ error: "Suppression non autorisee." });
+  db.prepare("UPDATE chat_messages SET deleted_at = CURRENT_TIMESTAMP, deleted_by_user_id = ? WHERE id = ?").run(req.user.id, id);
+  res.json({ ok: true });
+});
+
+app.post("/api/social/chat/:id/report", requireAuth, (req, res) => {
+  const id = Number(req.params.id);
+  const reason = String(req.body.reason || "").trim().slice(0, 300);
+  const row = db.prepare("SELECT * FROM chat_messages WHERE id = ? AND deleted_at IS NULL").get(id);
+  if (!row) return res.status(404).json({ error: "Message introuvable." });
+  if (Number(row.user_id) === Number(req.user.id)) return res.status(400).json({ error: "Impossible de signaler votre propre message." });
+  db.prepare(`
+    INSERT INTO message_reports(reporter_user_id,target_user_id,chat_message_id,reason)
+    VALUES(?,?,?,?)
+  `).run(req.user.id, row.user_id, id, reason || "Signalement chatbox");
+  res.json({ ok: true });
+});
+
+app.post("/api/social/ignore/:pseudo", requireAuth, (req, res) => {
+  const target = getTargetUserByPseudo(req.params.pseudo);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (Number(target.id) === Number(req.user.id)) return res.status(400).json({ error: "Impossible de vous ignorer vous-meme." });
+  db.prepare("INSERT OR IGNORE INTO ignored_users(user_id,ignored_user_id) VALUES(?,?)").run(req.user.id, target.id);
+  res.json({ ok: true });
+});
+
+app.delete("/api/social/ignore/:pseudo", requireAuth, (req, res) => {
+  const target = db.prepare("SELECT * FROM users WHERE lower(pseudo) = lower(?)").get(cleanPseudo(req.params.pseudo));
+  if (target) db.prepare("DELETE FROM ignored_users WHERE user_id = ? AND ignored_user_id = ?").run(req.user.id, target.id);
   res.json({ ok: true });
 });
 
@@ -1133,6 +1266,53 @@ app.post("/api/social/messages/:pseudo", requireAuth, (req, res) => {
   res.json({ conversationId: conversation.id });
 });
 
+app.patch("/api/social/messages/:pseudo/:id", requireAuth, (req, res) => {
+  const target = getTargetUserByPseudo(req.params.pseudo);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canMessageUser(req.user, target)) return res.status(403).json({ error: "Vous devez etre amis pour modifier cette conversation." });
+  const conversation = getOrCreatePrivateConversation(req.user.id, target.id);
+  const id = Number(req.params.id);
+  const body = String(req.body.body || "").trim();
+  if (!Number.isFinite(id)) return res.status(400).json({ error: "Message invalide." });
+  if (body.length < 1) return res.status(400).json({ error: "Message vide." });
+  if (body.length > 1000) return res.status(400).json({ error: "Message trop long." });
+  const row = db.prepare("SELECT * FROM private_messages WHERE id = ? AND conversation_id = ? AND deleted_at IS NULL").get(id, conversation.id);
+  if (!row) return res.status(404).json({ error: "Message introuvable." });
+  if (Number(row.sender_id) !== Number(req.user.id)) return res.status(403).json({ error: "Modification non autorisee." });
+  db.prepare("UPDATE private_messages SET body = ?, edited_at = CURRENT_TIMESTAMP WHERE id = ?").run(body, id);
+  res.json({ ok: true });
+});
+
+app.delete("/api/social/messages/:pseudo/:id", requireAuth, (req, res) => {
+  const target = getTargetUserByPseudo(req.params.pseudo);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canMessageUser(req.user, target)) return res.status(403).json({ error: "Vous devez etre amis pour modifier cette conversation." });
+  const conversation = getOrCreatePrivateConversation(req.user.id, target.id);
+  const id = Number(req.params.id);
+  const row = db.prepare("SELECT * FROM private_messages WHERE id = ? AND conversation_id = ? AND deleted_at IS NULL").get(id, conversation.id);
+  if (!row) return res.status(404).json({ error: "Message introuvable." });
+  if (Number(row.sender_id) !== Number(req.user.id)) return res.status(403).json({ error: "Suppression non autorisee." });
+  db.prepare("UPDATE private_messages SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?").run(id);
+  res.json({ ok: true });
+});
+
+app.post("/api/social/messages/:pseudo/:id/report", requireAuth, (req, res) => {
+  const target = getTargetUserByPseudo(req.params.pseudo);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canMessageUser(req.user, target)) return res.status(403).json({ error: "Vous devez etre amis pour signaler cette conversation." });
+  const conversation = getOrCreatePrivateConversation(req.user.id, target.id);
+  const id = Number(req.params.id);
+  const reason = String(req.body.reason || "").trim().slice(0, 300);
+  const row = db.prepare("SELECT * FROM private_messages WHERE id = ? AND conversation_id = ? AND deleted_at IS NULL").get(id, conversation.id);
+  if (!row) return res.status(404).json({ error: "Message introuvable." });
+  if (Number(row.sender_id) === Number(req.user.id)) return res.status(400).json({ error: "Impossible de signaler votre propre message." });
+  db.prepare(`
+    INSERT INTO message_reports(reporter_user_id,target_user_id,private_message_id,reason)
+    VALUES(?,?,?,?)
+  `).run(req.user.id, row.sender_id, id, reason || "Signalement message prive");
+  res.json({ ok: true });
+});
+
 app.get("/api/social/messages/:pseudo", requireAuth, (req, res) => {
   const target = getTargetUserByPseudo(req.params.pseudo);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
@@ -1142,7 +1322,7 @@ app.get("/api/social/messages/:pseudo", requireAuth, (req, res) => {
     SELECT m.*, u.pseudo AS sender_pseudo, u.role AS sender_role
     FROM private_messages m
     JOIN users u ON u.id = m.sender_id
-    WHERE m.conversation_id = ?
+    WHERE m.conversation_id = ? AND m.deleted_at IS NULL
     ORDER BY m.created_at ASC, m.id ASC
     LIMIT 100
   `).all(conversation.id);
@@ -1191,7 +1371,43 @@ app.get("/api/moderation/overview", requireAuth, requireRole("moderator"), (req,
     ORDER BY role DESC, pseudo ASC
     LIMIT 100
   `).all().map((user) => moderationUserView(user, req.user));
-  res.json({ banned, muted, moderators });
+  const reports = db.prepare(`
+    SELECT r.*, reporter.pseudo AS reporter_pseudo, reporter.role AS reporter_role,
+           target.pseudo AS target_pseudo, target.role AS target_role,
+           cm.body AS chat_body, pm.body AS private_body
+    FROM message_reports r
+    JOIN users reporter ON reporter.id = r.reporter_user_id
+    LEFT JOIN users target ON target.id = r.target_user_id
+    LEFT JOIN chat_messages cm ON cm.id = r.chat_message_id
+    LEFT JOIN private_messages pm ON pm.id = r.private_message_id
+    WHERE r.status = 'open'
+    ORDER BY r.created_at DESC
+    LIMIT 100
+  `).all().map((row) => ({
+    id: row.id,
+    reason: row.reason,
+    status: row.status,
+    createdAt: row.created_at,
+    type: row.chat_message_id ? "chatbox" : "message prive",
+    body: row.chat_body || row.private_body || "",
+    reporter: { pseudo: row.reporter_pseudo, role: row.reporter_role },
+    target: row.target_pseudo ? { pseudo: row.target_pseudo, role: row.target_role } : null
+  }));
+  res.json({ banned, muted, moderators, reports, chatSettings: chatSettings() });
+});
+
+app.put("/api/moderation/chat-settings", requireAuth, requireRole("moderator"), (req, res) => {
+  const locked = req.body.locked ? 1 : 0;
+  const slow = Math.max(0, Math.min(300, Number(req.body.slowModeSeconds) || 0));
+  db.prepare("UPDATE chat_settings SET locked = ?, slow_mode_seconds = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1").run(locked, slow);
+  res.json({ settings: chatSettings() });
+});
+
+app.post("/api/moderation/reports/:id/resolve", requireAuth, requireRole("moderator"), (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: "Signalement invalide." });
+  db.prepare("UPDATE message_reports SET status = 'resolved', resolved_by_user_id = ?, resolved_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.user.id, id);
+  res.json({ ok: true });
 });
 
 app.get("/api/moderation/users/:pseudo", requireAuth, requireRole("moderator"), (req, res) => {

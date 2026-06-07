@@ -3563,6 +3563,29 @@ body.no-anim .app.milestone-flash{
   box-shadow:0 16px 38px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.18);
   backdrop-filter:blur(12px) saturate(1.15);
 }
+.auth-widget{
+  position:relative;
+}
+.auth-menu-panel{
+  position:absolute;
+  top:calc(100% + 8px);
+  right:0;
+  display:none;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  width:250px;
+  padding:10px;
+  border:1px solid rgba(255,255,255,.24);
+  border-radius:16px;
+  background:linear-gradient(135deg,rgba(31,23,18,.95),rgba(74,42,16,.92));
+  box-shadow:0 18px 42px rgba(0,0,0,.32);
+}
+.auth-widget.menu-open .auth-menu-panel{
+  display:grid;
+}
+.auth-menu-panel .btn{
+  width:100%!important;
+}
 .auth-user-chip{
   display:flex;
   flex-direction:column;
@@ -3626,7 +3649,7 @@ body.no-anim .app.milestone-flash{
     top:18px;
     right:18px;
     z-index:120;
-    max-width:min(480px,calc(100vw - 36px));
+    max-width:min(330px,calc(100vw - 36px));
     justify-content:flex-end;
   }
   .auth-user-chip{
@@ -4448,9 +4471,9 @@ body.no-anim .app.milestone-flash{
 
 .chatbox-layout{
   display:grid;
-  grid-template-columns:minmax(0,1fr) 220px;
+  grid-template-columns:minmax(0,1fr) 260px;
   gap:14px;
-  min-height:520px;
+  min-height:640px;
 }
 
 .chatbox-main,
@@ -4472,7 +4495,26 @@ body.no-anim .app.milestone-flash{
   gap:10px;
   padding:14px;
   overflow:auto;
-  max-height:560px;
+  max-height:680px;
+}
+
+.chatbox-tools{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  padding:10px 12px;
+  border-bottom:1px solid rgba(140,100,48,.18);
+  background:rgba(255,255,255,.42);
+}
+
+.chatbox-tools label{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:#5a3c1d;
+  font-size:12px;
+  font-weight:900;
 }
 
 .chat-message{
@@ -4511,6 +4553,21 @@ body.no-anim .app.milestone-flash{
   font-weight:800;
 }
 
+.chat-message-actions,
+.message-actions{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.chat-message-actions .btn,
+.message-actions .btn{
+  min-height:28px!important;
+  padding:0 8px!important;
+  font-size:11px!important;
+}
+
 .chatbox-compose{
   display:grid;
   grid-template-columns:minmax(0,1fr) auto;
@@ -4539,6 +4596,22 @@ body.no-anim .app.milestone-flash{
 .chatbox-online-list{
   display:grid;
   gap:8px;
+}
+
+.privacy-group{
+  display:grid;
+  gap:9px;
+  padding:10px;
+  border:1px solid rgba(140,100,48,.18);
+  border-radius:14px;
+  background:rgba(255,255,255,.42);
+}
+
+.privacy-group h4{
+  margin:0;
+  color:#4b3217;
+  font-size:13px;
+  text-transform:uppercase;
 }
 
 .online-user-row{
@@ -4625,6 +4698,16 @@ body.no-anim .app.milestone-flash{
   border:1px solid rgba(140,100,48,.28);
   border-radius:16px;
   background:linear-gradient(135deg,rgba(255,252,244,.96),rgba(242,221,174,.78));
+}
+
+.community-profile-hero.role-moderator{
+  border-color:rgba(194,65,12,.34);
+  background:linear-gradient(135deg,rgba(255,247,237,.96),rgba(254,215,170,.82));
+}
+
+.community-profile-hero.role-admin{
+  border-color:rgba(185,28,28,.36);
+  background:linear-gradient(135deg,rgba(254,242,242,.97),rgba(251,191,36,.45));
 }
 
 .community-profile-hero h3{
@@ -4768,7 +4851,7 @@ body.no-anim .app.milestone-flash{
 }
 
 #chatboxModal .modal{
-  width:min(980px,calc(100vw - 28px));
+  width:min(1180px,calc(100vw - 28px));
 }
 
 .moderation-panel{
@@ -10883,6 +10966,7 @@ body.no-anim .pykur-sparkle{
           <form class="account-form account-avatar-form" id="accountAvatarForm">
             <span class="account-avatar-preview" id="accountAvatarPreview" aria-hidden="true"></span>
             <input id="accountAvatarInput" autocomplete="off" placeholder="URL d'image https://...">
+            <input id="accountAvatarFile" type="file" accept="image/png,image/jpeg,image/webp">
             <button class="btn btn-blue" type="submit">Enregistrer la photo</button>
           </form>
         </section>
@@ -10970,6 +11054,11 @@ body.no-anim .pykur-sparkle{
     <div class="modal-body">
       <div class="chatbox-layout">
         <section class="chatbox-main">
+          <div class="chatbox-tools">
+            <label><input type="checkbox" id="chatHideShares"> Masquer les partages</label>
+            <label><input type="checkbox" id="chatHideText"> Masquer le texte</label>
+            <span id="chatboxStateLabel" class="member-presence offline">Chat ouvert</span>
+          </div>
           <div class="chatbox-feed" id="chatboxFeed">
             <div class="community-profile-empty">Chargement du chat...</div>
           </div>
@@ -11686,8 +11775,8 @@ const AUTH_TOKEN_KEY="pykur_auth_token";
 let authMode="login";
 let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null};
 const socialState={friends:0,incoming:0,outgoing:0,loaded:false};
-const messageState={activePseudo:null,conversations:[]};
-const chatState={messages:[],online:[],timer:null};
+const messageState={activePseudo:null,conversations:[],unread:0,lastSeenAt:localStorage.getItem("pykur_messages_seen_at")||"",timer:null,lastNotifiedAt:localStorage.getItem("pykur_messages_notified_at")||""};
+const chatState={messages:[],online:[],ignored:[],settings:{locked:0,slowModeSeconds:0},lastPingSeenAt:localStorage.getItem("pykur_chat_ping_seen_at")||"",timer:null,hideShares:false,hideText:false};
 const cloudState={timer:null,syncing:false,pending:false,lastSyncAt:null,error:null,loading:false};
 let passwordResetToken="";
 
@@ -11705,13 +11794,16 @@ function authRoleLabel(role){
 }
 
 const ACCOUNT_PRIVACY_OPTIONS=[
-  {key:"publicProfile",label:"Profil public",description:"Autoriser l'affichage d'une page profil communautaire."},
-  {key:"showSecondaryProfiles",label:"Afficher mes profils secondaires",description:"Permet aux autres membres de consulter vos autres profils Pykur."},
-  {key:"hidePykurProfileNames",label:"Masquer les noms de profils Pykur",description:"Remplace les noms de profils par des intitulés neutres dans les vues publiques."},
-  {key:"hideDetailedStats",label:"Masquer les statistiques détaillées",description:"Affiche seulement les grandes lignes de progression."},
-  {key:"hideGallery",label:"Masquer la galerie publique",description:"Ne partage pas vos anciens Pykurs dans le futur profil public."},
-  {key:"hideSecretAchievements",label:"Masquer les succès secrets",description:"Évite de révéler les succès et easter eggs cachés."},
-  {key:"allowPrivateMessages",label:"Autoriser les messages privés",description:"Prépare la messagerie communautaire de la v1.5."}
+  {group:"Visibilité",key:"publicProfile",label:"Profil public",description:"Autoriser l'affichage d'une page profil communautaire."},
+  {group:"Visibilité",key:"showSecondaryProfiles",label:"Afficher mes profils secondaires",description:"Permet aux autres membres de consulter vos autres profils Pykur."},
+  {group:"Visibilité",key:"hidePykurProfileNames",label:"Masquer les noms de profils Pykur",description:"Remplace les noms de profils par des intitulés neutres dans les vues publiques."},
+  {group:"Visibilité",key:"hideDetailedStats",label:"Masquer les statistiques détaillées",description:"Affiche seulement les grandes lignes de progression."},
+  {group:"Galerie",key:"hideGallery",label:"Masquer la galerie publique",description:"Ne partage pas vos anciens Pykurs sur le profil public."},
+  {group:"Succès",key:"hideSecretAchievements",label:"Masquer les succès secrets",description:"Évite de révéler les succès et easter eggs cachés."},
+  {group:"Succès",key:"hideNormalAchievements",label:"Masquer les succès normaux",description:"Cache aussi les succès classiques sur le profil public."},
+  {group:"Partages automatiques",key:"shareAchievements",label:"Partager mes succès dans le chat",description:"Annonce automatiquement les succès débloqués dans la chatbox."},
+  {group:"Partages automatiques",key:"shareGalleryMoments",label:"Partager mes Pykurs terminés",description:"Annonce automatiquement les Pykurs archivés dans la chatbox."},
+  {group:"Messagerie",key:"allowPrivateMessages",label:"Autoriser les messages privés",description:"Permet aux amis de vous envoyer des messages privés."}
 ];
 
 function accountPreferences(){
@@ -11761,10 +11853,11 @@ function authRender(){
     return;
   }
   const user=authState.user;
-  const adminButton=user.role==="admin" ? '<button class="btn btn-orange auth-icon-btn tooltip" id="authAdminPanel" type="button" aria-label="Admin panel" data-tooltip="Ouvrir l’admin panel">⚙</button>' : "";
-  const moderationButton=["moderator","admin"].includes(user.role) ? '<button class="btn btn-orange auth-icon-btn tooltip" id="authModerationOverview" type="button" aria-label="Modération" data-tooltip="Tableau de modération">🛡</button>' : "";
+  const adminButton=user.role==="admin" ? '<button class="btn btn-orange tooltip" id="authAdminPanel" type="button" data-tooltip="Ouvrir l’admin panel">Admin</button>' : "";
+  const moderationButton=["moderator","admin"].includes(user.role) ? '<button class="btn btn-orange tooltip" id="authModerationOverview" type="button" data-tooltip="Tableau de modération">Modération</button>' : "";
   const friendsBadge=socialState.incoming>0 ? `<span class="auth-friends-badge">${socialState.incoming}</span>` : "";
-  box.innerHTML='<button class="auth-user-chip account-open tooltip" id="accountProfileOpen" type="button" data-tooltip="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-blue auth-icon-btn tooltip" id="authCommunitySearch" type="button" aria-label="Membres" data-tooltip="Rechercher un membre">👥</button><button class="btn btn-blue auth-icon-btn auth-friends-button tooltip" id="authFriendsPanel" type="button" aria-label="Amis" data-tooltip="Demandes et liste d’amis">🤝'+friendsBadge+'</button><button class="btn btn-green auth-icon-btn tooltip" id="authChatboxPanel" type="button" aria-label="Chat global" data-tooltip="Chat global">💬</button><button class="btn btn-green auth-icon-btn tooltip" id="authMessagesPanel" type="button" aria-label="Messages" data-tooltip="Messages privés">✉</button>'+moderationButton+adminButton+'<button class="btn btn-gray auth-icon-btn auth-danger-btn tooltip" id="authLogout" type="button" aria-label="Déconnexion" data-tooltip="Déconnexion">⏻</button>';
+  const messagesBadge=messageState.unread>0 ? `<span class="auth-friends-badge">${messageState.unread}</span>` : "";
+  box.innerHTML='<button class="auth-user-chip account-open tooltip" id="accountProfileOpen" type="button" data-tooltip="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-green auth-icon-btn tooltip" id="authChatboxPanel" type="button" aria-label="Chat global" data-tooltip="Chat global">💬</button><button class="btn btn-gray auth-icon-btn tooltip" id="authSocialMenu" type="button" aria-label="Menu social" data-tooltip="Menu social">☰</button><div class="auth-menu-panel" id="authMenuPanel"><button class="btn btn-blue" id="authCommunitySearch" type="button">Membres</button><button class="btn btn-blue auth-friends-button" id="authFriendsPanel" type="button">Amis'+friendsBadge+'</button><button class="btn btn-green auth-friends-button" id="authMessagesPanel" type="button">Messages'+messagesBadge+'</button>'+moderationButton+adminButton+'<button class="btn btn-gray auth-danger-btn" id="authLogout" type="button">Déconnexion</button></div>';
   if($("#accountProfileOpen"))$("#accountProfileOpen").onclick=openAccountProfile;
   if($("#authCommunitySearch"))$("#authCommunitySearch").onclick=openCommunityDirectory;
   if($("#authFriendsPanel"))$("#authFriendsPanel").onclick=openFriendsPanel;
@@ -11773,6 +11866,7 @@ function authRender(){
   if($("#authModerationOverview"))$("#authModerationOverview").onclick=openModerationOverview;
   if($("#authLogout"))$("#authLogout").onclick=authLogout;
   if($("#authAdminPanel"))$("#authAdminPanel").onclick=()=>livingOpenAdmin();
+  if($("#authSocialMenu"))$("#authSocialMenu").onclick=()=>box.classList.toggle("menu-open");
   renderCloudStatus();
 }
 
@@ -11890,11 +11984,17 @@ function renderAccountProfile(){
   const prefs=accountPreferences();
   const list=$("#accountPrivacyList");
   if(list){
-    list.innerHTML=ACCOUNT_PRIVACY_OPTIONS.map(option=>`
-      <label class="privacy-toggle">
-        <input type="checkbox" data-account-pref="${option.key}" ${prefs[option.key]?"checked":""}>
-        <span>${option.label}<small>${option.description}</small></span>
-      </label>
+    const groups=[...new Set(ACCOUNT_PRIVACY_OPTIONS.map(option=>option.group||"Options"))];
+    list.innerHTML=groups.map(group=>`
+      <div class="privacy-group">
+        <h4>${escapeHtml(group)}</h4>
+        ${ACCOUNT_PRIVACY_OPTIONS.filter(option=>(option.group||"Options")===group).map(option=>`
+          <label class="privacy-toggle">
+            <input type="checkbox" data-account-pref="${option.key}" ${prefs[option.key]?"checked":""}>
+            <span>${option.label}<small>${option.description}</small></span>
+          </label>
+        `).join("")}
+      </div>
     `).join("");
     list.querySelectorAll("[data-account-pref]").forEach(input=>{
       input.addEventListener("change",saveAccountPreferences);
@@ -11981,7 +12081,7 @@ function renderCommunityProfile(profile){
   const hiddenAchievementCount=(Array.isArray(profile?.achievements?.unlocked)?profile.achievements.unlocked.length:0)-achievements.length;
   const social=profile?.social||{};
   box.innerHTML=`
-    <section class="community-profile-hero">
+    <section class="community-profile-hero role-${escapeHtml(profile?.role||"user")}">
       ${avatarMarkup(profile,"chat-avatar community-avatar")}
       <div>
         <h3 class="community-profile-title">${escapeHtml(profile?.pseudo||"Profil")} ${memberStatusMarkup(profile)}</h3>
@@ -12182,11 +12282,33 @@ function renderModerationOverview(payload={}){
   const banned=payload.banned||[];
   const muted=payload.muted||[];
   const moderators=payload.moderators||[];
+  const reports=payload.reports||[];
+  const settings=payload.chatSettings||{};
   box.innerHTML=`
     <section class="moderation-status-grid">
       <div class="moderation-info"><small>Comptes bannis</small><strong>${banned.length}</strong></div>
       <div class="moderation-info"><small>Comptes mute</small><strong>${muted.length}</strong></div>
-      <div class="moderation-info"><small>Équipe</small><strong>${moderators.length}</strong></div>
+      <div class="moderation-info"><small>Signalements</small><strong>${reports.length}</strong></div>
+    </section>
+    <section class="community-profile-card">
+      <h4>Chatbox</h4>
+      <div class="moderation-status-grid">
+        <label class="privacy-toggle"><input type="checkbox" id="moderationChatLocked" ${settings.locked?"checked":""}><span>Fermer la chatbox<small>Les membres ne peuvent plus écrire.</small></span></label>
+        <label class="auth-field">Mode lent<input id="moderationSlowMode" type="number" min="0" max="300" value="${Number(settings.slowModeSeconds)||0}" placeholder="Secondes"></label>
+        <button class="btn btn-orange" id="saveChatModerationSettings" type="button">Enregistrer</button>
+      </div>
+    </section>
+    <section class="community-profile-card">
+      <h4>Signalements ouverts <span class="gallery-count-badge">${reports.length}</span></h4>
+      <div class="moderation-history">
+        ${reports.length?reports.map(report=>`
+          <div class="moderation-history-row">
+            <span class="moderation-history-type">${escapeHtml(report.type)}</span>
+            <span><strong>${escapeHtml(report.target?.pseudo||"Cible inconnue")}</strong><br>${escapeHtml(report.body||"Message indisponible")}<br><small>Signalé par ${escapeHtml(report.reporter?.pseudo||"Utilisateur")} · ${escapeHtml(report.reason||"Aucune raison")}</small></span>
+            <button class="btn btn-green" type="button" data-report-resolve="${report.id}">Résoudre</button>
+          </div>
+        `).join(""):`<div class="community-profile-empty">Aucun signalement ouvert.</div>`}
+      </div>
     </section>
     ${moderationListSection("Comptes bannis",banned,"Aucun compte banni.")}
     ${moderationListSection("Comptes mute",muted,"Aucun compte mute actuellement.")}
@@ -12195,6 +12317,30 @@ function renderModerationOverview(payload={}){
   box.querySelectorAll("[data-overview-moderate]").forEach(button=>{
     button.addEventListener("click",()=>openModerationPanel(button.dataset.overviewModerate));
   });
+  $("#saveChatModerationSettings")?.addEventListener("click",saveChatModerationSettings);
+  box.querySelectorAll("[data-report-resolve]").forEach(button=>button.addEventListener("click",()=>resolveModerationReport(button.dataset.reportResolve)));
+}
+
+async function saveChatModerationSettings(){
+  try{
+    const locked=!!$("#moderationChatLocked")?.checked;
+    const slowModeSeconds=Math.max(0,Math.min(300,parseInt($("#moderationSlowMode")?.value,10)||0));
+    await authFetch("/moderation/chat-settings",{method:"PUT",body:JSON.stringify({locked,slowModeSeconds})});
+    toast("Réglages chatbox sauvegardés.","success","success");
+    openModerationOverview();
+  }catch(error){
+    toast(error.message||"Réglages impossibles à sauvegarder.","error","error");
+  }
+}
+
+async function resolveModerationReport(id){
+  try{
+    await authFetch(`/moderation/reports/${encodeURIComponent(id)}/resolve`,{method:"POST"});
+    toast("Signalement résolu.","success","success");
+    openModerationOverview();
+  }catch(error){
+    toast(error.message||"Signalement impossible à résoudre.","error","error");
+  }
 }
 
 async function openModerationOverview(){
@@ -12480,9 +12626,15 @@ function renderMessageThread(payload=null){
   feed.innerHTML=messages.length ? messages.map(item=>`
     <div class="message-bubble ${item.isMine?"mine":""}">
       ${escapeHtml(item.body)}
-      <small>${escapeHtml(item.sender?.pseudo||"Utilisateur")} · ${formatCloudDateTime(item.createdAt)}</small>
+      <small>${escapeHtml(item.sender?.pseudo||"Utilisateur")} · ${formatCloudDateTime(item.createdAt)}${item.editedAt?" · modifié":""}</small>
+      <div class="message-actions">
+        ${item.isMine?`<button class="btn btn-blue" type="button" data-private-edit="${item.id}">Modifier</button><button class="btn btn-red" type="button" data-private-delete="${item.id}">Supprimer</button>`:`<button class="btn btn-orange" type="button" data-private-report="${item.id}">Report</button>`}
+      </div>
     </div>
   `).join("") : `<div class="community-profile-empty">Aucun message dans cette conversation.</div>`;
+  feed.querySelectorAll("[data-private-edit]").forEach(button=>button.addEventListener("click",()=>editPrivateMessage(button.dataset.privateEdit)));
+  feed.querySelectorAll("[data-private-delete]").forEach(button=>button.addEventListener("click",()=>deletePrivateMessage(button.dataset.privateDelete)));
+  feed.querySelectorAll("[data-private-report]").forEach(button=>button.addEventListener("click",()=>reportPrivateMessage(button.dataset.privateReport)));
   feed.scrollTop=feed.scrollHeight;
   resetMessageCompose(false);
 }
@@ -12493,10 +12645,51 @@ async function loadMessagesList(){
   try{
     const result=await authFetch("/social/messages");
     messageState.conversations=result.conversations||[];
+    const seenTime=messageState.lastSeenAt ? new Date(messageState.lastSeenAt).getTime() : 0;
+    messageState.unread=messageState.conversations.filter(item=>item.lastMessageAt && new Date(item.lastMessageAt).getTime()>seenTime && item.lastMessage?.senderPseudo!==authState.user?.pseudo).length;
+    authRender();
     renderMessagesList();
   }catch(error){
     if(list)list.innerHTML=`<div class="community-profile-empty">${escapeHtml(error.message||"Messages indisponibles.")}</div>`;
   }
+}
+
+function stopMessagePolling(){
+  if(messageState.timer){
+    clearInterval(messageState.timer);
+    messageState.timer=null;
+  }
+}
+
+async function refreshMessageNotifications({silent=false}={}){
+  if(!authState.user)return;
+  try{
+    const result=await authFetch("/social/messages");
+    messageState.conversations=result.conversations||[];
+    const seenTime=messageState.lastSeenAt ? new Date(messageState.lastSeenAt).getTime() : 0;
+    const notifiedTime=messageState.lastNotifiedAt ? new Date(messageState.lastNotifiedAt).getTime() : 0;
+    const unread=messageState.conversations.filter(item=>item.lastMessageAt && new Date(item.lastMessageAt).getTime()>seenTime && item.lastMessage?.senderPseudo!==authState.user?.pseudo);
+    messageState.unread=unread.length;
+    const newest=unread
+      .slice()
+      .sort((a,b)=>new Date(b.lastMessageAt).getTime()-new Date(a.lastMessageAt).getTime())[0];
+    if(newest && !silent && new Date(newest.lastMessageAt).getTime()>notifiedTime){
+      messageState.lastNotifiedAt=newest.lastMessageAt;
+      localStorage.setItem("pykur_messages_notified_at",messageState.lastNotifiedAt);
+      toast(`Nouveau message privé de ${newest.other?.pseudo||"un membre"}.`,"info","click");
+    }
+    authRender();
+    if($("#messagesModal")?.classList.contains("show"))renderMessagesList();
+  }catch(error){
+    if(!silent)toast(error.message||"Messages indisponibles.","error","error");
+  }
+}
+
+function startSocialPolling(){
+  stopMessagePolling();
+  if(!authState.user)return;
+  refreshMessageNotifications({silent:true});
+  messageState.timer=setInterval(()=>refreshMessageNotifications(),20000);
 }
 
 async function loadMessageThread(pseudo){
@@ -12532,10 +12725,62 @@ async function sendPrivateMessage(event){
   }
 }
 
+async function editPrivateMessage(id){
+  const pseudo=messageState.activePseudo;
+  if(!pseudo || !id)return;
+  const current=[...$("#messagesFeed")?.querySelectorAll(`[data-private-edit="${CSS.escape(String(id))}"]`)||[]][0]?.closest(".message-bubble")?.childNodes?.[0]?.textContent?.trim()||"";
+  const body=await showPrompt("Modifier le message privé :",{
+    title:"Modifier le message",
+    defaultValue:current,
+    okLabel:"Enregistrer"
+  });
+  if(body===null)return;
+  try{
+    await authFetch(`/social/messages/${encodeURIComponent(pseudo)}/${encodeURIComponent(id)}`,{method:"PATCH",body:JSON.stringify({body})});
+    await loadMessageThread(pseudo);
+    await loadMessagesList();
+  }catch(error){
+    toast(error.message||"Modification impossible.","error","error");
+  }
+}
+
+async function deletePrivateMessage(id){
+  const pseudo=messageState.activePseudo;
+  if(!pseudo || !id)return;
+  try{
+    await authFetch(`/social/messages/${encodeURIComponent(pseudo)}/${encodeURIComponent(id)}`,{method:"DELETE"});
+    await loadMessageThread(pseudo);
+    await loadMessagesList();
+  }catch(error){
+    toast(error.message||"Suppression impossible.","error","error");
+  }
+}
+
+async function reportPrivateMessage(id){
+  const pseudo=messageState.activePseudo;
+  if(!pseudo || !id)return;
+  const reason=await showPrompt("Pourquoi signaler ce message privé ?",{
+    title:"Signaler le message",
+    placeholder:"Raison courte",
+    okLabel:"Signaler"
+  });
+  if(reason===null)return;
+  try{
+    await authFetch(`/social/messages/${encodeURIComponent(pseudo)}/${encodeURIComponent(id)}/report`,{method:"POST",body:JSON.stringify({reason})});
+    toast("Signalement envoyé à la modération.","success","success");
+  }catch(error){
+    toast(error.message||"Signalement impossible.","error","error");
+  }
+}
+
 async function openMessagesPanel(pseudo=null){
   if(!authState.user)return authOpen("login");
   openModal("messagesModal");
   await loadMessagesList();
+  messageState.lastSeenAt=new Date().toISOString();
+  messageState.unread=0;
+  localStorage.setItem("pykur_messages_seen_at",messageState.lastSeenAt);
+  authRender();
   const clean=(pseudo||messageState.activePseudo||"").trim();
   if(clean)await loadMessageThread(clean);
   else renderMessageThread(null);
@@ -12544,11 +12789,24 @@ async function openMessagesPanel(pseudo=null){
 function renderChatbox(){
   const feed=$("#chatboxFeed");
   const online=$("#chatboxOnlineList");
+  const stateLabel=$("#chatboxStateLabel");
+  if(stateLabel){
+    stateLabel.textContent=chatState.settings?.locked ? "Chat fermé" : (Number(chatState.settings?.slowModeSeconds)>0 ? `Mode lent ${chatState.settings.slowModeSeconds}s` : "Chat ouvert");
+    stateLabel.classList.toggle("online",!chatState.settings?.locked);
+    stateLabel.classList.toggle("offline",!!chatState.settings?.locked);
+  }
   if(feed){
-    feed.innerHTML=chatState.messages.length ? chatState.messages.map(item=>{
+    const visible=chatState.messages.filter(item=>{
+      const isShare=item.type==="achievement" || item.type==="pykur" || item.meta?.system;
+      if(chatState.hideShares && isShare)return false;
+      if(chatState.hideText && item.type==="message" && !item.meta?.system)return false;
+      return true;
+    });
+    feed.innerHTML=visible.length ? visible.map(item=>{
       const sender=item.sender||{};
       const system=item.type==="achievement" || item.type==="pykur";
-      const canDelete=["moderator","admin"].includes(authState.user?.role);
+      const canModerate=["moderator","admin"].includes(authState.user?.role);
+      const canOwn=item.isMine;
       return `
         <article class="chat-message ${system?"system":""}">
           ${avatarMarkup(sender)}
@@ -12556,9 +12814,13 @@ function renderChatbox(){
             <strong data-chat-profile="${escapeHtml(sender.pseudo||"")}">${escapeHtml(sender.pseudo||"Utilisateur")}</strong>
             ${memberStatusMarkup(sender)}
             <p>${escapeHtml(item.body)}</p>
-            <small>${formatCloudDateTime(item.createdAt)}</small>
+            <small>${formatCloudDateTime(item.createdAt)}${item.editedAt?" · modifié":""}</small>
           </div>
-          ${canDelete?`<button class="btn btn-red" type="button" data-chat-delete="${item.id}">Supprimer</button>`:""}
+          <div class="chat-message-actions">
+            <button class="btn btn-gray" type="button" data-chat-reply="${escapeHtml(sender.pseudo||"")}">@</button>
+            ${canOwn||canModerate?`<button class="btn btn-blue" type="button" data-chat-edit="${item.id}">Modifier</button><button class="btn btn-red" type="button" data-chat-delete="${item.id}">Supprimer</button>`:""}
+            ${!canOwn?`<button class="btn btn-orange" type="button" data-chat-report="${item.id}">Report</button><button class="btn btn-gray" type="button" data-chat-ignore="${escapeHtml(sender.pseudo||"")}">Ignorer</button>`:""}
+          </div>
         </article>
       `;
     }).join("") : `<div class="community-profile-empty">Aucun message pour le moment.</div>`;
@@ -12568,17 +12830,41 @@ function renderChatbox(){
     feed.querySelectorAll("[data-chat-delete]").forEach(button=>{
       button.addEventListener("click",()=>deleteChatMessage(button.dataset.chatDelete));
     });
+    feed.querySelectorAll("[data-chat-edit]").forEach(button=>{
+      button.addEventListener("click",()=>editChatMessage(button.dataset.chatEdit));
+    });
+    feed.querySelectorAll("[data-chat-report]").forEach(button=>{
+      button.addEventListener("click",()=>reportChatMessage(button.dataset.chatReport));
+    });
+    feed.querySelectorAll("[data-chat-ignore]").forEach(button=>{
+      button.addEventListener("click",()=>ignoreChatUser(button.dataset.chatIgnore));
+    });
+    feed.querySelectorAll("[data-chat-reply]").forEach(button=>{
+      button.addEventListener("click",()=>prefillChatMention(button.dataset.chatReply));
+    });
     feed.scrollTop=feed.scrollHeight;
   }
   if(online){
-    online.innerHTML=chatState.online.length ? chatState.online.map(user=>`
-      <button class="online-user-row" type="button" data-online-profile="${escapeHtml(user.pseudo)}">
-        ${avatarMarkup(user)}
-        <span><strong>${escapeHtml(user.pseudo)}</strong><small>${authRoleLabel(user.role)}</small></span>
-      </button>
-    `).join("") : `<div class="community-profile-empty">Aucun membre en ligne.</div>`;
+    const ignored=chatState.ignored||[];
+    online.innerHTML=`
+      ${chatState.online.length ? chatState.online.map(user=>`
+        <button class="online-user-row" type="button" data-online-profile="${escapeHtml(user.pseudo)}">
+          ${avatarMarkup(user)}
+          <span><strong>${escapeHtml(user.pseudo)}</strong><small>${authRoleLabel(user.role)}</small></span>
+        </button>
+      `).join("") : `<div class="community-profile-empty">Aucun membre en ligne.</div>`}
+      ${ignored.length?`
+        <div class="community-profile-empty">
+          <strong>Membres ignorés</strong><br>
+          ${ignored.map(pseudo=>`<button class="btn btn-gray" type="button" data-chat-unignore="${escapeHtml(pseudo)}">${escapeHtml(pseudo)} · réafficher</button>`).join(" ")}
+        </div>
+      `:""}
+    `;
     online.querySelectorAll("[data-online-profile]").forEach(button=>{
       button.addEventListener("click",()=>openCommunityProfileByPseudo(button.dataset.onlineProfile,{updateUrl:true}));
+    });
+    online.querySelectorAll("[data-chat-unignore]").forEach(button=>{
+      button.addEventListener("click",()=>unignoreChatUser(button.dataset.chatUnignore));
     });
   }
 }
@@ -12591,10 +12877,25 @@ async function loadChatbox({silent=false}={}){
       authFetch("/social/online")
     ]);
     chatState.messages=chat.messages||[];
+    chatState.settings=chat.settings||chatState.settings||{};
+    chatState.ignored=chat.ignored||[];
     chatState.online=online.users||[];
+    detectChatPings();
     renderChatbox();
   }catch(error){
     if(!silent)toast(error.message||"Chat indisponible.","error","error");
+  }
+}
+
+function detectChatPings(){
+  if(!authState.user?.pseudo)return;
+  const seen=chatState.lastPingSeenAt ? new Date(chatState.lastPingSeenAt).getTime() : 0;
+  const mention=`@${authState.user.pseudo}`.toLowerCase();
+  const hit=chatState.messages.find(item=>!item.isMine && item.createdAt && new Date(item.createdAt).getTime()>seen && String(item.body||"").toLowerCase().includes(mention));
+  if(hit){
+    chatState.lastPingSeenAt=new Date().toISOString();
+    localStorage.setItem("pykur_chat_ping_seen_at",chatState.lastPingSeenAt);
+    toast(`${hit.sender?.pseudo||"Un membre"} vous a mentionné dans le chat.`,"info","click");
   }
 }
 
@@ -12608,6 +12909,8 @@ function stopChatboxPolling(){
 async function openChatboxPanel(){
   if(!authState.user)return authOpen("login");
   openModal("chatboxModal");
+  if($("#chatHideShares"))$("#chatHideShares").checked=chatState.hideShares;
+  if($("#chatHideText"))$("#chatHideText").checked=chatState.hideText;
   await loadChatbox();
   stopChatboxPolling();
   chatState.timer=setInterval(()=>loadChatbox({silent:true}),15000);
@@ -12639,8 +12942,80 @@ async function deleteChatMessage(id){
   }
 }
 
+async function editChatMessage(id){
+  const item=chatState.messages.find(message=>String(message.id)===String(id));
+  if(!item)return;
+  const body=await showPrompt("Modifier le message :",{
+    title:"Modifier le message",
+    defaultValue:item.body||"",
+    okLabel:"Enregistrer"
+  });
+  if(body===null)return;
+  try{
+    await authFetch(`/social/chat/${encodeURIComponent(id)}`,{method:"PATCH",body:JSON.stringify({body})});
+    await loadChatbox({silent:true});
+  }catch(error){
+    toast(error.message||"Modification impossible.","error","error");
+  }
+}
+
+async function reportChatMessage(id){
+  const reason=await showPrompt("Pourquoi signaler ce message ?",{
+    title:"Signaler le message",
+    placeholder:"Raison courte",
+    okLabel:"Signaler"
+  });
+  if(reason===null)return;
+  try{
+    await authFetch(`/social/chat/${encodeURIComponent(id)}/report`,{method:"POST",body:JSON.stringify({reason})});
+    toast("Signalement envoyé à la modération.","success","success");
+  }catch(error){
+    toast(error.message||"Signalement impossible.","error","error");
+  }
+}
+
+async function ignoreChatUser(pseudo){
+  if(!pseudo)return;
+  const ok=await showConfirm(`Ignorer ${pseudo} dans la chatbox ?`,{
+    title:"Ignorer un membre",
+    subtitle:"Ses messages seront masqués de votre chatbox.",
+    okLabel:"Ignorer",
+    okClass:"btn-orange"
+  });
+  if(!ok)return;
+  try{
+    await authFetch(`/social/ignore/${encodeURIComponent(pseudo)}`,{method:"POST"});
+    await loadChatbox({silent:true});
+    toast(`${pseudo} est ignoré dans le chat.`,"success","success");
+  }catch(error){
+    toast(error.message||"Impossible d'ignorer ce membre.","error","error");
+  }
+}
+
+async function unignoreChatUser(pseudo){
+  if(!pseudo)return;
+  try{
+    await authFetch(`/social/ignore/${encodeURIComponent(pseudo)}`,{method:"DELETE"});
+    await loadChatbox({silent:true});
+    toast(`${pseudo} est de nouveau visible dans le chat.`,"success","success");
+  }catch(error){
+    toast(error.message||"Impossible de réafficher ce membre.","error","error");
+  }
+}
+
+function prefillChatMention(pseudo){
+  const input=$("#chatboxInput");
+  if(!input || !pseudo)return;
+  const mention=`@${pseudo} `;
+  if(!input.value.includes(mention))input.value=mention+input.value;
+  input.focus();
+}
+
 async function shareCommunityMilestone(type,payload={}){
   if(!authState.user)return;
+  const prefs=accountPreferences();
+  if(type==="achievement" && prefs.shareAchievements===false)return;
+  if(type==="pykur" && prefs.shareGalleryMoments===false)return;
   const title=payload.title ? String(payload.title) : "";
   const body=type==="achievement"
     ? `${authState.user.pseudo} a débloqué le succès ${title}.`
@@ -12827,6 +13202,7 @@ async function authSubmit(event){
     toast(result.bootstrapAdmin?"Premier compte créé : rôle admin activé.":"Connexion réussie.","success","success");
     cloudAfterLogin();
     refreshFriendSummary({silent:true});
+    startSocialPolling();
   }catch(error){
     authSetError(error.message||"Connexion impossible.");
   }
@@ -12838,6 +13214,7 @@ function authLogout(){
     cloudState.timer=null;
   }
   stopChatboxPolling();
+  stopMessagePolling();
   authState={token:"",user:null,apiOnline:authState.apiOnline};
   socialState.friends=0;
   socialState.incoming=0;
@@ -12867,6 +13244,7 @@ async function authRefresh(){
   if(authState.user){
     cloudAfterLogin({silent:true});
     refreshFriendSummary({silent:true});
+    startSocialPolling();
   }
 }
 
@@ -21858,12 +22236,31 @@ if($("#accountAvatarInput"))$("#accountAvatarInput").addEventListener("input",e=
   if(value)preview.style.setProperty("--avatar-url",`url("${value.replace(/"/g,"%22")}")`);
   else preview.style.removeProperty("--avatar-url");
 });
+if($("#accountAvatarFile"))$("#accountAvatarFile").addEventListener("change",event=>{
+  const file=event.target.files?.[0];
+  if(!file)return;
+  if(file.size>450*1024){
+    toast("Image trop lourde : choisissez une image de moins de 450 Ko.","error","error");
+    event.target.value="";
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const value=String(reader.result||"");
+    if($("#accountAvatarInput"))$("#accountAvatarInput").value=value;
+    const preview=$("#accountAvatarPreview");
+    if(preview)preview.style.setProperty("--avatar-url",`url("${value}")`);
+  };
+  reader.readAsDataURL(file);
+});
 if($("#previewCommunityProfile"))$("#previewCommunityProfile").onclick=openCommunityProfilePreview;
 if($("#openCommunitySearch"))$("#openCommunitySearch").onclick=openCommunityDirectory;
 if($("#openFriendsPanel"))$("#openFriendsPanel").onclick=openFriendsPanel;
 if($("#openMessagesPanel"))$("#openMessagesPanel").onclick=()=>openMessagesPanel();
 if($("#openChatboxPanel"))$("#openChatboxPanel").onclick=openChatboxPanel;
 if($("#chatboxComposeForm"))$("#chatboxComposeForm").onsubmit=sendChatMessage;
+if($("#chatHideShares"))$("#chatHideShares").onchange=e=>{chatState.hideShares=!!e.target.checked;renderChatbox()};
+if($("#chatHideText"))$("#chatHideText").onchange=e=>{chatState.hideText=!!e.target.checked;renderChatbox()};
 if($("#copyMyCommunityLink"))$("#copyMyCommunityLink").onclick=async()=>{
   if(!authState.user)return authOpen("login");
   if(!accountPreferences().publicProfile){
