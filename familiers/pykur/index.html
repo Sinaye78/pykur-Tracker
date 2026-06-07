@@ -3552,21 +3552,24 @@ body.no-anim .app.milestone-flash{
 .auth-widget{
   display:flex;
   align-items:center;
-  gap:7px;
-  min-height:38px;
-  padding:5px;
-  border:1px solid rgba(119,79,28,.24);
-  border-radius:14px;
-  background:linear-gradient(180deg,rgba(255,252,242,.68),rgba(238,208,147,.38));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.42);
+  gap:6px;
+  min-height:40px;
+  padding:6px;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:18px;
+  background:
+    linear-gradient(135deg,rgba(18,25,38,.82),rgba(50,32,18,.76)),
+    radial-gradient(circle at 0% 0%,rgba(250,204,21,.16),transparent 36%);
+  box-shadow:0 16px 38px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.18);
+  backdrop-filter:blur(12px) saturate(1.15);
 }
 .auth-user-chip{
   display:flex;
   flex-direction:column;
   gap:1px;
-  min-width:118px;
-  padding:4px 8px;
-  color:#3b2408;
+  min-width:88px;
+  padding:5px 8px;
+  color:#fff7df;
   font-size:11px;
   font-weight:900;
   line-height:1.1;
@@ -3579,16 +3582,28 @@ body.no-anim .app.milestone-flash{
   border-radius:10px;
 }
 .auth-user-chip.account-open:hover{
-  background:rgba(255,255,255,.34);
+  background:rgba(255,255,255,.1);
 }
 .auth-user-chip strong{font-size:13px}
-.auth-user-chip span{color:#74512a;text-transform:uppercase}
+.auth-user-chip span{color:#facc15;text-transform:uppercase}
 .auth-widget .btn{
   min-width:0!important;
-  min-height:30px!important;
-  padding:0 10px!important;
-  border-radius:10px!important;
+  min-height:32px!important;
+  padding:0 9px!important;
+  border-radius:12px!important;
   font-size:12px!important;
+  box-shadow:none!important;
+}
+.auth-widget .auth-icon-btn{
+  width:34px!important;
+  padding:0!important;
+  font-size:15px!important;
+  line-height:1!important;
+}
+.auth-widget .auth-danger-btn{
+  background:rgba(255,255,255,.12)!important;
+  color:#fff!important;
+  border:1px solid rgba(255,255,255,.18)!important;
 }
 
 @media(min-width:901px){
@@ -3597,15 +3612,12 @@ body.no-anim .app.milestone-flash{
     top:18px;
     right:18px;
     z-index:120;
-    max-width:min(360px,calc((100vw - min(1180px,92vw)) / 2 + 330px));
+    max-width:min(360px,calc(100vw - 36px));
     justify-content:flex-end;
-    background:linear-gradient(180deg,rgba(255,252,242,.92),rgba(238,208,147,.72));
-    box-shadow:0 12px 28px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.55);
-    backdrop-filter:blur(8px);
   }
   .auth-user-chip{
     min-width:0;
-    max-width:128px;
+    max-width:112px;
   }
   .auth-user-chip strong{
     overflow:hidden;
@@ -10970,9 +10982,9 @@ function authRender(){
     return;
   }
   const user=authState.user;
-  const adminButton=user.role==="admin" ? '<button class="btn btn-orange" id="authAdminPanel" type="button">Admin panel</button>' : "";
+  const adminButton=user.role==="admin" ? '<button class="btn btn-orange auth-icon-btn tooltip" id="authAdminPanel" type="button" aria-label="Admin panel" data-tooltip="Ouvrir l’admin panel">⚙</button>' : "";
   const friendsBadge=socialState.incoming>0 ? `<span class="auth-friends-badge">${socialState.incoming}</span>` : "";
-  box.innerHTML='<button class="auth-user-chip account-open" id="accountProfileOpen" type="button" title="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-blue" id="authCommunitySearch" type="button">Membres</button><button class="btn btn-blue auth-friends-button" id="authFriendsPanel" type="button">Amis'+friendsBadge+'</button><button class="btn btn-green" id="authMessagesPanel" type="button">Messages</button>'+adminButton+'<button class="btn btn-gray" id="authLogout" type="button">Déconnexion</button>';
+  box.innerHTML='<button class="auth-user-chip account-open tooltip" id="accountProfileOpen" type="button" data-tooltip="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-blue auth-icon-btn tooltip" id="authCommunitySearch" type="button" aria-label="Membres" data-tooltip="Rechercher un membre">👥</button><button class="btn btn-blue auth-icon-btn auth-friends-button tooltip" id="authFriendsPanel" type="button" aria-label="Amis" data-tooltip="Demandes et liste d’amis">🤝'+friendsBadge+'</button><button class="btn btn-green auth-icon-btn tooltip" id="authMessagesPanel" type="button" aria-label="Messages" data-tooltip="Messages privés">✉</button>'+adminButton+'<button class="btn btn-gray auth-icon-btn auth-danger-btn tooltip" id="authLogout" type="button" aria-label="Déconnexion" data-tooltip="Déconnexion">⏻</button>';
   if($("#accountProfileOpen"))$("#accountProfileOpen").onclick=openAccountProfile;
   if($("#authCommunitySearch"))$("#authCommunitySearch").onclick=openCommunityDirectory;
   if($("#authFriendsPanel"))$("#authFriendsPanel").onclick=openFriendsPanel;
@@ -11300,7 +11312,10 @@ function friendRow(item,actions=[]){
       </div>
       <div class="friend-row-actions">
         <button class="btn btn-blue" type="button" data-friend-view="${escapeHtml(user.pseudo||"")}">Voir</button>
-        ${actions.map(action=>`<button class="btn ${action.className}" type="button" data-friend-action="${action.action}" data-friend-pseudo="${escapeHtml(user.pseudo||"")}">${action.label}</button>`).join("")}
+        ${actions.map(action=>action.action==="message"
+          ? `<button class="btn ${action.className}" type="button" data-friend-message="${escapeHtml(user.pseudo||"")}">${action.label}</button>`
+          : `<button class="btn ${action.className}" type="button" data-friend-action="${action.action}" data-friend-pseudo="${escapeHtml(user.pseudo||"")}">${action.label}</button>`
+        ).join("")}
       </div>
     </article>
   `;
@@ -11341,6 +11356,7 @@ async function loadFriendsPanel(){
         {action:"remove",label:"Annuler",className:"btn-red"}
       ]),
       friendsSection("Amis",data.friends||[],"Aucun ami pour le moment.",[
+        {action:"message",label:"Message",className:"btn-green"},
         {action:"remove",label:"Retirer",className:"btn-red"}
       ])
     ].join("");
@@ -11349,6 +11365,12 @@ async function loadFriendsPanel(){
     });
     box.querySelectorAll("[data-friend-action]").forEach(button=>{
       button.addEventListener("click",()=>communitySocialAction(button.dataset.friendPseudo,button.dataset.friendAction));
+    });
+    box.querySelectorAll("[data-friend-message]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        closeModal("friendsModal");
+        openMessagesPanel(button.dataset.friendMessage);
+      });
     });
   }catch(error){
     box.innerHTML=`<div class="community-profile-empty">${escapeHtml(error.message||"Liste d'amis indisponible.")}</div>`;
