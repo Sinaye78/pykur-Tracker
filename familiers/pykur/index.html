@@ -11831,6 +11831,127 @@ body.night .dungeon-card .dungeon-mini{
   border:1px solid rgba(255,255,255,.18)!important;
 }
 
+/* User panel: a light parchment extension of the tracker shell. */
+.auth-widget{
+  gap:5px;
+  min-height:38px;
+  padding:5px 6px;
+  border:1px solid rgba(126,91,45,.34);
+  border-radius:14px;
+  background:
+    linear-gradient(135deg,rgba(255,251,238,.96),rgba(239,220,181,.92)),
+    repeating-linear-gradient(90deg,rgba(126,91,45,.025) 0 1px,transparent 1px 12px);
+  box-shadow:0 7px 18px rgba(50,31,12,.14),inset 0 1px 0 rgba(255,255,255,.72);
+  backdrop-filter:blur(7px) saturate(1.04);
+}
+
+.auth-user-chip{
+  min-width:78px;
+  max-width:100px;
+  padding:4px 7px;
+  color:#382313;
+}
+
+.auth-user-chip.account-open{
+  border-radius:8px;
+}
+
+.auth-user-chip.account-open:hover{
+  background:rgba(151,105,45,.09);
+}
+
+.auth-user-chip strong{
+  font-size:12px;
+}
+
+.auth-user-chip span{
+  color:#8b5a18;
+  font-size:9px;
+}
+
+.auth-user-chip strong::before{
+  width:7px;
+  height:7px;
+  box-shadow:0 0 0 2px rgba(34,197,94,.13);
+}
+
+.auth-widget .auth-icon-btn{
+  width:32px!important;
+  min-width:32px!important;
+  height:32px!important;
+  min-height:32px!important;
+  border:1px solid rgba(113,79,38,.2)!important;
+  border-radius:9px!important;
+  color:#fff!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22)!important;
+  filter:saturate(.88);
+}
+
+.auth-widget .auth-icon-btn:hover{
+  transform:translateY(-1px);
+  filter:saturate(.96) brightness(1.04);
+  box-shadow:0 4px 10px rgba(57,34,12,.12),inset 0 1px 0 rgba(255,255,255,.28)!important;
+}
+
+.auth-widget .auth-icon-btn.has-notification{
+  border-color:rgba(197,139,20,.68)!important;
+  box-shadow:0 0 0 2px rgba(250,204,21,.13),0 4px 10px rgba(83,53,12,.14)!important;
+}
+
+.auth-notification-badge{
+  top:-6px;
+  right:-6px;
+  min-width:17px;
+  height:17px;
+  padding:0 4px;
+  border-width:1px;
+  font-size:9px;
+  box-shadow:0 3px 8px rgba(91,20,20,.24);
+}
+
+.auth-menu-panel{
+  top:calc(100% + 5px);
+  gap:7px;
+  min-width:136px;
+  padding:9px 10px;
+  border:1px solid rgba(126,91,45,.3);
+  border-radius:12px;
+  background:
+    linear-gradient(145deg,rgba(255,251,239,.98),rgba(235,214,173,.97)),
+    repeating-linear-gradient(90deg,rgba(126,91,45,.025) 0 1px,transparent 1px 12px);
+  box-shadow:0 9px 22px rgba(50,31,12,.17),inset 0 1px 0 rgba(255,255,255,.72);
+}
+
+.auth-menu-panel .auth-danger-btn{
+  min-height:32px!important;
+  color:#5d3920!important;
+  border:1px solid rgba(126,91,45,.28)!important;
+  border-radius:9px!important;
+  background:rgba(255,250,237,.56)!important;
+}
+
+.auth-menu-panel .auth-danger-btn:hover{
+  color:#8f241c!important;
+  border-color:rgba(181,62,47,.32)!important;
+  background:rgba(255,244,231,.84)!important;
+}
+
+@media(min-width:901px){
+  .auth-widget{
+    top:16px;
+    right:16px;
+    max-width:min(286px,calc(100vw - 32px));
+  }
+}
+
+@media(max-width:900px){
+  .auth-widget{
+    padding:5px 7px;
+    border-radius:12px;
+    box-shadow:0 5px 14px rgba(50,31,12,.12),inset 0 1px 0 rgba(255,255,255,.7);
+  }
+}
+
 .community-profile-hero{
   display:grid;
   grid-template-columns:58px minmax(0,1fr) auto;
