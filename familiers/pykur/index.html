@@ -12604,8 +12604,9 @@ const AUTH_TOKEN_KEY="pykur_auth_token";
 let authMode="login";
 let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null,refreshTimer:null};
 const socialState={friends:0,incoming:0,outgoing:0,loaded:false};
-const messageState={activePseudo:null,conversations:[],unread:0,lastSeenAt:localStorage.getItem("pykur_messages_seen_at")||"",timer:null,lastNotifiedAt:localStorage.getItem("pykur_messages_notified_at")||""};
-const chatState={messages:[],online:[],ignored:[],settings:{locked:0,slowModeSeconds:0},lastPingSeenAt:localStorage.getItem("pykur_chat_ping_seen_at")||"",timer:null,pingTimer:null,hideShares:false,hideText:false};
+const messageState={activePseudo:null,conversations:[],unread:0,lastSeenAt:localStorage.getItem("pykur_messages_seen_at")||"",timer:null,lastNotifiedAt:localStorage.getItem("pykur_messages_notified_at")||"",threadRequest:0};
+const chatState={messages:[],online:[],ignored:[],settings:{locked:0,slowModeSeconds:0},lastPingSeenAt:localStorage.getItem("pykur_chat_ping_seen_at")||"",timer:null,pingTimer:null,hideShares:false,hideText:false,refreshing:false};
+messageState.refreshing=false;
 const cloudState={timer:null,retryTimer:null,retryAttempt:0,syncing:false,pending:false,lastSyncAt:null,error:null,loading:false};
 let accountProfileSection="account";
 let accountWarnings=[];
@@ -13851,7 +13852,8 @@ function stopMessagePolling(){
 }
 
 async function refreshMessageNotifications({silent=false}={}){
-  if(!authState.user)return;
+  if(!authState.user || messageState.refreshing)return;
+  messageState.refreshing=true;
   try{
     const result=await authFetch("/social/messages");
     messageState.conversations=result.conversations||[];
@@ -13870,11 +13872,13 @@ async function refreshMessageNotifications({silent=false}={}){
     authRender();
     if($("#messagesModal")?.classList.contains("show")){
       renderMessagesList();
-      if(messageState.activePseudo)loadMessageThread(messageState.activePseudo,{silent:true,preserveScroll:true});
+      if(messageState.activePseudo)await loadMessageThread(messageState.activePseudo,{silent:true,preserveScroll:true});
     }
   }catch(error){
     if(!silent && !isTransientApiError(error))toast(error.message||"Messages indisponibles.","error","error");
     else if(isTransientApiError(error))console.warn("[API] Rafraîchissement des messages reporté",error.requestId||error.code||error.message);
+  }finally{
+    messageState.refreshing=false;
   }
 }
 
@@ -13884,16 +13888,17 @@ function startSocialPolling(){
   refreshMessageNotifications({silent:true});
   refreshChatPingNotifications({silent:true});
   refreshWarningNotifications({silent:true});
-  messageState.timer=setInterval(()=>refreshMessageNotifications(),5000);
+  messageState.timer=setInterval(()=>refreshMessageNotifications(),3000);
   chatState.pingTimer=setInterval(()=>{
-    refreshChatPingNotifications({silent:true});
+    refreshChatPingNotifications();
     refreshWarningNotifications();
-  },10000);
+  },5000);
 }
 
 async function loadMessageThread(pseudo,{silent=false,preserveScroll=false}={}){
   const clean=(pseudo||"").trim();
   if(!clean)return;
+  const requestId=++messageState.threadRequest;
   messageState.activePseudo=clean;
   renderMessagesList();
   const feed=$("#messagesFeed");
@@ -13902,10 +13907,11 @@ async function loadMessageThread(pseudo,{silent=false,preserveScroll=false}={}){
   if(!silent)resetMessageCompose(true);
   try{
     const result=await authFetch(`/social/messages/${encodeURIComponent(clean)}`);
+    if(requestId!==messageState.threadRequest || messageState.activePseudo!==clean)return;
     renderMessageThread(result);
     if(preserveScroll && feed)feed.scrollTop=previousScroll;
   }catch(error){
-    if(feed)feed.innerHTML=`<div class="community-profile-empty">${escapeHtml(error.message||"Conversation indisponible.")}</div>`;
+    if(requestId===messageState.threadRequest && messageState.activePseudo===clean && feed)feed.innerHTML=`<div class="community-profile-empty">${escapeHtml(error.message||"Conversation indisponible.")}</div>`;
   }
 }
 
@@ -14075,7 +14081,8 @@ function renderChatbox(){
 }
 
 async function loadChatbox({silent=false}={}){
-  if(!authState.user)return;
+  if(!authState.user || chatState.refreshing)return;
+  chatState.refreshing=true;
   try{
     const [chat,online]=await Promise.all([
       authFetch("/social/chat?limit=80"),
@@ -14089,6 +14096,8 @@ async function loadChatbox({silent=false}={}){
     renderChatbox();
   }catch(error){
     if(!silent)toast(error.message||"Chat indisponible.","error","error");
+  }finally{
+    chatState.refreshing=false;
   }
 }
 
@@ -14152,7 +14161,7 @@ async function openChatboxPanel(){
   if($("#chatHideText"))$("#chatHideText").checked=chatState.hideText;
   await loadChatbox();
   stopChatboxPolling();
-  chatState.timer=setInterval(()=>loadChatbox({silent:true}),5000);
+  chatState.timer=setInterval(()=>loadChatbox({silent:true}),3000);
 }
 
 async function sendChatMessage(event){
@@ -16189,7 +16198,14 @@ const livingState={
   sleepyOriginalSrc:null,
   sleepyOriginalAlt:null,
   pykurAnchors:new Map(),
-  pykurAnchorFrame:null
+  pykurAnchorFrame:null,
+  source:null,
+  serverPollTimer:null,
+  serverPolling:false,
+  serverSequence:null,
+  serverAlertSequence:null,
+  serverStartedSequence:null,
+  serverLastWarningAt:0
 };
 
 function livingLayer(){return $("#livingEventsLayer")}
@@ -16279,6 +16295,7 @@ function livingStop({silent=false,schedule=true}={}){
   livingState.endTimer=null;
   livingState.active=false;
   livingState.current=null;
+  livingState.source=null;
   if(livingState.pykurAnchorFrame)cancelAnimationFrame(livingState.pykurAnchorFrame);
   livingState.pykurAnchorFrame=null;
   livingState.pykurAnchors?.clear();
@@ -16306,35 +16323,40 @@ function livingStop({silent=false,schedule=true}={}){
   $(".pykur-orb")?.classList.remove("live-star-wish");
   $("#pykurImg")?.classList.remove("live-star-wish");
   if(schedule){
-    livingState.cooldownUntil=Date.now()+livingCooldownMs();
     livingSchedule();
     passiveSchedule();
   }
   if(!silent)toast("Événement vivant arrêté.","info","click");
   livingRenderAdmin();
 }
-function livingStart(id,{admin=false,replay=false}={}){
+function livingStart(id,{admin=false,replay=false,synchronized=false,remainingMs=null}={}){
   if(!livingIsDesktop())return false;
   if(!data?.settings?.livingEvents && !admin)return false;
   const event=LIVING_EVENT_DEFS.find(ev=>ev.id===id) || livingPick();
   if(passiveState.active){
-    const remaining=Math.max(0,(passiveState.endAt||0)-Date.now());
-    const retryDelay=remaining<=5000 ? remaining+750 : 60000;
-    clearTimeout(livingState.timer);
-    livingState.timer=setTimeout(()=>livingStart(id,{admin,replay}),retryDelay);
-    livingState.cooldownUntil=Date.now()+retryDelay;
-    if(admin)toast("Ambiance passive en cours : événement retardé pour éviter le chevauchement.","info","click");
-    livingRenderAdmin();
-    return false;
+    if(synchronized){
+      passiveStop({reschedule:false,clearSchedules:true});
+    }else{
+      const remaining=Math.max(0,(passiveState.endAt||0)-Date.now());
+      const retryDelay=remaining<=5000 ? remaining+750 : 60000;
+      clearTimeout(livingState.timer);
+      livingState.timer=setTimeout(()=>livingStart(id,{admin,replay,synchronized,remainingMs}),retryDelay);
+      livingState.cooldownUntil=Date.now()+retryDelay;
+      if(admin)toast("Ambiance passive en cours : événement retardé pour éviter le chevauchement.","info","click");
+      livingRenderAdmin();
+      return false;
+    }
   }
   if(livingState.active)livingStop({silent:true,schedule:false});
   const layer=livingLayer();
   if(!layer)return false;
+  const duration=remainingMs===null ? event.duration : Math.max(500,Math.min(event.duration,Number(remainingMs)||event.duration));
   livingState.active=true;
   livingState.current=event.id;
+  livingState.source=synchronized?"server":(admin?"admin":"local");
   layer.className="";
   layer.innerHTML="";
-  livingSetDuration(event.duration);
+  livingSetDuration(duration);
   livingToast(event.message,event.legendary?"rare":"info",event.sound);
   event.run(event);
   if(!replay)markGalleryEventDiscovered(event.id);
@@ -16342,38 +16364,68 @@ function livingStart(id,{admin=false,replay=false}={}){
     const endMessage=event.endMessage;
     livingStop({silent:true,schedule:true});
     if(endMessage)livingToast(endMessage,event.legendary?"rare":"info",null);
-  },event.duration);
+  },duration);
   livingRenderAdmin();
   return true;
 }
-function livingSchedule(delay=null){
-  clearTimeout(livingState.timer);
-  clearTimeout(livingState.alertTimer);
-  livingState.timer=null;
-  livingState.alertTimer=null;
-  livingState.pendingEvent=null;
-  if(!livingIsDesktop() || !data?.settings?.livingEvents || livingState.active)return;
-  const wait=delay!==null ? delay : Math.max(1000,livingState.cooldownUntil-Date.now());
-  const event=livingPick();
-  livingState.pendingEvent=event.id;
-  const alertLead=30000;
-  const alertDelay=Math.max(1000,wait-alertLead);
-  livingState.alertTimer=setTimeout(()=>{
-    if(!livingIsDesktop() || !data?.settings?.livingEvents || livingState.active){livingResetScheduler();return}
-    if(document.querySelector(".modal-bg.show,.side-panel-bg.show")){livingState.cooldownUntil=Date.now()+60000;livingSchedule();return}
-    livingToast("Quelque chose semble se préparer...","info",LIVE_ASSETS.eventAlert);
-    livingState.timer=setTimeout(()=>{
-      if(!livingIsDesktop() || !data?.settings?.livingEvents || livingState.active){livingResetScheduler();return}
-      if(document.querySelector(".modal-bg.show,.side-panel-bg.show")){livingState.cooldownUntil=Date.now()+60000;livingSchedule();return}
-      livingStart(livingState.pendingEvent||event.id);
-    },alertLead);
-  },alertDelay);
-  livingRenderAdmin();
+function livingStopServerSync({resetSequence=false}={}){
+  if(livingState.serverPollTimer)clearInterval(livingState.serverPollTimer);
+  livingState.serverPollTimer=null;
+  livingState.serverPolling=false;
+  if(resetSequence){
+    livingState.serverSequence=null;
+    livingState.serverAlertSequence=null;
+    livingState.serverStartedSequence=null;
+  }
 }
-function livingResetScheduler({soon=false}={}){
-  clearTimeout(livingState.timer);
-  livingState.timer=null;
-  livingState.cooldownUntil=Date.now()+(soon?1000:livingCooldownMs());
+async function livingPollServer(){
+  if(livingState.serverPolling || !livingIsDesktop() || data?.settings?.livingEvents===false)return;
+  livingState.serverPolling=true;
+  try{
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),5000);
+    let response;
+    try{response=await fetch(`${AUTH_API_BASE}/events/living`,{cache:"no-store",signal:controller.signal})}
+    finally{clearTimeout(timeout)}
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    const payload=await response.json();
+    const shared=payload?.event;
+    if(!shared?.id || !Number.isFinite(Number(shared.sequence)))return;
+    const offset=Date.now()-Number(payload.serverTime||Date.now());
+    const startsAt=Number(shared.startsAt)+offset;
+    const endsAt=Number(shared.endsAt)+offset;
+    const alertAt=Number(shared.alertAt)+offset;
+    const sequence=Number(shared.sequence);
+    livingState.serverSequence=sequence;
+    livingState.pendingEvent=shared.id;
+    livingState.cooldownUntil=startsAt;
+    const now=Date.now();
+    if(now>=alertAt && now<startsAt && livingState.serverAlertSequence!==sequence){
+      livingState.serverAlertSequence=sequence;
+      livingToast("Quelque chose semble se préparer...","info",LIVE_ASSETS.eventAlert);
+    }
+    if(now>=startsAt && now<endsAt && livingState.serverStartedSequence!==sequence){
+      if(livingState.active && livingState.source!=="server")return;
+      const started=livingStart(shared.id,{synchronized:true,remainingMs:endsAt-now});
+      if(started)livingState.serverStartedSequence=sequence;
+    }
+    livingRenderAdmin();
+  }catch(error){
+    if(Date.now()-livingState.serverLastWarningAt>30000){
+      livingState.serverLastWarningAt=Date.now();
+      console.warn("[Événements] Synchronisation serveur temporairement indisponible.",error?.message||error);
+    }
+  }finally{
+    livingState.serverPolling=false;
+  }
+}
+function livingSchedule(){
+  if(!livingIsDesktop() || data?.settings?.livingEvents===false)return;
+  if(!livingState.serverPollTimer)livingState.serverPollTimer=setInterval(livingPollServer,2000);
+  livingPollServer();
+}
+function livingResetScheduler(){
+  livingStopServerSync({resetSequence:false});
   livingSchedule();
 }
 function livingOpenAdmin(){
@@ -20855,8 +20907,12 @@ function applySettings(){
   else dofusStopLoop();
   if(data.settings.passiveAmbience===false)passiveStop({reschedule:false});
   else if(passiveCanRun() && !passiveState.visualTimer && !passiveState.soundTimer && !passiveState.active)passiveSchedule();
-  if(data.settings.livingEvents===false)livingStop({silent:true,schedule:false});
-  else if(livingIsDesktop() && !livingState.timer && !livingState.active)livingResetScheduler();
+  if(data.settings.livingEvents===false){
+    livingStop({silent:true,schedule:false});
+    livingStopServerSync({resetSequence:true});
+  }else if(livingIsDesktop() && !livingState.serverPollTimer){
+    livingResetScheduler();
+  }
   renderShortcutOptions();
   updateShortcutLabels();
   filterOptionsSearch();
@@ -23952,7 +24008,7 @@ if($("#resetHudLayout"))$("#resetHudLayout").onclick=resetHudLayout;
 if($("#resetKeybinds"))$("#resetKeybinds").onclick=resetKeybindsToDefault;
 if($("#livingStopEvent"))$("#livingStopEvent").onclick=()=>{livingStop({silent:false,schedule:true});adminPanelAfterAction()};
 if($("#livingStopAll"))$("#livingStopAll").onclick=()=>{livingStopAll();adminPanelAfterAction()};
-if($("#livingSkipCooldown"))$("#livingSkipCooldown").onclick=()=>{livingState.cooldownUntil=Date.now();livingSchedule(500);livingRenderAdmin();toast("Cooldown des événements ignoré.","info","click");adminPanelAfterAction()};
+if($("#livingSkipCooldown"))$("#livingSkipCooldown").onclick=()=>{livingPollServer();livingRenderAdmin();toast("Planning serveur actualisé.","info","click");adminPanelAfterAction()};
 if($("#livingTestSounds"))$("#livingTestSounds").onclick=()=>{livingTestSounds();adminPanelAfterAction()};
 if($("#passiveToggleAdmin"))$("#passiveToggleAdmin").onclick=()=>{passiveToggleAdmin();adminPanelAfterAction()};
 if($("#passiveStopAdmin"))$("#passiveStopAdmin").onclick=()=>{passiveStop({reschedule:true});toast("Ambiance passive arrêtée.","info","click");adminPanelAfterAction()};

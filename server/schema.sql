@@ -197,3 +197,13 @@ CREATE TABLE IF NOT EXISTS chat_settings (
 );
 
 CREATE INDEX IF NOT EXISTS idx_reports_status ON message_reports(status, created_at);
+
+CREATE TABLE IF NOT EXISTS living_event_schedule (
+  id INTEGER PRIMARY KEY CHECK(id = 1),
+  sequence INTEGER NOT NULL DEFAULT 0,
+  event_id TEXT NOT NULL,
+  starts_at INTEGER NOT NULL,
+  ends_at INTEGER NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);

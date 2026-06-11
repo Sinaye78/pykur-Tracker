@@ -159,6 +159,15 @@ db.exec(`
     slow_mode_seconds INTEGER NOT NULL DEFAULT 0,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS living_event_schedule (
+    id INTEGER PRIMARY KEY CHECK(id = 1),
+    sequence INTEGER NOT NULL DEFAULT 0,
+    event_id TEXT NOT NULL,
+    starts_at INTEGER NOT NULL,
+    ends_at INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
   CREATE INDEX IF NOT EXISTS idx_reports_status ON message_reports(status, created_at);
 `);
 ensureColumn("private_messages", "edited_at", "TEXT");
@@ -167,6 +176,92 @@ ensureColumn("chat_messages", "edited_at", "TEXT");
 ensureColumn("chat_messages", "deleted_by_user_id", "INTEGER");
 db.prepare("INSERT OR IGNORE INTO chat_settings(id,locked,slow_mode_seconds) VALUES(1,0,0)").run();
 db.prepare("INSERT OR IGNORE INTO security_settings(id) VALUES(1)").run();
+
+const LIVING_EVENT_CATALOG = Object.freeze([
+  { id: "rain", duration: 20000 },
+  { id: "wind", duration: 13000 },
+  { id: "heat", duration: 15000 },
+  { id: "storm", duration: 10000 },
+  { id: "fog", duration: 23000 },
+  { id: "nightfall", duration: 20000 },
+  { id: "sunray", duration: 14000 },
+  { id: "keph", duration: 46000 },
+  { id: "shadow", duration: 22000 },
+  { id: "butterfly", duration: 22000 },
+  { id: "corbac", duration: 6200 },
+  { id: "chacha", duration: 19000 },
+  { id: "larva", duration: 26000 },
+  { id: "tofu", duration: 11200 },
+  { id: "poop", duration: 120000 },
+  { id: "coin", duration: 120000 },
+  { id: "fragment", duration: 120000 },
+  { id: "chest", duration: 120000 },
+  { id: "bottle", duration: 120000 },
+  { id: "resonance", duration: 38000 },
+  { id: "unstableAura", duration: 15000 },
+  { id: "shootingStar", duration: 5400 },
+  { id: "sleepy", duration: 17000 },
+  { id: "comet", duration: 4000, legendary: true },
+  { id: "awakening", duration: 8000, legendary: true },
+  { id: "fakeBug", duration: 2000, legendary: true }
+]);
+const LIVING_EVENT_ALERT_LEAD_MS = 30000;
+
+function randomInteger(min, max) {
+  return Math.floor(min + Math.random() * (max - min + 1));
+}
+
+function pickLivingEvent() {
+  const legendary = Math.random() < 0.035;
+  const pool = LIVING_EVENT_CATALOG.filter((event) => !!event.legendary === legendary);
+  return pool[randomInteger(0, pool.length - 1)] || LIVING_EVENT_CATALOG[0];
+}
+
+function createLivingEventSchedule(previousSequence = 0) {
+  const event = pickLivingEvent();
+  const startsAt = Date.now() + randomInteger(10 * 60 * 1000, 25 * 60 * 1000);
+  const endsAt = startsAt + event.duration;
+  db.prepare(`
+    INSERT INTO living_event_schedule(id,sequence,event_id,starts_at,ends_at)
+    VALUES(1,?,?,?,?)
+    ON CONFLICT(id) DO UPDATE SET
+      sequence=excluded.sequence,
+      event_id=excluded.event_id,
+      starts_at=excluded.starts_at,
+      ends_at=excluded.ends_at,
+      updated_at=CURRENT_TIMESTAMP
+  `).run(Number(previousSequence || 0) + 1, event.id, startsAt, endsAt);
+  return db.prepare("SELECT * FROM living_event_schedule WHERE id = 1").get();
+}
+
+function currentLivingEventSchedule() {
+  let row = db.prepare("SELECT * FROM living_event_schedule WHERE id = 1").get();
+  const known = row && LIVING_EVENT_CATALOG.some((event) => event.id === row.event_id);
+  if (!known || Number(row.ends_at) <= Date.now()) row = createLivingEventSchedule(row?.sequence || 0);
+  return row;
+}
+
+function publicLivingEventSchedule() {
+  const row = currentLivingEventSchedule();
+  const now = Date.now();
+  const startsAt = Number(row.starts_at);
+  const endsAt = Number(row.ends_at);
+  return {
+    serverTime: now,
+    event: {
+      sequence: Number(row.sequence),
+      id: row.event_id,
+      alertAt: startsAt - LIVING_EVENT_ALERT_LEAD_MS,
+      startsAt,
+      endsAt,
+      phase: now < startsAt ? "upcoming" : "active"
+    }
+  };
+}
+
+currentLivingEventSchedule();
+const livingEventScheduleTimer = setInterval(currentLivingEventSchedule, 5000);
+livingEventScheduleTimer.unref?.();
 
 const app = express();
 const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
@@ -953,6 +1048,11 @@ async function sendEmailVerificationEmail(user, link) {
 
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "pykur-tracker", version: "1.5.0-preview" });
+});
+
+app.get("/api/events/living", (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  res.json(publicLivingEventSchedule());
 });
 
 app.post("/api/auth/register", asyncRoute(async (req, res) => {
