@@ -3514,6 +3514,82 @@ body.no-anim .app.milestone-flash{
   border-radius:13px!important;
 }
 
+/* Barre principale : commandes illustrées, compactes et accessibles. */
+.top-tool-btn.top-tool-icon-btn{
+  position:relative;
+  flex:0 0 52px;
+  width:52px!important;
+  height:52px!important;
+  min-width:52px!important;
+  min-height:52px!important;
+  padding:3px!important;
+  border:0!important;
+  border-radius:50%!important;
+  overflow:visible;
+  background:transparent!important;
+  box-shadow:none!important;
+  isolation:isolate;
+}
+
+.top-tool-icon-btn .top-tool-icon{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  pointer-events:none;
+  filter:drop-shadow(0 4px 5px rgba(65,35,12,.28));
+  transition:transform 180ms ease,filter 180ms ease,opacity 180ms ease;
+}
+
+.top-tool-icon-btn:hover{
+  transform:translateY(-2px)!important;
+  filter:brightness(1.04);
+}
+
+.top-tool-icon-btn:hover .top-tool-icon{
+  transform:scale(1.045);
+  filter:drop-shadow(0 6px 7px rgba(65,35,12,.34));
+}
+
+.top-tool-icon-btn:active{
+  transform:translateY(0) scale(.95)!important;
+}
+
+.top-tool-icon-btn:focus-visible{
+  outline:3px solid rgba(37,99,235,.72)!important;
+  outline-offset:3px;
+}
+
+.top-tool-icon-btn.sound-toggle.muted .top-tool-icon{
+  opacity:.58;
+  filter:grayscale(.62) drop-shadow(0 3px 4px rgba(65,35,12,.22));
+}
+
+.top-tool-label{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+
+@media(max-width:768px){
+  .top-tools{
+    gap:5px;
+  }
+  .top-tool-btn.top-tool-icon-btn{
+    flex:0 0 46px!important;
+    width:46px!important;
+    height:46px!important;
+    min-width:46px!important;
+    min-height:46px!important;
+  }
+}
+
 .save-status{
   align-self:center;
   min-height:28px;
@@ -10928,11 +11004,26 @@ body.no-anim .pykur-sparkle{
 <main class="app">
   <div class="top-tools">
     <span class="save-status" id="saveStatus" aria-live="polite">Sauvegarde en attente</span>
-    <button class="btn btn-blue tooltip top-tool-btn" id="helpButton" data-tooltip="Lance une visite guidée pour comprendre chaque zone importante du tracker." type="button">Aide</button>
-    <button class="btn btn-gray tooltip top-tool-btn sound-toggle" id="soundToggle" data-tooltip="Son activé" type="button" aria-label="Son activé">🔊</button>
-    <button class="btn btn-blue tooltip top-tool-btn" id="achievementsButton" data-tooltip="Ouvre les succès du tracker." type="button">Succès</button>
-    <button class="btn btn-orange tooltip top-tool-btn" id="galleryButton" data-tooltip="Ouvre la galerie des Pykurs terminés et événements découverts." type="button">Galerie</button>
-    <button class="btn btn-gray tooltip top-tool-btn" id="optionsButton" data-tooltip="Ouvre les réglages : thème, sons, notifications, sauvegarde et options de confort." aria-label="Options">Options</button>
+    <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="helpButton" data-tooltip="Aide : ouvrir le guide du tracker." type="button" aria-label="Ouvrir l'aide">
+      <img class="top-tool-icon" src="./assets/bouton/aide.png" alt="" aria-hidden="true">
+      <span class="top-tool-label">Aide</span>
+    </button>
+    <button class="btn tooltip top-tool-btn top-tool-icon-btn sound-toggle" id="soundToggle" data-tooltip="Son activé" type="button" aria-label="Son activé">
+      <img class="top-tool-icon" src="./assets/bouton/son.png" alt="" aria-hidden="true">
+      <span class="top-tool-label">Son</span>
+    </button>
+    <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="achievementsButton" data-tooltip="Succès : consulter vos objectifs et récompenses." type="button" aria-label="Ouvrir les succès">
+      <img class="top-tool-icon" src="./assets/bouton/succes.png" alt="" aria-hidden="true">
+      <span class="top-tool-label">Succès</span>
+    </button>
+    <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="galleryButton" data-tooltip="Galerie : revoir vos Pykurs et événements découverts." type="button" aria-label="Ouvrir la galerie">
+      <img class="top-tool-icon" src="./assets/bouton/galerie.png" alt="" aria-hidden="true">
+      <span class="top-tool-label">Galerie</span>
+    </button>
+    <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="optionsButton" data-tooltip="Options : régler le tracker et vos raccourcis." type="button" aria-label="Ouvrir les options">
+      <img class="top-tool-icon" src="./assets/bouton/option.png" alt="" aria-hidden="true">
+      <span class="top-tool-label">Options</span>
+    </button>
   </div>
   <div class="layout">
     <aside class="side">
@@ -20293,7 +20384,6 @@ function applySettings(){
     passiveState.audios=[];
   }
   if($("#soundToggle")){
-    $("#soundToggle").textContent=data.settings.sound?"🔊":"🔇";
     $("#soundToggle").dataset.tooltip=data.settings.sound?`Son activé (${Math.round(soundVolumeRatio()*100)}%) : clique pour régler le volume.`:"Son désactivé : clique pour régler ou réactiver.";
     $("#soundToggle").dataset.tooltipBase=$("#soundToggle").dataset.tooltip;
     $("#soundToggle").setAttribute("aria-label",data.settings.sound?"Son activé":"Son désactivé");
