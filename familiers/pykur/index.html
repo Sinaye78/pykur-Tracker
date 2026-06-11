@@ -3694,11 +3694,6 @@ body.no-anim .app.milestone-flash{
   outline-offset:3px;
 }
 
-.top-tool-icon-btn.sound-toggle.muted .top-tool-icon{
-  opacity:.58;
-  filter:grayscale(.62) drop-shadow(0 3px 4px rgba(65,35,12,.22));
-}
-
 .top-tool-label{
   position:absolute!important;
   width:1px!important;
@@ -6635,9 +6630,7 @@ body.help-active{
 }
 
 .sound-toggle.muted{
-  color:#fff;
-  background:#667085!important;
-  opacity:.82;
+  opacity:1;
 }
 
 body.charlie-mode,
@@ -11389,7 +11382,7 @@ body.night .dungeon-card .dungeon-mini{
       <span class="top-tool-label">Aide</span>
     </button>
     <button class="btn tooltip top-tool-btn top-tool-icon-btn sound-toggle" id="soundToggle" data-tooltip-title="Son" data-tooltip="Son activé" type="button" aria-label="Son activé">
-      <img class="top-tool-icon" src="./assets/bouton/son.png" alt="" aria-hidden="true">
+      <img class="top-tool-icon" id="soundToggleIcon" src="./assets/bouton/son.png" alt="" aria-hidden="true">
       <span class="top-tool-label">Son</span>
     </button>
     <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="achievementsButton" data-tooltip-title="Succès" data-tooltip="Consulter vos objectifs et récompenses." type="button" aria-label="Ouvrir les succès">
@@ -20788,6 +20781,7 @@ function applySettings(){
     $("#soundToggle").dataset.tooltipBase=$("#soundToggle").dataset.tooltip;
     $("#soundToggle").setAttribute("aria-label",data.settings.sound?"Son activé":"Son désactivé");
     $("#soundToggle").classList.toggle("muted",!data.settings.sound);
+    if($("#soundToggleIcon"))$("#soundToggleIcon").src=data.settings.sound?"./assets/bouton/son.png":"./assets/bouton/sonoff.png";
   }
   if($("#toggleHud"))$("#toggleHud").textContent=data.settings.hudMode?"Activé":"Désactivé";
 
