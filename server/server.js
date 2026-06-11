@@ -254,6 +254,8 @@ function publicLivingEventSchedule() {
       alertAt: startsAt - LIVING_EVENT_ALERT_LEAD_MS,
       startsAt,
       endsAt,
+      startsInMs: Math.max(0, startsAt - now),
+      endsInMs: Math.max(0, endsAt - now),
       phase: now < startsAt ? "upcoming" : "active"
     }
   };

@@ -3812,10 +3812,35 @@ body.no-anim .app.milestone-flash{
   box-shadow:none!important;
 }
 .auth-widget .auth-icon-btn{
+  position:relative;
   width:34px!important;
   padding:0!important;
   font-size:15px!important;
   line-height:1!important;
+}
+.auth-widget .auth-icon-btn.has-notification{
+  color:#fff!important;
+  border-color:rgba(250,204,21,.88)!important;
+  box-shadow:0 0 0 2px rgba(250,204,21,.18),0 0 16px rgba(250,204,21,.28)!important;
+}
+.auth-notification-badge{
+  position:absolute;
+  top:-7px;
+  right:-7px;
+  min-width:19px;
+  height:19px;
+  padding:0 5px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:2px solid #fff8e7;
+  border-radius:999px;
+  background:#dc2626;
+  color:#fff;
+  font-size:10px;
+  font-weight:950;
+  line-height:1;
+  box-shadow:0 4px 12px rgba(91,20,20,.35);
 }
 .auth-widget .auth-danger-btn{
   background:rgba(255,255,255,.12)!important;
@@ -12338,9 +12363,11 @@ body.night .dungeon-card .dungeon-mini{
       <div class="living-admin-status">
         <div>Événement actif : <span id="livingEventActiveLabel">Aucun</span></div>
         <div>Ambiance passive : <span id="passiveAmbienceActiveLabel">Aucune</span></div>
-        <div>Cooldown : <span id="livingEventCooldownLabel">-</span></div>
-        <div>Ambiance visuelle : <span id="passiveVisualCooldownLabel">-</span></div>
-        <div>Ambiance sonore : <span id="passiveSoundCooldownLabel">-</span></div>
+        <div>Prochain événement global : <span id="livingEventNextLabel">-</span></div>
+        <div>Départ serveur : <span id="livingEventStartLabel">-</span></div>
+        <div>Cooldown global : <span id="livingEventCooldownLabel">-</span></div>
+        <div>Ambiance visuelle locale : <span id="passiveVisualCooldownLabel">-</span></div>
+        <div>Ambiance sonore locale : <span id="passiveSoundCooldownLabel">-</span></div>
         <div>Système passif : <span id="passiveSystemLabel">-</span></div>
       </div>
       <div class="living-admin-options">
@@ -12353,7 +12380,7 @@ body.night .dungeon-card .dungeon-mini{
       <div class="toolbar">
         <button class="btn btn-red" id="livingStopEvent" type="button">Arrêter l'événement</button>
         <button class="btn btn-red" id="livingStopAll" type="button">Tout arrêter</button>
-        <button class="btn btn-blue" id="livingSkipCooldown" type="button">Ignorer cooldown</button>
+        <button class="btn btn-blue" id="livingSkipCooldown" type="button">Actualiser le planning</button>
         <button class="btn btn-orange" id="livingTestSounds" type="button">Tester sons</button>
         <button class="btn btn-blue" id="passiveToggleAdmin" type="button">Ambiances on/off</button>
         <button class="btn btn-gray" id="passiveStopAdmin" type="button">Stop ambiance</button>
@@ -12605,7 +12632,7 @@ let authMode="login";
 let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null,refreshTimer:null};
 const socialState={friends:0,incoming:0,outgoing:0,loaded:false};
 const messageState={activePseudo:null,conversations:[],unread:0,lastSeenAt:localStorage.getItem("pykur_messages_seen_at")||"",timer:null,lastNotifiedAt:localStorage.getItem("pykur_messages_notified_at")||"",threadRequest:0};
-const chatState={messages:[],online:[],ignored:[],settings:{locked:0,slowModeSeconds:0},lastPingSeenAt:localStorage.getItem("pykur_chat_ping_seen_at")||"",timer:null,pingTimer:null,hideShares:false,hideText:false,refreshing:false};
+const chatState={messages:[],online:[],ignored:[],settings:{locked:0,slowModeSeconds:0},lastPingSeenAt:localStorage.getItem("pykur_chat_ping_seen_at")||"",mentionUnread:Math.max(0,parseInt(localStorage.getItem("pykur_chat_mention_unread"),10)||0),timer:null,pingTimer:null,hideShares:false,hideText:false,refreshing:false};
 messageState.refreshing=false;
 const cloudState={timer:null,retryTimer:null,retryAttempt:0,syncing:false,pending:false,lastSyncAt:null,error:null,loading:false};
 let accountProfileSection="account";
@@ -12768,11 +12795,14 @@ function authRender(){
   const moderationButton=["moderator","admin"].includes(user.role) ? '<button class="btn btn-orange tooltip" id="authModerationOverview" type="button" data-tooltip="Tableau de modération">Modération</button>' : "";
   const friendsBadge=socialState.incoming>0 ? `<span class="auth-friends-badge">${socialState.incoming}</span>` : "";
   const messagesBadge=messageState.unread>0 ? `<span class="auth-friends-badge">${messageState.unread}</span>` : "";
-  box.innerHTML='<button class="auth-user-chip account-open tooltip" id="accountProfileOpen" type="button" data-tooltip="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-green auth-icon-btn tooltip" id="authChatboxPanel" type="button" aria-label="Chat global" data-tooltip="Chat global">💬</button><button class="btn btn-gray auth-icon-btn tooltip" id="authSocialMenu" type="button" aria-label="Menu social" data-tooltip="Menu social">☰</button><div class="auth-menu-panel" id="authMenuPanel"><button class="btn btn-blue" id="authCommunitySearch" type="button">Membres</button><button class="btn btn-blue auth-friends-button" id="authFriendsPanel" type="button">Amis'+friendsBadge+'</button><button class="btn btn-green auth-friends-button" id="authMessagesPanel" type="button">Messages'+messagesBadge+'</button>'+moderationButton+adminButton+'<button class="btn btn-gray auth-danger-btn" id="authLogout" type="button">Déconnexion</button></div>';
+  const chatBadge=chatState.mentionUnread>0 ? `<span class="auth-notification-badge">${Math.min(99,chatState.mentionUnread)}</span>` : "";
+  const directBadge=messageState.unread>0 ? `<span class="auth-notification-badge">${Math.min(99,messageState.unread)}</span>` : "";
+  box.innerHTML='<button class="auth-user-chip account-open tooltip" id="accountProfileOpen" type="button" data-tooltip="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-green auth-icon-btn tooltip '+(chatState.mentionUnread?'has-notification':'')+'" id="authChatboxPanel" type="button" aria-label="Chat global" data-tooltip="Chat global'+(chatState.mentionUnread?' · '+chatState.mentionUnread+' mention(s) non lue(s)':'')+'">💬'+chatBadge+'</button><button class="btn btn-blue auth-icon-btn tooltip '+(messageState.unread?'has-notification':'')+'" id="authDirectMessages" type="button" aria-label="Messages privés" data-tooltip="Messages privés'+(messageState.unread?' · '+messageState.unread+' nouveau(x)':'')+'">✉'+directBadge+'</button><button class="btn btn-gray auth-icon-btn tooltip" id="authSocialMenu" type="button" aria-label="Menu social" data-tooltip="Menu social">☰</button><div class="auth-menu-panel" id="authMenuPanel"><button class="btn btn-blue" id="authCommunitySearch" type="button">Membres</button><button class="btn btn-blue auth-friends-button" id="authFriendsPanel" type="button">Amis'+friendsBadge+'</button><button class="btn btn-green auth-friends-button" id="authMessagesPanel" type="button">Messages'+messagesBadge+'</button>'+moderationButton+adminButton+'<button class="btn btn-gray auth-danger-btn" id="authLogout" type="button">Déconnexion</button></div>';
   if($("#accountProfileOpen"))$("#accountProfileOpen").onclick=openAccountProfile;
   if($("#authCommunitySearch"))$("#authCommunitySearch").onclick=openCommunityDirectory;
   if($("#authFriendsPanel"))$("#authFriendsPanel").onclick=openFriendsPanel;
   if($("#authChatboxPanel"))$("#authChatboxPanel").onclick=openChatboxPanel;
+  if($("#authDirectMessages"))$("#authDirectMessages").onclick=()=>openMessagesPanel();
   if($("#authMessagesPanel"))$("#authMessagesPanel").onclick=()=>openMessagesPanel();
   if($("#authModerationOverview"))$("#authModerationOverview").onclick=openModerationOverview;
   if($("#authLogout"))$("#authLogout").onclick=authLogout;
@@ -14105,11 +14135,16 @@ function detectChatPings(){
   if(!authState.user?.pseudo)return;
   const seen=chatState.lastPingSeenAt ? new Date(chatState.lastPingSeenAt).getTime() : 0;
   const mention=`@${authState.user.pseudo}`.toLowerCase();
-  const hit=chatState.messages.find(item=>!item.isMine && item.createdAt && new Date(item.createdAt).getTime()>seen && String(item.body||"").toLowerCase().includes(mention));
-  if(hit){
-    chatState.lastPingSeenAt=new Date().toISOString();
+  const hits=chatState.messages.filter(item=>!item.isMine && item.createdAt && new Date(item.createdAt).getTime()>seen && String(item.body||"").toLowerCase().includes(mention));
+  if(hits.length){
+    const newest=hits.slice().sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime())[0];
+    chatState.lastPingSeenAt=newest.createdAt;
     localStorage.setItem("pykur_chat_ping_seen_at",chatState.lastPingSeenAt);
-    toast(`${hit.sender?.pseudo||"Un membre"} vous a mentionné dans le chat.`,"info","click");
+    if($("#chatboxModal")?.classList.contains("show"))return;
+    chatState.mentionUnread=Math.min(99,chatState.mentionUnread+hits.length);
+    localStorage.setItem("pykur_chat_mention_unread",String(chatState.mentionUnread));
+    authRender();
+    toast(`${newest.sender?.pseudo||"Un membre"} vous a mentionné dans le chat.`,"info","click");
   }
 }
 
@@ -14156,6 +14191,9 @@ function stopChatboxPolling(){
 
 async function openChatboxPanel(){
   if(!authState.user)return authOpen("login");
+  chatState.mentionUnread=0;
+  localStorage.setItem("pykur_chat_mention_unread","0");
+  authRender();
   openModal("chatboxModal");
   if($("#chatHideShares"))$("#chatHideShares").checked=chatState.hideShares;
   if($("#chatHideText"))$("#chatHideText").checked=chatState.hideText;
@@ -16205,7 +16243,10 @@ const livingState={
   serverSequence:null,
   serverAlertSequence:null,
   serverStartedSequence:null,
-  serverLastWarningAt:0
+  serverLastWarningAt:0,
+  serverRemainingMs:0,
+  serverReceivedAt:0,
+  serverStartsAt:0
 };
 
 function livingLayer(){return $("#livingEventsLayer")}
@@ -16376,6 +16417,9 @@ function livingStopServerSync({resetSequence=false}={}){
     livingState.serverSequence=null;
     livingState.serverAlertSequence=null;
     livingState.serverStartedSequence=null;
+    livingState.serverRemainingMs=0;
+    livingState.serverReceivedAt=0;
+    livingState.serverStartsAt=0;
   }
 }
 async function livingPollServer(){
@@ -16391,14 +16435,18 @@ async function livingPollServer(){
     const payload=await response.json();
     const shared=payload?.event;
     if(!shared?.id || !Number.isFinite(Number(shared.sequence)))return;
-    const offset=Date.now()-Number(payload.serverTime||Date.now());
-    const startsAt=Number(shared.startsAt)+offset;
-    const endsAt=Number(shared.endsAt)+offset;
-    const alertAt=Number(shared.alertAt)+offset;
+    const startsInMs=Number.isFinite(Number(shared.startsInMs)) ? Number(shared.startsInMs) : Math.max(0,Number(shared.startsAt)-Number(payload.serverTime||Date.now()));
+    const endsInMs=Number.isFinite(Number(shared.endsInMs)) ? Number(shared.endsInMs) : Math.max(0,Number(shared.endsAt)-Number(payload.serverTime||Date.now()));
+    const startsAt=Date.now()+startsInMs;
+    const endsAt=Date.now()+endsInMs;
+    const alertAt=startsAt-30000;
     const sequence=Number(shared.sequence);
     livingState.serverSequence=sequence;
     livingState.pendingEvent=shared.id;
     livingState.cooldownUntil=startsAt;
+    livingState.serverRemainingMs=shared.phase==="active" ? endsInMs : startsInMs;
+    livingState.serverReceivedAt=performance.now();
+    livingState.serverStartsAt=startsAt;
     const now=Date.now();
     if(now>=alertAt && now<startsAt && livingState.serverAlertSequence!==sequence){
       livingState.serverAlertSequence=sequence;
@@ -16524,15 +16572,21 @@ function livingBuildAdmin(){
 function livingRenderAdmin(){
   const active=$("#livingEventActiveLabel");
   const passive=$("#passiveAmbienceActiveLabel");
+  const next=$("#livingEventNextLabel");
+  const start=$("#livingEventStartLabel");
   const cooldown=$("#livingEventCooldownLabel");
   const passiveVisual=$("#passiveVisualCooldownLabel");
   const passiveSound=$("#passiveSoundCooldownLabel");
   const passiveSystem=$("#passiveSystemLabel");
   if(active)active.textContent=livingState.current ? (LIVING_EVENT_DEFS.find(ev=>ev.id===livingState.current)?.label||livingState.current) : "Aucun";
   if(passive)passive.textContent=passiveState.current ? (PASSIVE_AMBIENCE_EVENTS.find(item=>item.id===passiveState.current)?.label||passiveState.current) : "Aucune";
+  const scheduled=LIVING_EVENT_DEFS.find(ev=>ev.id===livingState.pendingEvent);
+  if(next)next.textContent=scheduled ? `${scheduled.label} · #${livingState.serverSequence||"-"}` : "Synchronisation...";
+  if(start)start.textContent=livingState.serverStartsAt ? new Date(livingState.serverStartsAt).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit",second:"2-digit"}) : "Synchronisation...";
   if(cooldown){
-    const remain=Math.max(0,livingState.cooldownUntil-Date.now());
-    cooldown.textContent=livingState.active ? "En cours" : remain ? `${Math.ceil(remain/1000)}s` : "Prêt";
+    const elapsed=livingState.serverReceivedAt ? performance.now()-livingState.serverReceivedAt : 0;
+    const remain=Math.max(0,livingState.serverRemainingMs-elapsed);
+    cooldown.textContent=livingState.active && livingState.source==="server" ? `En cours · ${Math.ceil(remain/1000)}s` : remain ? `${Math.ceil(remain/1000)}s` : "Synchronisation...";
   }
   if(passiveVisual){
     const remain=Math.max(0,(passiveState.visualCooldownUntil||0)-Date.now());
@@ -24013,7 +24067,7 @@ if($("#livingTestSounds"))$("#livingTestSounds").onclick=()=>{livingTestSounds()
 if($("#passiveToggleAdmin"))$("#passiveToggleAdmin").onclick=()=>{passiveToggleAdmin();adminPanelAfterAction()};
 if($("#passiveStopAdmin"))$("#passiveStopAdmin").onclick=()=>{passiveStop({reschedule:true});toast("Ambiance passive arrêtée.","info","click");adminPanelAfterAction()};
 if($("#passiveTestSoundsAdmin"))$("#passiveTestSoundsAdmin").onclick=()=>{passiveTestSoundAdmin();adminPanelAfterAction()};
-if($("#livingRefreshAdmin"))$("#livingRefreshAdmin").onclick=livingRenderAdmin;
+if($("#livingRefreshAdmin"))$("#livingRefreshAdmin").onclick=()=>livingPollServer();
 if($("#adminAchievementSounds"))$("#adminAchievementSounds").onchange=e=>{
   adminAchievementSounds=!!e.target.checked;
   toast(adminAchievementSounds?"Sons admin activés pour les succès.":"Sons admin désactivés pour les succès.","info","click");
