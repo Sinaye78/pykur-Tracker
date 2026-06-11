@@ -2658,10 +2658,70 @@ body.no-anim .app.milestone-flash{
 .projection-sim-pill span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase}
 .projection-sim-pill strong{display:block;margin-top:2px;color:#1d4ed8;font-size:15px}
 .projection-sim-note{margin-top:9px;color:#6b4a20;font-size:12px;font-weight:850}
+.projection-tabs{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  margin:0 0 12px;
+  padding:5px;
+  border:1px solid rgba(126,91,43,.26);
+  border-radius:13px;
+  background:rgba(255,255,255,.28);
+}
+#projectionContent{
+  display:block;
+}
+.projection-tab{
+  min-height:42px;
+  border:1px solid transparent;
+  border-radius:9px;
+  background:transparent;
+  color:var(--muted);
+  font:inherit;
+  font-size:13px;
+  font-weight:900;
+  cursor:pointer;
+  transition:background .16s ease,color .16s ease,border-color .16s ease,transform .16s ease;
+}
+.projection-tab:hover{
+  color:var(--text);
+  background:rgba(255,255,255,.36);
+}
+.projection-tab.active{
+  color:#fff;
+  border-color:rgba(29,78,216,.30);
+  background:linear-gradient(180deg,#3b82f6,#2563eb);
+  box-shadow:0 6px 14px rgba(37,99,235,.20);
+}
+.projection-tab:focus-visible{
+  outline:3px solid rgba(37,99,235,.28);
+  outline-offset:2px;
+}
+.projection-view-panel{
+  display:none;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.projection-view-panel.active{display:grid}
+.projection-view-panel > .wide{grid-column:1 / -1}
+.projection-summary-note{
+  margin-top:8px;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+  line-height:1.4;
+}
+.projection-detail-intro{
+  grid-column:1 / -1;
+  padding:2px 2px 0;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+}
 .projection-progress{height:14px;border-radius:999px;background:rgba(0,0,0,.20);overflow:hidden;border:1px solid rgba(0,0,0,.22);margin-top:10px}
 .projection-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#16a34a,#84cc16,#facc15)}
 .tryhard-chip{display:inline-flex;align-items:center;justify-content:center;padding:3px 7px;border-radius:999px;font-size:11px;font-weight:900;color:#3b2408;background:linear-gradient(#fff3b0,#facc15)}
-@media(max-width:768px){.projection-dashboard{grid-template-columns:1fr}.dashboard-bottom-actions{grid-template-columns:1fr!important}.projection-sim-grid,.projection-sim-summary{grid-template-columns:1fr}}
+@media(max-width:768px){.projection-dashboard{grid-template-columns:1fr}.dashboard-bottom-actions{grid-template-columns:1fr!important}.projection-sim-grid,.projection-sim-summary,.projection-view-panel{grid-template-columns:1fr}.projection-view-panel > .wide{grid-column:1}.projection-tabs{gap:4px}.projection-tab{min-height:40px;padding:5px;font-size:12px}}
 
 /* ===== Ergonomie dashboard 2026 ===== */
 .app{
@@ -12259,6 +12319,11 @@ body.night .dungeon-card .dungeon-mini{
       <button class="btn btn-red modal-close" data-close="projectionModal">✕</button>
     </div>
     <div class="modal-body">
+      <div class="projection-tabs" role="tablist" aria-label="Sections de la projection">
+        <button class="projection-tab active" type="button" role="tab" aria-selected="true" data-projection-view="summary">Résumé</button>
+        <button class="projection-tab" type="button" role="tab" aria-selected="false" data-projection-view="simulator">Simulateur</button>
+        <button class="projection-tab" type="button" role="tab" aria-selected="false" data-projection-view="details">Détails</button>
+      </div>
       <div class="projection-dashboard" id="projectionContent"></div>
     </div>
     <div class="modal-foot">
@@ -20822,7 +20887,7 @@ function runShortcutAction(actionId){
     chronoReset:resetChrono,
     openHistory:openHistoryShortcut,
     openOptions:openOptionsShortcut,
-    openProjection:()=>{unlockAchievement("open_projection");renderProjection();openModal("projectionModal")},
+    openProjection:()=>{unlockAchievement("open_projection");setProjectionView("summary",false);renderProjection();openModal("projectionModal")},
     openMonsters:()=>{unlockAchievement("open_monsters");renderMonsterTable();openModal("monstersModal")},
     openGallery:()=>{renderGallery();openModal("galleryModal")},
     toggleSound:()=>{setGlobalSound(!data.settings.sound);playSound("click")},
@@ -22141,9 +22206,20 @@ function estimateTimeForRuns(farm,runs){
 }
 
 let projectionSimulation={morose:0,tynril:0};
+let projectionView="summary";
 
 function resetProjectionSimulation(){
   projectionSimulation={morose:0,tynril:0};
+}
+
+function setProjectionView(view="summary",shouldRender=true){
+  projectionView=["summary","simulator","details"].includes(view)?view:"summary";
+  document.querySelectorAll("[data-projection-view]").forEach(button=>{
+    const active=button.dataset.projectionView===projectionView;
+    button.classList.toggle("active",active);
+    button.setAttribute("aria-selected",active?"true":"false");
+  });
+  if(shouldRender)renderProjection();
 }
 
 function simulatedProjectionMobs(){
@@ -22202,73 +22278,94 @@ function renderProjection(){
   const simTynrilLeft=simulateRunsForPPFromMobs("tynril",PP_MAX,simMobs,virtualRuns);
 
   box.innerHTML=`
-    <section class="projection-card wide">
-      <div class="projection-head"><h3>Progression actuelle</h3><span class="projection-badge">${pct.toFixed(1)}%</span></div>
-      <div class="projection-big">${pp} / ${PP_MAX} PP</div>
-      <div class="projection-sub">Projection basée sur vos monstres, donjons et temps moyens actuels.</div>
-      <div class="projection-progress"><span style="width:${pct}%"></span></div>
-    </section>
-    <section class="projection-card wide">
-      <div class="projection-head"><h3>Simulateur de donjons</h3><span class="projection-badge">Simulateur</span></div>
-      <div class="projection-sub">Ces valeurs ne modifient pas votre Pykur, ne sauvegardent rien et ne débloquent aucun succès.</div>
-      <div class="projection-sim-grid">
-        <div class="projection-sim-control">
-          <span>Morose</span>
-          <span class="projection-sim-count">${projectionSimulation.morose||0}</span>
-          <button class="btn btn-gray" type="button" data-projection-sim="morose" data-delta="-1">-</button>
-          <button class="btn btn-blue" type="button" data-projection-sim="morose" data-delta="1">+</button>
+    <div class="projection-view-panel ${projectionView==="summary"?"active":""}" data-projection-panel="summary">
+      <section class="projection-card wide">
+        <div class="projection-head"><h3>Progression actuelle</h3><span class="projection-badge">${pct.toFixed(1)}%</span></div>
+        <div class="projection-big">${pp} / ${PP_MAX} PP</div>
+        <div class="projection-sub">Projection basée sur vos monstres et donjons actuels.</div>
+        <div class="projection-progress"><span style="width:${pct}%"></span></div>
+      </section>
+      <section class="projection-card">
+        <div class="projection-head"><h3>Prochaine PP</h3><span class="projection-badge">Gain réel</span></div>
+        <div class="projection-lines">
+          <div class="projection-line"><span>Morose</span><strong>${formatProjectionRuns(nextMorose)}</strong></div>
+          <div class="projection-line gain-line"><span>Gain prévu</span><strong>${formatProjectionGain(nextMoroseGain)} (${fmtProjectionPP(pp)} → ${fmtProjectionPP(pp+(nextMoroseGain||0))})</strong></div>
+          <div class="projection-line"><span>Tynril</span><strong>${formatProjectionRuns(nextTynril)}</strong></div>
+          <div class="projection-line gain-line"><span>Gain prévu</span><strong>${formatProjectionGain(nextTynrilGain)} (${fmtProjectionPP(pp)} → ${fmtProjectionPP(pp+(nextTynrilGain||0))})</strong></div>
         </div>
-        <div class="projection-sim-control">
-          <span>Tynril</span>
-          <span class="projection-sim-count">${projectionSimulation.tynril||0}</span>
-          <button class="btn btn-gray" type="button" data-projection-sim="tynril" data-delta="-1">-</button>
-          <button class="btn btn-blue" type="button" data-projection-sim="tynril" data-delta="1">+</button>
+      </section>
+      <section class="projection-card">
+        <div class="projection-head"><h3>Objectif 100%</h3><span class="projection-badge">${PP_MAX} PP</span></div>
+        <div class="projection-lines">
+          <div class="projection-line"><span>Morose restant</span><strong>${formatProjectionRuns(fullMorose)}</strong></div>
+          <div class="projection-line"><span>Tynril restant</span><strong>${formatProjectionRuns(fullTynril)}</strong></div>
         </div>
-      </div>
-      <div class="projection-sim-grid">
-        <button class="btn btn-blue" type="button" data-projection-sim="morose" data-delta="10">+10 Morose</button>
-        <button class="btn btn-blue" type="button" data-projection-sim="tynril" data-delta="10">+10 Tynril</button>
-      </div>
-      <div class="projection-sim-summary">
-        <div class="projection-sim-pill"><span>PP simulée</span><strong>${fmtProjectionPP(pp)} → ${fmtProjectionPP(simPP)}</strong></div>
-        <div class="projection-sim-pill"><span>Gain simulé</span><strong>+${fmtProjectionPP(simGain)} PP</strong></div>
-        <div class="projection-sim-pill"><span>Progression</span><strong>${simPct.toFixed(1)}%</strong></div>
-        <div class="projection-sim-pill"><span>Restant 100%</span><strong>M ${formatProjectionRuns(simMoroseLeft)} · T ${formatProjectionRuns(simTynrilLeft)}</strong></div>
-      </div>
-      <div class="projection-sim-note">
-        <button class="btn btn-gray" type="button" data-projection-sim-reset>Reset simulation</button>
-      </div>
-    </section>
-    <section class="projection-card">
-      <div class="projection-head"><h3>Prochaine PP</h3><span class="projection-badge">Gain réel</span></div>
-      <div class="projection-lines">
-        <div class="projection-line"><span>Morose</span><strong>${formatProjectionRuns(nextMorose)}</strong></div>
-        <div class="projection-line gain-line"><span>Gain Morose</span><strong>${formatProjectionGain(nextMoroseGain)} (${fmtProjectionPP(pp)} → ${fmtProjectionPP(pp+(nextMoroseGain||0))})</strong></div>
-        <div class="projection-line"><span>Temps Morose</span><strong>${estimateTimeForRuns("morose",nextMorose)}</strong></div>
-        <div class="projection-line"><span>Tynril</span><strong>${formatProjectionRuns(nextTynril)}</strong></div>
-        <div class="projection-line gain-line"><span>Gain Tynril</span><strong>${formatProjectionGain(nextTynrilGain)} (${fmtProjectionPP(pp)} → ${fmtProjectionPP(pp+(nextTynrilGain||0))})</strong></div>
-        <div class="projection-line"><span>Temps Tynril</span><strong>${estimateTimeForRuns("tynril",nextTynril)}</strong></div>
-      </div>
-    </section>
-    <section class="projection-card">
-      <div class="projection-head"><h3>Objectif 100%</h3><span class="projection-badge">${PP_MAX} PP</span></div>
-      <div class="projection-lines">
-        <div class="projection-line"><span>Morose restant</span><strong>${formatProjectionRuns(fullMorose)}</strong></div>
-        <div class="projection-line"><span>Temps Morose</span><strong>${estimateTimeForRuns("morose",fullMorose)}</strong></div>
-        <div class="projection-line"><span>Tynril restant</span><strong>${formatProjectionRuns(fullTynril)}</strong></div>
-        <div class="projection-line"><span>Temps Tynril</span><strong>${estimateTimeForRuns("tynril",fullTynril)}</strong></div>
-      </div>
-    </section>
-    <section class="projection-card wide">
-      <div class="projection-head"><h3>Rendement estimé</h3><span class="projection-badge">Optimisation</span></div>
-      <div class="projection-lines">
-        <div class="projection-line"><span>Morose</span><strong>${moroseRate} PP/donjon</strong></div>
-        <div class="projection-line"><span>Tynril</span><strong>${tynrilRate} PP/donjon</strong></div>
-        <div class="projection-line"><span>Mode tryhard auto</span><strong>${data.settings.autoMarkOnPlus?'<span class="tryhard-chip">Activé</span>':'Désactivé'}</strong></div>
-        <div class="projection-line"><span>Calcul chrono</span><strong>${chronoEstimate?chronoEstimate.message:"Désactivé"}</strong></div>
-      </div>
-    </section>
+        <div class="projection-summary-note">Consultez l'onglet Détails pour les estimations de temps et les rendements.</div>
+      </section>
+    </div>
+
+    <div class="projection-view-panel ${projectionView==="simulator"?"active":""}" data-projection-panel="simulator">
+      <section class="projection-card wide">
+        <div class="projection-head"><h3>Simulateur de donjons</h3><span class="projection-badge">Simulateur</span></div>
+        <div class="projection-sub">Ces valeurs ne modifient pas votre Pykur, ne sauvegardent rien et ne débloquent aucun succès.</div>
+        <div class="projection-sim-grid">
+          <div class="projection-sim-control">
+            <span>Morose</span>
+            <span class="projection-sim-count">${projectionSimulation.morose||0}</span>
+            <button class="btn btn-gray" type="button" data-projection-sim="morose" data-delta="-1">-</button>
+            <button class="btn btn-blue" type="button" data-projection-sim="morose" data-delta="1">+</button>
+          </div>
+          <div class="projection-sim-control">
+            <span>Tynril</span>
+            <span class="projection-sim-count">${projectionSimulation.tynril||0}</span>
+            <button class="btn btn-gray" type="button" data-projection-sim="tynril" data-delta="-1">-</button>
+            <button class="btn btn-blue" type="button" data-projection-sim="tynril" data-delta="1">+</button>
+          </div>
+        </div>
+        <div class="projection-sim-grid">
+          <button class="btn btn-blue" type="button" data-projection-sim="morose" data-delta="10">+10 Morose</button>
+          <button class="btn btn-blue" type="button" data-projection-sim="tynril" data-delta="10">+10 Tynril</button>
+        </div>
+        <div class="projection-sim-summary">
+          <div class="projection-sim-pill"><span>PP simulée</span><strong>${fmtProjectionPP(pp)} → ${fmtProjectionPP(simPP)}</strong></div>
+          <div class="projection-sim-pill"><span>Gain simulé</span><strong>+${fmtProjectionPP(simGain)} PP</strong></div>
+          <div class="projection-sim-pill"><span>Progression</span><strong>${simPct.toFixed(1)}%</strong></div>
+          <div class="projection-sim-pill"><span>Restant 100%</span><strong>M ${formatProjectionRuns(simMoroseLeft)} · T ${formatProjectionRuns(simTynrilLeft)}</strong></div>
+        </div>
+        <div class="projection-sim-note">
+          <button class="btn btn-gray" type="button" data-projection-sim-reset>Reset simulation</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="projection-view-panel ${projectionView==="details"?"active":""}" data-projection-panel="details">
+      <div class="projection-detail-intro">Les calculs ci-dessous utilisent vos temps moyens actuels sans modifier votre progression.</div>
+      <section class="projection-card">
+        <div class="projection-head"><h3>Temps prochaine PP</h3><span class="projection-badge">Prochain palier</span></div>
+        <div class="projection-lines">
+          <div class="projection-line"><span>Morose</span><strong>${estimateTimeForRuns("morose",nextMorose)}</strong></div>
+          <div class="projection-line"><span>Tynril</span><strong>${estimateTimeForRuns("tynril",nextTynril)}</strong></div>
+        </div>
+      </section>
+      <section class="projection-card">
+        <div class="projection-head"><h3>Temps objectif 100%</h3><span class="projection-badge">${PP_MAX} PP</span></div>
+        <div class="projection-lines">
+          <div class="projection-line"><span>Morose</span><strong>${estimateTimeForRuns("morose",fullMorose)}</strong></div>
+          <div class="projection-line"><span>Tynril</span><strong>${estimateTimeForRuns("tynril",fullTynril)}</strong></div>
+        </div>
+      </section>
+      <section class="projection-card wide">
+        <div class="projection-head"><h3>Rendement et calcul</h3><span class="projection-badge">Optimisation</span></div>
+        <div class="projection-lines">
+          <div class="projection-line"><span>Rendement Morose</span><strong>${moroseRate} PP/donjon</strong></div>
+          <div class="projection-line"><span>Rendement Tynril</span><strong>${tynrilRate} PP/donjon</strong></div>
+          <div class="projection-line"><span>Mode tryhard auto</span><strong>${data.settings.autoMarkOnPlus?'<span class="tryhard-chip">Activé</span>':'Désactivé'}</strong></div>
+          <div class="projection-line"><span>Calcul chrono</span><strong>${chronoEstimate?chronoEstimate.message:"Désactivé"}</strong></div>
+        </div>
+      </section>
+    </div>
   `;
+  setProjectionView(projectionView,false);
 }
 
 function renderStats(){
@@ -23520,6 +23617,11 @@ if($("#closeRunTimesBottom"))$("#closeRunTimesBottom").onclick=()=>closeModal("r
 if($("#clearRunTimes"))$("#clearRunTimes").onclick=clearMarkedTimes;
 if($("#runTimesPanel"))$("#runTimesPanel").addEventListener("click",e=>{if(e.target.id==="runTimesPanel" && !data.settings.hudMode)closeModal("runTimesPanel")});
 document.addEventListener("click",e=>{
+  const projectionTab=e.target.closest("[data-projection-view]");
+  if(projectionTab){
+    setProjectionView(projectionTab.dataset.projectionView);
+    return;
+  }
   const rename=e.target.closest("[data-rename-mark]");
   if(rename)renameMarkedTime(parseInt(rename.dataset.renameMark,10));
   const del=e.target.closest("[data-delete-mark]");
@@ -23863,7 +23965,7 @@ if($("#toggleAutoMark"))$("#toggleAutoMark").onclick=()=>{
   addActivity(data.settings.autoMarkOnPlus?"Run tryhard auto activé":"Run tryhard auto désactivé","info");
 };
 
-if($("#projectionButton"))$("#projectionButton").onclick=()=>{unlockAchievement("open_projection");renderProjection();openModal("projectionModal")};
+if($("#projectionButton"))$("#projectionButton").onclick=()=>{unlockAchievement("open_projection");setProjectionView("summary",false);renderProjection();openModal("projectionModal")};
 applyHelpfulTooltips();
 load();
 authRefresh();
