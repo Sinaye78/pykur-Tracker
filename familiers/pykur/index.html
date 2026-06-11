@@ -1332,9 +1332,69 @@ body{
 
 /* ===== Stats Fantasy UI moderne ===== */
 .stats-fantasy-dashboard{
+  display:block;
+}
+
+.stats-tabs{
   display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  margin:0 0 12px;
+  padding:5px;
+  border:1px solid rgba(126,91,43,.26);
+  border-radius:13px;
+  background:rgba(255,255,255,.28);
+}
+
+.stats-tab{
+  min-height:42px;
+  padding:7px 10px;
+  border:1px solid transparent;
+  border-radius:9px;
+  background:transparent;
+  color:var(--muted);
+  font:inherit;
+  font-size:13px;
+  font-weight:900;
+  cursor:pointer;
+  transition:background .16s ease,color .16s ease,border-color .16s ease,transform .16s ease;
+}
+
+.stats-tab:hover{
+  color:var(--text);
+  background:rgba(255,255,255,.36);
+}
+
+.stats-tab.active{
+  color:#fff;
+  border-color:rgba(29,78,216,.30);
+  background:linear-gradient(180deg,#3b82f6,#2563eb);
+  box-shadow:0 6px 14px rgba(37,99,235,.20);
+}
+
+.stats-tab:focus-visible{
+  outline:3px solid rgba(37,99,235,.28);
+  outline-offset:2px;
+}
+
+.stats-view-panel{
+  display:none;
   grid-template-columns:1fr 1fr;
   gap:12px;
+}
+
+.stats-view-panel.active{display:grid}
+
+.stats-view-panel > .wide{
+  grid-column:1 / -1;
+}
+
+.stats-section-intro{
+  grid-column:1 / -1;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+  line-height:1.4;
 }
 
 .stats-fantasy-card{
@@ -1500,8 +1560,23 @@ body{
 }
 
 @media(max-width:768px){
-  .stats-fantasy-dashboard{
+  .stats-view-panel{
     grid-template-columns:1fr;
+  }
+
+  .stats-view-panel > .wide,
+  .stats-section-intro{
+    grid-column:1;
+  }
+
+  .stats-tabs{
+    gap:4px;
+  }
+
+  .stats-tab{
+    min-height:40px;
+    padding:5px;
+    font-size:11px;
   }
 
   .stats-kpi-grid,
@@ -11528,7 +11603,14 @@ body.night .dungeon-card .dungeon-mini{
 <div class="modal-bg" id="statsModal">
   <div class="modal">
     <div class="modal-head"><div><h2>📊 Statistiques</h2><p>Analysez votre progression, vos donjons et votre rythme de farm.</p></div><button class="btn btn-red modal-close" data-close="statsModal">✕</button></div>
-    <div class="modal-body"><div class="stats-fantasy-dashboard" id="statsContent"></div></div>
+    <div class="modal-body">
+      <div class="stats-tabs" role="tablist" aria-label="Sections des statistiques">
+        <button class="stats-tab active" type="button" role="tab" aria-selected="true" data-stats-view="overview">Vue générale</button>
+        <button class="stats-tab" type="button" role="tab" aria-selected="false" data-stats-view="dungeons">Donjons</button>
+        <button class="stats-tab" type="button" role="tab" aria-selected="false" data-stats-view="timing">Temps et rendement</button>
+      </div>
+      <div class="stats-fantasy-dashboard" id="statsContent"></div>
+    </div>
     <div class="modal-foot"><button class="btn btn-gray" data-close="statsModal">Fermer</button></div>
   </div>
 </div>
@@ -22368,6 +22450,18 @@ function renderProjection(){
   setProjectionView(projectionView,false);
 }
 
+let statsView="overview";
+
+function setStatsView(view="overview",shouldRender=true){
+  statsView=["overview","dungeons","timing"].includes(view)?view:"overview";
+  document.querySelectorAll("[data-stats-view]").forEach(button=>{
+    const active=button.dataset.statsView===statsView;
+    button.classList.toggle("active",active);
+    button.setAttribute("aria-selected",active?"true":"false");
+  });
+  if(shouldRender)renderStats();
+}
+
 function renderStats(){
   const content=$("#statsContent");
   const days=data.stats?.days||{};
@@ -22417,6 +22511,7 @@ function renderStats(){
     : "Aucune journée active";
 
   content.innerHTML=`
+    <div class="stats-view-panel ${statsView==="overview"?"active":""}" data-stats-panel="overview">
     <section class="stats-fantasy-card wide">
       <div class="stats-fantasy-head">
         <h3>📅 Aujourd’hui</h3>
@@ -22479,6 +22574,39 @@ function renderStats(){
         </div>
       </div>
     </section>
+    </div>
+
+    <div class="stats-view-panel ${statsView==="dungeons"?"active":""}" data-stats-panel="dungeons">
+    <div class="stats-section-intro">Comparez le volume de donjons et leur contribution réelle à votre prospection.</div>
+    <section class="stats-fantasy-card wide">
+      <div class="stats-fantasy-head">
+        <h3>Répartition des donjons</h3>
+        <div class="stats-fantasy-badge">${totalRuns} au total</div>
+      </div>
+      <div class="stats-fantasy-body">
+        <div class="stats-kpi-grid">
+          <div class="stats-kpi">
+            <div class="stats-kpi-label">Morose</div>
+            <div class="stats-kpi-value stats-orange">${data.runs.morose||0}</div>
+            <div class="stats-kpi-sub">${morosePct}% des donjons</div>
+          </div>
+          <div class="stats-kpi">
+            <div class="stats-kpi-label">Tynril</div>
+            <div class="stats-kpi-value stats-purple">${data.runs.tynril||0}</div>
+            <div class="stats-kpi-sub">${tynrilPct}% des donjons</div>
+          </div>
+          <div class="stats-kpi">
+            <div class="stats-kpi-label">Total</div>
+            <div class="stats-kpi-value stats-blue">${totalRuns}</div>
+            <div class="stats-kpi-sub">profil actuel</div>
+          </div>
+        </div>
+        <div class="stats-mini-bar">
+          <span style="width:${morosePct}%"></span>
+          <span style="width:${tynrilPct}%"></span>
+        </div>
+      </div>
+    </section>
 
     <section class="stats-fantasy-card wide">
       <div class="stats-fantasy-head">
@@ -22510,7 +22638,10 @@ function renderStats(){
         </div>
       </div>
     </section>
+    </div>
 
+    <div class="stats-view-panel ${statsView==="timing"?"active":""}" data-stats-panel="timing">
+    <div class="stats-section-intro">Retrouvez vos meilleurs temps, vos moyennes réelles et le volume de runs chronométrés.</div>
     <section class="stats-fantasy-card wide">
       <div class="stats-fantasy-head">
         <h3>⏱ Chrono</h3>
@@ -22536,7 +22667,9 @@ function renderStats(){
         </div>
       </div>
     </section>
+    </div>
   `;
+  setStatsView(statsView,false);
 }
 
 let activityFilter="all";
@@ -23441,7 +23574,7 @@ $("#editRuns").onclick=editRuns;
 $("#undoButton").onclick=undo;
 $("#resetButton").onclick=resetAll;
 
-$("#statsButton").onclick=()=>{unlockAchievement("open_stats");renderStats();openModal("statsModal")};
+$("#statsButton").onclick=()=>{unlockAchievement("open_stats");setStatsView("overview",false);renderStats();openModal("statsModal")};
 $("#helpButton").onclick=startHelp;
 $("#helpNext").onclick=nextHelp;
 $("#helpPrev").onclick=prevHelp;
@@ -23617,6 +23750,11 @@ if($("#closeRunTimesBottom"))$("#closeRunTimesBottom").onclick=()=>closeModal("r
 if($("#clearRunTimes"))$("#clearRunTimes").onclick=clearMarkedTimes;
 if($("#runTimesPanel"))$("#runTimesPanel").addEventListener("click",e=>{if(e.target.id==="runTimesPanel" && !data.settings.hudMode)closeModal("runTimesPanel")});
 document.addEventListener("click",e=>{
+  const statsTab=e.target.closest("[data-stats-view]");
+  if(statsTab){
+    setStatsView(statsTab.dataset.statsView);
+    return;
+  }
   const projectionTab=e.target.closest("[data-projection-view]");
   if(projectionTab){
     setProjectionView(projectionTab.dataset.projectionView);
