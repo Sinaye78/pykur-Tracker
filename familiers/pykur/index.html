@@ -3751,9 +3751,10 @@ body.no-anim .app.milestone-flash{
   top:calc(100% + 8px);
   right:0;
   display:none;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:repeat(4,44px);
+  justify-content:end;
   gap:7px;
-  width:250px;
+  width:auto;
   padding:10px;
   border:1px solid rgba(255,255,255,.24);
   border-radius:16px;
@@ -3765,6 +3766,17 @@ body.no-anim .app.milestone-flash{
 }
 .auth-menu-panel .btn{
   width:100%!important;
+}
+.auth-menu-panel .social-image-button{
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  padding:4px!important;
+}
+.auth-menu-panel .auth-danger-btn{
+  grid-column:1/-1;
+  min-height:34px!important;
 }
 .auth-user-chip{
   display:flex;
@@ -4491,6 +4503,52 @@ body.no-anim .app.milestone-flash{
   position:relative;
 }
 
+.social-image-button{
+  position:relative;
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  padding:4px!important;
+  border:1px solid rgba(255,232,170,.34)!important;
+  border-radius:11px!important;
+  background:linear-gradient(180deg,rgba(255,250,232,.16),rgba(61,35,15,.2))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 5px 12px rgba(20,10,3,.18)!important;
+  overflow:visible!important;
+}
+
+.social-image-button img,
+.social-action-button img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  filter:drop-shadow(0 2px 3px rgba(30,15,4,.25));
+  transition:transform .18s ease,filter .18s ease;
+}
+
+.social-image-button:hover img,
+.social-image-button:focus-visible img,
+.social-action-button:hover img,
+.social-action-button:focus-visible img{
+  transform:translateY(-1px) scale(1.04);
+  filter:brightness(1.07) drop-shadow(0 3px 5px rgba(30,15,4,.3));
+}
+
+.social-image-button:active img,
+.social-action-button:active img{transform:scale(.95)}
+
+.social-action-button{
+  position:relative;
+  width:48px!important;
+  min-width:48px!important;
+  height:48px!important;
+  min-height:48px!important;
+  padding:5px!important;
+  border-radius:11px!important;
+  overflow:visible!important;
+}
+
 .auth-friends-badge{
   position:absolute;
   top:-8px;
@@ -4572,6 +4630,43 @@ body.no-anim .app.milestone-flash{
   font:inherit;
 }
 
+.message-conversation-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 38px;
+  align-items:center;
+  border-bottom:1px solid rgba(140,100,48,.16);
+}
+
+.message-conversation-row .message-conversation{border-bottom:0}
+
+.message-conversation-main{
+  display:grid;
+  grid-template-columns:40px minmax(0,1fr);
+  gap:9px;
+  align-items:center;
+}
+
+.message-conversation-avatar{
+  width:38px;
+  height:38px;
+}
+
+.message-conversation-copy{min-width:0}
+.message-conversation-copy small{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.message-profile-open{
+  width:32px!important;
+  min-width:32px!important;
+  height:32px!important;
+  min-height:32px!important;
+  padding:3px!important;
+  margin-right:6px;
+}
+
 .message-conversation:hover,
 .message-conversation.active{
   background:linear-gradient(135deg,rgba(255,247,214,.86),rgba(219,234,254,.58));
@@ -4599,6 +4694,21 @@ body.no-anim .app.milestone-flash{
   border-bottom:1px solid rgba(140,100,48,.18);
   background:linear-gradient(135deg,rgba(255,247,214,.78),rgba(255,255,255,.48));
 }
+
+.messages-thread-profile{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  cursor:pointer;
+  font:inherit;
+}
+
+.messages-thread-profile:hover strong{text-decoration:underline}
 
 .messages-thread-head strong,
 .messages-thread-head small{
@@ -10700,6 +10810,21 @@ body.no-anim .pykur-sparkle{
   line-height:1;
 }
 
+.auth-friends-badge.outgoing{
+  background:linear-gradient(180deg,#93c5fd,#2563eb);
+  color:#fff;
+}
+
+.auth-friends-badge.combined{
+  background:linear-gradient(180deg,#fde047,#f59e0b);
+  animation:socialBadgePulse 2.2s ease-in-out infinite;
+}
+
+@keyframes socialBadgePulse{
+  0%,100%{box-shadow:0 4px 12px rgba(0,0,0,.22)}
+  50%{box-shadow:0 4px 16px rgba(245,158,11,.58),0 0 0 4px rgba(250,204,21,.12)}
+}
+
 .moderation-summary-card.is-alert{
   border-color:rgba(220,38,38,.3);
   background:linear-gradient(135deg,rgba(254,226,226,.84),rgba(255,255,255,.72));
@@ -12903,7 +13028,7 @@ const AUTH_API_BASE=localStorage.getItem("pykur_api_base")||(location.hostname==
 const AUTH_TOKEN_KEY="pykur_auth_token";
 let authMode="login";
 let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null,refreshTimer:null};
-const socialState={friends:0,incoming:0,outgoing:0,loaded:false};
+const socialState={friends:0,incoming:0,outgoing:0,loaded:false,seenIncoming:[]};
 const messageState={activePseudo:null,conversations:[],unread:0,timer:null,lastNotifiedId:Math.max(0,parseInt(localStorage.getItem("pykur_messages_notified_id"),10)||0),threadRequest:0};
 const chatState={messages:[],online:[],ignored:[],settings:{locked:0,slowModeSeconds:0},lastPingSeenAt:localStorage.getItem("pykur_chat_ping_seen_at")||"",mentionUnread:Math.max(0,parseInt(localStorage.getItem("pykur_chat_mention_unread"),10)||0),timer:null,pingTimer:null,hideShares:false,hideText:false,refreshing:false};
 messageState.refreshing=false;
@@ -12915,6 +13040,12 @@ function loadSocialNotificationState(){
   messageState.lastNotifiedId=Math.max(0,parseInt(localStorage.getItem(socialNotificationKey("pykur_messages_notified_id")),10)||0);
   chatState.lastPingSeenAt=localStorage.getItem(socialNotificationKey("pykur_chat_ping_seen_at"))||"";
   chatState.mentionUnread=Math.max(0,parseInt(localStorage.getItem(socialNotificationKey("pykur_chat_mention_unread")),10)||0);
+  try{
+    const stored=JSON.parse(localStorage.getItem(socialNotificationKey("pykur_friend_requests_seen"))||"[]");
+    socialState.seenIncoming=Array.isArray(stored)?stored:[];
+  }catch{
+    socialState.seenIncoming=[];
+  }
 }
 const cloudState={timer:null,retryTimer:null,retryAttempt:0,syncing:false,pending:false,lastSyncAt:null,error:null,loading:false};
 let accountProfileSection="account";
@@ -13018,6 +13149,14 @@ function authRoleLabel(role){
   return role==="admin"?"Admin":role==="moderator"?"Modérateur":"Utilisateur";
 }
 
+function socialAssetButton({id,asset,title,description,className="",badge="",attributes=""}){
+  return `<button class="btn social-image-button tooltip ${className}" id="${id}" type="button" aria-label="${escapeHtml(title)}" data-tooltip-title="${escapeHtml(title)}" data-tooltip="${escapeHtml(description)}" ${attributes}><img src="assets/bouton/${asset}" alt="" aria-hidden="true">${badge}</button>`;
+}
+
+function socialActionButton({asset,title,description,className="btn-blue",attributes=""}){
+  return `<button class="btn ${className} social-action-button tooltip" type="button" aria-label="${escapeHtml(title)}" data-tooltip-title="${escapeHtml(title)}" data-tooltip="${escapeHtml(description)}" ${attributes}><img src="assets/bouton/${asset}" alt="" aria-hidden="true"></button>`;
+}
+
 const ACCOUNT_PRIVACY_OPTIONS=[
   {group:"Visibilité",key:"publicProfile",label:"Profil public",description:"Autoriser l'affichage d'une page profil communautaire."},
   {group:"Visibilité",key:"showSecondaryProfiles",label:"Afficher mes profils secondaires",description:"Permet aux autres membres de consulter vos autres profils Pykur."},
@@ -13078,19 +13217,21 @@ function authRender(){
     return;
   }
   const user=authState.user;
-  const adminButton=user.role==="admin" ? '<button class="btn btn-orange tooltip" id="authAdminPanel" type="button" data-tooltip="Ouvrir l’admin panel">Admin</button>' : "";
-  const moderationButton=["moderator","admin"].includes(user.role) ? '<button class="btn btn-orange tooltip" id="authModerationOverview" type="button" data-tooltip="Tableau de modération">Modération</button>' : "";
-  const friendsBadge=socialState.incoming>0 ? `<span class="auth-friends-badge">${socialState.incoming}</span>` : "";
-  const messagesBadge=messageState.unread>0 ? `<span class="auth-friends-badge">${messageState.unread}</span>` : "";
+  const pendingFriends=socialState.incoming+socialState.outgoing;
+  const friendsBadge=pendingFriends>0 ? `<span class="auth-friends-badge combined">${Math.min(99,pendingFriends)}</span>` : "";
+  const socialMenuBadge=pendingFriends>0 ? `<span class="auth-notification-badge">${Math.min(99,pendingFriends)}</span>` : "";
   const chatBadge=chatState.mentionUnread>0 ? `<span class="auth-notification-badge">${Math.min(99,chatState.mentionUnread)}</span>` : "";
   const directBadge=messageState.unread>0 ? `<span class="auth-notification-badge">${Math.min(99,messageState.unread)}</span>` : "";
-  box.innerHTML='<button class="auth-user-chip account-open tooltip" id="accountProfileOpen" type="button" data-tooltip="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-green auth-icon-btn tooltip '+(chatState.mentionUnread?'has-notification':'')+'" id="authChatboxPanel" type="button" aria-label="Chat global" data-tooltip="Chat global'+(chatState.mentionUnread?' · '+chatState.mentionUnread+' mention(s) non lue(s)':'')+'">💬'+chatBadge+'</button><button class="btn btn-blue auth-icon-btn tooltip '+(messageState.unread?'has-notification':'')+'" id="authDirectMessages" type="button" aria-label="Messages privés" data-tooltip="Messages privés'+(messageState.unread?' · '+messageState.unread+' nouveau(x)':'')+'">✉'+directBadge+'</button><button class="btn btn-gray auth-icon-btn tooltip" id="authSocialMenu" type="button" aria-label="Menu social" data-tooltip="Menu social">☰</button><div class="auth-menu-panel" id="authMenuPanel"><button class="btn btn-blue" id="authCommunitySearch" type="button">Membres</button><button class="btn btn-blue auth-friends-button" id="authFriendsPanel" type="button">Amis'+friendsBadge+'</button><button class="btn btn-green auth-friends-button" id="authMessagesPanel" type="button">Messages'+messagesBadge+'</button>'+moderationButton+adminButton+'<button class="btn btn-gray auth-danger-btn" id="authLogout" type="button">Déconnexion</button></div>';
+  const memberButton=socialAssetButton({id:"authCommunitySearch",asset:"membre.png",title:"Membres",description:"Rechercher un membre et consulter son profil communautaire."});
+  const friendsButton=socialAssetButton({id:"authFriendsPanel",asset:"ami.png",title:"Amis",description:pendingFriends?`${pendingFriends} demande${pendingFriends>1?"s":""} en attente. Ouvrez la liste pour les traiter.`:"Gérer vos amis et vos demandes.",className:"auth-friends-button",badge:friendsBadge});
+  const moderationButton=["moderator","admin"].includes(user.role) ? socialAssetButton({id:"authModerationOverview",asset:"moderation.png",title:"Modération",description:"Ouvrir les signalements, sanctions et journaux de modération."}) : "";
+  const adminButton=user.role==="admin" ? socialAssetButton({id:"authAdminPanel",asset:"admin.png",title:"Admin panel",description:"Ouvrir les outils administrateur du tracker."}) : "";
+  box.innerHTML='<button class="auth-user-chip account-open tooltip" id="accountProfileOpen" type="button" data-tooltip="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-green auth-icon-btn tooltip '+(chatState.mentionUnread?'has-notification':'')+'" id="authChatboxPanel" type="button" aria-label="Chat global" data-tooltip="Chat global'+(chatState.mentionUnread?' · '+chatState.mentionUnread+' mention(s) non lue(s)':'')+'">💬'+chatBadge+'</button><button class="btn btn-blue auth-icon-btn tooltip '+(messageState.unread?'has-notification':'')+'" id="authDirectMessages" type="button" aria-label="Messages privés" data-tooltip="Messages privés'+(messageState.unread?' · '+messageState.unread+' nouveau(x)':'')+'">✉'+directBadge+'</button><button class="btn btn-gray auth-icon-btn tooltip '+(pendingFriends?'has-notification':'')+'" id="authSocialMenu" type="button" aria-label="Menu social" data-tooltip="Menu social'+(pendingFriends?' · '+pendingFriends+' demande(s) en attente':'')+'">☰'+socialMenuBadge+'</button><div class="auth-menu-panel" id="authMenuPanel">'+memberButton+friendsButton+moderationButton+adminButton+'<button class="btn btn-gray auth-danger-btn" id="authLogout" type="button">Déconnexion</button></div>';
   if($("#accountProfileOpen"))$("#accountProfileOpen").onclick=openAccountProfile;
   if($("#authCommunitySearch"))$("#authCommunitySearch").onclick=openCommunityDirectory;
   if($("#authFriendsPanel"))$("#authFriendsPanel").onclick=openFriendsPanel;
   if($("#authChatboxPanel"))$("#authChatboxPanel").onclick=openChatboxPanel;
   if($("#authDirectMessages"))$("#authDirectMessages").onclick=()=>openMessagesPanel();
-  if($("#authMessagesPanel"))$("#authMessagesPanel").onclick=()=>openMessagesPanel();
   if($("#authModerationOverview"))$("#authModerationOverview").onclick=openModerationOverview;
   if($("#authLogout"))$("#authLogout").onclick=authLogout;
   if($("#authAdminPanel"))$("#authAdminPanel").onclick=()=>livingOpenAdmin();
@@ -13170,6 +13311,7 @@ async function confirmEmailVerificationToken(token){
     authState.user=result.user;
     authState.apiOnline=true;
     localStorage.setItem(AUTH_TOKEN_KEY,authState.token);
+    loadSocialNotificationState();
     authRender();
     toast("Email confirmé. Votre compte est activé.","success","success");
     cloudAfterLogin({silent:true});
@@ -13356,8 +13498,8 @@ function renderCommunityProfile(profile){
         <h3 class="community-profile-title">${escapeHtml(profile?.pseudo||"Profil")} ${memberStatusMarkup(profile)}</h3>
         <p>${profile?.isPrivate?"Profil privé · ":""}Compte créé le ${profile?.createdAt?formatDateShort(profile.createdAt):"date inconnue"}</p>
         <div class="community-profile-hero-actions">
-          <button class="btn btn-blue" type="button" data-community-copy-link="${escapeHtml(profile?.pseudo||"")}">Copier le lien public</button>
-          <button class="btn btn-gray" type="button" data-community-open-search>Rechercher un membre</button>
+          ${socialActionButton({asset:"copierprofil.png",title:"Copier le profil",description:"Copier le lien public de ce profil.",attributes:`data-community-copy-link="${escapeHtml(profile?.pseudo||"")}"`})}
+          ${socialActionButton({asset:"recherchermembre.png",title:"Rechercher un membre",description:"Ouvrir l'annuaire des membres.",className:"btn-gray",attributes:"data-community-open-search"})}
           ${profile?.moderationView?`<span class="community-moderation-badge">Vue modération</span>`:""}
           ${canOpenModerationTools(profile)?`<button class="btn btn-orange" type="button" data-community-moderate="${escapeHtml(profile?.pseudo||"")}">Modérer</button>`:""}
         </div>
@@ -14023,15 +14165,16 @@ function renderCommunitySocialActions(container,pseudo,social={}){
     container.innerHTML=`<span class="community-profile-summary-item"><small>Profil</small>Votre compte</span>`;
     return;
   }
-  const messageButton=`<button class="btn btn-green" type="button" data-social-message="${escapeHtml(pseudo||"")}">Message</button>`;
+  const messageButton=socialActionButton({asset:"message%20prive.png",title:"Message privé",description:"Ouvrir une conversation privée avec ce membre.",className:"btn-green",attributes:`data-social-message="${escapeHtml(pseudo||"")}"`});
+  const removeButton=socialActionButton({asset:"retirerami.png",title:"Retirer des amis",description:"Retirer ce membre de votre liste d'amis.",className:"btn-red",attributes:'data-social-action="remove"'});
   if(social.status==="friends"){
-    container.innerHTML=`<button class="btn btn-green" type="button" disabled>Ami</button>${social.canMessage?messageButton:""}<button class="btn btn-red" type="button" data-social-action="remove">Retirer</button>`;
+    container.innerHTML=`${social.canMessage?messageButton:""}${removeButton}`;
   }else if(social.status==="pending_sent"){
-    container.innerHTML=`<button class="btn btn-gray" type="button" disabled>Demande envoyée</button><button class="btn btn-red" type="button" data-social-action="remove">Annuler</button>`;
+    container.innerHTML=`<span class="community-profile-summary-item"><small>Demande</small>Envoyée</span>${removeButton}`;
   }else if(social.status==="pending_received"){
     container.innerHTML=`<button class="btn btn-green" type="button" data-social-action="accept">Accepter</button><button class="btn btn-gray" type="button" data-social-action="reject">Refuser</button>`;
   }else{
-    container.innerHTML=`<button class="btn btn-blue" type="button" data-social-action="request">Ajouter en ami</button>`;
+    container.innerHTML=socialActionButton({asset:"ajouterami.png",title:"Ajouter en ami",description:"Envoyer une demande d'ami à ce membre.",attributes:'data-social-action="request"'});
   }
   container.querySelectorAll("[data-social-action]").forEach(button=>{
     button.addEventListener("click",()=>communitySocialAction(pseudo,button.dataset.socialAction));
@@ -14069,6 +14212,26 @@ function updateSocialStateFromFriends(payload={}){
   socialState.loaded=true;
 }
 
+function notifyIncomingFriendRequests(payload={}){
+  const incoming=Array.isArray(payload.incoming)?payload.incoming:[];
+  if(!incoming.length)return;
+  const seen=new Set(socialState.seenIncoming||[]);
+  const fresh=incoming.filter(item=>{
+    const key=`${String(item?.user?.pseudo||"").toLowerCase()}|${item?.createdAt||""}`;
+    item.__notificationKey=key;
+    return key && !seen.has(key);
+  });
+  if(!fresh.length)return;
+  fresh.forEach(item=>seen.add(item.__notificationKey));
+  socialState.seenIncoming=Array.from(seen).slice(-100);
+  localStorage.setItem(socialNotificationKey("pykur_friend_requests_seen"),JSON.stringify(socialState.seenIncoming));
+  const names=fresh.map(item=>item?.user?.pseudo).filter(Boolean);
+  const message=names.length===1
+    ? `${names[0]} vous a envoyé une demande d'ami.`
+    : `${names.length} nouvelles demandes d'ami sont en attente.`;
+  toast(message,"info","notification");
+}
+
 async function refreshFriendSummary(options={}){
   if(!authState.user){
     socialState.friends=0;
@@ -14081,6 +14244,7 @@ async function refreshFriendSummary(options={}){
   try{
     const payload=await authFetch("/social/friends");
     updateSocialStateFromFriends(payload);
+    notifyIncomingFriendRequests(payload);
     authRender();
     return payload;
   }catch(error){
@@ -14100,10 +14264,12 @@ function friendRow(item,actions=[]){
         ${memberStatusMarkup(user)}
       </div>
       <div class="friend-row-actions">
-        <button class="btn btn-blue" type="button" data-friend-view="${escapeHtml(user.pseudo||"")}">Voir</button>
+        ${socialActionButton({asset:"voir.png",title:"Voir le profil",description:"Consulter le profil communautaire de ce membre.",attributes:`data-friend-view="${escapeHtml(user.pseudo||"")}"`})}
         ${actions.map(action=>action.action==="message"
-          ? `<button class="btn ${action.className}" type="button" data-friend-message="${escapeHtml(user.pseudo||"")}">${action.label}</button>`
-          : `<button class="btn ${action.className}" type="button" data-friend-action="${action.action}" data-friend-pseudo="${escapeHtml(user.pseudo||"")}">${action.label}</button>`
+          ? socialActionButton({asset:"message%20prive.png",title:"Message privé",description:"Ouvrir une conversation privée avec cet ami.",className:action.className,attributes:`data-friend-message="${escapeHtml(user.pseudo||"")}"`})
+          : action.action==="remove"
+            ? socialActionButton({asset:"retirerami.png",title:action.label||"Retirer",description:action.label==="Annuler"?"Annuler cette demande d'ami.":"Retirer ce membre de votre liste d'amis.",className:action.className,attributes:`data-friend-action="${action.action}" data-friend-pseudo="${escapeHtml(user.pseudo||"")}"`})
+            : `<button class="btn ${action.className}" type="button" data-friend-action="${action.action}" data-friend-pseudo="${escapeHtml(user.pseudo||"")}">${action.label}</button>`
         ).join("")}
       </div>
     </article>
@@ -14178,15 +14344,26 @@ function renderMessagesList(){
     const pseudo=item.other?.pseudo||"Utilisateur";
     const preview=item.lastMessage?.body ? item.lastMessage.body : "Aucun message encore.";
     return `
-      <button class="message-conversation ${messageState.activePseudo===pseudo?"active":""} ${item.unread?"unread":""}" type="button" data-message-pseudo="${escapeHtml(pseudo)}">
-        <strong>${escapeHtml(pseudo)}</strong>
-        ${memberStatusMarkup(item.other)}
-        <small>${item.unread?"Nouveau · ":""}${escapeHtml(preview.slice(0,90))}${preview.length>90?"...":""}</small>
-      </button>
+      <div class="message-conversation-row">
+        <button class="message-conversation ${messageState.activePseudo===pseudo?"active":""} ${item.unread?"unread":""}" type="button" data-message-pseudo="${escapeHtml(pseudo)}">
+          <span class="message-conversation-main">
+            ${avatarMarkup(item.other,"chat-avatar message-conversation-avatar")}
+            <span class="message-conversation-copy">
+              <strong>${escapeHtml(pseudo)}</strong>
+              ${memberStatusMarkup(item.other)}
+              <small>${item.unread?"Nouveau · ":""}${escapeHtml(preview.slice(0,90))}${preview.length>90?"...":""}</small>
+            </span>
+          </span>
+        </button>
+        ${socialActionButton({asset:"voir.png",title:"Voir le profil",description:`Consulter le profil communautaire de ${pseudo}.`,className:"btn-gray message-profile-open",attributes:`data-message-profile="${escapeHtml(pseudo)}"`})}
+      </div>
     `;
   }).join("");
   list.querySelectorAll("[data-message-pseudo]").forEach(button=>{
     button.addEventListener("click",()=>loadMessageThread(button.dataset.messagePseudo));
+  });
+  list.querySelectorAll("[data-message-profile]").forEach(button=>{
+    button.addEventListener("click",()=>openCommunityProfileByPseudo(button.dataset.messageProfile,{updateUrl:true}));
   });
 }
 
@@ -14209,7 +14386,8 @@ function renderMessageThread(payload=null){
     return;
   }
   const pseudo=conversation.other?.pseudo||messageState.activePseudo||"Utilisateur";
-  head.innerHTML=`<strong>${escapeHtml(pseudo)}</strong><small>Messages privés entre amis.</small>`;
+  head.innerHTML=`<button class="messages-thread-profile" type="button" data-thread-profile="${escapeHtml(pseudo)}" aria-label="Voir le profil de ${escapeHtml(pseudo)}">${avatarMarkup(conversation.other,"chat-avatar")}<span><strong>${escapeHtml(pseudo)}</strong><small>Messages privés entre amis · cliquez pour voir le profil.</small></span></button>`;
+  head.querySelector("[data-thread-profile]")?.addEventListener("click",()=>openCommunityProfileByPseudo(pseudo,{updateUrl:true}));
   const messages=conversation.messages||[];
   feed.innerHTML=messages.length ? messages.map(item=>`
     <div class="message-bubble ${item.isMine?"mine":""}">
@@ -14288,10 +14466,12 @@ function startSocialPolling(){
   refreshMessageNotifications({silent:true});
   refreshChatPingNotifications({silent:true});
   refreshWarningNotifications({silent:true});
+  refreshFriendSummary({silent:true});
   messageState.timer=setInterval(()=>refreshMessageNotifications(),3000);
   chatState.pingTimer=setInterval(()=>{
     refreshChatPingNotifications();
     refreshWarningNotifications();
+    refreshFriendSummary({silent:true});
   },5000);
 }
 
@@ -14870,6 +15050,7 @@ async function authSubmit(event){
     authState.user=result.user;
     authState.apiOnline=true;
     localStorage.setItem(AUTH_TOKEN_KEY,authState.token);
+    loadSocialNotificationState();
     authRender();
     closeModal("authModal");
     toast(result.bootstrapAdmin?"Premier compte créé : rôle admin activé.":"Connexion réussie.","success","success");
@@ -14898,6 +15079,7 @@ function authLogout(){
   socialState.incoming=0;
   socialState.outgoing=0;
   socialState.loaded=false;
+  socialState.seenIncoming=[];
   localStorage.removeItem(AUTH_TOKEN_KEY);
   authRender();
   toast("Vous êtes déconnecté du compte cloud.","info","click");
