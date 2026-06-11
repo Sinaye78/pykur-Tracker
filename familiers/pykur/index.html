@@ -388,9 +388,19 @@ h1{
   margin:0;
   font-size:23px;
   color:#fff4d6;
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
 
 .modal-head h2::first-letter{letter-spacing:0}
+.modal-title-icon{
+  width:38px;
+  height:38px;
+  flex:0 0 38px;
+  object-fit:contain;
+  filter:drop-shadow(0 3px 4px rgba(20,10,3,.38));
+}
 .modal-head p,.modal-kicker{
   margin:4px 0 0;
   color:rgba(255,244,214,.78);
@@ -6507,6 +6517,30 @@ body[data-fx="premium"] .milestone-flash{box-shadow:0 0 0 9999px rgba(212,167,60
   margin:0;
   font-size:20px;
   color:#fff4d6;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.dialog-title-icon{
+  width:36px;
+  height:36px;
+  flex:0 0 36px;
+  object-fit:contain;
+  filter:drop-shadow(0 3px 4px rgba(20,10,3,.38));
+}
+
+@media(max-width:640px){
+  .modal-title-icon{
+    width:32px;
+    height:32px;
+    flex-basis:32px;
+  }
+  .dialog-title-icon{
+    width:32px;
+    height:32px;
+    flex-basis:32px;
+  }
 }
 
 .dialog-subtitle{
@@ -11595,7 +11629,7 @@ body.night .dungeon-card .dungeon-mini{
 <!-- STATS -->
 <div class="modal-bg" id="statsModal">
   <div class="modal">
-    <div class="modal-head"><div><h2>📊 Statistiques</h2><p>Analysez votre progression, vos donjons et votre rythme de farm.</p></div><button class="btn btn-red modal-close" data-close="statsModal">✕</button></div>
+    <div class="modal-head"><div><h2><img class="modal-title-icon" src="./assets/icone/stats.png" alt=""><span>Statistiques</span></h2><p>Analysez votre progression, vos donjons et votre rythme de farm.</p></div><button class="btn btn-red modal-close" data-close="statsModal">✕</button></div>
     <div class="modal-body">
       <div class="stats-tabs" role="tablist" aria-label="Sections des statistiques">
         <button class="stats-tab active" type="button" role="tab" aria-selected="true" data-stats-view="overview">Vue générale</button>
@@ -11613,7 +11647,7 @@ body.night .dungeon-card .dungeon-mini{
   <div class="modal small">
     <div class="modal-head">
       <div>
-        <h2>🔊 Son du tracker</h2>
+        <h2><img class="modal-title-icon" src="./assets/icone/sondutracker.png" alt=""><span>Son du tracker</span></h2>
         <p>Réglez le volume global des sons sans modifier votre progression.</p>
       </div>
       <button class="btn btn-red modal-close" data-close="soundSettingsModal">X</button>
@@ -11981,7 +12015,7 @@ body.night .dungeon-card .dungeon-mini{
 <!-- GALERIE -->
 <div class="modal-bg" id="galleryModal">
   <div class="modal gallery-modal">
-    <div class="modal-head"><div><h2>🖼️ Galerie</h2><p>Retrouvez vos anciens Pykurs et votre collection d'événements.</p></div><button class="btn btn-red modal-close" data-close="galleryModal">X</button></div>
+    <div class="modal-head"><div><h2><img class="modal-title-icon" src="./assets/icone/galerie.png" alt=""><span>Galerie</span></h2><p>Retrouvez vos anciens Pykurs et votre collection d'événements.</p></div><button class="btn btn-red modal-close" data-close="galleryModal">X</button></div>
     <div class="modal-body">
       <div class="gallery-view" id="galleryMemoryView">
         <section class="gallery-section">
@@ -12125,7 +12159,7 @@ body.night .dungeon-card .dungeon-mini{
 <div class="modal-bg" id="optionsModal">
   <div class="modal options-modal">
     <div class="modal-head">
-      <div><h2>⚙️ Options</h2><p>Réglez le confort, les sons, la détection et les sauvegardes.</p></div>
+      <div><h2><img class="modal-title-icon" src="./assets/icone/option.png" alt=""><span>Options</span></h2><p>Réglez le confort, les sons, la détection et les sauvegardes.</p></div>
       <button class="btn btn-red modal-close" data-close="optionsModal">✕</button>
     </div>
     <div class="modal-body">
@@ -12344,7 +12378,7 @@ body.night .dungeon-card .dungeon-mini{
 </div>
 <div class="modal-bg" id="achievementsModal">
   <div class="modal achievements-modal">
-    <div class="modal-head"><div><h2>🏆 Succès</h2><p>Suivez les objectifs débloqués et les défis restants.</p></div><button class="btn btn-red modal-close" data-close="achievementsModal">✕</button></div>
+    <div class="modal-head"><div><h2><img class="modal-title-icon" src="./assets/icone/succes.png" alt=""><span>Succès</span></h2><p>Suivez les objectifs débloqués et les défis restants.</p></div><button class="btn btn-red modal-close" data-close="achievementsModal">✕</button></div>
     <div class="modal-body">
       <div class="achievements-shell">
         <div class="achievement-summary"><span id="achievementProgressText">Chargement...</span><div class="toolbar"><label class="gallery-shared-toggle"><input id="achievementSharedToggle" type="checkbox"> Succès partagés</label><button class="btn btn-gray achievement-secret-gate" id="unlockSecretAchievements" type="button">Œuf scellé</button><button class="btn btn-red" id="resetAchievements" type="button">Reset succès</button></div></div>
@@ -12359,7 +12393,7 @@ body.night .dungeon-card .dungeon-mini{
 <!-- HISTORY -->
 <div class="modal-bg" id="activityModal">
   <div class="modal">
-    <div class="modal-head"><div><h2>📜 Historique</h2><p>Consultez les actions importantes de votre profil.</p></div><button class="btn btn-red modal-close" data-close="activityModal">✕</button></div>
+    <div class="modal-head"><div><h2><img class="modal-title-icon" src="./assets/icone/historique.png" alt=""><span>Historique</span></h2><p>Consultez les actions importantes de votre profil.</p></div><button class="btn btn-red modal-close" data-close="activityModal">✕</button></div>
     <div class="modal-body">
       <div class="activity-dashboard">
         <div class="activity-summary" id="activitySummary"></div>
@@ -12390,7 +12424,7 @@ body.night .dungeon-card .dungeon-mini{
 <div class="modal-bg" id="projectionModal">
   <div class="modal projection-modal">
     <div class="modal-head">
-      <div><h2>🔮 Projection du Pykur</h2><p>Estimez les prochains paliers et le temps restant.</p></div>
+      <div><h2><img class="modal-title-icon" src="./assets/icone/projection.png" alt=""><span>Projection du Pykur</span></h2><p>Estimez les prochains paliers et le temps restant.</p></div>
       <button class="btn btn-red modal-close" data-close="projectionModal">✕</button>
     </div>
     <div class="modal-body">
@@ -12426,7 +12460,7 @@ body.night .dungeon-card .dungeon-mini{
 <!-- MONSTERS -->
 <div class="modal-bg" id="monstersModal">
   <div class="modal monster-modal">
-    <div class="modal-head"><div><h2>👹 Monstres tués</h2><p>Contrôlez les monstres comptés pour chaque source de PP.</p></div><button class="btn btn-red modal-close" data-close="monstersModal">✕</button></div>
+    <div class="modal-head"><div><h2><img class="modal-title-icon" src="./assets/icone/monstretue.png" alt=""><span>Monstres tués</span></h2><p>Contrôlez les monstres comptés pour chaque source de PP.</p></div><button class="btn btn-red modal-close" data-close="monstersModal">✕</button></div>
     <div class="modal-body">
       <div class="monster-tabs">
         <button class="btn btn-blue tooltip active" data-tab="morose" data-tooltip="Affiche les monstres tués en Donjon Morose.">Morose</button>
@@ -14933,6 +14967,10 @@ let lastSaveError=false;
 
 function dialogMeta(title,type,danger){
   const raw=String(title||"").toLowerCase();
+  if(raw==="renommer le profil")return {iconAsset:"renomerprofile.png",subtitle:"Choisissez un nouveau nom lisible et facile à retrouver."};
+  if(raw==="créer un profil")return {iconAsset:"creerprofile.png",subtitle:"Créez une nouvelle aventure de Pykur."};
+  if(raw==="supprimer le profil")return {iconAsset:"supprimerprofile.png",subtitle:"Cette action peut modifier ou supprimer des données du profil actif."};
+  if(raw==="modifier le donjon")return {iconAsset:"modifierdonjon.png",subtitle:"Ajustez cette valeur manuellement, sans modifier le reste du tracker."};
   if(raw.includes("renommer"))return {icon:"✏️",subtitle:"Choisissez un nouveau nom lisible et facile à retrouver."};
   if(raw.includes("créer"))return {icon:"✨",subtitle:"Créez une nouvelle aventure de Pykur."};
   if(raw.includes("modifier") || raw.includes("temps moyen"))return {icon:"🏰",subtitle:"Ajustez cette valeur manuellement, sans modifier le reste du tracker."};
@@ -14968,7 +15006,11 @@ function showDialog(message,options={}){
     activeDialog={resolve,type,previous:document.activeElement,submitted:false};
     const baseTitle=options.title || (type==="confirm"?"Confirmation":type==="prompt"?"Saisie":"Information");
     const meta=dialogMeta(baseTitle,type,options.danger);
-    title.innerHTML=`<span aria-hidden="true">${options.icon||meta.icon}</span> ${baseTitle}`;
+    const iconAsset=options.iconAsset||meta.iconAsset;
+    const iconMarkup=iconAsset
+      ? `<img class="dialog-title-icon" src="./assets/icone/${escapeHtml(iconAsset)}" alt="">`
+      : `<span aria-hidden="true">${escapeHtml(options.icon||meta.icon)}</span>`;
+    title.innerHTML=`${iconMarkup}<span>${escapeHtml(baseTitle)}</span>`;
     const head=title.closest(".dialog-head");
     head?.querySelector(".dialog-subtitle")?.remove();
     bg.querySelector(".dialog-counter")?.remove();
