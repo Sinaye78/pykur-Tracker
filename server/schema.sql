@@ -183,6 +183,8 @@ CREATE TABLE IF NOT EXISTS message_reports (
   private_message_id INTEGER,
   reason TEXT,
   status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','resolved')),
+  resolution_action TEXT,
+  resolution_note TEXT,
   resolved_by_user_id INTEGER,
   resolved_at TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,

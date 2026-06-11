@@ -10230,6 +10230,9 @@ body.no-anim .pykur-sparkle{
 .moderation-log-toolbar input{flex:1;min-width:220px;border:1px solid rgba(119,79,28,.28);border-radius:12px;padding:10px 12px;font-weight:850;background:rgba(255,252,242,.92)}
 .moderation-log-panel .moderation-history{max-height:min(58vh,620px);overflow:auto;padding-right:4px}
 .moderation-log-meta{display:block;margin-top:4px;color:#6b7280;font-size:11px;word-break:break-word}
+.moderation-log-meta summary{cursor:pointer;color:#2563eb;font-weight:900}
+.moderation-log-meta:not([open]){white-space:normal}
+.moderation-log-meta[open]{white-space:pre-wrap;padding:7px 9px;border-radius:9px;background:rgba(241,245,249,.78)}
 #galleryModal.modal-bg{
   background:rgba(18,12,7,.76);
   backdrop-filter:blur(7px) saturate(.86);
@@ -10652,6 +10655,270 @@ body.no-anim .pykur-sparkle{
   min-height:30px!important;
   padding-inline:10px!important;
   font-size:12px!important;
+}
+
+#moderationOverviewModal .moderation-console-modal{
+  width:min(1120px,calc(100vw - 28px));
+}
+
+#moderationOverviewModal .modal-body{
+  padding:14px;
+}
+
+.moderation-console{
+  display:grid;
+  gap:14px;
+}
+
+.moderation-summary-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:9px;
+}
+
+.moderation-summary-card{
+  display:grid;
+  gap:5px;
+  min-height:82px;
+  padding:12px 13px;
+  border:1px solid rgba(107,70,25,.16);
+  border-radius:12px;
+  background:rgba(255,255,255,.72);
+  box-shadow:0 8px 18px rgba(73,43,12,.05);
+}
+
+.moderation-summary-card small{
+  color:#76552d;
+  font-size:10px;
+  font-weight:950;
+  text-transform:uppercase;
+}
+
+.moderation-summary-card strong{
+  color:#24170b;
+  font-size:24px;
+  line-height:1;
+}
+
+.moderation-summary-card.is-alert{
+  border-color:rgba(220,38,38,.3);
+  background:linear-gradient(135deg,rgba(254,226,226,.84),rgba(255,255,255,.72));
+}
+
+.moderation-summary-card.is-warning{
+  border-color:rgba(217,119,6,.28);
+  background:linear-gradient(135deg,rgba(254,243,199,.86),rgba(255,255,255,.72));
+}
+
+.moderation-tabs{
+  position:sticky;
+  top:-14px;
+  z-index:4;
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:7px;
+  margin:0;
+  padding:9px;
+  background:rgba(245,237,219,.96);
+  backdrop-filter:blur(8px);
+}
+
+.moderation-tabs button{
+  min-width:0;
+  white-space:normal;
+}
+
+.moderation-dashboard-grid,
+.moderation-settings-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+
+.moderation-workspace{
+  display:grid;
+  gap:10px;
+  min-width:0;
+}
+
+.moderation-section-heading{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+
+.moderation-section-heading h3,
+.moderation-section-heading h4{
+  margin:0;
+}
+
+.moderation-section-heading p{
+  margin:3px 0 0;
+  color:#6b7280;
+  font-size:12px;
+  font-weight:750;
+}
+
+.moderation-toolbar{
+  display:grid;
+  grid-template-columns:minmax(220px,1fr) 180px 180px auto;
+  gap:9px;
+  margin-bottom:12px;
+}
+
+.moderation-toolbar input,
+.moderation-toolbar select{
+  width:100%;
+  min-height:40px;
+  border:1px solid rgba(119,79,28,.25);
+  border-radius:10px;
+  padding:0 11px;
+  background:rgba(255,253,247,.95);
+  color:#302014;
+  font-weight:850;
+}
+
+.moderation-report-list{
+  display:grid;
+  gap:10px;
+}
+
+.moderation-report{
+  grid-template-columns:minmax(0,1fr);
+  padding:14px;
+  border-radius:12px;
+}
+
+.moderation-report.is-resolved{
+  opacity:.82;
+  background:rgba(248,250,252,.72);
+}
+
+.moderation-report-head{
+  align-items:center;
+}
+
+.moderation-report-identity{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+}
+
+.moderation-report-meta{
+  display:flex;
+  gap:7px;
+  align-items:center;
+  flex-wrap:wrap;
+  color:#6b7280;
+  font-size:11px;
+  font-weight:800;
+}
+
+.moderation-report-decision{
+  padding:9px 11px;
+  border-radius:10px;
+  background:rgba(220,252,231,.7);
+  border:1px solid rgba(22,163,74,.2);
+  color:#166534;
+  font-size:12px;
+  font-weight:850;
+}
+
+.moderation-report-actions{
+  padding-top:10px;
+  border-top:1px solid rgba(119,79,28,.12);
+}
+
+.moderation-action-group{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  flex-wrap:wrap;
+  padding-right:9px;
+  border-right:1px solid rgba(119,79,28,.16);
+}
+
+.moderation-action-group:last-child{
+  border-right:0;
+}
+
+.moderation-account-list{
+  display:grid;
+  gap:8px;
+}
+
+.moderation-account-row{
+  display:grid;
+  grid-template-columns:auto minmax(160px,1fr) minmax(180px,1fr) auto;
+  gap:11px;
+  align-items:center;
+  padding:10px 11px;
+  border:1px solid rgba(119,79,28,.15);
+  border-radius:11px;
+  background:rgba(255,255,255,.68);
+}
+
+.moderation-account-state{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+
+.moderation-state-badge{
+  padding:4px 7px;
+  border-radius:999px;
+  background:#e5e7eb;
+  color:#4b5563;
+  font-size:10px;
+  font-weight:950;
+}
+
+.moderation-state-badge.is-ban{background:#fee2e2;color:#b91c1c}
+.moderation-state-badge.is-mute{background:#ffedd5;color:#c2410c}
+.moderation-state-badge.is-team{background:#dbeafe;color:#1d4ed8}
+
+.moderation-quick-list{
+  display:grid;
+  gap:7px;
+}
+
+.moderation-quick-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:9px 10px;
+  border:1px solid rgba(119,79,28,.13);
+  border-radius:10px;
+  background:rgba(255,255,255,.62);
+}
+
+.moderation-empty{
+  padding:22px 14px;
+  text-align:center;
+  border:1px dashed rgba(119,79,28,.24);
+  border-radius:11px;
+  color:#6b7280;
+  font-weight:850;
+}
+
+@media (max-width:900px){
+  .moderation-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .moderation-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .moderation-dashboard-grid,.moderation-settings-grid{grid-template-columns:1fr}
+  .moderation-toolbar{grid-template-columns:1fr 1fr}
+  .moderation-account-row{grid-template-columns:auto minmax(0,1fr) auto}
+  .moderation-account-row>div:nth-child(3){grid-column:2/4}
+}
+
+@media (max-width:580px){
+  .moderation-summary-grid,.moderation-toolbar{grid-template-columns:1fr}
+  .moderation-tabs{grid-template-columns:repeat(2,minmax(0,1fr));position:static}
+  .moderation-report-head,.moderation-account-row{grid-template-columns:1fr;display:grid}
+  .moderation-action-group{border-right:0;padding-right:0}
 }
 
 .account-privacy-intro{
@@ -11979,11 +12246,11 @@ body.night .dungeon-card .dungeon-mini{
 
 <!-- TABLEAU MODERATION -->
 <div class="modal-bg" id="moderationOverviewModal">
-  <div class="modal">
+  <div class="modal moderation-console-modal">
     <div class="modal-head">
       <div>
         <h2>Tableau de modération</h2>
-        <p>Surveillez rapidement les comptes bannis, les comptes mute et l'équipe de modération.</p>
+        <p>Traitez les signalements, suivez les sanctions et contrôlez l'activité communautaire.</p>
       </div>
       <button class="btn btn-red modal-close" data-close="moderationOverviewModal">X</button>
     </div>
@@ -12653,8 +12920,13 @@ const cloudState={timer:null,retryTimer:null,retryAttempt:0,syncing:false,pendin
 let accountProfileSection="account";
 let accountWarnings=[];
 let lastWarningSeenAt=localStorage.getItem("pykur_warning_seen_at")||"";
-let moderationOverviewSection="reports";
+let moderationOverviewSection="dashboard";
 let moderationLogFilter="";
+let moderationReportFilter="open";
+let moderationReportType="all";
+let moderationReportSearch="";
+let moderationAccountFilter="all";
+let moderationAccountSearch="";
 let passwordResetToken="";
 const apiRequestsInFlight=new Map();
 
@@ -13263,24 +13535,79 @@ async function openModerationPanel(pseudo){
   }
 }
 
-function moderationListSection(title,items,empty){
-  return `
-    <section class="community-profile-card">
-      <h4>${escapeHtml(title)} <span class="gallery-count-badge">${items.length}</span></h4>
-      <div class="moderation-history">
-        ${items.length?items.map(user=>`
-          <div class="moderation-history-row">
-            ${avatarMarkup(user)}
-            <span>
-              <strong>${escapeHtml(user.pseudo)}</strong> ${memberStatusMarkup(user)}
-              <br><small>${authRoleLabel(user.role)} · ban ${moderationDateText(user.banUntil)} · mute ${user.muteUntil?moderationDateText(user.muteUntil):"Aucun"}</small>
-            </span>
-            <button class="btn btn-blue" type="button" data-overview-moderate="${escapeHtml(user.pseudo)}">Modérer</button>
+function moderationStateBadges(user={}){
+  const badges=[];
+  if(user.isBanned)badges.push(`<span class="moderation-state-badge is-ban">Banni</span>`);
+  if(user.muteUntil)badges.push(`<span class="moderation-state-badge is-mute">Mute</span>`);
+  if(["moderator","admin"].includes(user.role))badges.push(`<span class="moderation-state-badge is-team">${authRoleLabel(user.role)}</span>`);
+  if(!badges.length)badges.push(`<span class="moderation-state-badge">Actif</span>`);
+  return badges.join("");
+}
+
+function moderationAccountRows(items,empty="Aucun compte correspondant."){
+  return `<div class="moderation-account-list">
+    ${items.length?items.map(user=>`
+      <article class="moderation-account-row">
+        ${avatarMarkup(user)}
+        <div>
+          <strong>${escapeHtml(user.pseudo||"Compte")}</strong> ${memberStatusMarkup(user)}
+          <small>${authRoleLabel(user.role)} · inscrit le ${user.createdAt?formatDateShort(user.createdAt):"-"}</small>
+        </div>
+        <div class="moderation-account-state">${moderationStateBadges(user)}</div>
+        <button class="btn btn-blue" type="button" data-overview-moderate="${escapeHtml(user.pseudo||"")}">Ouvrir</button>
+      </article>
+    `).join(""):`<div class="moderation-empty">${escapeHtml(empty)}</div>`}
+  </div>`;
+}
+
+function moderationQuickAccounts(title,items,empty){
+  return `<section class="community-profile-card">
+    <div class="moderation-section-heading"><div><h4>${escapeHtml(title)}</h4><p>${items.length} compte${items.length>1?"s":""}</p></div></div>
+    <div class="moderation-quick-list">
+      ${items.slice(0,5).map(user=>`<div class="moderation-quick-row"><span><strong>${escapeHtml(user.pseudo)}</strong><br><small>${moderationStateBadges(user)}</small></span><button class="btn btn-gray" data-overview-moderate="${escapeHtml(user.pseudo)}">Voir</button></div>`).join("")||`<div class="moderation-empty">${escapeHtml(empty)}</div>`}
+    </div>
+  </section>`;
+}
+
+function moderationReportLabel(action){
+  return ({close:"Fermé sans sanction",warn:"Avertissement",mute1:"Mute 1 heure",mute24:"Mute 24 heures",ban24:"Ban 24 heures",ban:"Ban permanent"})[action]||"Traité";
+}
+
+function moderationReportCard(report){
+  const resolved=report.status==="resolved";
+  return `<article class="moderation-report ${resolved?"is-resolved":""}">
+    <div class="moderation-report-head">
+      <div class="moderation-report-identity">
+        <span class="moderation-history-type">${report.type==="chatbox"?"Chat global":"Message privé"}</span>
+        <div>
+          <strong>${escapeHtml(report.target?.pseudo||"Cible inconnue")}</strong>
+          <div class="moderation-report-meta">
+            <span>Signalé par ${escapeHtml(report.reporter?.pseudo||"Utilisateur")}</span>
+            <span>${report.createdAt?formatCloudDateTime(report.createdAt):"-"}</span>
+            <span>${escapeHtml(report.reason||"Aucune raison")}</span>
           </div>
-        `).join(""):`<div class="community-profile-empty">${escapeHtml(empty)}</div>`}
+        </div>
       </div>
-    </section>
-  `;
+      ${resolved?`<span class="moderation-state-badge">Traité</span>`:`<span class="moderation-state-badge is-ban">À traiter</span>`}
+    </div>
+    <div class="moderation-report-message">${escapeHtml(report.body||"Message indisponible")}</div>
+    ${report.context?.length?`<details class="moderation-report-context"><summary>Contexte de la conversation (${report.context.length} messages)</summary>${report.context.map(line=>`<div class="moderation-report-context-row"><strong>${escapeHtml(line.senderPseudo||"Membre")}</strong><span>${escapeHtml(line.body||"")}<br><small>${line.createdAt?formatCloudDateTime(line.createdAt):""}${line.editedAt?" · modifié":""}</small></span></div>`).join("")}</details>`:""}
+    ${resolved?`<div class="moderation-report-decision"><strong>${moderationReportLabel(report.resolutionAction)}</strong> par ${escapeHtml(report.resolvedBy?.pseudo||"Modération")} ${report.resolvedAt?`le ${formatCloudDateTime(report.resolvedAt)}`:""}${report.resolutionNote?`<br>${escapeHtml(report.resolutionNote)}`:""}</div>`:`
+      <div class="moderation-report-actions">
+        <div class="moderation-action-group"><button class="btn btn-gray" type="button" data-report-action="close" data-report-id="${report.id}">Classer sans suite</button>${report.target?.pseudo?`<button class="btn btn-blue" type="button" data-overview-moderate="${escapeHtml(report.target.pseudo)}">Voir le membre</button>`:""}</div>
+        ${report.target?.pseudo?`<div class="moderation-action-group"><button class="btn btn-blue" type="button" data-report-action="warn" data-report-id="${report.id}">Avertir</button><button class="btn btn-orange" type="button" data-report-action="mute1" data-report-id="${report.id}">Mute 1h</button><button class="btn btn-orange" type="button" data-report-action="mute24" data-report-id="${report.id}">Mute 24h</button></div><div class="moderation-action-group"><button class="btn btn-red" type="button" data-report-action="ban24" data-report-id="${report.id}">Ban 24h</button><button class="btn btn-red" type="button" data-report-action="ban" data-report-id="${report.id}">Ban permanent</button></div>`:""}
+      </div>`}
+  </article>`;
+}
+
+function moderationLogLabel(type){
+  return ({
+    login:"Connexion",first_login:"Première connexion",avatar:"Photo de profil",
+    account_email:"Email modifié",account_password:"Mot de passe modifié",account_close_requested:"Fermeture demandée",
+    private_message:"Message privé",report_chat:"Signalement chat",report_private:"Signalement privé",
+    moderation_action:"Sanction",moderation_warn:"Avertissement",moderation_history_delete:"Sanction retirée",
+    moderation_history_reset:"Historique vidé",security_settings:"Sécurité modifiée"
+  })[type]||moderationActionLabel(type||"log");
 }
 
 function moderationLogSection(title,items,empty){
@@ -13309,9 +13636,9 @@ function moderationLogSection(title,items,empty){
             ${item.user?avatarMarkup(item.user):""}
             <span>
               <strong>${escapeHtml(item.user?.pseudo||item.actor?.pseudo||"Système")}</strong>
-              <small>${escapeHtml(item.type||"log")} · ${item.createdAt?formatCloudDateTime(item.createdAt):"-"}</small><br>
+              <small>${escapeHtml(moderationLogLabel(item.type))} · ${item.createdAt?formatCloudDateTime(item.createdAt):"-"}</small><br>
               ${escapeHtml(item.body||item.reason||"Action enregistrée.")}
-              ${item.meta?`<small class="moderation-log-meta">${escapeHtml(JSON.stringify(item.meta))}</small>`:""}
+              ${item.meta&&Object.keys(item.meta).length?`<details class="moderation-log-meta"><summary>Détails techniques</summary>${escapeHtml(JSON.stringify(item.meta,null,2))}</details>`:""}
             </span>
             ${item.target?`<small>Cible : ${escapeHtml(item.target.pseudo||"Compte")}</small>`:""}
           </div>
@@ -13350,89 +13677,104 @@ function renderModerationOverview(payload={}){
   const banned=payload.banned||[];
   const muted=payload.muted||[];
   const moderators=payload.moderators||[];
+  const users=payload.users||[];
   const reports=payload.reports||[];
+  const resolvedReports=payload.resolvedReports||[];
+  const metrics=payload.metrics||{};
   const settings=payload.chatSettings||{};
   const securitySettings=payload.securitySettings||{};
   const communityLogs=payload.communityLogs||[];
   const moderationLogs=payload.moderationLogs||[];
   const sections=[
-    ["reports","Signalements"],
-    ["accounts","Comptes"],
-    ["logs","Logs utilisateurs"],
-    ...(authState.user?.role==="admin"?[["adminLogs","Logs admin"],["security","Sécurité"]]:[]),
-    ["chat","Chatbox"]
+    ["dashboard","Vue d'ensemble"],
+    ["reports",`Signalements${reports.length?` (${reports.length})`:""}`],
+    ["accounts","Membres & sanctions"],
+    ["logs","Activité"],
+    ...(authState.user?.role==="admin"?[["adminLogs","Journal admin"]]:[]),
+    ["settings","Réglages"]
   ];
+  const reportPool=moderationReportFilter==="open"?reports:moderationReportFilter==="resolved"?resolvedReports:reports.concat(resolvedReports);
+  const reportNeedle=moderationReportSearch.trim().toLowerCase();
+  const filteredReports=reportPool.filter(report=>{
+    if(moderationReportType!=="all" && report.type!==moderationReportType)return false;
+    if(!reportNeedle)return true;
+    return [report.target?.pseudo,report.reporter?.pseudo,report.reason,report.body,report.resolutionNote].join(" ").toLowerCase().includes(reportNeedle);
+  });
+  const accountNeedle=moderationAccountSearch.trim().toLowerCase();
+  const filteredUsers=users.filter(user=>{
+    const matchesSearch=!accountNeedle || [user.pseudo,user.email,user.role].join(" ").toLowerCase().includes(accountNeedle);
+    const matchesState=moderationAccountFilter==="all"
+      || (moderationAccountFilter==="banned" && user.isBanned)
+      || (moderationAccountFilter==="muted" && user.muteUntil)
+      || (moderationAccountFilter==="team" && ["moderator","admin"].includes(user.role));
+    return matchesSearch&&matchesState;
+  });
+  box.className="moderation-panel moderation-console";
   box.innerHTML=`
-    <section class="moderation-status-grid">
-      <div class="moderation-info"><small>Comptes bannis</small><strong>${banned.length}</strong></div>
-      <div class="moderation-info"><small>Comptes mute</small><strong>${muted.length}</strong></div>
-      <div class="moderation-info"><small>Signalements</small><strong>${reports.length}</strong></div>
+    <section class="moderation-summary-grid">
+      <div class="moderation-summary-card ${reports.length?"is-alert":""}"><small>À traiter</small><strong>${reports.length}</strong><span>signalement${reports.length>1?"s":""} ouvert${reports.length>1?"s":""}</span></div>
+      <div class="moderation-summary-card ${banned.length?"is-warning":""}"><small>Comptes bannis</small><strong>${banned.length}</strong><span>sanction active</span></div>
+      <div class="moderation-summary-card ${muted.length?"is-warning":""}"><small>Comptes mute</small><strong>${muted.length}</strong><span>restriction active</span></div>
+      <div class="moderation-summary-card"><small>Activité 24h</small><strong>${Number(metrics.reports24h)||0}</strong><span>nouveaux signalements</span></div>
+      <div class="moderation-summary-card"><small>Communauté</small><strong>${Number(metrics.users)||users.length}</strong><span>${Number(metrics.actions24h)||0} action${Number(metrics.actions24h)===1?"":"s"} de modération en 24h</span></div>
     </section>
     <nav class="moderation-tabs">
       ${sections.map(([id,label])=>`<button class="btn btn-gray ${moderationOverviewSection===id?"active":""}" type="button" data-moderation-tab="${id}">${label}</button>`).join("")}
     </nav>
-    <div class="moderation-section ${moderationOverviewSection==="chat"?"":"hidden"}" data-moderation-section="chat">
-    <section class="community-profile-card">
-      <h4>Chatbox</h4>
-      <div class="moderation-status-grid">
-        <label class="privacy-toggle"><input type="checkbox" id="moderationChatLocked" ${settings.locked?"checked":""}><span>Fermer la chatbox<small>Les membres ne peuvent plus écrire.</small></span></label>
-        <label class="auth-field">Mode lent<input id="moderationSlowMode" type="number" min="0" max="300" value="${Number(settings.slowModeSeconds)||0}" placeholder="Secondes"></label>
-        <button class="btn btn-orange" id="saveChatModerationSettings" type="button">Enregistrer</button>
-        <button class="btn btn-red" id="clearChatboxMessages" type="button">Vider la chatbox</button>
+    <div class="moderation-section ${moderationOverviewSection==="dashboard"?"":"hidden"}" data-moderation-section="dashboard">
+      <div class="moderation-dashboard-grid">
+        <section class="moderation-workspace">
+          <div class="moderation-section-heading"><div><h3>File prioritaire</h3><p>Les signalements les plus récents à examiner.</p></div><button class="btn btn-blue" data-moderation-jump="reports">Tout voir</button></div>
+          <div class="moderation-report-list">${reports.slice(0,3).map(moderationReportCard).join("")||`<div class="moderation-empty">Aucun signalement en attente.</div>`}</div>
+        </section>
+        <div class="moderation-quick-list">
+          ${moderationQuickAccounts("Bans actifs",banned,"Aucun compte banni.")}
+          ${moderationQuickAccounts("Mutes actifs",muted,"Aucun compte mute.")}
+          <section class="community-profile-card"><div class="moderation-section-heading"><div><h4>Équipe</h4><p>${moderators.length} membre${moderators.length>1?"s":""}</p></div><button class="btn btn-gray" data-moderation-jump="accounts">Gérer</button></div><div class="moderation-account-state">${moderators.map(user=>`<span class="moderation-state-badge is-team">${escapeHtml(user.pseudo)} · ${authRoleLabel(user.role)}</span>`).join("")}</div></section>
+        </div>
       </div>
-    </section>
-    </div>
-    <div class="moderation-section ${moderationOverviewSection==="security"?"":"hidden"}" data-moderation-section="security">
-      ${securitySettingsPanel(securitySettings)}
     </div>
     <div class="moderation-section ${moderationOverviewSection==="reports"?"":"hidden"}" data-moderation-section="reports">
-    <section class="community-profile-card">
-      <h4>Signalements ouverts <span class="gallery-count-badge">${reports.length}</span></h4>
-      <div class="moderation-history">
-        ${reports.length?reports.map(report=>`
-          <article class="moderation-report">
-            <div class="moderation-report-head">
-              <span class="moderation-history-type">${escapeHtml(report.type)}</span>
-              <span><strong>${escapeHtml(report.target?.pseudo||"Cible inconnue")}</strong><br><small>Signalé par ${escapeHtml(report.reporter?.pseudo||"Utilisateur")} · ${escapeHtml(report.reason||"Aucune raison")}</small></span>
-            </div>
-            <div class="moderation-report-message">${escapeHtml(report.body||"Message indisponible")}</div>
-            ${report.context?.length?`
-              <details class="moderation-report-context">
-                <summary>Voir la conversation privée signalée</summary>
-                ${report.context.map(line=>`
-                  <div class="moderation-report-context-row">
-                    <strong>${escapeHtml(line.senderPseudo||"Membre")}</strong>
-                    <span>${escapeHtml(line.body||"")}<br><small>${line.createdAt?formatCloudDateTime(line.createdAt):""}${line.editedAt?" · modifié":""}</small></span>
-                  </div>
-                `).join("")}
-              </details>
-            `:""}
-            <div class="moderation-report-actions">
-              <button class="btn btn-gray" type="button" data-report-action="close" data-report-id="${report.id}">Fermer</button>
-              ${report.target?.pseudo?`
-                <button class="btn btn-blue" type="button" data-report-action="warn" data-report-id="${report.id}">Avertir</button>
-                <button class="btn btn-orange" type="button" data-report-action="mute1" data-report-id="${report.id}">Mute 1h</button>
-                <button class="btn btn-orange" type="button" data-report-action="mute24" data-report-id="${report.id}">Mute 24h</button>
-                <button class="btn btn-red" type="button" data-report-action="ban24" data-report-id="${report.id}">Ban 24h</button>
-                <button class="btn btn-red" type="button" data-report-action="ban" data-report-id="${report.id}">Ban permanent</button>
-                <button class="btn btn-blue" type="button" data-overview-moderate="${escapeHtml(report.target.pseudo)}">Profil modération</button>
-              `:""}
-            </div>
-          </article>
-        `).join(""):`<div class="community-profile-empty">Aucun signalement ouvert.</div>`}
-      </div>
-    </section>
+      <section class="moderation-workspace">
+        <div class="moderation-section-heading"><div><h3>Signalements</h3><p>Examinez le message, son contexte et la situation du membre avant d'agir.</p></div><span class="gallery-count-badge">${filteredReports.length}</span></div>
+        <div class="moderation-toolbar">
+          <input id="moderationReportSearch" value="${escapeHtml(moderationReportSearch)}" placeholder="Rechercher un membre, un motif, un message...">
+          <select id="moderationReportStatus"><option value="open" ${moderationReportFilter==="open"?"selected":""}>À traiter</option><option value="resolved" ${moderationReportFilter==="resolved"?"selected":""}>Traités récemment</option><option value="all" ${moderationReportFilter==="all"?"selected":""}>Tous</option></select>
+          <select id="moderationReportType"><option value="all" ${moderationReportType==="all"?"selected":""}>Tous les canaux</option><option value="chatbox" ${moderationReportType==="chatbox"?"selected":""}>Chat global</option><option value="message prive" ${moderationReportType==="message prive"?"selected":""}>Messages privés</option></select>
+          <button class="btn btn-gray" id="refreshModerationOverview">Actualiser</button>
+        </div>
+        <div class="moderation-report-list">${filteredReports.map(moderationReportCard).join("")||`<div class="moderation-empty">Aucun signalement ne correspond à ces filtres.</div>`}</div>
+      </section>
     </div>
     <div class="moderation-section ${moderationOverviewSection==="accounts"?"":"hidden"}" data-moderation-section="accounts">
-      ${moderationListSection("Comptes bannis",banned,"Aucun compte banni.")}
-      ${moderationListSection("Comptes mute",muted,"Aucun compte mute actuellement.")}
-      ${moderationListSection("Modérateurs",moderators,"Aucun modérateur listé.")}
+      <section class="moderation-workspace">
+        <div class="moderation-section-heading"><div><h3>Membres et sanctions</h3><p>Recherchez un compte puis ouvrez sa fiche de modération complète.</p></div><span class="gallery-count-badge">${filteredUsers.length}</span></div>
+        <div class="moderation-toolbar">
+          <input id="moderationAccountSearch" value="${escapeHtml(moderationAccountSearch)}" placeholder="Pseudo, email ou rôle...">
+          <select id="moderationAccountFilter"><option value="all" ${moderationAccountFilter==="all"?"selected":""}>Tous les comptes</option><option value="banned" ${moderationAccountFilter==="banned"?"selected":""}>Bannis</option><option value="muted" ${moderationAccountFilter==="muted"?"selected":""}>Mute</option><option value="team" ${moderationAccountFilter==="team"?"selected":""}>Équipe</option></select>
+        </div>
+        ${moderationAccountRows(filteredUsers)}
+      </section>
     </div>
     <div class="moderation-section ${moderationOverviewSection==="logs"?"":"hidden"}" data-moderation-section="logs">
       ${moderationLogSection("Logs utilisateurs",communityLogs,"Aucun log utilisateur récent.")}
     </div>
     <div class="moderation-section ${moderationOverviewSection==="adminLogs"?"":"hidden"}" data-moderation-section="adminLogs">
       ${authState.user?.role==="admin"?moderationLogSection("Logs modération admin",moderationLogs,"Aucun log de modération récent."):""}
+    </div>
+    <div class="moderation-section ${moderationOverviewSection==="settings"?"":"hidden"}" data-moderation-section="settings">
+      <div class="moderation-settings-grid">
+        <section class="community-profile-card">
+          <div class="moderation-section-heading"><div><h3>Chat global</h3><p>Contrôlez temporairement la publication des messages.</p></div><span class="moderation-state-badge ${settings.locked?"is-ban":""}">${settings.locked?"Fermé":"Ouvert"}</span></div>
+          <div class="moderation-status-grid">
+            <label class="privacy-toggle"><input type="checkbox" id="moderationChatLocked" ${settings.locked?"checked":""}><span>Fermer la chatbox<small>Les membres ne peuvent plus écrire.</small></span></label>
+            <label class="auth-field">Mode lent<input id="moderationSlowMode" type="number" min="0" max="300" value="${Number(settings.slowModeSeconds)||0}" placeholder="Secondes"></label>
+            <button class="btn btn-orange" id="saveChatModerationSettings" type="button">Enregistrer</button>
+            <button class="btn btn-red" id="clearChatboxMessages" type="button">Vider la chatbox</button>
+          </div>
+        </section>
+        ${authState.user?.role==="admin"?securitySettingsPanel(securitySettings):`<section class="community-profile-card"><h3>Sécurité publique</h3><p>Ces réglages sont réservés aux administrateurs.</p></section>`}
+      </div>
     </div>
   `;
   box.querySelectorAll("[data-moderation-tab]").forEach(button=>{
@@ -13441,6 +13783,10 @@ function renderModerationOverview(payload={}){
       renderModerationOverview(payload);
     });
   });
+  box.querySelectorAll("[data-moderation-jump]").forEach(button=>button.addEventListener("click",()=>{
+    moderationOverviewSection=button.dataset.moderationJump||"dashboard";
+    renderModerationOverview(payload);
+  }));
   box.querySelectorAll(".moderation-log-filter").forEach(input=>{
     input.addEventListener("input",e=>{
       moderationLogFilter=e.target.value||"";
@@ -13451,8 +13797,21 @@ function renderModerationOverview(payload={}){
     });
   });
   box.querySelectorAll("[data-overview-moderate]").forEach(button=>{
-    button.addEventListener("click",()=>openModerationPanel(button.dataset.overviewModerate));
+    if(button.dataset.overviewModerate)button.addEventListener("click",()=>openModerationPanel(button.dataset.overviewModerate));
   });
+  const rerenderWithFocus=(input,stateSetter)=>input?.addEventListener("input",event=>{
+    stateSetter(event.target.value||"");
+    renderModerationOverview(payload);
+    const next=box.querySelector(`#${input.id}`);
+    next?.focus();
+    next?.setSelectionRange(next.value.length,next.value.length);
+  });
+  rerenderWithFocus($("#moderationReportSearch"),value=>moderationReportSearch=value);
+  rerenderWithFocus($("#moderationAccountSearch"),value=>moderationAccountSearch=value);
+  $("#moderationReportStatus")?.addEventListener("change",event=>{moderationReportFilter=event.target.value;renderModerationOverview(payload);});
+  $("#moderationReportType")?.addEventListener("change",event=>{moderationReportType=event.target.value;renderModerationOverview(payload);});
+  $("#moderationAccountFilter")?.addEventListener("change",event=>{moderationAccountFilter=event.target.value;renderModerationOverview(payload);});
+  $("#refreshModerationOverview")?.addEventListener("click",openModerationOverview);
   $("#saveChatModerationSettings")?.addEventListener("click",saveChatModerationSettings);
   $("#saveSecuritySettings")?.addEventListener("click",saveSecuritySettings);
   $("#clearChatboxMessages")?.addEventListener("click",clearChatboxMessages);
@@ -13510,16 +13869,13 @@ async function clearChatboxMessages(){
 
 async function moderationReportAction(id,action){
   if(!id || !action)return;
-  const labels={close:"Fermer",warn:"Avertir",mute1:"Mute 1h",mute24:"Mute 24h",ban24:"Ban 24h",ban:"Ban permanent"};
-  let reason="";
-  if(action!=="close"){
-    reason=await showPrompt(`Raison pour ${labels[action]||"cette action"} :`,{
-      title:"Action sur signalement",
-      placeholder:"Raison courte",
-      okLabel:labels[action]||"Appliquer"
-    });
-    if(reason===null)return;
-  }
+  const labels={close:"Classer sans suite",warn:"Avertir",mute1:"Mute 1h",mute24:"Mute 24h",ban24:"Ban 24h",ban:"Ban permanent"};
+  const reason=await showPrompt(action==="close"?"Ajoutez une note de classement si nécessaire.":`Indiquez la raison de la sanction.`,{
+    title:labels[action]||"Action sur signalement",
+    placeholder:action==="close"?"Note facultative":"Raison courte",
+    okLabel:labels[action]||"Appliquer"
+  });
+  if(reason===null)return;
   try{
     await authFetch(`/moderation/reports/${encodeURIComponent(id)}/action`,{method:"POST",body:JSON.stringify({action,reason})});
     toast(action==="close"?"Signalement fermé.":"Action appliquée depuis le signalement.","success","success");
