@@ -11764,6 +11764,157 @@ body.night .dungeon-card .dungeon-mini{
   }
 }
 
+/* Social PNG controls: the artwork is the button, without a colored tile. */
+.social-image-button,
+.social-action-button,
+.auth-widget .social-image-button,
+.auth-widget .social-action-button,
+.community-profile-hero-actions .social-action-button,
+.community-friend-actions .social-action-button,
+.friend-row-actions .social-action-button{
+  width:58px!important;
+  min-width:58px!important;
+  height:58px!important;
+  min-height:58px!important;
+  padding:0!important;
+  border:0!important;
+  border-bottom:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+
+.social-image-button::before,
+.social-action-button::before{
+  display:none!important;
+}
+
+.social-image-button:hover,
+.social-image-button:focus-visible,
+.social-action-button:hover,
+.social-action-button:focus-visible,
+.auth-widget .social-image-button:hover,
+.auth-widget .social-action-button:hover{
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+.social-image-button img,
+.social-action-button img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain;
+}
+
+.auth-menu-panel{
+  grid-template-columns:repeat(2,58px);
+  gap:8px;
+  min-width:142px;
+  padding:10px 12px;
+}
+
+.auth-menu-panel .social-image-button{
+  width:58px!important;
+  min-width:58px!important;
+  height:58px!important;
+  min-height:58px!important;
+  padding:0!important;
+}
+
+.auth-menu-panel .auth-danger-btn{
+  grid-column:1/-1;
+  width:100%!important;
+  min-height:34px!important;
+  border-radius:11px!important;
+  background:rgba(255,255,255,.1)!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+}
+
+.community-profile-hero{
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr) auto;
+  align-items:center;
+  justify-content:initial;
+  column-gap:16px;
+  row-gap:8px;
+}
+
+.community-profile-hero > .community-avatar{
+  grid-column:1;
+  grid-row:1;
+  width:54px;
+  height:54px;
+  align-self:center;
+}
+
+.community-profile-hero > div{
+  grid-column:2;
+  grid-row:1;
+  min-width:0;
+}
+
+.community-profile-hero > .community-role-badge{
+  grid-column:3;
+  grid-row:1;
+  align-self:center;
+  justify-self:end;
+  white-space:nowrap;
+}
+
+.community-profile-hero-actions,
+.community-friend-actions{
+  display:inline-flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:8px;
+  margin-top:8px;
+  vertical-align:middle;
+}
+
+.community-profile-hero-actions + .community-friend-actions{
+  margin-left:8px;
+}
+
+.friend-row-actions{
+  flex-wrap:nowrap;
+}
+
+.message-profile-open{
+  width:38px!important;
+  min-width:38px!important;
+  height:38px!important;
+  min-height:38px!important;
+  margin-right:6px;
+}
+
+@media(max-width:700px){
+  .community-profile-hero{
+    grid-template-columns:52px minmax(0,1fr);
+    align-items:start;
+    padding:14px;
+  }
+  .community-profile-hero > .community-avatar{
+    width:48px;
+    height:48px;
+  }
+  .community-profile-hero > .community-role-badge{
+    grid-column:2;
+    grid-row:2;
+    justify-self:start;
+    margin-top:4px;
+  }
+  .community-profile-hero-actions,
+  .community-friend-actions{
+    display:flex;
+    width:100%;
+    flex-wrap:wrap;
+  }
+  .community-profile-hero-actions + .community-friend-actions{
+    margin-left:0;
+  }
+}
+
 </style>
 </head>
 <body>
