@@ -95,6 +95,10 @@ db.exec(`
     user_b_id INTEGER NOT NULL,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    user_a_read_at TEXT,
+    user_b_read_at TEXT,
+    user_a_read_message_id INTEGER NOT NULL DEFAULT 0,
+    user_b_read_message_id INTEGER NOT NULL DEFAULT 0,
     CHECK(user_a_id < user_b_id),
     UNIQUE(user_a_id,user_b_id),
     FOREIGN KEY(user_a_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -172,6 +176,10 @@ db.exec(`
 `);
 ensureColumn("private_messages", "edited_at", "TEXT");
 ensureColumn("private_messages", "deleted_at", "TEXT");
+ensureColumn("private_conversations", "user_a_read_at", "TEXT");
+ensureColumn("private_conversations", "user_b_read_at", "TEXT");
+ensureColumn("private_conversations", "user_a_read_message_id", "INTEGER NOT NULL DEFAULT 0");
+ensureColumn("private_conversations", "user_b_read_message_id", "INTEGER NOT NULL DEFAULT 0");
 ensureColumn("chat_messages", "edited_at", "TEXT");
 ensureColumn("chat_messages", "deleted_by_user_id", "INTEGER");
 db.prepare("INSERT OR IGNORE INTO chat_settings(id,locked,slow_mode_seconds) VALUES(1,0,0)").run();
@@ -1389,7 +1397,7 @@ app.patch("/api/social/chat/:id", requireAuth, (req, res) => {
   if (body.length > 500) return res.status(400).json({ error: "Message trop long." });
   const row = db.prepare("SELECT * FROM chat_messages WHERE id = ? AND deleted_at IS NULL").get(id);
   if (!row) return res.status(404).json({ error: "Message introuvable." });
-  if (Number(row.user_id) !== Number(req.user.id) && !["moderator", "admin"].includes(req.user.role)) return res.status(403).json({ error: "Modification non autorisee." });
+  if (Number(row.user_id) !== Number(req.user.id)) return res.status(403).json({ error: "Vous pouvez uniquement modifier vos propres messages." });
   db.prepare("UPDATE chat_messages SET body = ?, edited_at = CURRENT_TIMESTAMP WHERE id = ?").run(body, id);
   const updated = db.prepare(`${chatMessageSelect("m.id = ?")}`).get(id);
   res.json({ message: publicChatMessage(updated, req.user.id) });
@@ -1522,6 +1530,7 @@ app.get("/api/social/messages", requireAuth, (req, res) => {
            ua.last_login_at AS user_a_last_login_at, ua.is_banned AS user_a_is_banned, ua.ban_until AS user_a_ban_until,
            ub.pseudo AS user_b_pseudo, ub.role AS user_b_role, ub.avatar_url AS user_b_avatar_url, ub.created_at AS user_b_created_at,
            ub.last_login_at AS user_b_last_login_at, ub.is_banned AS user_b_is_banned, ub.ban_until AS user_b_ban_until,
+           m.id AS last_message_id, m.sender_id AS last_sender_id,
            m.body AS last_body, m.created_at AS last_message_at, s.pseudo AS last_sender_pseudo
     FROM private_conversations c
     JOIN users ua ON ua.id = c.user_a_id
@@ -1537,19 +1546,32 @@ app.get("/api/social/messages", requireAuth, (req, res) => {
     ORDER BY COALESCE(m.created_at,c.updated_at) DESC
     LIMIT 50
   `).all(req.user.id, req.user.id);
-  res.json({
-    conversations: rows.map((row) => ({
+  const conversations = rows.map((row) => {
+    const readMessageId = Number(row.user_a_id) === Number(req.user.id) ? Number(row.user_a_read_message_id || 0) : Number(row.user_b_read_message_id || 0);
+    const unread = !!row.last_message_id
+      && Number(row.last_sender_id) !== Number(req.user.id)
+      && Number(row.last_message_id) > readMessageId;
+    return {
       id: row.id,
       other: conversationOtherUser(row, req.user.id),
       updatedAt: row.updated_at,
       lastMessageAt: row.last_message_at,
+      unread,
       lastMessage: row.last_body ? {
+        id: row.last_message_id,
         body: row.last_body,
         createdAt: row.last_message_at,
         senderPseudo: row.last_sender_pseudo
       } : null
-    }))
+    };
   });
+  res.json({ conversations, unreadCount: conversations.filter((item) => item.unread).length });
+});
+
+app.post("/api/social/messages/read-all", requireAuth, (req, res) => {
+  db.prepare(`UPDATE private_conversations SET user_a_read_at = CURRENT_TIMESTAMP, user_a_read_message_id = COALESCE((SELECT MAX(id) FROM private_messages WHERE conversation_id = private_conversations.id),0) WHERE user_a_id = ?`).run(req.user.id);
+  db.prepare(`UPDATE private_conversations SET user_b_read_at = CURRENT_TIMESTAMP, user_b_read_message_id = COALESCE((SELECT MAX(id) FROM private_messages WHERE conversation_id = private_conversations.id),0) WHERE user_b_id = ?`).run(req.user.id);
+  res.json({ ok: true });
 });
 
 app.post("/api/social/messages/:pseudo", requireAuth, (req, res) => {
@@ -1622,6 +1644,10 @@ app.get("/api/social/messages/:pseudo", requireAuth, (req, res) => {
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (!canMessageUser(req.user, target)) return res.status(403).json({ error: "Vous devez être amis pour consulter cette conversation." });
   const conversation = getOrCreatePrivateConversation(req.user.id, target.id);
+  const isUserA = Number(conversation.user_a_id) === Number(req.user.id);
+  const readAtColumn = isUserA ? "user_a_read_at" : "user_b_read_at";
+  const readIdColumn = isUserA ? "user_a_read_message_id" : "user_b_read_message_id";
+  db.prepare(`UPDATE private_conversations SET ${readAtColumn} = CURRENT_TIMESTAMP, ${readIdColumn} = COALESCE((SELECT MAX(id) FROM private_messages WHERE conversation_id = ?),0) WHERE id = ?`).run(conversation.id, conversation.id);
   const rows = db.prepare(`
     SELECT m.*, u.pseudo AS sender_pseudo, u.role AS sender_role
     FROM private_messages m

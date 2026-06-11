@@ -4785,6 +4785,10 @@ body.no-anim .app.milestone-flash{
   transform:translateY(2px);
   transition:opacity .18s ease,transform .18s ease;
 }
+.message-conversation.unread{
+  background:linear-gradient(135deg,rgba(254,242,242,.98),rgba(255,247,214,.94));
+  box-shadow:inset 4px 0 0 #dc2626;
+}
 
 .chat-message:hover .chat-message-actions,
 .chat-message:focus-within .chat-message-actions,
@@ -10549,7 +10553,9 @@ body.no-anim .pykur-sparkle{
 .chat-message-actions{
   grid-column:2;
   justify-content:flex-start;
-  opacity:.78;
+  opacity:0;
+  pointer-events:none;
+  transform:translateY(2px);
 }
 
 .chat-message.role-moderator,
@@ -12631,9 +12637,18 @@ const AUTH_TOKEN_KEY="pykur_auth_token";
 let authMode="login";
 let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null,refreshTimer:null};
 const socialState={friends:0,incoming:0,outgoing:0,loaded:false};
-const messageState={activePseudo:null,conversations:[],unread:0,lastSeenAt:localStorage.getItem("pykur_messages_seen_at")||"",timer:null,lastNotifiedAt:localStorage.getItem("pykur_messages_notified_at")||"",threadRequest:0};
+const messageState={activePseudo:null,conversations:[],unread:0,timer:null,lastNotifiedId:Math.max(0,parseInt(localStorage.getItem("pykur_messages_notified_id"),10)||0),threadRequest:0};
 const chatState={messages:[],online:[],ignored:[],settings:{locked:0,slowModeSeconds:0},lastPingSeenAt:localStorage.getItem("pykur_chat_ping_seen_at")||"",mentionUnread:Math.max(0,parseInt(localStorage.getItem("pykur_chat_mention_unread"),10)||0),timer:null,pingTimer:null,hideShares:false,hideText:false,refreshing:false};
 messageState.refreshing=false;
+function socialNotificationKey(name){
+  const pseudo=String(authState.user?.pseudo||"guest").trim().toLowerCase().replace(/[^a-z0-9_-]+/g,"_");
+  return `${name}_${pseudo}`;
+}
+function loadSocialNotificationState(){
+  messageState.lastNotifiedId=Math.max(0,parseInt(localStorage.getItem(socialNotificationKey("pykur_messages_notified_id")),10)||0);
+  chatState.lastPingSeenAt=localStorage.getItem(socialNotificationKey("pykur_chat_ping_seen_at"))||"";
+  chatState.mentionUnread=Math.max(0,parseInt(localStorage.getItem(socialNotificationKey("pykur_chat_mention_unread")),10)||0);
+}
 const cloudState={timer:null,retryTimer:null,retryAttempt:0,syncing:false,pending:false,lastSyncAt:null,error:null,loading:false};
 let accountProfileSection="account";
 let accountWarnings=[];
@@ -12857,6 +12872,7 @@ async function confirmPasswordReset(event){
     authState.user=result.user;
     authState.apiOnline=true;
     localStorage.setItem(AUTH_TOKEN_KEY,authState.token);
+    loadSocialNotificationState();
     authRender();
     closeModal("passwordResetModal");
     toast("Mot de passe réinitialisé. Vous êtes connecté.","success","success");
@@ -13806,10 +13822,10 @@ function renderMessagesList(){
     const pseudo=item.other?.pseudo||"Utilisateur";
     const preview=item.lastMessage?.body ? item.lastMessage.body : "Aucun message encore.";
     return `
-      <button class="message-conversation ${messageState.activePseudo===pseudo?"active":""}" type="button" data-message-pseudo="${escapeHtml(pseudo)}">
+      <button class="message-conversation ${messageState.activePseudo===pseudo?"active":""} ${item.unread?"unread":""}" type="button" data-message-pseudo="${escapeHtml(pseudo)}">
         <strong>${escapeHtml(pseudo)}</strong>
         ${memberStatusMarkup(item.other)}
-        <small>${escapeHtml(preview.slice(0,90))}${preview.length>90?"...":""}</small>
+        <small>${item.unread?"Nouveau · ":""}${escapeHtml(preview.slice(0,90))}${preview.length>90?"...":""}</small>
       </button>
     `;
   }).join("");
@@ -13861,8 +13877,7 @@ async function loadMessagesList(){
   try{
     const result=await authFetch("/social/messages");
     messageState.conversations=result.conversations||[];
-    const seenTime=messageState.lastSeenAt ? new Date(messageState.lastSeenAt).getTime() : 0;
-    messageState.unread=messageState.conversations.filter(item=>item.lastMessageAt && new Date(item.lastMessageAt).getTime()>seenTime && item.lastMessage?.senderPseudo!==authState.user?.pseudo).length;
+    messageState.unread=Number(result.unreadCount)||messageState.conversations.filter(item=>item.unread).length;
     authRender();
     renderMessagesList();
   }catch(error){
@@ -13887,16 +13902,15 @@ async function refreshMessageNotifications({silent=false}={}){
   try{
     const result=await authFetch("/social/messages");
     messageState.conversations=result.conversations||[];
-    const seenTime=messageState.lastSeenAt ? new Date(messageState.lastSeenAt).getTime() : 0;
-    const notifiedTime=messageState.lastNotifiedAt ? new Date(messageState.lastNotifiedAt).getTime() : 0;
-    const unread=messageState.conversations.filter(item=>item.lastMessageAt && new Date(item.lastMessageAt).getTime()>seenTime && item.lastMessage?.senderPseudo!==authState.user?.pseudo);
-    messageState.unread=unread.length;
+    const unread=messageState.conversations.filter(item=>item.unread);
+    messageState.unread=Number(result.unreadCount)||unread.length;
     const newest=unread
       .slice()
-      .sort((a,b)=>new Date(b.lastMessageAt).getTime()-new Date(a.lastMessageAt).getTime())[0];
-    if(newest && !silent && new Date(newest.lastMessageAt).getTime()>notifiedTime){
-      messageState.lastNotifiedAt=newest.lastMessageAt;
-      localStorage.setItem("pykur_messages_notified_at",messageState.lastNotifiedAt);
+      .sort((a,b)=>Number(b.lastMessage?.id||0)-Number(a.lastMessage?.id||0))[0];
+    const newestId=Number(newest?.lastMessage?.id||0);
+    if(newest && !silent && newestId>messageState.lastNotifiedId){
+      messageState.lastNotifiedId=newestId;
+      localStorage.setItem(socialNotificationKey("pykur_messages_notified_id"),String(messageState.lastNotifiedId));
       toast(`Nouveau message privé de ${newest.other?.pseudo||"un membre"}.`,"info","click");
     }
     authRender();
@@ -14009,10 +14023,9 @@ async function reportPrivateMessage(id){
 async function openMessagesPanel(pseudo=null){
   if(!authState.user)return authOpen("login");
   openModal("messagesModal");
+  try{await authFetch("/social/messages/read-all",{method:"POST"})}catch(error){}
   await loadMessagesList();
-  messageState.lastSeenAt=new Date().toISOString();
   messageState.unread=0;
-  localStorage.setItem("pykur_messages_seen_at",messageState.lastSeenAt);
   authRender();
   const clean=(pseudo||messageState.activePseudo||"").trim();
   if(clean)await loadMessageThread(clean);
@@ -14059,7 +14072,8 @@ function renderChatbox(){
           </div>
           <div class="chat-message-actions">
             <button class="btn btn-gray" type="button" data-chat-reply="${escapeHtml(sender.pseudo||"")}">@</button>
-            ${canOwn||canModerate?`<button class="btn btn-blue" type="button" data-chat-edit="${item.id}">Modifier</button><button class="btn btn-red" type="button" data-chat-delete="${item.id}">Supprimer</button>`:""}
+            ${canOwn?`<button class="btn btn-blue" type="button" data-chat-edit="${item.id}">Modifier</button>`:""}
+            ${canOwn||canModerate?`<button class="btn btn-red" type="button" data-chat-delete="${item.id}">Supprimer</button>`:""}
             ${!canOwn?`<button class="btn btn-orange" type="button" data-chat-report="${item.id}">Report</button><button class="btn btn-gray" type="button" data-chat-ignore="${escapeHtml(sender.pseudo||"")}">Ignorer</button>`:""}
           </div>
         </article>
@@ -14139,10 +14153,10 @@ function detectChatPings(){
   if(hits.length){
     const newest=hits.slice().sort((a,b)=>new Date(b.createdAt).getTime()-new Date(a.createdAt).getTime())[0];
     chatState.lastPingSeenAt=newest.createdAt;
-    localStorage.setItem("pykur_chat_ping_seen_at",chatState.lastPingSeenAt);
+    localStorage.setItem(socialNotificationKey("pykur_chat_ping_seen_at"),chatState.lastPingSeenAt);
     if($("#chatboxModal")?.classList.contains("show"))return;
     chatState.mentionUnread=Math.min(99,chatState.mentionUnread+hits.length);
-    localStorage.setItem("pykur_chat_mention_unread",String(chatState.mentionUnread));
+    localStorage.setItem(socialNotificationKey("pykur_chat_mention_unread"),String(chatState.mentionUnread));
     authRender();
     toast(`${newest.sender?.pseudo||"Un membre"} vous a mentionné dans le chat.`,"info","click");
   }
@@ -14192,7 +14206,7 @@ function stopChatboxPolling(){
 async function openChatboxPanel(){
   if(!authState.user)return authOpen("login");
   chatState.mentionUnread=0;
-  localStorage.setItem("pykur_chat_mention_unread","0");
+  localStorage.setItem(socialNotificationKey("pykur_chat_mention_unread"),"0");
   authRender();
   openModal("chatboxModal");
   if($("#chatHideShares"))$("#chatHideShares").checked=chatState.hideShares;
@@ -14542,6 +14556,7 @@ async function authRefresh(){
     const result=await authFetch("/auth/me");
     authState.user=result.user;
     authState.apiOnline=true;
+    loadSocialNotificationState();
     if(authState.refreshTimer){
       clearTimeout(authState.refreshTimer);
       authState.refreshTimer=null;
