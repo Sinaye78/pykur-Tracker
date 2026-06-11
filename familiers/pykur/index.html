@@ -10897,6 +10897,288 @@ body.no-anim .pykur-sparkle{
   .living-admin-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 
+/* ===== Finition du tableau principal ===== */
+.main{
+  gap:14px!important;
+}
+
+.profile-row{
+  min-height:66px;
+  padding:12px 14px!important;
+  border-color:rgba(126,91,43,.28)!important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.30),transparent 62%),
+    var(--surface-soft)!important;
+}
+
+.profile-row label{
+  color:var(--text)!important;
+  font-size:15px!important;
+  font-weight:900!important;
+}
+
+.profile-row select{
+  min-height:42px;
+  border-width:2px;
+  border-color:rgba(126,91,43,.46);
+  background:rgba(255,252,243,.78);
+  font-weight:800;
+}
+
+.hero{
+  padding:18px!important;
+  border-color:rgba(126,91,43,.34)!important;
+  background:
+    linear-gradient(135deg,rgba(255,253,247,.72),rgba(255,247,226,.40)),
+    var(--surface-soft)!important;
+}
+
+.hero::before{
+  background:linear-gradient(105deg,rgba(255,255,255,.46),transparent 60%)!important;
+}
+
+.hero::after{
+  opacity:.075!important;
+  background-size:min(42%,310px)!important;
+  background-position:70% 48%!important;
+}
+
+.farm-command-head{
+  min-height:74px;
+  padding-bottom:16px;
+  border-bottom:1px solid rgba(126,91,43,.24);
+}
+
+.farm-command-head .run-command-grid{
+  flex:1 1 auto!important;
+  width:auto!important;
+  margin:0!important;
+  justify-content:flex-start!important;
+  flex-direction:row!important;
+  gap:12px!important;
+}
+
+.farm-command-head > .farm-select-wrap{
+  flex:0 0 auto;
+  width:210px;
+  margin-left:auto;
+}
+
+.farm-select-wrap > span{
+  color:var(--text)!important;
+  font-size:11px!important;
+  text-align:left;
+}
+
+.farm-toggle{
+  padding:4px!important;
+  border:1px solid rgba(126,91,43,.38)!important;
+  border-radius:12px!important;
+  background:rgba(255,252,243,.68)!important;
+}
+
+.farm-choice{
+  min-height:38px!important;
+  border-radius:8px!important;
+}
+
+.farm-command-head #plus{
+  min-width:154px!important;
+  height:66px!important;
+  border-color:rgba(7,94,40,.34)!important;
+  box-shadow:0 9px 18px rgba(22,128,58,.18)!important;
+}
+
+.farm-command-head #minus{
+  min-width:72px!important;
+  width:72px!important;
+  height:66px!important;
+  border-color:rgba(127,29,29,.32)!important;
+  box-shadow:0 9px 18px rgba(180,35,24,.14)!important;
+}
+
+.action-groups{
+  margin-top:14px!important;
+  gap:10px!important;
+}
+
+.action-group{
+  min-height:82px;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px!important;
+  align-content:start;
+  padding:10px!important;
+  border-color:rgba(126,91,43,.24)!important;
+  background:rgba(255,255,255,.22)!important;
+}
+
+.action-group-title{
+  grid-column:1 / -1;
+  min-height:16px;
+  color:#5d4226!important;
+  font-size:11px!important;
+}
+
+.action-group .btn{
+  min-width:0!important;
+  min-height:38px!important;
+  padding:7px 9px!important;
+  background:rgba(255,255,255,.34)!important;
+}
+
+.danger-group{
+  grid-template-columns:1fr;
+  background:rgba(180,35,24,.025)!important;
+}
+
+.dungeon-summary{
+  gap:12px!important;
+}
+
+.dungeon-card{
+  position:relative;
+  padding:15px!important;
+  overflow:hidden;
+}
+
+.dungeon-card h3{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:29px;
+  margin:0 0 10px!important;
+  padding-bottom:9px;
+  border-bottom:1px solid rgba(126,91,43,.20);
+  color:var(--text);
+  font-size:17px!important;
+}
+
+.dungeon-card .dungeon-mini{
+  min-height:66px;
+  border-radius:10px!important;
+  background:rgba(255,255,255,.44)!important;
+}
+
+.dungeon-card .dungeon-mini.full{
+  min-height:70px;
+  margin-top:8px;
+}
+
+.dungeon-value{
+  margin-top:3px;
+  font-size:23px!important;
+  line-height:1.08;
+}
+
+.dungeon-mini.full .dungeon-value{
+  font-size:20px!important;
+}
+
+.dungeon-card.active-farm{
+  border-width:2px!important;
+}
+
+.pp-summary-card{
+  min-height:88px!important;
+  padding:16px 20px!important;
+}
+
+.pp-summary-label{
+  font-size:15px!important;
+}
+
+.pp-summary-card #prospection{
+  font-size:38px!important;
+}
+
+.quick-projection{
+  min-height:116px!important;
+  padding:15px 18px!important;
+  gap:18px!important;
+}
+
+.quick-projection-value{
+  min-height:0!important;
+  font-size:18px!important;
+}
+
+.quick-projection-lines{
+  gap:5px!important;
+}
+
+.quick-projection-run{
+  max-width:590px!important;
+  min-height:27px!important;
+}
+
+.quick-projection #projectionButton{
+  min-width:118px!important;
+  min-height:42px!important;
+  background:rgba(255,255,255,.62)!important;
+}
+
+.dashboard-bottom-actions{
+  gap:10px!important;
+  margin-top:0!important;
+}
+
+body.night .profile-row select,
+body.night .farm-toggle,
+body.night .action-group .btn,
+body.night .quick-projection #projectionButton{
+  background:rgba(255,255,255,.07)!important;
+}
+
+body.night .action-group,
+body.night .dungeon-card .dungeon-mini{
+  background:rgba(255,255,255,.045)!important;
+}
+
+@media(max-width:900px){
+  .farm-command-head{
+    align-items:stretch!important;
+  }
+  .farm-command-head > .farm-select-wrap{
+    width:100%;
+    margin-left:0;
+  }
+  .action-groups{
+    grid-template-columns:1fr!important;
+  }
+  .action-group{
+    min-height:0;
+  }
+}
+
+@media(max-width:560px){
+  .hero{
+    padding:14px!important;
+  }
+  .farm-command-head .run-command-grid{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 68px;
+  }
+  .farm-command-head #plus,
+  .farm-command-head #minus{
+    width:100%!important;
+    min-width:0!important;
+    height:58px!important;
+  }
+  .action-group{
+    grid-template-columns:1fr!important;
+  }
+  .action-group-title{
+    grid-column:1;
+  }
+  .quick-projection{
+    grid-template-columns:1fr!important;
+  }
+  .quick-projection #projectionButton{
+    width:100%!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -11044,6 +11326,10 @@ body.no-anim .pykur-sparkle{
 
       <section class="card hero">
         <div class="farm-command-head">
+          <div class="run-command-grid" role="group" aria-label="Actions du donjon actif">
+            <button class="btn btn-green big-btn tooltip" id="plus" data-tooltip="Ajoute un donjon au suivi actif. Les monstres, la PP, les statistiques et la session en cours sont mis à jour automatiquement.">+ Run</button>
+            <button class="btn btn-red big-btn tooltip" id="minus" data-tooltip="Retire un donjon du suivi actif si vous avez cliqué trop vite. Les monstres associés sont corrigés aussi.">-</button>
+          </div>
           <div class="farm-select-wrap">
             <span>Donjon actif</span>
             <div class="farm-toggle" role="group" aria-label="Donjon actif">
@@ -11059,11 +11345,6 @@ body.no-anim .pykur-sparkle{
             <option value="morose">Donjon Morose</option>
             <option value="tynril">Donjon Tynril</option>
           </select>
-        </div>
-
-        <div class="run-command-grid">
-          <button class="btn btn-green big-btn tooltip" id="plus" data-tooltip="Ajoute un donjon au suivi actif. Les monstres, la PP, les statistiques et la session en cours sont mis à jour automatiquement.">+ Run</button>
-          <button class="btn btn-red big-btn tooltip" id="minus" data-tooltip="Retire un donjon du suivi actif si vous avez cliqué trop vite. Les monstres associés sont corrigés aussi.">-</button>
         </div>
 
         <div class="actions action-groups">
