@@ -2537,31 +2537,6 @@ body.no-anim .app.milestone-flash{
   background:rgba(255,255,255,.13)!important;
 }
 
-/* Logo au centre entre + et - */
-.site-logo-title{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  min-height:58px!important;
-}
-
-.site-logo-title img{
-  max-height:58px;
-  max-width:min(260px,100%);
-  object-fit:contain;
-  display:block;
-  filter:
-    drop-shadow(0 2px 1px rgba(0,0,0,.25))
-    drop-shadow(0 0 8px rgba(250,204,21,.28));
-}
-
-/* Si le logo n'est pas chargé, éviter un bloc cassé trop grand */
-.site-logo-title img:not([src]),
-.site-logo-title img[src=""]{
-  display:none;
-}
-
-
 /* ===== Correctif infobulles : premier plan + texte contenu ===== */
 .tooltip{
   position:relative!important;
@@ -2734,6 +2709,11 @@ body.no-anim .app.milestone-flash{
   flex-direction:column;
   gap:6px;
   align-items:stretch;
+}
+
+.farm-command-head > .farm-select-wrap{
+  width:min(300px,100%);
+  margin-left:auto;
 }
 
 .farm-select-wrap > span,
@@ -3100,6 +3080,11 @@ body.no-anim .app.milestone-flash{
     grid-template-columns:1fr;
   }
 
+  .farm-command-head > .farm-select-wrap{
+    width:100%;
+    margin-left:0;
+  }
+
   .profile-row{
     grid-template-columns:1fr!important;
   }
@@ -3461,6 +3446,20 @@ body.no-anim .app.milestone-flash{
   white-space:pre-line;
 }
 
+.smart-tooltip-title{
+  display:block;
+  margin:0 0 4px;
+  color:#ffd65a;
+  font-size:13px;
+  font-weight:950;
+  line-height:1.15;
+}
+
+.smart-tooltip-text{
+  display:block;
+  color:#fff7d6;
+}
+
 .smart-tooltip.is-dungeon-estimate{
   max-width:min(390px,calc(100vw - 24px));
   padding:13px 15px;
@@ -3588,41 +3587,6 @@ body.no-anim .app.milestone-flash{
     min-width:46px!important;
     min-height:46px!important;
   }
-}
-
-.save-status{
-  align-self:center;
-  min-height:28px;
-  display:inline-flex;
-  align-items:center;
-  padding:5px 10px;
-  border:1px solid rgba(119,79,28,.28);
-  border-radius:999px;
-  background:rgba(255,255,255,.34);
-  color:#65431d;
-  font-size:12px;
-  font-weight:900;
-  white-space:nowrap;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.36);
-}
-.save-status.saved::before,
-.save-status.error::before{
-  content:"";
-  width:7px;
-  height:7px;
-  margin-right:7px;
-  border-radius:999px;
-  background:#22c55e;
-  box-shadow:0 0 8px rgba(34,197,94,.45);
-}
-.save-status.error{
-  color:#7f1d1d;
-  border-color:rgba(185,28,28,.38);
-  background:rgba(254,226,226,.72);
-}
-.save-status.error::before{
-  background:#ef4444;
-  box-shadow:0 0 8px rgba(239,68,68,.45);
 }
 
 .auth-widget{
@@ -11003,24 +10967,23 @@ body.no-anim .pykur-sparkle{
 
 <main class="app">
   <div class="top-tools">
-    <span class="save-status" id="saveStatus" aria-live="polite">Sauvegarde en attente</span>
-    <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="helpButton" data-tooltip="Aide : ouvrir le guide du tracker." type="button" aria-label="Ouvrir l'aide">
+    <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="helpButton" data-tooltip-title="Aide" data-tooltip="Ouvrir le guide et la visite du tracker." type="button" aria-label="Ouvrir l'aide">
       <img class="top-tool-icon" src="./assets/bouton/aide.png" alt="" aria-hidden="true">
       <span class="top-tool-label">Aide</span>
     </button>
-    <button class="btn tooltip top-tool-btn top-tool-icon-btn sound-toggle" id="soundToggle" data-tooltip="Son activé" type="button" aria-label="Son activé">
+    <button class="btn tooltip top-tool-btn top-tool-icon-btn sound-toggle" id="soundToggle" data-tooltip-title="Son" data-tooltip="Son activé" type="button" aria-label="Son activé">
       <img class="top-tool-icon" src="./assets/bouton/son.png" alt="" aria-hidden="true">
       <span class="top-tool-label">Son</span>
     </button>
-    <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="achievementsButton" data-tooltip="Succès : consulter vos objectifs et récompenses." type="button" aria-label="Ouvrir les succès">
+    <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="achievementsButton" data-tooltip-title="Succès" data-tooltip="Consulter vos objectifs et récompenses." type="button" aria-label="Ouvrir les succès">
       <img class="top-tool-icon" src="./assets/bouton/succes.png" alt="" aria-hidden="true">
       <span class="top-tool-label">Succès</span>
     </button>
-    <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="galleryButton" data-tooltip="Galerie : revoir vos Pykurs et événements découverts." type="button" aria-label="Ouvrir la galerie">
+    <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="galleryButton" data-tooltip-title="Galerie" data-tooltip="Revoir vos Pykurs et événements découverts." type="button" aria-label="Ouvrir la galerie">
       <img class="top-tool-icon" src="./assets/bouton/galerie.png" alt="" aria-hidden="true">
       <span class="top-tool-label">Galerie</span>
     </button>
-    <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="optionsButton" data-tooltip="Options : régler le tracker et vos raccourcis." type="button" aria-label="Ouvrir les options">
+    <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="optionsButton" data-tooltip-title="Options" data-tooltip="Régler le tracker et vos raccourcis." type="button" aria-label="Ouvrir les options">
       <img class="top-tool-icon" src="./assets/bouton/option.png" alt="" aria-hidden="true">
       <span class="top-tool-label">Options</span>
     </button>
@@ -11081,7 +11044,6 @@ body.no-anim .pykur-sparkle{
 
       <section class="card hero">
         <div class="farm-command-head">
-          <h1 class="site-logo-title"><img src="./assets/images/logo.png" alt="Pykur"></h1>
           <div class="farm-select-wrap">
             <span>Donjon actif</span>
             <div class="farm-toggle" role="group" aria-label="Donjon actif">
@@ -19790,7 +19752,17 @@ function setupSmartTooltips(){
     active=target;
     const isDungeonEstimate=target.id==="moroseEstimateBox" || target.id==="tynrilEstimateBox";
     tip.classList.toggle("is-dungeon-estimate",isDungeonEstimate);
-    tip.textContent=target.dataset.tooltip;
+    tip.replaceChildren();
+    if(target.dataset.tooltipTitle){
+      const title=document.createElement("strong");
+      title.className="smart-tooltip-title";
+      title.textContent=target.dataset.tooltipTitle;
+      tip.appendChild(title);
+    }
+    const text=document.createElement("span");
+    text.className="smart-tooltip-text";
+    text.textContent=target.dataset.tooltip;
+    tip.appendChild(text);
     tip.classList.add("show");
 
     const rect=target.getBoundingClientRect();
