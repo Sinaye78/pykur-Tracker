@@ -12094,25 +12094,101 @@ function assetPath(src){
 const AUTH_API_BASE=localStorage.getItem("pykur_api_base")||(location.hostname==="127.0.0.1"||location.hostname==="localhost"?"http://127.0.0.1:3000/api":"/api");
 const AUTH_TOKEN_KEY="pykur_auth_token";
 let authMode="login";
-let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null};
+let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null,refreshTimer:null};
 const socialState={friends:0,incoming:0,outgoing:0,loaded:false};
 const messageState={activePseudo:null,conversations:[],unread:0,lastSeenAt:localStorage.getItem("pykur_messages_seen_at")||"",timer:null,lastNotifiedAt:localStorage.getItem("pykur_messages_notified_at")||""};
 const chatState={messages:[],online:[],ignored:[],settings:{locked:0,slowModeSeconds:0},lastPingSeenAt:localStorage.getItem("pykur_chat_ping_seen_at")||"",timer:null,pingTimer:null,hideShares:false,hideText:false};
-const cloudState={timer:null,syncing:false,pending:false,lastSyncAt:null,error:null,loading:false};
+const cloudState={timer:null,retryTimer:null,retryAttempt:0,syncing:false,pending:false,lastSyncAt:null,error:null,loading:false};
 let accountProfileSection="account";
 let accountWarnings=[];
 let lastWarningSeenAt=localStorage.getItem("pykur_warning_seen_at")||"";
 let moderationOverviewSection="reports";
 let moderationLogFilter="";
 let passwordResetToken="";
+const apiRequestsInFlight=new Map();
+
+class ApiRequestError extends Error{
+  constructor(message,details={}){
+    super(message);
+    this.name="ApiRequestError";
+    Object.assign(this,details);
+  }
+}
+
+function apiFriendlyMessage(status,body={}){
+  if(body?.error && body.error!=="Erreur API.")return body.error;
+  if(status===401)return "Votre session a expiré. Reconnectez-vous.";
+  if(status===403)return "Vous n’avez pas l’autorisation d’effectuer cette action.";
+  if(status===404)return "La ressource demandée est introuvable.";
+  if(status===429)return "Le serveur reçoit trop de demandes. Réessayez dans quelques secondes.";
+  if(status>=500)return "Le serveur rencontre un problème temporaire. Réessayez dans quelques instants.";
+  return "La demande n’a pas pu être traitée.";
+}
+
+function isTransientApiError(error){
+  return !!error && (error.network===true || error.timeout===true || [0,408,425,429,502,503,504].includes(Number(error.status||0)));
+}
+
+function apiDelay(ms){
+  return new Promise(resolve=>setTimeout(resolve,ms));
+}
 
 async function authFetch(path,options={}){
-  const headers=Object.assign({"Content-Type":"application/json"},options.headers||{});
-  if(authState.token)headers.Authorization=`Bearer ${authState.token}`;
-  const response=await fetch(AUTH_API_BASE+path,{...options,headers});
-  const body=await response.json().catch(()=>({}));
-  if(!response.ok)throw new Error(body.error||"Erreur API.");
-  return body;
+  const method=String(options.method||"GET").toUpperCase();
+  const requestKey=method==="GET" ? `${method}:${path}` : "";
+  if(requestKey && apiRequestsInFlight.has(requestKey))return apiRequestsInFlight.get(requestKey);
+  const request=(async()=>{
+    const maxAttempts=method==="GET" ? 2 : 1;
+    let lastError=null;
+    for(let attempt=1;attempt<=maxAttempts;attempt++){
+      const controller=new AbortController();
+      const timeoutId=setTimeout(()=>controller.abort(),12000);
+      const requestId=globalThis.crypto?.randomUUID?.()||`web-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const headers=Object.assign({"Content-Type":"application/json","X-Request-Id":requestId},options.headers||{});
+      if(authState.token)headers.Authorization=`Bearer ${authState.token}`;
+      try{
+        const response=await fetch(AUTH_API_BASE+path,{...options,method,headers,signal:controller.signal});
+        const body=await response.json().catch(()=>({}));
+        if(!response.ok){
+          const error=new ApiRequestError(apiFriendlyMessage(response.status,body),{
+            status:response.status,
+            code:body.code||"API_ERROR",
+            requestId:body.requestId||response.headers.get("X-Request-Id")||requestId,
+            path
+          });
+          if(attempt<maxAttempts && isTransientApiError(error)){
+            lastError=error;
+            await apiDelay(350+Math.floor(Math.random()*250));
+            continue;
+          }
+          throw error;
+        }
+        authState.apiOnline=true;
+        return body;
+      }catch(error){
+        const normalized=error instanceof ApiRequestError ? error : new ApiRequestError(
+          error?.name==="AbortError" ? "Le serveur met trop de temps à répondre." : "Connexion au serveur momentanément indisponible.",
+          {status:0,code:error?.name==="AbortError"?"TIMEOUT":"NETWORK_ERROR",requestId,path,timeout:error?.name==="AbortError",network:error?.name!=="AbortError"}
+        );
+        if(isTransientApiError(normalized) || Number(normalized.status||0)>=500)authState.apiOnline=false;
+        if(attempt<maxAttempts && isTransientApiError(normalized)){
+          lastError=normalized;
+          await apiDelay(350+Math.floor(Math.random()*250));
+          continue;
+        }
+        throw normalized;
+      }finally{
+        clearTimeout(timeoutId);
+      }
+    }
+    throw lastError||new ApiRequestError("Connexion au serveur momentanément indisponible.",{status:0,network:true,path});
+  })();
+  if(requestKey)apiRequestsInFlight.set(requestKey,request);
+  try{
+    return await request;
+  }finally{
+    if(requestKey && apiRequestsInFlight.get(requestKey)===request)apiRequestsInFlight.delete(requestKey);
+  }
 }
 
 function authRoleLabel(role){
@@ -13289,7 +13365,8 @@ async function refreshMessageNotifications({silent=false}={}){
       if(messageState.activePseudo)loadMessageThread(messageState.activePseudo,{silent:true,preserveScroll:true});
     }
   }catch(error){
-    if(!silent)toast(error.message||"Messages indisponibles.","error","error");
+    if(!silent && !isTransientApiError(error))toast(error.message||"Messages indisponibles.","error","error");
+    else if(isTransientApiError(error))console.warn("[API] Rafraîchissement des messages reporté",error.requestId||error.code||error.message);
   }
 }
 
@@ -13299,11 +13376,11 @@ function startSocialPolling(){
   refreshMessageNotifications({silent:true});
   refreshChatPingNotifications({silent:true});
   refreshWarningNotifications({silent:true});
-  messageState.timer=setInterval(()=>refreshMessageNotifications(),3000);
+  messageState.timer=setInterval(()=>refreshMessageNotifications(),5000);
   chatState.pingTimer=setInterval(()=>{
     refreshChatPingNotifications({silent:true});
     refreshWarningNotifications();
-  },4000);
+  },10000);
 }
 
 async function loadMessageThread(pseudo,{silent=false,preserveScroll=false}={}){
@@ -13527,7 +13604,8 @@ async function refreshChatPingNotifications({silent=false}={}){
     chatState.messages=chat.messages||[];
     detectChatPings();
   }catch(error){
-    if(!silent)toast(error.message||"Notifications chat indisponibles.","error","error");
+    if(!silent && !isTransientApiError(error))toast(error.message||"Notifications chat indisponibles.","error","error");
+    else if(isTransientApiError(error))console.warn("[API] Rafraîchissement des mentions reporté",error.requestId||error.code||error.message);
   }
 }
 
@@ -13547,7 +13625,8 @@ async function refreshWarningNotifications({silent=false}={}){
       if($("#accountProfileModal")?.classList.contains("show"))renderAccountWarnings();
     }
   }catch(error){
-    if(!silent)toast(error.message||"Avertissements indisponibles.","error","error");
+    if(!silent && !isTransientApiError(error))toast(error.message||"Avertissements indisponibles.","error","error");
+    else if(isTransientApiError(error))console.warn("[API] Rafraîchissement des avertissements reporté",error.requestId||error.code||error.message);
   }
 }
 
@@ -13565,7 +13644,7 @@ async function openChatboxPanel(){
   if($("#chatHideText"))$("#chatHideText").checked=chatState.hideText;
   await loadChatbox();
   stopChatboxPolling();
-  chatState.timer=setInterval(()=>loadChatbox({silent:true}),3000);
+  chatState.timer=setInterval(()=>loadChatbox({silent:true}),5000);
 }
 
 async function sendChatMessage(event){
@@ -13882,9 +13961,14 @@ function authLogout(){
     clearTimeout(cloudState.timer);
     cloudState.timer=null;
   }
+  if(cloudState.retryTimer){
+    clearTimeout(cloudState.retryTimer);
+    cloudState.retryTimer=null;
+  }
+  if(authState.refreshTimer)clearTimeout(authState.refreshTimer);
   stopChatboxPolling();
   stopMessagePolling();
-  authState={token:"",user:null,apiOnline:authState.apiOnline};
+  authState={token:"",user:null,apiOnline:authState.apiOnline,refreshTimer:null};
   socialState.friends=0;
   socialState.incoming=0;
   socialState.outgoing=0;
@@ -13903,11 +13987,25 @@ async function authRefresh(){
     const result=await authFetch("/auth/me");
     authState.user=result.user;
     authState.apiOnline=true;
-  }catch{
-    authState.token="";
-    authState.user=null;
+    if(authState.refreshTimer){
+      clearTimeout(authState.refreshTimer);
+      authState.refreshTimer=null;
+    }
+  }catch(error){
     authState.apiOnline=false;
-    localStorage.removeItem(AUTH_TOKEN_KEY);
+    if([401,403].includes(Number(error?.status||0))){
+      authState.token="";
+      authState.user=null;
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+    }else{
+      console.warn("[API] Session conservée pendant une indisponibilité temporaire",error?.requestId||error?.code||error?.message);
+      if(!authState.refreshTimer){
+        authState.refreshTimer=setTimeout(()=>{
+          authState.refreshTimer=null;
+          authRefresh();
+        },5000);
+      }
+    }
   }
   authRender();
   if(authState.user){
@@ -14102,6 +14200,17 @@ function scheduleCloudSave(){
   cloudState.timer=setTimeout(()=>cloudSyncNow({silent:true}),500);
 }
 
+function scheduleCloudRetry(){
+  if(!authState.user || cloudState.retryTimer)return;
+  const delays=[5000,15000,30000,60000];
+  const delay=delays[Math.min(cloudState.retryAttempt,delays.length-1)];
+  cloudState.retryAttempt+=1;
+  cloudState.retryTimer=setTimeout(()=>{
+    cloudState.retryTimer=null;
+    cloudSyncNow({silent:true});
+  },delay);
+}
+
 async function cloudSyncNow(options={}){
   if(!authState.user){
     if(!options.silent)toast("Connectez-vous pour utiliser la sauvegarde cloud.","warning","warning");
@@ -14124,11 +14233,17 @@ async function cloudSyncNow(options={}){
     }
     cloudState.lastSyncAt=new Date();
     cloudState.error=null;
+    cloudState.retryAttempt=0;
+    if(cloudState.retryTimer){
+      clearTimeout(cloudState.retryTimer);
+      cloudState.retryTimer=null;
+    }
     markSaveStatus(true);
     if(!options.silent)toast("Sauvegarde cloud synchronisée.","success","success");
     return true;
   }catch(error){
     cloudState.error=error.message||"Erreur cloud";
+    if(isTransientApiError(error))scheduleCloudRetry();
     if(!options.silent)toast("Sauvegarde cloud impossible.","error","error");
     return false;
   }finally{

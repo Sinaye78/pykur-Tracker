@@ -20,6 +20,8 @@ const ROLE_ORDER = { user: 1, moderator: 2, admin: 3 };
 
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 const db = new Database(DB_PATH);
+db.pragma("journal_mode = WAL");
+db.pragma("busy_timeout = 5000");
 db.pragma("foreign_keys = ON");
 db.exec(fs.readFileSync(path.join(__dirname, "schema.sql"), "utf8"));
 
@@ -167,11 +169,33 @@ db.prepare("INSERT OR IGNORE INTO chat_settings(id,locked,slow_mode_seconds) VAL
 db.prepare("INSERT OR IGNORE INTO security_settings(id) VALUES(1)").run();
 
 const app = express();
+const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 app.set("trust proxy", 1);
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
 app.use(express.json({ limit: "2mb" }));
-app.use(rateLimit({ windowMs: 60 * 1000, max: 120 }));
+app.use((req, res, next) => {
+  req.requestId = String(req.headers["x-request-id"] || crypto.randomUUID());
+  res.setHeader("X-Request-Id", req.requestId);
+  const startedAt = Date.now();
+  res.on("finish", () => {
+    if (res.statusCode >= 429) {
+      console.warn(`[api] ${req.requestId} ${req.method} ${req.originalUrl} ${res.statusCode} ${Date.now() - startedAt}ms`);
+    }
+  });
+  next();
+});
+app.use(rateLimit({
+  windowMs: 60 * 1000,
+  max: 600,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => res.status(429).json({
+    error: "Trop de requêtes. Réessayez dans quelques secondes.",
+    code: "RATE_LIMITED",
+    requestId: req.requestId
+  })
+}));
 const passwordResetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false });
 
 const DEFAULT_ACCOUNT_PREFERENCES = {
@@ -931,7 +955,7 @@ app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "pykur-tracker", version: "1.5.0-preview" });
 });
 
-app.post("/api/auth/register", async (req, res) => {
+app.post("/api/auth/register", asyncRoute(async (req, res) => {
   const pseudo = cleanPseudo(req.body.pseudo);
   const email = String(req.body.email || "").trim().toLowerCase();
   const password = String(req.body.password || "");
@@ -969,7 +993,7 @@ app.post("/api/auth/register", async (req, res) => {
     }
     throw error;
   }
-});
+}));
 
 app.post("/api/auth/verify-email/confirm", passwordResetLimiter, (req, res) => {
   const token = String(req.body.token || "");
@@ -993,7 +1017,7 @@ app.post("/api/auth/verify-email/confirm", passwordResetLimiter, (req, res) => {
   res.json({ token: signUser(user), user: publicUser(user) });
 });
 
-app.post("/api/auth/login", async (req, res) => {
+app.post("/api/auth/login", asyncRoute(async (req, res) => {
   purgeExpiredClosedAccounts();
   const identifier = String(req.body.identifier || "").trim();
   const password = String(req.body.password || "");
@@ -1012,9 +1036,9 @@ app.post("/api/auth/login", async (req, res) => {
   announceFirstLogin(refreshed);
   logCommunity({ userId: refreshed.id, type: "login", body: "Connexion au compte." });
   res.json({ token: signUser(refreshed), user: publicUser(refreshed) });
-});
+}));
 
-app.post("/api/auth/password-reset/request", passwordResetLimiter, async (req, res) => {
+app.post("/api/auth/password-reset/request", passwordResetLimiter, asyncRoute(async (req, res) => {
   const identifier = cleanIdentifier(req.body.identifier);
   const user = db.prepare("SELECT * FROM users WHERE lower(email) = lower(?) OR lower(pseudo) = lower(?)").get(identifier, identifier);
   if (user && !user.is_banned) {
@@ -1028,9 +1052,9 @@ app.post("/api/auth/password-reset/request", passwordResetLimiter, async (req, r
     await sendPasswordResetEmail(user, resetLink(token));
   }
   res.json({ ok: true, message: "Si un compte correspond, un email de récupération vient d'être envoyé." });
-});
+}));
 
-app.post("/api/auth/password-reset/confirm", passwordResetLimiter, async (req, res) => {
+app.post("/api/auth/password-reset/confirm", passwordResetLimiter, asyncRoute(async (req, res) => {
   const token = String(req.body.token || "");
   const newPassword = String(req.body.newPassword || "");
   if (token.length < 32) return res.status(400).json({ error: "Lien de récupération invalide." });
@@ -1052,7 +1076,7 @@ app.post("/api/auth/password-reset/confirm", passwordResetLimiter, async (req, r
   transaction();
   const user = getUserById(row.user_id);
   res.json({ token: signUser(user), user: publicUser(user) });
-});
+}));
 
 app.get("/api/auth/me", requireAuth, (req, res) => {
   db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP, deletion_requested_at = NULL WHERE id = ?").run(req.user.id);
@@ -1080,7 +1104,7 @@ app.put("/api/account/email", requireAuth, (req, res) => {
   }
 });
 
-app.put("/api/account/password", requireAuth, async (req, res) => {
+app.put("/api/account/password", requireAuth, asyncRoute(async (req, res) => {
   const currentPassword = String(req.body.currentPassword || "");
   const newPassword = String(req.body.newPassword || "");
   if (!(await bcrypt.compare(currentPassword, req.user.password_hash))) return res.status(401).json({ error: "Mot de passe actuel incorrect." });
@@ -1089,7 +1113,7 @@ app.put("/api/account/password", requireAuth, async (req, res) => {
   db.prepare("UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(hash, req.user.id);
   logCommunity({ userId: req.user.id, type: "account_password", body: "Mot de passe modifie." });
   res.json({ ok: true });
-});
+}));
 
 app.put("/api/account/preferences", requireAuth, (req, res) => {
   const preferences = cleanPreferences(req.body.preferences);
@@ -1856,8 +1880,15 @@ app.post("/api/admin/users/:id/role-legacy-disabled", requireAuth, requireRole("
 });
 
 app.use((error, req, res, next) => {
-  console.error(error);
-  res.status(500).json({ error: "Erreur serveur." });
+  const requestId = req.requestId || crypto.randomUUID();
+  const status = Number(error?.status || error?.statusCode || 500);
+  console.error(`[api] ${requestId} ${req.method} ${req.originalUrl}`, error);
+  if (res.headersSent) return next(error);
+  res.status(status >= 400 && status < 600 ? status : 500).json({
+    error: status >= 500 ? "Erreur serveur temporaire." : (error?.message || "Requête impossible."),
+    code: error?.code || "API_ERROR",
+    requestId
+  });
 });
 
 app.listen(PORT, () => {
