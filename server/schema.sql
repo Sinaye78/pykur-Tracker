@@ -185,15 +185,23 @@ CREATE TABLE IF NOT EXISTS message_reports (
   private_message_id INTEGER,
   reason TEXT,
   status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','resolved')),
+  priority TEXT NOT NULL DEFAULT 'normal',
+  workflow_status TEXT NOT NULL DEFAULT 'new',
+  assigned_to_user_id INTEGER,
+  internal_note TEXT,
+  message_snapshot TEXT,
+  context_snapshot TEXT,
   resolution_action TEXT,
   resolution_note TEXT,
   resolved_by_user_id INTEGER,
   resolved_at TEXT,
+  updated_at TEXT,
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(reporter_user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY(target_user_id) REFERENCES users(id) ON DELETE SET NULL,
   FOREIGN KEY(chat_message_id) REFERENCES chat_messages(id) ON DELETE SET NULL,
   FOREIGN KEY(private_message_id) REFERENCES private_messages(id) ON DELETE SET NULL,
+  FOREIGN KEY(assigned_to_user_id) REFERENCES users(id) ON DELETE SET NULL,
   FOREIGN KEY(resolved_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
@@ -205,6 +213,46 @@ CREATE TABLE IF NOT EXISTS chat_settings (
 );
 
 CREATE INDEX IF NOT EXISTS idx_reports_status ON message_reports(status, created_at);
+
+CREATE TABLE IF NOT EXISTS staff_permission_overrides (
+  user_id INTEGER NOT NULL,
+  permission TEXT NOT NULL,
+  allowed INTEGER NOT NULL DEFAULT 1,
+  updated_by_user_id INTEGER NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY(user_id, permission),
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY(updated_by_user_id) REFERENCES users(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS moderation_audit_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  actor_user_id INTEGER,
+  target_user_id INTEGER,
+  action TEXT NOT NULL,
+  entity_type TEXT,
+  entity_id TEXT,
+  details TEXT NOT NULL DEFAULT '{}',
+  request_id TEXT,
+  ip_address TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_created ON moderation_audit_log(created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_actor ON moderation_audit_log(actor_user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_target ON moderation_audit_log(target_user_id, created_at);
+
+CREATE TRIGGER IF NOT EXISTS moderation_audit_no_update
+BEFORE UPDATE ON moderation_audit_log
+BEGIN
+  SELECT RAISE(ABORT, 'moderation audit log is immutable');
+END;
+
+CREATE TRIGGER IF NOT EXISTS moderation_audit_no_delete
+BEFORE DELETE ON moderation_audit_log
+BEGIN
+  SELECT RAISE(ABORT, 'moderation audit log is immutable');
+END;
 
 CREATE TABLE IF NOT EXISTS living_event_schedule (
   id INTEGER PRIMARY KEY CHECK(id = 1),

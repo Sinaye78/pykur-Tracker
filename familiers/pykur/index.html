@@ -10371,6 +10371,37 @@ body.no-anim .pykur-sparkle{
 .moderation-log-meta summary{cursor:pointer;color:#2563eb;font-weight:900}
 .moderation-log-meta:not([open]){white-space:normal}
 .moderation-log-meta[open]{white-space:pre-wrap;padding:7px 9px;border-radius:9px;background:rgba(241,245,249,.78)}
+.moderation-report-badges{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.moderation-priority-badge{display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:950;border:1px solid rgba(99,79,48,.22);background:#eef2f7;color:#475569}
+.moderation-priority-badge.priority-high,.moderation-report.priority-high{border-color:rgba(217,119,6,.48)}
+.moderation-priority-badge.priority-high{background:#ffedd5;color:#9a3412}
+.moderation-priority-badge.priority-urgent,.moderation-report.priority-urgent{border-color:rgba(220,38,38,.55)}
+.moderation-priority-badge.priority-urgent{background:#fee2e2;color:#991b1b}
+.moderation-priority-badge.priority-low{background:#e0f2fe;color:#075985}
+.moderation-report-owner{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;padding:8px 10px;border-radius:10px;background:rgba(241,245,249,.72);color:#64748b;font-size:12px}
+.moderation-report-owner strong{color:#334155}
+.moderation-report-note{display:grid;gap:4px;margin-top:10px;padding:10px 12px;border-left:4px solid #2563eb;border-radius:10px;background:rgba(219,234,254,.56);color:#334155}
+.moderation-report-note strong{color:#1d4ed8;font-size:12px;text-transform:uppercase}
+.moderation-report-workflow{display:grid;grid-template-columns:minmax(130px,.65fr) auto auto;gap:8px;align-items:center;margin-top:10px;padding:10px;border:1px solid rgba(37,99,235,.20);border-radius:12px;background:rgba(239,246,255,.58)}
+.moderation-report-workflow select{min-height:38px;border:1px solid rgba(100,116,139,.35);border-radius:9px;padding:0 10px;background:#fff;font-weight:850}
+.permissions-workspace{display:grid;gap:12px}
+.staff-permission-list{display:grid;gap:14px}
+.staff-permission-card{border:1px solid rgba(119,79,28,.24);border-radius:15px;padding:14px;background:rgba(255,252,242,.72)}
+.staff-permission-card>header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.staff-permission-card>header>span:nth-child(2){display:grid;flex:1}
+.staff-permission-card>header small{color:#64748b}
+.permission-group-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.permission-group-grid fieldset{min-width:0;margin:0;padding:10px;border:1px solid rgba(119,79,28,.20);border-radius:12px;background:rgba(255,255,255,.42)}
+.permission-group-grid legend{padding:0 6px;color:#714717;font-weight:950}
+.permission-toggle{display:flex;align-items:flex-start;gap:9px;padding:7px;border-radius:9px;cursor:pointer}
+.permission-toggle:hover{background:rgba(219,234,254,.45)}
+.permission-toggle input{margin-top:3px;width:17px;height:17px;accent-color:#2563eb}
+.permission-toggle span{display:grid;gap:2px}
+.permission-toggle strong{font-size:12px;color:#2f1f10}
+.permission-toggle small{font-size:10px;line-height:1.35;color:#64748b}
+.audit-log-panel{border-color:rgba(71,85,105,.35)}
+.audit-log-row{grid-template-columns:minmax(0,1fr) auto}
+@media(max-width:780px){.permission-group-grid{grid-template-columns:1fr}.moderation-report-workflow{grid-template-columns:1fr}.moderation-report-owner{align-items:flex-start;flex-direction:column}}
 #galleryModal.modal-bg{
   background:rgba(18,12,7,.76);
   backdrop-filter:blur(7px) saturate(.86);
@@ -13642,6 +13673,12 @@ let moderationLogFilter="";
 let moderationReportFilter="open";
 let moderationReportType="all";
 let moderationReportSearch="";
+let moderationPermissions=[];
+let moderationStaffPermissions=[];
+
+function canModeration(permission){
+  return moderationPermissions.includes(permission);
+}
 let moderationAccountFilter="all";
 let moderationAccountSearch="";
 let passwordResetToken="";
@@ -14303,7 +14340,11 @@ function moderationReportLabel(action){
 
 function moderationReportCard(report){
   const resolved=report.status==="resolved";
-  return `<article class="moderation-report ${resolved?"is-resolved":""}">
+  const priorityLabels={low:"Faible",normal:"Normale",high:"Haute",urgent:"Urgente"};
+  const workflowLabels={new:"Nouveau",in_review:"En cours",resolved:"Clos"};
+  const canAssign=canModeration("reports.assign")&&!resolved;
+  const canResolve=canModeration("reports.resolve")&&!resolved;
+  return `<article class="moderation-report ${resolved?"is-resolved":""} priority-${escapeHtml(report.priority||"normal")}">
     <div class="moderation-report-head">
       <div class="moderation-report-identity">
         <span class="moderation-history-type">${report.type==="chatbox"?"Chat global":"Message privé"}</span>
@@ -14316,14 +14357,17 @@ function moderationReportCard(report){
           </div>
         </div>
       </div>
-      ${resolved?`<span class="moderation-state-badge">Traité</span>`:`<span class="moderation-state-badge is-ban">À traiter</span>`}
+      <div class="moderation-report-badges"><span class="moderation-priority-badge priority-${escapeHtml(report.priority||"normal")}">${priorityLabels[report.priority]||"Normale"}</span><span class="moderation-state-badge ${resolved?"":"is-ban"}">${workflowLabels[report.workflowStatus]||(resolved?"Clos":"Nouveau")}</span></div>
     </div>
+    <div class="moderation-report-owner"><span>Responsable : <strong>${escapeHtml(report.assignedTo?.pseudo||"Non assigné")}</strong></span>${report.updatedAt?`<small>Mis à jour ${formatCloudDateTime(report.updatedAt)}</small>`:""}</div>
     <div class="moderation-report-message">${escapeHtml(report.body||"Message indisponible")}</div>
     ${report.context?.length?`<details class="moderation-report-context"><summary>Contexte de la conversation (${report.context.length} messages)</summary>${report.context.map(line=>`<div class="moderation-report-context-row"><strong>${escapeHtml(line.senderPseudo||"Membre")}</strong><span>${escapeHtml(line.body||"")}<br><small>${line.createdAt?formatCloudDateTime(line.createdAt):""}${line.editedAt?" · modifié":""}</small></span></div>`).join("")}</details>`:""}
+    ${report.internalNote?`<div class="moderation-report-note"><strong>Note interne</strong><span>${escapeHtml(report.internalNote)}</span></div>`:""}
     ${resolved?`<div class="moderation-report-decision"><strong>${moderationReportLabel(report.resolutionAction)}</strong> par ${escapeHtml(report.resolvedBy?.pseudo||"Modération")} ${report.resolvedAt?`le ${formatCloudDateTime(report.resolvedAt)}`:""}${report.resolutionNote?`<br>${escapeHtml(report.resolutionNote)}`:""}</div>`:`
+      ${canAssign?`<div class="moderation-report-workflow"><select data-report-priority="${report.id}" aria-label="Priorité du signalement">${Object.entries(priorityLabels).map(([value,label])=>`<option value="${value}" ${report.priority===value?"selected":""}>${label}</option>`).join("")}</select><button class="btn btn-blue" type="button" data-report-assign="${report.id}">${report.assignedTo?.pseudo===authState.user?.pseudo?"Assigné à moi":"Me l'assigner"}</button><button class="btn btn-gray" type="button" data-report-note="${report.id}" data-report-note-value="${escapeHtml(report.internalNote||"")}">Note interne</button></div>`:""}
       <div class="moderation-report-actions">
-        <div class="moderation-action-group"><button class="btn btn-gray" type="button" data-report-action="close" data-report-id="${report.id}">Classer sans suite</button>${report.target?.pseudo?`<button class="btn btn-blue" type="button" data-overview-moderate="${escapeHtml(report.target.pseudo)}">Voir le membre</button>`:""}</div>
-        ${report.target?.pseudo?`<div class="moderation-action-group"><button class="btn btn-blue" type="button" data-report-action="warn" data-report-id="${report.id}">Avertir</button><button class="btn btn-orange" type="button" data-report-action="mute1" data-report-id="${report.id}">Mute 1h</button><button class="btn btn-orange" type="button" data-report-action="mute24" data-report-id="${report.id}">Mute 24h</button></div><div class="moderation-action-group"><button class="btn btn-red" type="button" data-report-action="ban24" data-report-id="${report.id}">Ban 24h</button><button class="btn btn-red" type="button" data-report-action="ban" data-report-id="${report.id}">Ban permanent</button></div>`:""}
+        <div class="moderation-action-group">${canResolve?`<button class="btn btn-gray" type="button" data-report-action="close" data-report-id="${report.id}">Classer sans suite</button>`:""}${report.target?.pseudo&&canModeration("users.view")?`<button class="btn btn-blue" type="button" data-overview-moderate="${escapeHtml(report.target.pseudo)}">Voir le membre</button>`:""}</div>
+        ${report.target?.pseudo&&canResolve?`<div class="moderation-action-group">${canModeration("users.warn")?`<button class="btn btn-blue" type="button" data-report-action="warn" data-report-id="${report.id}">Avertir</button>`:""}${canModeration("users.mute")?`<button class="btn btn-orange" type="button" data-report-action="mute1" data-report-id="${report.id}">Mute 1h</button><button class="btn btn-orange" type="button" data-report-action="mute24" data-report-id="${report.id}">Mute 24h</button>`:""}</div>${canModeration("users.ban")?`<div class="moderation-action-group"><button class="btn btn-red" type="button" data-report-action="ban24" data-report-id="${report.id}">Ban 24h</button><button class="btn btn-red" type="button" data-report-action="ban" data-report-id="${report.id}">Ban permanent</button></div>`:""}`:""}
       </div>`}
   </article>`;
 }
@@ -14402,6 +14446,8 @@ function securitySettingsPanel(settings={}){
 function renderModerationOverview(payload={}){
   const box=$("#moderationOverviewContent");
   if(!box)return;
+  moderationPermissions=payload.permissions||[];
+  moderationStaffPermissions=payload.staffPermissions||[];
   const banned=payload.banned||[];
   const muted=payload.muted||[];
   const moderators=payload.moderators||[];
@@ -14413,14 +14459,16 @@ function renderModerationOverview(payload={}){
   const securitySettings=payload.securitySettings||{};
   const communityLogs=payload.communityLogs||[];
   const moderationLogs=payload.moderationLogs||[];
-  const sections=[
-    ["dashboard","Vue d'ensemble"],
-    ["reports",`Signalements${reports.length?` (${reports.length})`:""}`],
-    ["accounts","Membres & sanctions"],
-    ["logs","Activité"],
-    ...(authState.user?.role==="admin"?[["adminLogs","Journal admin"]]:[]),
-    ["settings","Réglages"]
-  ];
+  const auditLogs=payload.auditLogs||[];
+  const sections=[["dashboard","Vue d'ensemble"]];
+  if(canModeration("reports.view"))sections.push(["reports",`Signalements${reports.length?` (${reports.length})`:""}`]);
+  if(canModeration("users.view"))sections.push(["accounts","Membres & sanctions"]);
+  if(canModeration("logs.view"))sections.push(["logs","Activité"]);
+  if(authState.user?.role==="admin"&&canModeration("logs.view"))sections.push(["adminLogs","Journal admin"]);
+  if(canModeration("audit.view"))sections.push(["audit","Audit immuable"]);
+  if(canModeration("permissions.manage"))sections.push(["permissions","Permissions"]);
+  if(canModeration("chat.configure")||canModeration("security.configure"))sections.push(["settings","Réglages"]);
+  if(!sections.some(([id])=>id===moderationOverviewSection))moderationOverviewSection="dashboard";
   const reportPool=moderationReportFilter==="open"?reports:moderationReportFilter==="resolved"?resolvedReports:reports.concat(resolvedReports);
   const reportNeedle=moderationReportSearch.trim().toLowerCase();
   const filteredReports=reportPool.filter(report=>{
@@ -14490,18 +14538,24 @@ function renderModerationOverview(payload={}){
     <div class="moderation-section ${moderationOverviewSection==="adminLogs"?"":"hidden"}" data-moderation-section="adminLogs">
       ${authState.user?.role==="admin"?moderationLogSection("Logs modération admin",moderationLogs,"Aucun log de modération récent."):""}
     </div>
+    <div class="moderation-section ${moderationOverviewSection==="audit"?"":"hidden"}" data-moderation-section="audit">
+      ${canModeration("audit.view")?moderationAuditSection(auditLogs):""}
+    </div>
+    <div class="moderation-section ${moderationOverviewSection==="permissions"?"":"hidden"}" data-moderation-section="permissions">
+      ${canModeration("permissions.manage")?moderationPermissionsPanel(payload.permissionCatalog||[],moderationStaffPermissions):""}
+    </div>
     <div class="moderation-section ${moderationOverviewSection==="settings"?"":"hidden"}" data-moderation-section="settings">
       <div class="moderation-settings-grid">
-        <section class="community-profile-card">
+        ${canModeration("chat.configure")?`<section class="community-profile-card">
           <div class="moderation-section-heading"><div><h3>Chat global</h3><p>Contrôlez temporairement la publication des messages.</p></div><span class="moderation-state-badge ${settings.locked?"is-ban":""}">${settings.locked?"Fermé":"Ouvert"}</span></div>
           <div class="moderation-status-grid">
             <label class="privacy-toggle"><input type="checkbox" id="moderationChatLocked" ${settings.locked?"checked":""}><span>Fermer la chatbox<small>Les membres ne peuvent plus écrire.</small></span></label>
             <label class="auth-field">Mode lent<input id="moderationSlowMode" type="number" min="0" max="300" value="${Number(settings.slowModeSeconds)||0}" placeholder="Secondes"></label>
             <button class="btn btn-orange" id="saveChatModerationSettings" type="button">Enregistrer</button>
-            <button class="btn btn-red" id="clearChatboxMessages" type="button">Vider la chatbox</button>
+            ${canModeration("chat.clear")?`<button class="btn btn-red" id="clearChatboxMessages" type="button">Vider la chatbox</button>`:""}
           </div>
-        </section>
-        ${authState.user?.role==="admin"?securitySettingsPanel(securitySettings):`<section class="community-profile-card"><h3>Sécurité publique</h3><p>Ces réglages sont réservés aux administrateurs.</p></section>`}
+        </section>`:""}
+        ${canModeration("security.configure")?securitySettingsPanel(securitySettings):""}
       </div>
     </div>
   `;
@@ -14544,6 +14598,35 @@ function renderModerationOverview(payload={}){
   $("#saveSecuritySettings")?.addEventListener("click",saveSecuritySettings);
   $("#clearChatboxMessages")?.addEventListener("click",clearChatboxMessages);
   box.querySelectorAll("[data-report-action]").forEach(button=>button.addEventListener("click",()=>moderationReportAction(button.dataset.reportId,button.dataset.reportAction)));
+  box.querySelectorAll("[data-report-priority]").forEach(select=>select.addEventListener("change",()=>updateModerationReport(select.dataset.reportPriority,{priority:select.value,workflowStatus:"in_review"})));
+  box.querySelectorAll("[data-report-assign]").forEach(button=>button.addEventListener("click",()=>updateModerationReport(button.dataset.reportAssign,{assignedToUserId:authState.user?.id,workflowStatus:"in_review"})));
+  box.querySelectorAll("[data-report-note]").forEach(button=>button.addEventListener("click",()=>editModerationReportNote(button.dataset.reportNote,button.dataset.reportNoteValue||"")));
+  box.querySelectorAll("[data-save-staff-permissions]").forEach(button=>button.addEventListener("click",()=>saveStaffPermissions(button.dataset.saveStaffPermissions)));
+}
+
+async function updateModerationReport(id,patch){
+  try{
+    await authFetch(`/moderation/reports/${encodeURIComponent(id)}`,{method:"PATCH",body:JSON.stringify(patch)});
+    toast("Dossier de signalement mis à jour.","success","success");
+    openModerationOverview();
+  }catch(error){toast(error.message||"Impossible de mettre à jour le dossier.","error","error")}
+}
+
+async function editModerationReportNote(id,currentValue){
+  const note=await showPrompt("Cette note reste réservée à l'équipe de modération.",{title:"Note interne du dossier",placeholder:"Éléments vérifiés, contexte, suite à donner...",defaultValue:currentValue,okLabel:"Enregistrer"});
+  if(note===null)return;
+  updateModerationReport(id,{internalNote:note,workflowStatus:"in_review"});
+}
+
+async function saveStaffPermissions(userId){
+  const card=document.querySelector(`[data-staff-permission-card="${CSS.escape(String(userId))}"]`);
+  if(!card)return;
+  const permissions=[...card.querySelectorAll('input[type="checkbox"]:checked')].map(input=>input.value);
+  try{
+    await authFetch(`/admin/staff-permissions/${encodeURIComponent(userId)}`,{method:"PUT",body:JSON.stringify({permissions})});
+    toast("Permissions du modérateur enregistrées.","success","success");
+    openModerationOverview();
+  }catch(error){toast(error.message||"Permissions impossibles à enregistrer.","error","error")}
 }
 
 async function saveChatModerationSettings(){
@@ -14796,6 +14879,27 @@ function updateSocialStateFromFriends(payload={}){
   socialState.incoming=(payload.incoming||[]).length;
   socialState.outgoing=(payload.outgoing||[]).length;
   socialState.loaded=true;
+}
+
+function moderationAuditSection(items=[]){
+  const needle=moderationLogFilter.trim().toLowerCase();
+  const visible=needle?items.filter(item=>[item.action,item.actor?.pseudo,item.target?.pseudo,item.entityType,item.entityId,JSON.stringify(item.details||{})].join(" ").toLowerCase().includes(needle)):items;
+  return `<section class="community-profile-card moderation-log-panel audit-log-panel">
+    <div class="moderation-section-heading"><div><h3>Journal d'audit immuable</h3><p>Les actions sensibles sont conservées côté serveur et ne peuvent être ni modifiées ni supprimées.</p></div><span class="gallery-count-badge">${visible.length}</span></div>
+    <div class="moderation-log-toolbar"><input class="moderation-log-filter" value="${escapeHtml(moderationLogFilter)}" placeholder="Filtrer par acteur, cible, action ou identifiant..."></div>
+    <div class="moderation-history">${visible.length?visible.map(item=>`<article class="moderation-history-row audit-log-row"><span><strong>${escapeHtml(item.action||"Action")}</strong><small>${item.createdAt?formatCloudDateTime(item.createdAt):"-"} · ${escapeHtml(item.actor?.pseudo||"Système")}${item.target?.pseudo?` → ${escapeHtml(item.target.pseudo)}`:""}</small><br><span>${escapeHtml(item.entityType||"système")}${item.entityId?` #${escapeHtml(item.entityId)}`:""}</span>${item.details&&Object.keys(item.details).length?`<details class="moderation-log-meta"><summary>Contexte enregistré</summary>${escapeHtml(JSON.stringify(item.details,null,2))}</details>`:""}</span><small>${item.requestId?`Requête ${escapeHtml(item.requestId)}`:"Trace serveur"}</small></article>`).join(""):`<div class="moderation-empty">Aucune action sensible enregistrée.</div>`}</div>
+  </section>`;
+}
+
+function moderationPermissionsPanel(catalog=[],staff=[]){
+  const groups=[...new Set(catalog.map(permission=>permission.group))];
+  return `<section class="moderation-workspace permissions-workspace">
+    <div class="moderation-section-heading"><div><h3>Permissions détaillées</h3><p>Les droits des modérateurs peuvent être adaptés sans leur donner les pouvoirs d'un administrateur.</p></div></div>
+    <div class="staff-permission-list">${staff.map(member=>`<article class="staff-permission-card" data-staff-permission-card="${member.id}">
+      <header>${avatarMarkup(member)}<span><strong>${escapeHtml(member.pseudo)}</strong><small>${authRoleLabel(member.role)}${member.editable?" · personnalisable":" · droits complets"}</small></span>${member.editable?`<button class="btn btn-blue" type="button" data-save-staff-permissions="${member.id}">Enregistrer</button>`:`<span class="moderation-state-badge is-team">Administrateur</span>`}</header>
+      <div class="permission-group-grid">${groups.map(group=>`<fieldset><legend>${escapeHtml(group)}</legend>${catalog.filter(permission=>permission.group===group).map(permission=>`<label class="permission-toggle"><input type="checkbox" value="${escapeHtml(permission.id)}" ${member.permissions.includes(permission.id)?"checked":""} ${member.editable?"":"disabled"}><span><strong>${escapeHtml(permission.label)}</strong><small>${escapeHtml(permission.description)}</small></span></label>`).join("")}</fieldset>`).join("")}</div>
+    </article>`).join("")||`<div class="moderation-empty">Aucun membre du staff.</div>`}</div>
+  </section>`;
 }
 
 function notifyIncomingFriendRequests(payload={}){

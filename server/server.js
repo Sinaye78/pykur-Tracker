@@ -171,13 +171,23 @@ db.exec(`
     private_message_id INTEGER,
     reason TEXT,
     status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','resolved')),
+    priority TEXT NOT NULL DEFAULT 'normal',
+    workflow_status TEXT NOT NULL DEFAULT 'new',
+    assigned_to_user_id INTEGER,
+    internal_note TEXT,
+    message_snapshot TEXT,
+    context_snapshot TEXT,
+    resolution_action TEXT,
+    resolution_note TEXT,
     resolved_by_user_id INTEGER,
     resolved_at TEXT,
+    updated_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(reporter_user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY(target_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY(chat_message_id) REFERENCES chat_messages(id) ON DELETE SET NULL,
     FOREIGN KEY(private_message_id) REFERENCES private_messages(id) ON DELETE SET NULL,
+    FOREIGN KEY(assigned_to_user_id) REFERENCES users(id) ON DELETE SET NULL,
     FOREIGN KEY(resolved_by_user_id) REFERENCES users(id) ON DELETE SET NULL
   );
   CREATE TABLE IF NOT EXISTS chat_settings (
@@ -220,6 +230,33 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_admin_commands_target ON admin_commands(target_user_id,status,created_at);
   CREATE INDEX IF NOT EXISTS idx_reports_status ON message_reports(status, created_at);
+  CREATE TABLE IF NOT EXISTS staff_permission_overrides (
+    user_id INTEGER NOT NULL,
+    permission TEXT NOT NULL,
+    allowed INTEGER NOT NULL DEFAULT 1,
+    updated_by_user_id INTEGER NOT NULL,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY(user_id, permission),
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(updated_by_user_id) REFERENCES users(id) ON DELETE RESTRICT
+  );
+  CREATE TABLE IF NOT EXISTS moderation_audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    actor_user_id INTEGER,
+    target_user_id INTEGER,
+    action TEXT NOT NULL,
+    entity_type TEXT,
+    entity_id TEXT,
+    details TEXT NOT NULL DEFAULT '{}',
+    request_id TEXT,
+    ip_address TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_audit_created ON moderation_audit_log(created_at);
+  CREATE INDEX IF NOT EXISTS idx_audit_actor ON moderation_audit_log(actor_user_id, created_at);
+  CREATE INDEX IF NOT EXISTS idx_audit_target ON moderation_audit_log(target_user_id, created_at);
+  CREATE TRIGGER IF NOT EXISTS moderation_audit_no_update BEFORE UPDATE ON moderation_audit_log BEGIN SELECT RAISE(ABORT, 'moderation audit log is immutable'); END;
+  CREATE TRIGGER IF NOT EXISTS moderation_audit_no_delete BEFORE DELETE ON moderation_audit_log BEGIN SELECT RAISE(ABORT, 'moderation audit log is immutable'); END;
 `);
 ensureColumn("private_messages", "edited_at", "TEXT");
 ensureColumn("private_messages", "deleted_at", "TEXT");
@@ -231,6 +268,13 @@ ensureColumn("chat_messages", "edited_at", "TEXT");
 ensureColumn("chat_messages", "deleted_by_user_id", "INTEGER");
 ensureColumn("message_reports", "resolution_action", "TEXT");
 ensureColumn("message_reports", "resolution_note", "TEXT");
+ensureColumn("message_reports", "priority", "TEXT NOT NULL DEFAULT 'normal'");
+ensureColumn("message_reports", "workflow_status", "TEXT NOT NULL DEFAULT 'new'");
+ensureColumn("message_reports", "assigned_to_user_id", "INTEGER");
+ensureColumn("message_reports", "internal_note", "TEXT");
+ensureColumn("message_reports", "message_snapshot", "TEXT");
+ensureColumn("message_reports", "context_snapshot", "TEXT");
+ensureColumn("message_reports", "updated_at", "TEXT");
 db.prepare("INSERT OR IGNORE INTO chat_settings(id,locked,slow_mode_seconds) VALUES(1,0,0)").run();
 db.prepare("INSERT OR IGNORE INTO security_settings(id) VALUES(1)").run();
 db.prepare("INSERT OR IGNORE INTO living_event_settings(id) VALUES(1)").run();
@@ -956,21 +1000,60 @@ function requireRole(role) {
   };
 }
 
+const ADMIN_PERMISSION_CATALOG = Object.freeze([
+  { id: "console.view", group: "Acces", label: "Ouvrir le centre de controle", description: "Acces au panneau de moderation et d'administration." },
+  { id: "users.view", group: "Utilisateurs", label: "Consulter les comptes", description: "Afficher les profils complets et les historiques de moderation." },
+  { id: "users.warn", group: "Utilisateurs", label: "Avertir", description: "Envoyer un avertissement visible par le membre." },
+  { id: "users.mute", group: "Utilisateurs", label: "Mute", description: "Restreindre temporairement la messagerie d'un membre." },
+  { id: "users.ban", group: "Utilisateurs", label: "Bannir", description: "Bannir, debannir ou deconnecter un membre." },
+  { id: "users.history.manage", group: "Utilisateurs", label: "Corriger l'historique", description: "Retirer les sanctions recentes affichees, sans effacer l'audit." },
+  { id: "users.delete", group: "Utilisateurs", label: "Supprimer un compte", description: "Suppression definitive d'un compte. Reserve aux administrateurs." },
+  { id: "reports.view", group: "Signalements", label: "Consulter les signalements", description: "Lire les dossiers, messages et contextes conserves." },
+  { id: "reports.assign", group: "Signalements", label: "Organiser les dossiers", description: "Assigner, prioriser et annoter un signalement." },
+  { id: "reports.resolve", group: "Signalements", label: "Clore les dossiers", description: "Classer un signalement ou appliquer une sanction autorisee." },
+  { id: "logs.view", group: "Journal", label: "Voir les journaux utilisateurs", description: "Consulter l'activite communautaire recente." },
+  { id: "audit.view", group: "Journal", label: "Voir l'audit immuable", description: "Consulter la trace permanente des actions sensibles." },
+  { id: "chat.configure", group: "Communication", label: "Configurer le chat", description: "Fermer le chat ou regler son mode lent." },
+  { id: "chat.clear", group: "Communication", label: "Vider le chat", description: "Masquer tous les messages visibles du chat global." },
+  { id: "notifications.send", group: "Communication", label: "Envoyer des notifications", description: "Envoyer une notification ou une popup a un membre." },
+  { id: "events.target", group: "Outils", label: "Jouer un evenement individuel", description: "Declencher un evenement cosmetique pour un joueur." },
+  { id: "events.configure", group: "Outils", label: "Configurer les evenements", description: "Modifier le calendrier global des evenements." },
+  { id: "tracker.reset", group: "Donnees", label: "Reparer ou reset le tracker", description: "Intervenir sur les donnees de progression." },
+  { id: "achievements.manage", group: "Donnees", label: "Gerer les succes", description: "Ajouter, retirer ou recalculer des succes." },
+  { id: "gallery.manage", group: "Donnees", label: "Gerer la galerie", description: "Modifier les archives et evenements decouverts." },
+  { id: "profiles.manage", group: "Donnees", label: "Gerer les profils Pykur", description: "Renommer ou supprimer des profils Pykur." },
+  { id: "roles.manage", group: "Administration", label: "Gerer les roles", description: "Promouvoir ou retrograder les moderateurs." },
+  { id: "permissions.manage", group: "Administration", label: "Gerer les permissions", description: "Personnaliser les droits detailles des moderateurs." },
+  { id: "security.configure", group: "Administration", label: "Configurer la securite", description: "Modifier les regles anti-abus du serveur." }
+]);
+
+const ALL_ADMIN_PERMISSIONS = ADMIN_PERMISSION_CATALOG.map((permission) => permission.id);
 const ADMIN_PERMISSION_MATRIX = Object.freeze({
   moderator: [
-    "console.view", "users.view", "users.moderate", "notifications.send",
-    "events.target", "logs.view", "reports.manage", "chat.configure"
+    "console.view", "users.view", "users.warn", "users.mute", "users.ban", "users.history.manage",
+    "reports.view", "reports.assign", "reports.resolve", "logs.view",
+    "notifications.send", "events.target", "chat.configure", "chat.clear"
   ],
-  admin: [
-    "console.view", "users.view", "users.moderate", "users.delete", "notifications.send",
-    "events.target", "events.configure", "tracker.reset", "achievements.manage",
-    "gallery.manage", "profiles.manage", "roles.manage", "security.configure",
-    "logs.view", "reports.manage", "chat.configure"
-  ]
+  admin: ALL_ADMIN_PERMISSIONS
 });
 
+function baseAdminPermissions(role) {
+  return [...(ADMIN_PERMISSION_MATRIX[role] || [])];
+}
+
 function adminPermissions(user) {
-  return [...(ADMIN_PERMISSION_MATRIX[user?.role] || [])];
+  const permissions = new Set(baseAdminPermissions(user?.role));
+  if (!user?.id || user.role !== "moderator") return [...permissions];
+  const overrides = db.prepare("SELECT permission,allowed FROM staff_permission_overrides WHERE user_id = ?").all(user.id);
+  overrides.forEach((override) => {
+    if (Number(override.allowed)) permissions.add(override.permission);
+    else permissions.delete(override.permission);
+  });
+  return [...permissions];
+}
+
+function hasPermission(user, permission) {
+  return adminPermissions(user).includes(permission);
 }
 
 function requirePermission(permission) {
@@ -979,6 +1062,46 @@ function requirePermission(permission) {
       return res.status(403).json({ error: "Permission insuffisante.", permission });
     }
     next();
+  };
+}
+
+function auditLog({ actorId = null, targetId = null, action, entityType = null, entityId = null, details = {}, req = null }) {
+  if (!action) return;
+  const actorSnapshot = actorId ? getUserById(actorId) : null;
+  const targetSnapshot = targetId ? getUserById(targetId) : null;
+  const storedDetails = {
+    ...(details || {}),
+    actorSnapshot: actorSnapshot ? { id: actorSnapshot.id, pseudo: actorSnapshot.pseudo, role: actorSnapshot.role } : null,
+    targetSnapshot: targetSnapshot ? { id: targetSnapshot.id, pseudo: targetSnapshot.pseudo, role: targetSnapshot.role } : null
+  };
+  db.prepare(`
+    INSERT INTO moderation_audit_log(actor_user_id,target_user_id,action,entity_type,entity_id,details,request_id,ip_address)
+    VALUES(?,?,?,?,?,?,?,?)
+  `).run(
+    actorId || null,
+    targetId || null,
+    String(action).slice(0, 100),
+    entityType ? String(entityType).slice(0, 80) : null,
+    entityId === null || entityId === undefined ? null : String(entityId).slice(0, 120),
+    JSON.stringify(storedDetails),
+    req?.requestId || null,
+    req?.ip || null
+  );
+}
+
+function auditLogView(row) {
+  const details = safeParseJson(row.details, {});
+  return {
+    id: Number(row.id),
+    action: row.action,
+    entityType: row.entity_type || "",
+    entityId: row.entity_id || "",
+    details,
+    requestId: row.request_id || "",
+    ipAddress: row.ip_address || "",
+    createdAt: row.created_at,
+    actor: row.actor_pseudo ? { pseudo: row.actor_pseudo, role: row.actor_role || "moderator" } : (details.actorSnapshot || null),
+    target: row.target_pseudo ? { pseudo: row.target_pseudo, role: row.target_role || "user" } : (details.targetSnapshot || null)
   };
 }
 
@@ -1008,6 +1131,7 @@ function queueAdminCommand({ actor, target, type, payload = {} }) {
     body: type,
     meta: { commandId: info.lastInsertRowid, targetId: target.id, targetPseudo: target.pseudo, payload }
   });
+  auditLog({ actorId: actor.id, targetId: target.id, action: `admin.command.${type}`, entityType: "admin_command", entityId: info.lastInsertRowid, details: { payload } });
   return info.lastInsertRowid;
 }
 
@@ -1309,12 +1433,21 @@ function moderationHistory(targetId) {
     .slice(0, 30);
 }
 
-function moderationLog({ targetId, actorId, type, reason, expiresAt = null }) {
+function moderationLog({ targetId, actorId, type, reason, expiresAt = null, req = null }) {
   db.prepare(`
     INSERT INTO moderation_actions(target_user_id, actor_user_id, type, reason, expires_at)
     VALUES(?,?,?,?,?)
   `).run(targetId, actorId, type, reason || null, expiresAt || null);
   logCommunity({ userId: actorId, type: "moderation_action", body: type, meta: { targetId, reason: reason || "", expiresAt } });
+  auditLog({
+    actorId,
+    targetId,
+    action: `moderation.${type}`,
+    entityType: "user",
+    entityId: targetId,
+    details: { reason: reason || "", expiresAt: expiresAt || null },
+    req
+  });
 }
 
 function queueForcedDisconnect(actor, target, message) {
@@ -1324,6 +1457,62 @@ function queueForcedDisconnect(actor, target, message) {
     type: "kick",
     payload: { message: String(message || "Votre session a été interrompue par l'équipe de modération.").slice(0, 500) }
   });
+}
+
+function reportContextForChat(messageId) {
+  const anchor = db.prepare("SELECT id FROM chat_messages WHERE id = ?").get(messageId);
+  if (!anchor) return [];
+  return db.prepare(`
+    SELECT m.id,m.body,m.type,m.created_at AS createdAt,m.edited_at AS editedAt,
+           u.pseudo AS senderPseudo,u.role AS senderRole
+    FROM chat_messages m
+    JOIN users u ON u.id = m.user_id
+    WHERE m.id BETWEEN ? AND ?
+    ORDER BY m.id ASC
+  `).all(Math.max(1, Number(anchor.id) - 5), Number(anchor.id) + 5);
+}
+
+function reportContextForPrivate(messageId, conversationId) {
+  const anchor = db.prepare("SELECT id FROM private_messages WHERE id = ? AND conversation_id = ?").get(messageId, conversationId);
+  if (!anchor) return [];
+  return db.prepare(`
+    SELECT m.id,m.body,m.created_at AS createdAt,m.edited_at AS editedAt,
+           u.pseudo AS senderPseudo,u.role AS senderRole
+    FROM private_messages m
+    JOIN users u ON u.id = m.sender_id
+    WHERE m.conversation_id = ? AND m.id BETWEEN ? AND ?
+    ORDER BY m.id ASC
+  `).all(conversationId, Math.max(1, Number(anchor.id) - 5), Number(anchor.id) + 5);
+}
+
+function createMessageReport({ reporterId, targetId, chatMessage = null, privateMessage = null, reason }) {
+  const messageSnapshot = chatMessage?.body || privateMessage?.body || "";
+  const context = chatMessage
+    ? reportContextForChat(chatMessage.id)
+    : reportContextForPrivate(privateMessage.id, privateMessage.conversation_id);
+  const duplicate = db.prepare(`
+    SELECT id FROM message_reports
+    WHERE reporter_user_id = ? AND status = 'open'
+      AND COALESCE(chat_message_id,0) = COALESCE(?,0)
+      AND COALESCE(private_message_id,0) = COALESCE(?,0)
+    LIMIT 1
+  `).get(reporterId, chatMessage?.id || null, privateMessage?.id || null);
+  if (duplicate) return { duplicate: true, id: duplicate.id };
+  const info = db.prepare(`
+    INSERT INTO message_reports(
+      reporter_user_id,target_user_id,chat_message_id,private_message_id,reason,
+      priority,workflow_status,message_snapshot,context_snapshot,updated_at
+    ) VALUES(?,?,?,?,?,'normal','new',?,?,CURRENT_TIMESTAMP)
+  `).run(
+    reporterId,
+    targetId,
+    chatMessage?.id || null,
+    privateMessage?.id || null,
+    reason,
+    messageSnapshot,
+    JSON.stringify(context)
+  );
+  return { duplicate: false, id: Number(info.lastInsertRowid) };
 }
 
 function tokenHash(token) {
@@ -1820,10 +2009,13 @@ app.post("/api/social/chat/:id/report", requireAuth, socialReportLimiter, (req, 
   const row = db.prepare("SELECT * FROM chat_messages WHERE id = ? AND deleted_at IS NULL").get(id);
   if (!row) return res.status(404).json({ error: "Message introuvable." });
   if (Number(row.user_id) === Number(req.user.id)) return res.status(400).json({ error: "Impossible de signaler votre propre message." });
-  db.prepare(`
-    INSERT INTO message_reports(reporter_user_id,target_user_id,chat_message_id,reason)
-    VALUES(?,?,?,?)
-  `).run(req.user.id, row.user_id, id, reason || "Signalement chatbox");
+  const report = createMessageReport({
+    reporterId: req.user.id,
+    targetId: row.user_id,
+    chatMessage: row,
+    reason: reason || "Signalement chatbox"
+  });
+  if (report.duplicate) return res.status(409).json({ error: "Ce message est deja signale et en cours de traitement." });
   logCommunity({ userId: req.user.id, type: "report_chat", body: "Signalement chatbox.", meta: { messageId: id, targetId: row.user_id } });
   res.json({ ok: true });
 });
@@ -2032,10 +2224,13 @@ app.post("/api/social/messages/:pseudo/:id/report", requireAuth, socialReportLim
   const row = db.prepare("SELECT * FROM private_messages WHERE id = ? AND conversation_id = ? AND deleted_at IS NULL").get(id, conversation.id);
   if (!row) return res.status(404).json({ error: "Message introuvable." });
   if (Number(row.sender_id) === Number(req.user.id)) return res.status(400).json({ error: "Impossible de signaler votre propre message." });
-  db.prepare(`
-    INSERT INTO message_reports(reporter_user_id,target_user_id,private_message_id,reason)
-    VALUES(?,?,?,?)
-  `).run(req.user.id, row.sender_id, id, reason || "Signalement message prive");
+  const report = createMessageReport({
+    reporterId: req.user.id,
+    targetId: row.sender_id,
+    privateMessage: row,
+    reason: reason || "Signalement message prive"
+  });
+  if (report.duplicate) return res.status(409).json({ error: "Ce message est deja signale et en cours de traitement." });
   logCommunity({ userId: req.user.id, type: "report_private", body: "Signalement message prive.", meta: { messageId: id, targetId: row.sender_id } });
   res.json({ ok: true });
 });
@@ -2199,7 +2394,7 @@ app.post("/api/admin/users/:id/commands", requireAuth, requireRole("moderator"),
   const permissionByType = {
     notification: "notifications.send",
     "popup-message": "notifications.send",
-    kick: "users.moderate",
+    kick: "users.ban",
     "living-event": "events.target",
     "reset-gallery": "gallery.manage",
     "reset-achievements": "achievements.manage",
@@ -2286,7 +2481,61 @@ app.post("/api/admin/commands/:id/cancel", requireAuth, requireRole("admin"), (r
   res.json({ ok: true });
 });
 
-app.get("/api/moderation/users", requireAuth, requireRole("moderator"), (req, res) => {
+app.get("/api/admin/staff-permissions", requireAuth, requireRole("admin"), requirePermission("permissions.manage"), (req, res) => {
+  const staff = db.prepare(`
+    SELECT id,pseudo,role,avatar_url
+    FROM users
+    WHERE role IN ('moderator','admin')
+    ORDER BY CASE role WHEN 'admin' THEN 0 ELSE 1 END,pseudo COLLATE NOCASE
+  `).all().map((user) => ({
+    id: Number(user.id),
+    pseudo: user.pseudo,
+    role: user.role,
+    avatarUrl: user.avatar_url || "",
+    basePermissions: baseAdminPermissions(user.role),
+    permissions: adminPermissions(user),
+    editable: user.role === "moderator"
+  }));
+  res.json({ catalog: ADMIN_PERMISSION_CATALOG, staff });
+});
+
+app.put("/api/admin/staff-permissions/:id", requireAuth, requireRole("admin"), requirePermission("permissions.manage"), (req, res) => {
+  const target = getUserById(req.params.id);
+  if (!target) return res.status(404).json({ error: "Membre du staff introuvable." });
+  if (target.role !== "moderator") return res.status(400).json({ error: "Seules les permissions des moderateurs sont personnalisables." });
+  const requested = new Set(Array.isArray(req.body.permissions) ? req.body.permissions.map(String) : []);
+  const known = new Set(ALL_ADMIN_PERMISSIONS);
+  for (const permission of requested) {
+    if (!known.has(permission)) return res.status(400).json({ error: `Permission inconnue : ${permission}` });
+  }
+  const before = adminPermissions(target);
+  const base = new Set(baseAdminPermissions(target.role));
+  const transaction = db.transaction(() => {
+    db.prepare("DELETE FROM staff_permission_overrides WHERE user_id = ?").run(target.id);
+    const insert = db.prepare(`
+      INSERT INTO staff_permission_overrides(user_id,permission,allowed,updated_by_user_id,updated_at)
+      VALUES(?,?,?,?,CURRENT_TIMESTAMP)
+    `);
+    ADMIN_PERMISSION_CATALOG.forEach(({ id }) => {
+      const desired = requested.has(id);
+      if (desired !== base.has(id)) insert.run(target.id, id, desired ? 1 : 0, req.user.id);
+    });
+  });
+  transaction();
+  const after = adminPermissions(target);
+  auditLog({
+    actorId: req.user.id,
+    targetId: target.id,
+    action: "staff.permissions.update",
+    entityType: "user",
+    entityId: target.id,
+    details: { before, after },
+    req
+  });
+  res.json({ userId: target.id, permissions: after });
+});
+
+app.get("/api/moderation/users", requireAuth, requireRole("moderator"), requirePermission("users.view"), (req, res) => {
   db.prepare("UPDATE users SET is_banned = 0, ban_until = NULL WHERE is_banned = 1 AND ban_until IS NOT NULL AND datetime(ban_until) <= datetime('now')").run();
   db.prepare("UPDATE users SET mute_until = NULL WHERE mute_until IS NOT NULL AND datetime(mute_until) <= datetime('now')").run();
   const users = db.prepare(`
@@ -2299,31 +2548,38 @@ app.get("/api/moderation/users", requireAuth, requireRole("moderator"), (req, re
 });
 
 function moderationReportView(row) {
+  const savedContext = safeParseJson(row.context_snapshot, null);
   return {
     id: row.id,
     reason: row.reason,
     status: row.status,
+    priority: row.priority || "normal",
+    workflowStatus: row.workflow_status || (row.status === "resolved" ? "resolved" : "new"),
+    internalNote: row.internal_note || "",
     createdAt: row.created_at,
+    updatedAt: row.updated_at || row.created_at,
     resolvedAt: row.resolved_at,
     resolutionAction: row.resolution_action || "",
     resolutionNote: row.resolution_note || "",
     type: row.chat_message_id ? "chatbox" : "message prive",
-    body: row.chat_body || row.private_body || "",
-    context: row.private_conversation_id ? db.prepare(`
+    body: row.message_snapshot || row.chat_body || row.private_body || "",
+    context: Array.isArray(savedContext) ? savedContext : (row.private_conversation_id ? db.prepare(`
       SELECT m.id, m.body, m.created_at AS createdAt, m.edited_at AS editedAt, u.pseudo AS senderPseudo, u.role AS senderRole
       FROM private_messages m
       JOIN users u ON u.id = m.sender_id
       WHERE m.conversation_id = ? AND m.deleted_at IS NULL
       ORDER BY m.created_at DESC, m.id DESC
       LIMIT 12
-    `).all(row.private_conversation_id).reverse() : [],
+    `).all(row.private_conversation_id).reverse() : (row.chat_message_id ? reportContextForChat(row.chat_message_id) : [])),
     reporter: { pseudo: row.reporter_pseudo, role: row.reporter_role },
     target: row.target_pseudo ? { pseudo: row.target_pseudo, role: row.target_role } : null,
+    assignedTo: row.assignee_pseudo ? { id: row.assigned_to_user_id, pseudo: row.assignee_pseudo, role: row.assignee_role } : null,
     resolvedBy: row.resolver_pseudo ? { pseudo: row.resolver_pseudo, role: row.resolver_role } : null
   };
 }
 
-app.get("/api/moderation/overview", requireAuth, requireRole("moderator"), (req, res) => {
+app.get("/api/moderation/overview", requireAuth, requireRole("moderator"), requirePermission("console.view"), (req, res) => {
+  const permissions = adminPermissions(req.user);
   db.prepare("UPDATE users SET is_banned = 0, ban_until = NULL WHERE is_banned = 1 AND ban_until IS NOT NULL AND datetime(ban_until) <= datetime('now')").run();
   db.prepare("UPDATE users SET mute_until = NULL WHERE mute_until IS NOT NULL AND datetime(mute_until) <= datetime('now')").run();
   const banned = db.prepare(`
@@ -2357,11 +2613,13 @@ app.get("/api/moderation/overview", requireAuth, requireRole("moderator"), (req,
     SELECT r.*, reporter.pseudo AS reporter_pseudo, reporter.role AS reporter_role,
            target.pseudo AS target_pseudo, target.role AS target_role,
            resolver.pseudo AS resolver_pseudo, resolver.role AS resolver_role,
+           assignee.pseudo AS assignee_pseudo, assignee.role AS assignee_role,
            cm.body AS chat_body, pm.body AS private_body, pm.conversation_id AS private_conversation_id
     FROM message_reports r
     JOIN users reporter ON reporter.id = r.reporter_user_id
     LEFT JOIN users target ON target.id = r.target_user_id
     LEFT JOIN users resolver ON resolver.id = r.resolved_by_user_id
+    LEFT JOIN users assignee ON assignee.id = r.assigned_to_user_id
     LEFT JOIN chat_messages cm ON cm.id = r.chat_message_id
     LEFT JOIN private_messages pm ON pm.id = r.private_message_id
     WHERE r.status = 'open'
@@ -2372,11 +2630,13 @@ app.get("/api/moderation/overview", requireAuth, requireRole("moderator"), (req,
     SELECT r.*, reporter.pseudo AS reporter_pseudo, reporter.role AS reporter_role,
            target.pseudo AS target_pseudo, target.role AS target_role,
            resolver.pseudo AS resolver_pseudo, resolver.role AS resolver_role,
+           assignee.pseudo AS assignee_pseudo, assignee.role AS assignee_role,
            cm.body AS chat_body, pm.body AS private_body, pm.conversation_id AS private_conversation_id
     FROM message_reports r
     JOIN users reporter ON reporter.id = r.reporter_user_id
     LEFT JOIN users target ON target.id = r.target_user_id
     LEFT JOIN users resolver ON resolver.id = r.resolved_by_user_id
+    LEFT JOIN users assignee ON assignee.id = r.assigned_to_user_id
     LEFT JOIN chat_messages cm ON cm.id = r.chat_message_id
     LEFT JOIN private_messages pm ON pm.id = r.private_message_id
     WHERE r.status = 'resolved'
@@ -2420,13 +2680,37 @@ app.get("/api/moderation/overview", requireAuth, requireRole("moderator"), (req,
     actor: { pseudo: row.actor_pseudo || "Systeme", role: row.actor_role || "moderator" },
     target: { pseudo: row.target_pseudo || "Compte supprime", role: row.target_role || "user" }
   })) : [];
+  const auditLogs = hasPermission(req.user, "audit.view") ? db.prepare(`
+    SELECT a.*,actor.pseudo AS actor_pseudo,actor.role AS actor_role,
+           target.pseudo AS target_pseudo,target.role AS target_role
+    FROM moderation_audit_log a
+    LEFT JOIN users actor ON actor.id = a.actor_user_id
+    LEFT JOIN users target ON target.id = a.target_user_id
+    ORDER BY a.created_at DESC,a.id DESC
+    LIMIT 250
+  `).all().map(auditLogView) : [];
+  const staffPermissions = hasPermission(req.user, "permissions.manage") ? db.prepare(`
+    SELECT id,pseudo,role,avatar_url FROM users
+    WHERE role IN ('moderator','admin')
+    ORDER BY CASE role WHEN 'admin' THEN 0 ELSE 1 END,pseudo COLLATE NOCASE
+  `).all().map((user) => ({
+    id: Number(user.id),
+    pseudo: user.pseudo,
+    role: user.role,
+    avatarUrl: user.avatar_url || "",
+    basePermissions: baseAdminPermissions(user.role),
+    permissions: adminPermissions(user),
+    editable: user.role === "moderator"
+  })) : [];
   res.json({
-    banned,
-    muted,
-    moderators,
-    users,
-    reports,
-    resolvedReports,
+    permissions,
+    permissionCatalog: ADMIN_PERMISSION_CATALOG,
+    banned: hasPermission(req.user, "users.view") ? banned : [],
+    muted: hasPermission(req.user, "users.view") ? muted : [],
+    moderators: hasPermission(req.user, "users.view") ? moderators : [],
+    users: hasPermission(req.user, "users.view") ? users : [],
+    reports: hasPermission(req.user, "reports.view") ? reports : [],
+    resolvedReports: hasPermission(req.user, "reports.view") ? resolvedReports : [],
     metrics: {
       users: db.prepare("SELECT COUNT(*) AS count FROM users").get().count,
       reports24h: db.prepare("SELECT COUNT(*) AS count FROM message_reports WHERE datetime(created_at) >= datetime('now','-1 day')").get().count,
@@ -2434,20 +2718,24 @@ app.get("/api/moderation/overview", requireAuth, requireRole("moderator"), (req,
     },
     chatSettings: chatSettings(),
     securitySettings: securitySettings(),
-    communityLogs,
-    moderationLogs
+    communityLogs: hasPermission(req.user, "logs.view") ? communityLogs : [],
+    moderationLogs: hasPermission(req.user, "logs.view") ? moderationLogs : [],
+    auditLogs,
+    staffPermissions
   });
 });
 
-app.post("/api/moderation/chat/clear", requireAuth, requireRole("moderator"), (req, res) => {
+app.post("/api/moderation/chat/clear", requireAuth, requireRole("moderator"), requirePermission("chat.clear"), (req, res) => {
   db.prepare("UPDATE chat_messages SET deleted_at = CURRENT_TIMESTAMP, deleted_by_user_id = ? WHERE deleted_at IS NULL").run(req.user.id);
+  auditLog({ actorId: req.user.id, action: "chat.clear", entityType: "chat", details: {}, req });
   res.json({ ok: true });
 });
 
-app.put("/api/moderation/chat-settings", requireAuth, requireRole("moderator"), (req, res) => {
+app.put("/api/moderation/chat-settings", requireAuth, requireRole("moderator"), requirePermission("chat.configure"), (req, res) => {
   const locked = req.body.locked ? 1 : 0;
   const slow = Math.max(0, Math.min(300, Number(req.body.slowModeSeconds) || 0));
   db.prepare("UPDATE chat_settings SET locked = ?, slow_mode_seconds = ?, updated_at = CURRENT_TIMESTAMP WHERE id = 1").run(locked, slow);
+  auditLog({ actorId: req.user.id, action: "chat.settings.update", entityType: "chat", details: { locked: !!locked, slowModeSeconds: slow }, req });
   res.json({ settings: chatSettings() });
 });
 
@@ -2496,15 +2784,55 @@ app.put("/api/admin/security-settings", requireAuth, requireRole("admin"), (req,
   res.json({ settings: securitySettings() });
 });
 
-app.post("/api/moderation/reports/:id/resolve", requireAuth, requireRole("moderator"), (req, res) => {
+app.patch("/api/moderation/reports/:id", requireAuth, requireRole("moderator"), requirePermission("reports.assign"), (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: "Signalement invalide." });
-  const note = String(req.body?.reason || "").trim().slice(0, 300);
-  db.prepare("UPDATE message_reports SET status = 'resolved', resolution_action = 'close', resolution_note = ?, resolved_by_user_id = ?, resolved_at = CURRENT_TIMESTAMP WHERE id = ?").run(note || null, req.user.id, id);
+  const report = db.prepare("SELECT * FROM message_reports WHERE id = ?").get(id);
+  if (!report) return res.status(404).json({ error: "Signalement introuvable." });
+  if (report.status !== "open") return res.status(409).json({ error: "Ce dossier est deja clos." });
+  const priority = req.body.priority === undefined ? report.priority : String(req.body.priority);
+  const workflowStatus = req.body.workflowStatus === undefined ? report.workflow_status : String(req.body.workflowStatus);
+  const internalNote = req.body.internalNote === undefined ? report.internal_note : String(req.body.internalNote || "").trim().slice(0, 1200);
+  let assignedToUserId = req.body.assignedToUserId === undefined ? report.assigned_to_user_id : (req.body.assignedToUserId || null);
+  if (!['low','normal','high','urgent'].includes(priority)) return res.status(400).json({ error: "Priorite invalide." });
+  if (!['new','in_review'].includes(workflowStatus)) return res.status(400).json({ error: "Etat de dossier invalide." });
+  if (assignedToUserId) {
+    const assignee = getUserById(assignedToUserId);
+    if (!assignee || !['moderator','admin'].includes(assignee.role)) return res.status(400).json({ error: "Responsable invalide." });
+    assignedToUserId = assignee.id;
+  }
+  db.prepare(`
+    UPDATE message_reports
+    SET priority=?,workflow_status=?,assigned_to_user_id=?,internal_note=?,updated_at=CURRENT_TIMESTAMP
+    WHERE id=?
+  `).run(priority, workflowStatus, assignedToUserId, internalNote || null, id);
+  auditLog({
+    actorId: req.user.id,
+    targetId: report.target_user_id,
+    action: "report.update",
+    entityType: "message_report",
+    entityId: id,
+    details: {
+      before: { priority: report.priority, workflowStatus: report.workflow_status, assignedToUserId: report.assigned_to_user_id, internalNote: report.internal_note || "" },
+      after: { priority, workflowStatus, assignedToUserId, internalNote: internalNote || "" }
+    },
+    req
+  });
   res.json({ ok: true });
 });
 
-app.post("/api/moderation/reports/:id/action", requireAuth, requireRole("moderator"), (req, res) => {
+app.post("/api/moderation/reports/:id/resolve", requireAuth, requireRole("moderator"), requirePermission("reports.resolve"), (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) return res.status(400).json({ error: "Signalement invalide." });
+  const note = String(req.body?.reason || "").trim().slice(0, 300);
+  const report = db.prepare("SELECT * FROM message_reports WHERE id = ?").get(id);
+  if (!report) return res.status(404).json({ error: "Signalement introuvable." });
+  db.prepare("UPDATE message_reports SET status = 'resolved', workflow_status='resolved', resolution_action = 'close', resolution_note = ?, resolved_by_user_id = ?, resolved_at = CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE id = ?").run(note || null, req.user.id, id);
+  auditLog({ actorId: req.user.id, targetId: report.target_user_id, action: "report.resolve", entityType: "message_report", entityId: id, details: { action: "close", note }, req });
+  res.json({ ok: true });
+});
+
+app.post("/api/moderation/reports/:id/action", requireAuth, requireRole("moderator"), requirePermission("reports.resolve"), (req, res) => {
   const id = Number(req.params.id);
   const action = String(req.body.action || "");
   const reason = String(req.body.reason || "").trim().slice(0, 300);
@@ -2521,31 +2849,37 @@ app.post("/api/moderation/reports/:id/action", requireAuth, requireRole("moderat
     if (!target) return res.status(404).json({ error: "Utilisateur cible introuvable." });
     if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Vous ne pouvez pas sanctionner ce membre." });
   }
+  const requiredActionPermission = action === "warn" ? "users.warn" : (action.startsWith("mute") ? "users.mute" : (action.startsWith("ban") ? "users.ban" : null));
+  if (requiredActionPermission && !hasPermission(req.user, requiredActionPermission)) {
+    return res.status(403).json({ error: "Permission insuffisante pour cette sanction.", permission: requiredActionPermission });
+  }
   if (action === "warn") {
     db.prepare("INSERT INTO moderation_warnings(target_user_id, actor_user_id, reason) VALUES(?,?,?)").run(target.id, req.user.id, reason || "Avertissement modération");
+    auditLog({ actorId: req.user.id, targetId: target.id, action: "moderation.warn", entityType: "message_report", entityId: id, details: { reason: reason || "", source: "report" }, req });
     logCommunity({ userId: req.user.id, type: "moderation_warn", body: "Avertissement envoye.", meta: { targetId: target.id, reason: reason || "" } });
   } else if (action === "mute1" || action === "mute24") {
     const hours = action === "mute1" ? 1 : 24;
     const until = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
     db.prepare("UPDATE users SET mute_until = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(until, target.id);
-    moderationLog({ targetId: target.id, actorId: req.user.id, type: "mute", reason: reason || `Mute depuis signalement (${hours}h)`, expiresAt: until });
+    moderationLog({ targetId: target.id, actorId: req.user.id, type: "mute", reason: reason || `Mute depuis signalement (${hours}h)`, expiresAt: until, req });
   } else if (action === "ban24") {
     const until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     db.prepare("UPDATE users SET is_banned = 1, ban_until = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(until, target.id);
-    moderationLog({ targetId: target.id, actorId: req.user.id, type: "timeban", reason: reason || "Ban 24h depuis signalement", expiresAt: until });
+    moderationLog({ targetId: target.id, actorId: req.user.id, type: "timeban", reason: reason || "Ban 24h depuis signalement", expiresAt: until, req });
     queueForcedDisconnect(req.user, target, `Votre compte est banni jusqu'au ${until}. ${reason || ""}`.trim());
   } else if (action === "ban") {
     db.prepare("UPDATE users SET is_banned = 1, ban_until = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(target.id);
-    moderationLog({ targetId: target.id, actorId: req.user.id, type: "ban", reason: reason || "Ban depuis signalement" });
+    moderationLog({ targetId: target.id, actorId: req.user.id, type: "ban", reason: reason || "Ban depuis signalement", req });
     queueForcedDisconnect(req.user, target, `Votre compte a été banni. ${reason || ""}`.trim());
   } else if (action !== "close") {
     return res.status(400).json({ error: "Action inconnue." });
   }
-  db.prepare("UPDATE message_reports SET status = 'resolved', resolution_action = ?, resolution_note = ?, resolved_by_user_id = ?, resolved_at = CURRENT_TIMESTAMP WHERE id = ?").run(action, reason || null, req.user.id, id);
+  db.prepare("UPDATE message_reports SET status = 'resolved', workflow_status='resolved', resolution_action = ?, resolution_note = ?, resolved_by_user_id = ?, resolved_at = CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE id = ?").run(action, reason || null, req.user.id, id);
+  auditLog({ actorId: req.user.id, targetId, action: "report.resolve", entityType: "message_report", entityId: id, details: { action, reason }, req });
   res.json({ ok: true });
 });
 
-app.get("/api/moderation/users/:pseudo", requireAuth, requireRole("moderator"), (req, res) => {
+app.get("/api/moderation/users/:pseudo", requireAuth, requireRole("moderator"), requirePermission("users.view"), (req, res) => {
   const target = getUserByPseudo(req.params.pseudo);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   res.json({
@@ -2554,7 +2888,7 @@ app.get("/api/moderation/users/:pseudo", requireAuth, requireRole("moderator"), 
   });
 });
 
-app.delete("/api/moderation/actions/:id", requireAuth, requireRole("moderator"), (req, res) => {
+app.delete("/api/moderation/actions/:id", requireAuth, requireRole("moderator"), requirePermission("users.history.manage"), (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: "Action invalide." });
   const action = db.prepare("SELECT * FROM moderation_actions WHERE id = ?").get(id);
@@ -2562,11 +2896,12 @@ app.delete("/api/moderation/actions/:id", requireAuth, requireRole("moderator"),
   const target = getUserById(action.target_user_id);
   if (target && !canModerateTarget(req.user, target)) return res.status(403).json({ error: "Suppression non autorisee." });
   db.prepare("DELETE FROM moderation_actions WHERE id = ?").run(id);
+  auditLog({ actorId: req.user.id, targetId: action.target_user_id, action: "moderation.history.delete", entityType: "moderation_action", entityId: id, details: { deletedAction: action }, req });
   logCommunity({ userId: req.user.id, type: "moderation_history_delete", body: "Action de moderation retiree.", meta: { actionId: id } });
   res.json({ ok: true });
 });
 
-app.delete("/api/moderation/warnings/:id", requireAuth, requireRole("moderator"), (req, res) => {
+app.delete("/api/moderation/warnings/:id", requireAuth, requireRole("moderator"), requirePermission("users.history.manage"), (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ error: "Avertissement invalide." });
   const warning = db.prepare("SELECT * FROM moderation_warnings WHERE id = ?").get(id);
@@ -2574,21 +2909,25 @@ app.delete("/api/moderation/warnings/:id", requireAuth, requireRole("moderator")
   const target = getUserById(warning.target_user_id);
   if (target && !canModerateTarget(req.user, target)) return res.status(403).json({ error: "Suppression non autorisee." });
   db.prepare("DELETE FROM moderation_warnings WHERE id = ?").run(id);
+  auditLog({ actorId: req.user.id, targetId: warning.target_user_id, action: "moderation.warning.delete", entityType: "moderation_warning", entityId: id, details: { deletedWarning: warning }, req });
   logCommunity({ userId: req.user.id, type: "moderation_history_delete", body: "Avertissement retire.", meta: { warningId: id } });
   res.json({ ok: true });
 });
 
-app.delete("/api/moderation/users/:id/history", requireAuth, requireRole("moderator"), (req, res) => {
+app.delete("/api/moderation/users/:id/history", requireAuth, requireRole("moderator"), requirePermission("users.history.manage"), (req, res) => {
   const target = getUserById(req.params.id);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Suppression non autorisee." });
+  const actions = db.prepare("SELECT id FROM moderation_actions WHERE target_user_id = ?").all(target.id);
+  const warnings = db.prepare("SELECT id FROM moderation_warnings WHERE target_user_id = ?").all(target.id);
   db.prepare("DELETE FROM moderation_actions WHERE target_user_id = ?").run(target.id);
   db.prepare("DELETE FROM moderation_warnings WHERE target_user_id = ?").run(target.id);
+  auditLog({ actorId: req.user.id, targetId: target.id, action: "moderation.history.reset", entityType: "user", entityId: target.id, details: { deletedActions: actions.length, deletedWarnings: warnings.length }, req });
   logCommunity({ userId: req.user.id, type: "moderation_history_reset", body: "Historique recent de sanctions vide.", meta: { targetId: target.id } });
   res.json({ ok: true });
 });
 
-app.post("/api/moderation/users/:id/ban", requireAuth, requireRole("moderator"), (req, res) => {
+app.post("/api/moderation/users/:id/ban", requireAuth, requireRole("moderator"), requirePermission("users.ban"), (req, res) => {
   const target = getUserById(req.params.id);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (ROLE_ORDER[target.role] >= ROLE_ORDER[req.user.role]) return res.status(403).json({ error: "Vous ne pouvez pas sanctionner ce rôle." });
@@ -2596,23 +2935,23 @@ app.post("/api/moderation/users/:id/ban", requireAuth, requireRole("moderator"),
   if (untilDate && Number.isNaN(untilDate.getTime())) return res.status(400).json({ error: "Date de fin de ban invalide." });
   const until = untilDate ? untilDate.toISOString() : null;
   db.prepare("UPDATE users SET is_banned = 1, ban_until = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(until, target.id);
-  moderationLog({ targetId: target.id, actorId: req.user.id, type: until ? "timeban" : "ban", reason: req.body.reason, expiresAt: until });
+  moderationLog({ targetId: target.id, actorId: req.user.id, type: until ? "timeban" : "ban", reason: req.body.reason, expiresAt: until, req });
   queueForcedDisconnect(req.user, target, until
     ? `Votre compte est banni jusqu'au ${until}. ${String(req.body.reason || "")}`.trim()
     : `Votre compte a été banni. ${String(req.body.reason || "")}`.trim());
   res.json({ user: publicUser(getUserById(target.id)) });
 });
 
-app.post("/api/moderation/users/:id/unban", requireAuth, requireRole("moderator"), (req, res) => {
+app.post("/api/moderation/users/:id/unban", requireAuth, requireRole("moderator"), requirePermission("users.ban"), (req, res) => {
   const target = getUserById(req.params.id);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (ROLE_ORDER[target.role] >= ROLE_ORDER[req.user.role]) return res.status(403).json({ error: "Vous ne pouvez pas modifier ce rôle." });
   db.prepare("UPDATE users SET is_banned = 0, ban_until = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(target.id);
-  moderationLog({ targetId: target.id, actorId: req.user.id, type: "unban", reason: req.body.reason });
+  moderationLog({ targetId: target.id, actorId: req.user.id, type: "unban", reason: req.body.reason, req });
   res.json({ user: publicUser(getUserById(target.id)) });
 });
 
-app.post("/api/moderation/users/:id/mute", requireAuth, requireRole("moderator"), (req, res) => {
+app.post("/api/moderation/users/:id/mute", requireAuth, requireRole("moderator"), requirePermission("users.mute"), (req, res) => {
   const target = getUserById(req.params.id);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   const untilDate = req.body.until ? new Date(req.body.until) : null;
@@ -2620,30 +2959,31 @@ app.post("/api/moderation/users/:id/mute", requireAuth, requireRole("moderator")
   const until = untilDate.toISOString();
   if (ROLE_ORDER[target.role] >= ROLE_ORDER[req.user.role]) return res.status(403).json({ error: "Vous ne pouvez pas mute ce rôle." });
   db.prepare("UPDATE users SET mute_until = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(until, target.id);
-  moderationLog({ targetId: target.id, actorId: req.user.id, type: "mute", reason: req.body.reason, expiresAt: until });
+  moderationLog({ targetId: target.id, actorId: req.user.id, type: "mute", reason: req.body.reason, expiresAt: until, req });
   res.json({ user: publicUser(getUserById(target.id)) });
 });
 
-app.post("/api/moderation/users/:id/warn", requireAuth, requireRole("moderator"), (req, res) => {
+app.post("/api/moderation/users/:id/warn", requireAuth, requireRole("moderator"), requirePermission("users.warn"), (req, res) => {
   const target = getUserById(req.params.id);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Vous ne pouvez pas avertir ce membre." });
   const reason = String(req.body.reason || "").trim().slice(0, 300);
   db.prepare("INSERT INTO moderation_warnings(target_user_id, actor_user_id, reason) VALUES(?,?,?)").run(target.id, req.user.id, reason || "Avertissement modération");
+  auditLog({ actorId: req.user.id, targetId: target.id, action: "moderation.warn", entityType: "user", entityId: target.id, details: { reason: reason || "" }, req });
   logCommunity({ userId: req.user.id, type: "moderation_warn", body: "Avertissement envoye.", meta: { targetId: target.id, reason: reason || "" } });
   res.json({ ok: true });
 });
 
-app.post("/api/moderation/users/:id/unmute", requireAuth, requireRole("moderator"), (req, res) => {
+app.post("/api/moderation/users/:id/unmute", requireAuth, requireRole("moderator"), requirePermission("users.mute"), (req, res) => {
   const target = getUserById(req.params.id);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (ROLE_ORDER[target.role] >= ROLE_ORDER[req.user.role]) return res.status(403).json({ error: "Vous ne pouvez pas modifier ce rôle." });
   db.prepare("UPDATE users SET mute_until = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(target.id);
-  moderationLog({ targetId: target.id, actorId: req.user.id, type: "unmute", reason: req.body.reason });
+  moderationLog({ targetId: target.id, actorId: req.user.id, type: "unmute", reason: req.body.reason, req });
   res.json({ user: publicUser(getUserById(target.id)) });
 });
 
-app.post("/api/admin/users/:id/role", requireAuth, requireRole("admin"), (req, res) => {
+app.post("/api/admin/users/:id/role", requireAuth, requireRole("admin"), requirePermission("roles.manage"), (req, res) => {
   const target = getUserById(req.params.id);
   const role = String(req.body.role || "");
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
@@ -2651,15 +2991,17 @@ app.post("/api/admin/users/:id/role", requireAuth, requireRole("admin"), (req, r
   if (target.role === "admin") return res.status(403).json({ error: "Impossible de modifier un admin depuis cette interface." });
   if (!["user", "moderator"].includes(role)) return res.status(400).json({ error: "Rôle invalide." });
   db.prepare("UPDATE users SET role = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(role, target.id);
-  moderationLog({ targetId: target.id, actorId: req.user.id, type: ROLE_ORDER[role] > ROLE_ORDER[target.role] ? "promote" : "demote", reason: req.body.reason });
+  if (role !== "moderator") db.prepare("DELETE FROM staff_permission_overrides WHERE user_id = ?").run(target.id);
+  moderationLog({ targetId: target.id, actorId: req.user.id, type: ROLE_ORDER[role] > ROLE_ORDER[target.role] ? "promote" : "demote", reason: req.body.reason, req });
   res.json({ user: publicUser(getUserById(target.id)) });
 });
 
-app.delete("/api/admin/users/:id", requireAuth, requireRole("admin"), (req, res) => {
+app.delete("/api/admin/users/:id", requireAuth, requireRole("admin"), requirePermission("users.delete"), (req, res) => {
   const target = getUserById(req.params.id);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (Number(target.id) === Number(req.user.id)) return res.status(400).json({ error: "Vous ne pouvez pas supprimer votre propre compte." });
   if (target.role === "admin") return res.status(403).json({ error: "Impossible de supprimer un admin depuis cette interface." });
+  auditLog({ actorId: req.user.id, targetId: target.id, action: "user.delete", entityType: "user", entityId: target.id, details: { pseudo: target.pseudo, role: target.role }, req });
   db.prepare("DELETE FROM users WHERE id = ?").run(target.id);
   res.json({ ok: true });
 });
