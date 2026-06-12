@@ -1967,6 +1967,41 @@ app.get("/api/admin/console", requireAuth, requireRole("moderator"), requirePerm
   });
 });
 
+app.post("/api/admin/broadcast", requireAuth, requireRole("moderator"), requirePermission("notifications.send"), (req, res) => {
+  const message = String(req.body.message || "").trim().slice(0, 500);
+  const mode = ["notification", "info", "popup"].includes(String(req.body.mode || ""))
+    ? String(req.body.mode)
+    : "notification";
+  if (!message) return res.status(400).json({ error: "Message requis." });
+
+  const users = db.prepare(`
+    SELECT id,pseudo,role
+    FROM users
+    WHERE is_banned = 0
+      AND email_verified_at IS NOT NULL
+      AND last_login_at IS NOT NULL
+      AND datetime(last_login_at) >= datetime('now','-5 minutes')
+    ORDER BY id ASC
+  `).all();
+  const commandType = mode === "popup" ? "popup-message" : "notification";
+  const payload = {
+    message,
+    level: mode === "info" ? "info" : "announcement",
+    broadcast: true
+  };
+  const queueBroadcast = db.transaction((targets) => {
+    targets.forEach((target) => queueAdminCommand({ actor: req.user, target, type: commandType, payload }));
+  });
+  queueBroadcast(users);
+  logCommunity({
+    userId: req.user.id,
+    type: "admin_broadcast",
+    body: message,
+    meta: { mode, recipients: users.length }
+  });
+  res.status(201).json({ ok: true, recipients: users.length, mode });
+});
+
 app.get("/api/admin/users/:pseudo/control", requireAuth, requireRole("moderator"), requirePermission("users.view"), (req, res) => {
   const target = db.prepare("SELECT * FROM users WHERE lower(pseudo) = lower(?)").get(cleanPseudo(req.params.pseudo));
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });

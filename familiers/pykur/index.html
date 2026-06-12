@@ -12128,6 +12128,189 @@ body.night .dungeon-card .dungeon-mini{
   }
 }
 
+/* ===== Phase finale de polish visuel et ergonomique ===== */
+body{
+  background:
+    repeating-linear-gradient(118deg,rgba(255,235,177,.035) 0 1px,transparent 1px 34px),
+    repeating-linear-gradient(28deg,rgba(14,63,43,.025) 0 1px,transparent 1px 48px),
+    linear-gradient(112deg,rgba(0,0,0,.50),rgba(34,19,7,.40) 48%,rgba(0,0,0,.52)),
+    url("./assets/images/fond.png") center/cover fixed no-repeat!important;
+}
+body.night{background:linear-gradient(rgba(0,0,0,.79),rgba(0,0,0,.79)),url("./assets/images/fond.png") center/cover fixed no-repeat!important}
+
+.app{
+  background:
+    repeating-linear-gradient(90deg,rgba(113,77,31,.022) 0 1px,transparent 1px 34px),
+    repeating-linear-gradient(0deg,rgba(113,77,31,.018) 0 1px,transparent 1px 34px),
+    rgba(234,214,179,.965)!important;
+  box-shadow:0 26px 70px rgba(18,10,4,.38),inset 0 1px 0 rgba(255,255,255,.55)!important;
+}
+
+.dungeon-card,
+.pp-summary-card,
+.quick-projection,
+.projection-card,
+.stats-fantasy-card,
+.hero,
+.profile-row{
+  box-shadow:
+    0 10px 24px rgba(74,46,14,.075),
+    inset 0 1px 0 rgba(255,255,255,.72),
+    inset 0 -1px 0 rgba(119,76,23,.07)!important;
+}
+.dungeon-card::before,
+.projection-card::before,
+.pp-summary-card::before,
+.quick-projection::before{
+  opacity:.72;
+}
+
+.profile-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:9px!important;
+  align-items:stretch!important;
+  flex:0 0 auto!important;
+  min-height:max-content;
+}
+.profile-select-line{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:10px;
+  align-items:center;
+}
+.profile-actions{
+  display:flex;
+  gap:8px;
+  justify-content:flex-end;
+  flex-wrap:wrap;
+}
+
+.modal-bg.show .modal{
+  animation:modalPolishIn .23s cubic-bezier(.2,.78,.24,1) both;
+  transform-origin:center 46%;
+}
+@keyframes modalPolishIn{
+  from{opacity:0;transform:translateY(12px) scale(.988)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){.modal-bg.show .modal{animation:none!important}}
+body.no-anim .modal-bg.show .modal{animation:none!important}
+
+.changelog-version-picker{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  align-items:center;
+  gap:12px;
+  padding:12px 14px;
+  border:1px solid rgba(139,96,42,.25);
+  border-radius:12px;
+  background:linear-gradient(135deg,rgba(255,250,235,.88),rgba(244,224,183,.58));
+  color:#4b2f17;
+  font-size:13px;
+  font-weight:900;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72);
+}
+.changelog-version-picker select{width:100%;min-width:0;background:rgba(255,255,255,.72)}
+
+.gallery-tabs{
+  position:sticky;
+  top:-16px;
+  z-index:5;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  margin:-4px 0 14px;
+  padding:7px;
+  border:1px solid rgba(126,83,31,.22);
+  border-radius:12px;
+  background:rgba(247,233,203,.96);
+  box-shadow:0 7px 18px rgba(63,39,14,.10);
+}
+.gallery-tab{
+  min-height:42px;
+  border:1px solid transparent;
+  border-radius:8px;
+  background:transparent;
+  color:#63421d;
+  font:inherit;
+  font-weight:900;
+  cursor:pointer;
+  transition:background .18s ease,color .18s ease,box-shadow .18s ease;
+}
+.gallery-tab:hover{background:rgba(255,255,255,.52)}
+.gallery-tab.active{
+  color:#fff;
+  border-color:rgba(31,87,190,.35);
+  background:linear-gradient(180deg,#4f8df5,#2563eb);
+  box-shadow:0 6px 14px rgba(37,99,235,.22),inset 0 1px 0 rgba(255,255,255,.35);
+}
+.gallery-events-heading{align-items:center}
+.gallery-events-heading .gallery-collection-meter{min-width:min(310px,42%)}
+.gallery-settings-section{display:grid;gap:12px}
+.gallery-setting-card{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px;
+  border:1px solid rgba(126,83,31,.2);
+  border-radius:10px;
+  background:rgba(255,255,255,.55);
+}
+.gallery-setting-card span,.gallery-setting-card div{display:grid;gap:3px;min-width:0}
+.gallery-setting-card small{color:#74522c;font-size:12px;font-weight:750;line-height:1.4}
+.gallery-setting-danger{justify-content:space-between;border-color:rgba(185,28,28,.2);background:rgba(254,242,242,.55)}
+.gallery-setting-future{display:grid;gap:4px;padding:14px;border:1px dashed rgba(126,83,31,.28);border-radius:10px;color:#74522c;background:rgba(255,250,235,.38)}
+
+.chat-avatar{width:48px;height:48px;flex:0 0 48px}
+.message-conversation-avatar{width:44px;height:44px}
+.friend-avatar{width:50px;height:50px}
+.message-conversation-main{grid-template-columns:46px minmax(0,1fr)}
+.community-search-result,
+.friend-row,
+.online-user-row,
+.message-conversation-row,
+.chat-message{
+  border-color:rgba(126,83,31,.19)!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.76),rgba(250,240,217,.48));
+  box-shadow:0 6px 15px rgba(68,42,14,.055),inset 0 1px 0 rgba(255,255,255,.62);
+}
+.community-search-result,
+.friend-row{min-height:70px}
+.community-search-result strong,
+.friend-row strong,
+.online-user-row strong,
+.message-conversation strong,
+.chat-message-body strong{font-size:15px;line-height:1.2}
+.community-search-result small,
+.friend-row small,
+.online-user-row small,
+.message-conversation small{font-size:11px;line-height:1.35}
+
+.admin-broadcast-card{grid-column:1/-1;display:grid;gap:10px}
+.admin-broadcast-grid{display:grid;grid-template-columns:minmax(0,1fr) 180px auto;gap:9px;align-items:end}
+.admin-broadcast-grid label{display:grid;gap:5px;color:#68451f;font-size:12px;font-weight:900}
+.admin-broadcast-grid textarea{min-height:72px;resize:vertical;padding:10px 12px;border:1px solid rgba(126,83,31,.3);border-radius:9px;background:rgba(255,255,255,.72);font:inherit;font-weight:750}
+.admin-broadcast-grid select{width:100%}
+
+@media(max-width:760px){
+  body,
+  body.night{background-attachment:scroll!important}
+  .profile-select-line{grid-template-columns:1fr;gap:5px}
+  .profile-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .profile-actions .btn{width:100%;padding-inline:6px!important}
+  .gallery-tabs{top:-16px}
+  .gallery-events-heading{display:grid;gap:10px}
+  .gallery-events-heading .gallery-collection-meter{min-width:0;width:100%}
+  .gallery-setting-danger{align-items:stretch;flex-direction:column}
+  .admin-broadcast-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .gallery-tabs{gap:4px;padding:5px}
+  .gallery-tab{font-size:12px;min-height:38px}
+  .profile-actions{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
@@ -12264,8 +12447,10 @@ body.night .dungeon-card .dungeon-mini{
 
     <section class="main">
       <section class="card profile-row">
-        <label for="profileSelect">Profil</label>
-        <select id="profileSelect"></select>
+        <div class="profile-select-line">
+          <label for="profileSelect">Profil</label>
+          <select id="profileSelect"></select>
+        </div>
         <div class="profile-actions">
           <button class="btn btn-green tooltip" id="createProfile" data-tooltip="Crée un nouveau profil vide.">+ Profil</button>
           <button class="btn btn-orange tooltip" id="renameProfile" data-tooltip="Renomme le profil actuel.">Renommer</button>
@@ -12790,12 +12975,15 @@ body.night .dungeon-card .dungeon-mini{
     </div>
     <div class="modal-body">
       <div class="changelog-shell">
-        <div class="changelog-tabs" role="tablist" aria-label="Versions du changelog">
-          <button class="btn btn-gray changelog-tab active" type="button" data-changelog-version="1.5">Version 1.5<span>12 juin 2026</span></button>
-          <button class="btn btn-gray changelog-tab" type="button" data-changelog-version="1.4">Version 1.4<span>04 juin 2026</span></button>
-          <button class="btn btn-gray changelog-tab" type="button" data-changelog-version="1.3">Version 1.3<span>03 juin 2026</span></button>
-          <button class="btn btn-gray changelog-tab" type="button" data-changelog-version="1.2">Version 1.2<span>02 juin 2026</span></button>
-        </div>
+        <label class="changelog-version-picker" for="changelogVersionSelect">
+          <span>Version affichée</span>
+          <select id="changelogVersionSelect" aria-label="Choisir une version du changelog">
+            <option value="1.5">Version 1.5 · 12 juin 2026</option>
+            <option value="1.4">Version 1.4 · 04 juin 2026</option>
+            <option value="1.3">Version 1.3 · 03 juin 2026</option>
+            <option value="1.2">Version 1.2 · 02 juin 2026</option>
+          </select>
+        </label>
         <article class="changelog-entry" id="changelogContent" aria-live="polite"></article>
       </div>
     </div>
@@ -12811,49 +12999,45 @@ body.night .dungeon-card .dungeon-mini{
   <div class="modal gallery-modal">
     <div class="modal-head"><div><h2><img class="modal-title-icon" src="./assets/icone/galerie.png" alt=""><span>Galerie</span></h2><p>Retrouvez vos anciens Pykurs et votre collection d'événements.</p></div><button class="btn btn-red modal-close" data-close="galleryModal">X</button></div>
     <div class="modal-body">
-      <div class="gallery-view" id="galleryMemoryView">
+      <nav class="gallery-tabs" role="tablist" aria-label="Sections de la galerie">
+        <button class="gallery-tab active" type="button" role="tab" aria-selected="true" data-gallery-tab="archives">Archives</button>
+        <button class="gallery-tab" type="button" role="tab" aria-selected="false" data-gallery-tab="events">Événements</button>
+        <button class="gallery-tab" type="button" role="tab" aria-selected="false" data-gallery-tab="settings">Paramètres</button>
+      </nav>
+      <div class="gallery-view" id="galleryMemoryView" data-gallery-panel="archives">
         <section class="gallery-section">
           <div class="gallery-section-head"><h3>Historique global</h3><span id="galleryGlobalBadge">0 Pykur</span></div>
           <div class="gallery-global-grid" id="galleryGlobalStats"></div>
         </section>
         <section class="gallery-section">
-          <div class="gallery-tools">
-            <label class="gallery-shared-toggle"><input id="gallerySharedToggle" type="checkbox"> Galerie partagée entre tous les profils</label>
-            <button class="btn btn-red" id="resetGallery" type="button">Reset galerie</button>
-          </div>
-          <div class="gallery-memory-head">
-            <div class="options-note">Galerie partagée : tous les profils consultent la même mémoire. Galerie locale : chaque profil garde ses propres archives.</div>
-            <button class="btn btn-blue" id="openGalleryEvents" type="button">Collection d'événements</button>
-          </div>
-        </section>
-        <section class="gallery-section">
           <div class="gallery-section-head"><h3>Pykurs terminés</h3><span id="galleryPykurCount">0</span></div>
           <div class="gallery-grid" id="completedPykurGallery"></div>
         </section>
-        <section class="gallery-section">
-          <div class="gallery-collection-entry">
-            <div>
-              <h3>Collection d'événements</h3>
-              <p>Consultez les événements découverts, rangés par catégories, et rejouez ceux que vous connaissez déjà.</p>
-              <div class="gallery-collection-meter">
-                <div class="gallery-event-progress"><span id="galleryEventProgress"></span></div>
-                <strong id="galleryEventCount">0 / 0 découverts</strong>
-              </div>
-            </div>
-            <button class="btn btn-blue" id="openGalleryEventsBottom" type="button">Voir la collection</button>
-          </div>
-        </section>
       </div>
-      <div class="gallery-view hidden" id="galleryEventsView">
+      <div class="gallery-view hidden" id="galleryEventsView" data-gallery-panel="events">
         <section class="gallery-section">
-          <div class="gallery-subhead">
+          <div class="gallery-subhead gallery-events-heading">
             <div>
               <h3>Collection d'événements</h3>
               <div class="options-note">Les événements sont rangés par catégories comme dans le panel admin. Les cartes verrouillées ne révèlent pas leur nom.</div>
             </div>
-            <button class="btn btn-gray" id="backGalleryMemory" type="button">Retour galerie</button>
+            <div class="gallery-collection-meter">
+              <div class="gallery-event-progress"><span id="galleryEventProgress"></span></div>
+              <strong id="galleryEventCount">0 / 0 découverts</strong>
+            </div>
           </div>
           <div id="discoveredEventsGallery"></div>
+        </section>
+      </div>
+      <div class="gallery-view hidden" id="gallerySettingsView" data-gallery-panel="settings">
+        <section class="gallery-section gallery-settings-section">
+          <div class="gallery-section-head"><h3>Paramètres de la galerie</h3><span>Mémoire</span></div>
+          <label class="gallery-shared-toggle gallery-setting-card"><input id="gallerySharedToggle" type="checkbox"><span><strong>Galerie partagée entre tous les profils</strong><small>Tous vos profils consultent les mêmes archives et découvertes.</small></span></label>
+          <div class="gallery-setting-card gallery-setting-danger">
+            <div><strong>Réinitialiser la galerie</strong><small>Supprime les Pykurs archivés et les événements découverts après confirmation.</small></div>
+            <button class="btn btn-red" id="resetGallery" type="button">Reset galerie</button>
+          </div>
+          <div class="gallery-setting-future"><strong>Futures options</strong><span>Les prochains réglages de collection seront regroupés ici sans alourdir vos archives.</span></div>
         </section>
       </div>
     </div>
@@ -17690,6 +17874,7 @@ function renderAdminConsole(){
     <div class="admin-server-grid">
       <article class="admin-server-card"><h4>Planning événementiel</h4><p><strong>${settings.paused?"En pause":adminConsoleEventLabel(event.id)}</strong></p><p>Départ : ${adminConsoleDate(event.startsAt)}</p><p>Cooldown : ${Math.ceil((event.startsInMs||0)/1000)}s</p></article>
       <article class="admin-server-card"><h4>Vos permissions</h4><p>${(adminConsolePayload.permissions||[]).map(item=>`<span class="admin-permission-badge">${escapeHtml(item)}</span>`).join(" ")}</p><button class="btn btn-gray" id="adminOpenModerationOverview" type="button">Ouvrir le tableau de modération</button></article>
+      ${adminConsoleHas("notifications.send")?`<article class="admin-server-card admin-broadcast-card"><h4>Annonce globale</h4><p>Diffusez une information aux membres connectés. Le message est transmis par la file sécurisée du serveur.</p><div class="admin-broadcast-grid"><label><span>Message</span><textarea id="adminBroadcastMessage" maxlength="500" placeholder="Maintenance, mise à jour ou information importante..."></textarea></label><label><span>Affichage</span><select id="adminBroadcastMode"><option value="notification">Notification discrète</option><option value="info">Message d'information</option><option value="popup">Popup important</option></select></label><button class="btn btn-blue" id="adminSendBroadcast" type="button">Envoyer à tous</button></div></article>`:""}
     </div>`;
   const eventSettings=$("#adminServerEventSettings");
   if(eventSettings)eventSettings.innerHTML=adminConsoleHas("events.configure")?`
@@ -17721,6 +17906,21 @@ function bindAdminConsoleDynamicActions(){
     closeModal("livingEventAdmin");
     openModerationOverview();
   });
+  $("#adminSendBroadcast")?.addEventListener("click",sendAdminBroadcast);
+}
+
+async function sendAdminBroadcast(){
+  const message=String($("#adminBroadcastMessage")?.value||"").trim();
+  const mode=String($("#adminBroadcastMode")?.value||"notification");
+  if(!message)return toast("Saisissez un message avant l'envoi.","warning","warning");
+  try{
+    const result=await authFetch("/admin/broadcast",{method:"POST",body:JSON.stringify({message,mode})});
+    if($("#adminBroadcastMessage"))$("#adminBroadcastMessage").value="";
+    toast(`Annonce transmise à ${result.recipients||0} utilisateur${result.recipients===1?"":"s"} connecté${result.recipients===1?"":"s"}.`,"success","success");
+    await loadAdminConsole();
+  }catch(error){
+    toast(error.message||"Annonce globale impossible.","error","error");
+  }
 }
 
 async function saveAdminEventSettings(reschedule=false){
@@ -20854,11 +21054,20 @@ function galleryEventGroups(){
   return groups;
 }
 
-function showGalleryEvents(show){
-  $("#galleryMemoryView")?.classList.toggle("hidden",!!show);
-  $("#galleryEventsView")?.classList.toggle("hidden",!show);
+function showGalleryTab(tab="archives"){
+  const selected=["archives","events","settings"].includes(tab)?tab:"archives";
+  $$('[data-gallery-panel]').forEach(panel=>panel.classList.toggle("hidden",panel.dataset.galleryPanel!==selected));
+  $$('[data-gallery-tab]').forEach(button=>{
+    const active=button.dataset.galleryTab===selected;
+    button.classList.toggle("active",active);
+    button.setAttribute("aria-selected",String(active));
+  });
   const body=$("#galleryModal .modal-body");
   if(body)body.scrollTop=0;
+}
+
+function showGalleryEvents(show){
+  showGalleryTab(show?"events":"archives");
 }
 
 function markGalleryEventDiscovered(id){
@@ -25179,7 +25388,8 @@ function renderChangelog(version="1.5"){
   const entry=CHANGELOG_ENTRIES[version]||CHANGELOG_ENTRIES["1.5"];
   const box=$("#changelogContent");
   if(!box)return;
-  $$(".changelog-tab").forEach(btn=>btn.classList.toggle("active",btn.dataset.changelogVersion===version));
+  const selector=$("#changelogVersionSelect");
+  if(selector)selector.value=version;
   box.innerHTML=`
     <h3>${entry.title}</h3>
     <span class="changelog-date">${entry.date}</span>
@@ -25196,12 +25406,14 @@ function renderChangelog(version="1.5"){
 
 if($("#changelogButton"))$("#changelogButton").onclick=()=>{renderChangelog("1.5");openModal("changelogModal")};
 if($("#achievementsButton"))$("#achievementsButton").onclick=()=>{renderAchievements();openModal("achievementsModal")};
-if($("#galleryButton"))$("#galleryButton").onclick=()=>{renderGallery();showGalleryEvents(false);openModal("galleryModal")};
+if($("#galleryButton"))$("#galleryButton").onclick=()=>{renderGallery();showGalleryTab("archives");openModal("galleryModal")};
 if($("#resetGallery"))$("#resetGallery").onclick=resetGallery;
 if($("#gallerySharedToggle"))$("#gallerySharedToggle").onchange=toggleSharedGallery;
 if($("#openGalleryEvents"))$("#openGalleryEvents").onclick=()=>showGalleryEvents(true);
 if($("#openGalleryEventsBottom"))$("#openGalleryEventsBottom").onclick=()=>showGalleryEvents(true);
 if($("#backGalleryMemory"))$("#backGalleryMemory").onclick=()=>showGalleryEvents(false);
+$$('[data-gallery-tab]').forEach(button=>button.addEventListener("click",()=>showGalleryTab(button.dataset.galleryTab)));
+if($("#changelogVersionSelect"))$("#changelogVersionSelect").onchange=event=>renderChangelog(event.target.value);
 if($("#toggleSharedOptions"))$("#toggleSharedOptions").onclick=toggleSharedOptions;
 if($("#toggleSharedGalleryOption"))$("#toggleSharedGalleryOption").onclick=()=>setSharedGallery(!(store?.galleryShared!==false));
 if($("#toggleSharedAchievementsOption"))$("#toggleSharedAchievementsOption").onclick=()=>setSharedAchievements(!store?.achievementsShared);
@@ -25306,11 +25518,6 @@ document.addEventListener("click",e=>{
   if(e.target.closest("[data-projection-sim-reset]")){
     resetProjectionSimulation();
     renderProjection();
-    return;
-  }
-  const changelogTab=e.target.closest("[data-changelog-version]");
-  if(changelogTab){
-    renderChangelog(changelogTab.dataset.changelogVersion);
     return;
   }
   const fav=e.target.closest("[data-monster-fav]");
