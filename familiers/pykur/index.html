@@ -15881,6 +15881,9 @@ async function authSubmit(event){
 }
 
 function authLogout(){
+  if(authState.token){
+    authFetch("/auth/logout",{method:"POST"}).catch(()=>{});
+  }
   if(cloudState.timer){
     clearTimeout(cloudState.timer);
     cloudState.timer=null;
