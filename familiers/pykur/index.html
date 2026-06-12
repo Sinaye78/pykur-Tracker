@@ -4950,7 +4950,10 @@ body.no-anim .app.milestone-flash{
   background:rgba(255,255,255,.42);
 }
 
-.chatbox-compose input{
+.chatbox-compose textarea{
+  min-height:44px;
+  max-height:120px;
+  resize:vertical;
   border:1px solid rgba(140,100,48,.38);
   border-radius:12px;
   padding:11px 12px;
@@ -12860,7 +12863,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
             <div class="community-profile-empty">Chargement du chat...</div>
           </div>
           <form class="chatbox-compose" id="chatboxComposeForm">
-            <input id="chatboxInput" maxlength="500" autocomplete="off" placeholder="Écrire dans le chat global...">
+            <textarea id="chatboxInput" maxlength="500" autocomplete="off" rows="1" placeholder="Écrire dans le chat global..."></textarea>
             <button class="btn btn-blue" type="submit">Envoyer</button>
           </form>
         </section>
@@ -15660,6 +15663,14 @@ function openCommunityDirectory(){
   openModal("communityDirectoryModal");
   loadCommunityDirectoryOnline();
   setTimeout(()=>$("#communitySearchInput")?.focus(),60);
+}
+
+function submitMessageOnEnter(event){
+  if(event.key!=="Enter" || event.shiftKey || event.isComposing)return;
+  event.preventDefault();
+  if(event.repeat)return;
+  const form=event.currentTarget?.form;
+  if(form && !event.currentTarget.disabled)form.requestSubmit();
 }
 
 function renderCommunityDirectoryOnline(users=[]){
@@ -25479,6 +25490,7 @@ if($("#openFriendsPanel"))$("#openFriendsPanel").onclick=openFriendsPanel;
 if($("#openMessagesPanel"))$("#openMessagesPanel").onclick=()=>openMessagesPanel();
 if($("#openChatboxPanel"))$("#openChatboxPanel").onclick=openChatboxPanel;
 if($("#chatboxComposeForm"))$("#chatboxComposeForm").onsubmit=sendChatMessage;
+if($("#chatboxInput"))$("#chatboxInput").addEventListener("keydown",submitMessageOnEnter);
 if($("#chatHideShares"))$("#chatHideShares").onchange=e=>{chatState.hideShares=!!e.target.checked;renderChatbox()};
 if($("#chatHideText"))$("#chatHideText").onchange=e=>{chatState.hideText=!!e.target.checked;renderChatbox()};
 if($("#copyMyCommunityLink"))$("#copyMyCommunityLink").onclick=async()=>{
@@ -25499,6 +25511,7 @@ if($("#communitySearchForm"))$("#communitySearchForm").onsubmit=event=>{
   runCommunitySearch();
 };
 if($("#messageComposeForm"))$("#messageComposeForm").onsubmit=sendPrivateMessage;
+if($("#messageComposeInput"))$("#messageComposeInput").addEventListener("keydown",submitMessageOnEnter);
 if($("#communitySearchInput"))$("#communitySearchInput").addEventListener("input",()=>{
   clearTimeout(communitySearchTimer);
   communitySearchTimer=setTimeout(runCommunitySearch,280);
