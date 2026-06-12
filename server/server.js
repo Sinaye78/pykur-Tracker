@@ -610,16 +610,21 @@ function mergeGalleries(baseGallery = {}, extraGallery = {}) {
     currentCycleArchived: false,
     currentCycleCompletionSeen: false
   }, baseGallery || {});
-  const completed = Array.isArray(merged.completedPykurs) ? merged.completedPykurs.slice() : [];
+  merged.removedPykurs = Object.assign({}, baseGallery?.removedPykurs || {}, extraGallery?.removedPykurs || {});
+  merged.removedEvents = Object.assign({}, baseGallery?.removedEvents || {}, extraGallery?.removedEvents || {});
+  const removedPykurs = new Set(Object.keys(merged.removedPykurs));
+  const completed = (Array.isArray(merged.completedPykurs) ? merged.completedPykurs.slice() : [])
+    .filter((item) => !removedPykurs.has(String(item?.id || "")));
   const seen = new Set(completed.map((item) => item?.id).filter(Boolean));
   (Array.isArray(extraGallery?.completedPykurs) ? extraGallery.completedPykurs : []).forEach((item) => {
-    if (!item) return;
+    if (!item || removedPykurs.has(String(item?.id || ""))) return;
     if (item.id && seen.has(item.id)) return;
     completed.push(item);
     if (item.id) seen.add(item.id);
   });
   merged.completedPykurs = completed.map((item, index) => Object.assign({}, item, { number: index + 1 }));
   merged.eventsDiscovered = mergeEventDiscoveries(merged.eventsDiscovered, extraGallery?.eventsDiscovered);
+  Object.keys(merged.removedEvents).forEach((id) => delete merged.eventsDiscovered[id]);
   merged.currentCycleArchived = !!(merged.currentCycleArchived || extraGallery?.currentCycleArchived);
   merged.currentCycleCompletionSeen = !!(merged.currentCycleCompletionSeen || extraGallery?.currentCycleCompletionSeen);
   return merged;
@@ -630,11 +635,13 @@ function mergeAchievements(baseAchievements = {}, extraAchievements = {}) {
     unlocked: Object.assign({}, baseAchievements?.unlocked || {}),
     secretCategoriesUnlocked: !!baseAchievements?.secretCategoriesUnlocked,
     eggCollected: !!baseAchievements?.eggCollected,
-    counters: Object.assign({}, baseAchievements?.counters || {})
+    counters: Object.assign({}, baseAchievements?.counters || {}),
+    removedUnlocked: Object.assign({}, baseAchievements?.removedUnlocked || {}, extraAchievements?.removedUnlocked || {})
   };
   Object.entries(extraAchievements?.unlocked || {}).forEach(([id, value]) => {
     if (value) merged.unlocked[id] = value;
   });
+  Object.keys(merged.removedUnlocked).forEach((id) => delete merged.unlocked[id]);
   merged.secretCategoriesUnlocked = merged.secretCategoriesUnlocked || !!extraAchievements?.secretCategoriesUnlocked;
   merged.eggCollected = merged.eggCollected || !!extraAchievements?.eggCollected;
   Object.entries(extraAchievements?.counters || {}).forEach(([id, value]) => {
@@ -809,7 +816,7 @@ function getUserById(id) {
   return user;
 }
 
-function requireAuth(req, res, next) {
+function authenticateRequest(req, res, next, { allowBanned = false } = {}) {
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;
   if (!token) return res.status(401).json({ error: "Authentification requise." });
@@ -817,7 +824,7 @@ function requireAuth(req, res, next) {
     const payload = jwt.verify(token, JWT_SECRET);
     const user = getUserById(payload.id);
     if (!user) return res.status(401).json({ error: "Compte introuvable." });
-    if (user.is_banned) {
+    if (user.is_banned && !allowBanned) {
       return res.status(403).json({ error: user.ban_until ? `Compte banni jusqu'au ${user.ban_until}.` : "Compte banni." });
     }
     req.user = user;
@@ -825,6 +832,14 @@ function requireAuth(req, res, next) {
   } catch {
     return res.status(401).json({ error: "Session invalide." });
   }
+}
+
+function requireAuth(req, res, next) {
+  return authenticateRequest(req, res, next);
+}
+
+function requireCommandAuth(req, res, next) {
+  return authenticateRequest(req, res, next, { allowBanned: true });
 }
 
 function optionalAuth(req, res, next) {
@@ -903,6 +918,109 @@ function queueAdminCommand({ actor, target, type, payload = {} }) {
     meta: { commandId: info.lastInsertRowid, targetId: target.id, targetPseudo: target.pseudo, payload }
   });
   return info.lastInsertRowid;
+}
+
+function loadCloudPayloadForUser(userId) {
+  const row = db.prepare("SELECT payload FROM cloud_saves WHERE user_id = ?").get(userId);
+  return safeParseJson(row?.payload, { store: { profiles: {} } }) || { store: { profiles: {} } };
+}
+
+function saveCloudPayloadForUser(userId, payload) {
+  payload.savedAt = new Date().toISOString();
+  db.prepare(`
+    INSERT INTO cloud_saves(user_id,payload,updated_at)
+    VALUES(?,?,CURRENT_TIMESTAMP)
+    ON CONFLICT(user_id) DO UPDATE SET payload=excluded.payload,updated_at=CURRENT_TIMESTAMP
+  `).run(userId, JSON.stringify(payload));
+}
+
+function gallerySources(store) {
+  const sources = [];
+  if (store?.sharedGallery) sources.push(store.sharedGallery);
+  Object.values(store?.profiles || {}).forEach((profile) => {
+    if (profile?.data?.gallery) sources.push(profile.data.gallery);
+  });
+  return sources;
+}
+
+function achievementSources(store) {
+  const sources = [];
+  if (store?.sharedAchievements) sources.push(store.sharedAchievements);
+  Object.values(store?.profiles || {}).forEach((profile) => {
+    if (profile?.data?.achievements) sources.push(profile.data.achievements);
+  });
+  return sources;
+}
+
+function applyCloudAdminMutation(targetId, type, commandPayload = {}) {
+  const payload = loadCloudPayloadForUser(targetId);
+  const store = payload.store || (payload.store = { profiles: {} });
+  const profileId = String(commandPayload.profileId || "");
+  if (type === "reset-gallery") {
+    gallerySources(store).forEach((source) => {
+      source.removedPykurs = Object.assign({}, source.removedPykurs || {});
+      (source.completedPykurs || []).forEach((item) => { if (item?.id) source.removedPykurs[item.id] = new Date().toISOString(); });
+      source.removedEvents = Object.assign({}, source.removedEvents || {});
+      Object.keys(source.eventsDiscovered || {}).forEach((id) => { source.removedEvents[id] = new Date().toISOString(); });
+      source.completedPykurs = [];
+      source.eventsDiscovered = {};
+      source.currentCycleArchived = false;
+      source.currentCycleCompletionSeen = false;
+    });
+  } else if (type === "reset-achievements") {
+    achievementSources(store).forEach((source) => {
+      source.removedUnlocked = Object.assign({}, source.removedUnlocked || {});
+      Object.keys(source.unlocked || {}).forEach((id) => { source.removedUnlocked[id] = new Date().toISOString(); });
+      source.unlocked = {};
+      source.secretCategoriesUnlocked = false;
+      source.eggCollected = false;
+      source.counters = {};
+    });
+  } else if (type === "reset-profile" || type === "reset-pykur") {
+    const profile = store.profiles?.[profileId];
+    if (!profile?.data) throw new Error("Profil Pykur introuvable.");
+    const data = profile.data;
+    data.runs = { morose: 0, tynril: 0 };
+    data.mobs = { morose: {}, tynril: {}, zone: {} };
+    data.chrono = { seconds: 0, running: false, startedAt: null, lastMarkSeconds: 0, marks: [] };
+    data.session = { active: false, startedAt: null, sessionStartedAt: null, totalSeconds: 0, runs: { morose: 0, tynril: 0 }, ppStart: 0, ppGain: 0, lastSummary: null };
+    data.activity = [];
+    data.undo = [];
+    data.createdAt = new Date().toISOString();
+  } else if (type === "remove-achievement") {
+    const achievementId = String(commandPayload.achievementId || "");
+    achievementSources(store).forEach((source) => {
+      if (source?.unlocked) delete source.unlocked[achievementId];
+      source.removedUnlocked = Object.assign({}, source.removedUnlocked || {}, { [achievementId]: new Date().toISOString() });
+    });
+  } else if (type === "remove-gallery-event") {
+    const eventId = String(commandPayload.eventId || "");
+    gallerySources(store).forEach((source) => {
+      if (source?.eventsDiscovered) delete source.eventsDiscovered[eventId];
+      source.removedEvents = Object.assign({}, source.removedEvents || {}, { [eventId]: new Date().toISOString() });
+    });
+  } else if (type === "remove-gallery-pykur") {
+    const pykurId = String(commandPayload.pykurId || "");
+    gallerySources(store).forEach((source) => {
+      source.completedPykurs = (Array.isArray(source.completedPykurs) ? source.completedPykurs : [])
+        .filter((item) => String(item?.id || "") !== pykurId)
+        .map((item, index) => Object.assign({}, item, { number: index + 1 }));
+      source.removedPykurs = Object.assign({}, source.removedPykurs || {}, { [pykurId]: new Date().toISOString() });
+    });
+  } else if (type === "rename-profile") {
+    if (!store.profiles?.[profileId]) throw new Error("Profil Pykur introuvable.");
+    store.profiles[profileId].name = String(commandPayload.name || "").trim().slice(0, 80) || store.profiles[profileId].name;
+  } else if (type === "delete-profile") {
+    if (!store.profiles?.[profileId]) throw new Error("Profil Pykur introuvable.");
+    if (Object.keys(store.profiles).length <= 1) throw new Error("Le dernier profil ne peut pas être supprimé.");
+    store.deletedProfiles = Object.assign({}, store.deletedProfiles || {}, { [profileId]: new Date().toISOString() });
+    delete store.profiles[profileId];
+    if (store.active === profileId) store.active = Object.keys(store.profiles)[0];
+  } else {
+    return payload;
+  }
+  saveCloudPayloadForUser(targetId, payload);
+  return payload;
 }
 
 const CLOUD_PP_NEEDS = Object.freeze({
@@ -1107,6 +1225,15 @@ function moderationLog({ targetId, actorId, type, reason, expiresAt = null }) {
   logCommunity({ userId: actorId, type: "moderation_action", body: type, meta: { targetId, reason: reason || "", expiresAt } });
 }
 
+function queueForcedDisconnect(actor, target, message) {
+  return queueAdminCommand({
+    actor,
+    target,
+    type: "kick",
+    payload: { message: String(message || "Votre session a été interrompue par l'équipe de modération.").slice(0, 500) }
+  });
+}
+
 function tokenHash(token) {
   return crypto.createHash("sha256").update(String(token || "")).digest("hex");
 }
@@ -1246,7 +1373,14 @@ app.post("/api/auth/login", asyncRoute(async (req, res) => {
     return res.status(401).json({ error: "Identifiants incorrects." });
   }
   if (user.is_banned && !isExpired(user.ban_until)) {
-    return res.status(403).json({ error: user.ban_until ? `Compte banni jusqu'au ${user.ban_until}.` : "Compte banni." });
+    const sanction = db.prepare(`
+      SELECT reason FROM moderation_actions
+      WHERE target_user_id = ? AND type IN ('ban','timeban')
+      ORDER BY created_at DESC LIMIT 1
+    `).get(user.id);
+    const reason = String(sanction?.reason || "").trim();
+    const status = user.ban_until ? `Compte banni jusqu'au ${user.ban_until}.` : "Compte banni.";
+    return res.status(403).json({ error: reason ? `${status} Motif : ${reason}` : status });
   }
   if (!user.email_verified_at) {
     return res.status(403).json({ error: "Veuillez confirmer votre email avant de vous connecter." });
@@ -1390,7 +1524,7 @@ app.get("/api/cloud/save", requireAuth, (req, res) => {
   res.json({ payload: row ? JSON.parse(row.payload) : null, updatedAt: row?.updated_at || null });
 });
 
-app.get("/api/account/admin-commands", requireAuth, (req, res) => {
+app.get("/api/account/admin-commands", requireCommandAuth, (req, res) => {
   const rows = db.prepare(`
     SELECT c.*, actor.pseudo AS actor_pseudo, actor.role AS actor_role
     FROM admin_commands c
@@ -1410,7 +1544,7 @@ app.get("/api/account/admin-commands", requireAuth, (req, res) => {
   res.json({ commands: rows.map(adminCommandView) });
 });
 
-app.post("/api/account/admin-commands/:id/complete", requireAuth, (req, res) => {
+app.post("/api/account/admin-commands/:id/complete", requireCommandAuth, (req, res) => {
   const command = db.prepare("SELECT * FROM admin_commands WHERE id = ? AND target_user_id = ?").get(Number(req.params.id), req.user.id);
   if (!command) return res.status(404).json({ error: "Commande introuvable." });
   if (!["pending", "delivered"].includes(command.status)) {
@@ -1472,7 +1606,8 @@ app.get("/api/social/online", requireAuth, (req, res) => {
       AND is_banned = 0
       AND last_login_at IS NOT NULL
       AND datetime(last_login_at) >= datetime('now','-15 minutes')
-    ORDER BY last_login_at DESC
+    ORDER BY CASE role WHEN 'admin' THEN 0 WHEN 'moderator' THEN 1 ELSE 2 END,
+             last_login_at DESC
     LIMIT 80
   `).all().map(publicCommunityUser);
   res.json({ users: rows });
@@ -1539,6 +1674,7 @@ app.patch("/api/social/chat/:id", requireAuth, (req, res) => {
   if (body.length > 500) return res.status(400).json({ error: "Message trop long." });
   const row = db.prepare("SELECT * FROM chat_messages WHERE id = ? AND deleted_at IS NULL").get(id);
   if (!row) return res.status(404).json({ error: "Message introuvable." });
+  if (row.type !== "message") return res.status(403).json({ error: "Un partage automatique ne peut pas être modifié." });
   if (Number(row.user_id) !== Number(req.user.id)) return res.status(403).json({ error: "Vous pouvez uniquement modifier vos propres messages." });
   db.prepare("UPDATE chat_messages SET body = ?, edited_at = CURRENT_TIMESTAMP WHERE id = ?").run(body, id);
   const updated = db.prepare(`${chatMessageSelect("m.id = ?")}`).get(id);
@@ -1844,6 +1980,26 @@ app.get("/api/admin/users/:pseudo/control", requireAuth, requireRole("moderator"
     tynril: Number(profile?.data?.runs?.tynril || 0),
     active: id === payload?.store?.active
   }));
+  const achievementIds = new Set();
+  const galleryEvents = new Map();
+  const galleryPykurs = new Map();
+  achievementSources(payload?.store || {}).forEach((source) => {
+    Object.keys(source?.unlocked || {}).forEach((id) => achievementIds.add(id));
+  });
+  gallerySources(payload?.store || {}).forEach((source) => {
+    Object.entries(source?.eventsDiscovered || {}).forEach(([id, item]) => {
+      if (item) galleryEvents.set(id, { id, count: Number(item.count) || 1 });
+    });
+    (Array.isArray(source?.completedPykurs) ? source.completedPykurs : []).forEach((item) => {
+      if (item?.id) galleryPykurs.set(String(item.id), {
+        id: String(item.id),
+        number: Number(item.number) || 0,
+        profileName: String(item.profileName || "Profil"),
+        pp: Number(item.pp) || 0,
+        finishedAt: item.finishedAt || null
+      });
+    });
+  });
   const commands = db.prepare(`
     SELECT c.*, actor.pseudo AS actor_pseudo, actor.role AS actor_role,
            target.pseudo AS target_pseudo, target.role AS target_role
@@ -1855,6 +2011,9 @@ app.get("/api/admin/users/:pseudo/control", requireAuth, requireRole("moderator"
   res.json({
     user: moderationUserView(target, req.user),
     profiles,
+    achievements: [...achievementIds].sort(),
+    galleryEvents: [...galleryEvents.values()].sort((a, b) => a.id.localeCompare(b.id)),
+    galleryPykurs: [...galleryPykurs.values()].sort((a, b) => (a.number || 0) - (b.number || 0)),
     cloudUpdatedAt: save?.updated_at || null,
     history: moderationHistory(target.id),
     commands,
@@ -1870,15 +2029,19 @@ app.post("/api/admin/users/:id/commands", requireAuth, requireRole("moderator"),
   }
   const type = String(req.body.type || "");
   const payload = req.body.payload && typeof req.body.payload === "object" ? req.body.payload : {};
-  const moderatorTypes = new Set(["notification", "living-event"]);
+  const moderatorTypes = new Set(["notification", "popup-message", "kick", "living-event"]);
   const adminTypes = new Set([
     "notification", "living-event", "reset-gallery", "reset-achievements",
-    "reset-profile", "reset-pykur", "delete-profile", "recalculate-achievements", "repair-progression"
+    "reset-profile", "reset-pykur", "delete-profile", "rename-profile",
+    "remove-achievement", "remove-gallery-event", "remove-gallery-pykur",
+    "popup-message", "kick", "recalculate-achievements", "repair-progression"
   ]);
   const allowed = req.user.role === "admin" ? adminTypes : moderatorTypes;
   if (!allowed.has(type)) return res.status(403).json({ error: "Action non autorisee pour votre role." });
   const permissionByType = {
     notification: "notifications.send",
+    "popup-message": "notifications.send",
+    kick: "users.moderate",
     "living-event": "events.target",
     "reset-gallery": "gallery.manage",
     "reset-achievements": "achievements.manage",
@@ -1886,7 +2049,11 @@ app.post("/api/admin/users/:id/commands", requireAuth, requireRole("moderator"),
     "reset-profile": "tracker.reset",
     "reset-pykur": "tracker.reset",
     "repair-progression": "tracker.reset",
-    "delete-profile": "profiles.manage"
+    "delete-profile": "profiles.manage",
+    "rename-profile": "profiles.manage",
+    "remove-achievement": "achievements.manage",
+    "remove-gallery-event": "gallery.manage",
+    "remove-gallery-pykur": "gallery.manage"
   };
   if (!adminPermissions(req.user).includes(permissionByType[type])) {
     return res.status(403).json({ error: "Permission insuffisante.", permission: permissionByType[type] });
@@ -1897,12 +2064,26 @@ app.post("/api/admin/users/:id/commands", requireAuth, requireRole("moderator"),
   if (type === "living-event" && !LIVING_EVENT_CATALOG.some((event) => event.id === payload.eventId)) {
     return res.status(400).json({ error: "Evenement inconnu." });
   }
-  if (["reset-profile", "reset-pykur", "delete-profile"].includes(type) && !String(payload.profileId || "")) {
+  if (["reset-profile", "reset-pykur", "delete-profile", "rename-profile"].includes(type) && !String(payload.profileId || "")) {
     return res.status(400).json({ error: "Profil cible requis." });
   }
-  if (type === "notification") {
+  if (["notification", "popup-message", "kick"].includes(type)) {
     payload.message = String(payload.message || "").trim().slice(0, 500);
     if (!payload.message) return res.status(400).json({ error: "Message requis." });
+  }
+  if (type === "rename-profile") {
+    payload.name = String(payload.name || "").trim().slice(0, 80);
+    if (!payload.name) return res.status(400).json({ error: "Nouveau nom requis." });
+  }
+  if (type === "remove-achievement" && !String(payload.achievementId || "")) return res.status(400).json({ error: "Succès cible requis." });
+  if (type === "remove-gallery-event" && !String(payload.eventId || "")) return res.status(400).json({ error: "Événement cible requis." });
+  if (type === "remove-gallery-pykur" && !String(payload.pykurId || "")) return res.status(400).json({ error: "Pykur archivé cible requis." });
+  if (["reset-gallery", "reset-achievements", "reset-profile", "reset-pykur", "delete-profile", "rename-profile", "remove-achievement", "remove-gallery-event", "remove-gallery-pykur"].includes(type)) {
+    try {
+      applyCloudAdminMutation(target.id, type, payload);
+    } catch (error) {
+      return res.status(400).json({ error: error.message || "Modification cloud impossible." });
+    }
   }
   const id = queueAdminCommand({ actor: req.user, target, type, payload });
   res.status(201).json({ ok: true, commandId: id });
@@ -2194,9 +2375,11 @@ app.post("/api/moderation/reports/:id/action", requireAuth, requireRole("moderat
     const until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     db.prepare("UPDATE users SET is_banned = 1, ban_until = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(until, target.id);
     moderationLog({ targetId: target.id, actorId: req.user.id, type: "timeban", reason: reason || "Ban 24h depuis signalement", expiresAt: until });
+    queueForcedDisconnect(req.user, target, `Votre compte est banni jusqu'au ${until}. ${reason || ""}`.trim());
   } else if (action === "ban") {
     db.prepare("UPDATE users SET is_banned = 1, ban_until = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(target.id);
     moderationLog({ targetId: target.id, actorId: req.user.id, type: "ban", reason: reason || "Ban depuis signalement" });
+    queueForcedDisconnect(req.user, target, `Votre compte a été banni. ${reason || ""}`.trim());
   } else if (action !== "close") {
     return res.status(400).json({ error: "Action inconnue." });
   }
@@ -2251,9 +2434,14 @@ app.post("/api/moderation/users/:id/ban", requireAuth, requireRole("moderator"),
   const target = getUserById(req.params.id);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (ROLE_ORDER[target.role] >= ROLE_ORDER[req.user.role]) return res.status(403).json({ error: "Vous ne pouvez pas sanctionner ce rôle." });
-  const until = req.body.until ? new Date(req.body.until).toISOString() : null;
+  const untilDate = req.body.until ? new Date(req.body.until) : null;
+  if (untilDate && Number.isNaN(untilDate.getTime())) return res.status(400).json({ error: "Date de fin de ban invalide." });
+  const until = untilDate ? untilDate.toISOString() : null;
   db.prepare("UPDATE users SET is_banned = 1, ban_until = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(until, target.id);
   moderationLog({ targetId: target.id, actorId: req.user.id, type: until ? "timeban" : "ban", reason: req.body.reason, expiresAt: until });
+  queueForcedDisconnect(req.user, target, until
+    ? `Votre compte est banni jusqu'au ${until}. ${String(req.body.reason || "")}`.trim()
+    : `Votre compte a été banni. ${String(req.body.reason || "")}`.trim());
   res.json({ user: publicUser(getUserById(target.id)) });
 });
 
@@ -2268,9 +2456,10 @@ app.post("/api/moderation/users/:id/unban", requireAuth, requireRole("moderator"
 
 app.post("/api/moderation/users/:id/mute", requireAuth, requireRole("moderator"), (req, res) => {
   const target = getUserById(req.params.id);
-  const until = req.body.until ? new Date(req.body.until).toISOString() : null;
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
-  if (!until || Number.isNaN(new Date(until).getTime())) return res.status(400).json({ error: "Date de fin de mute invalide." });
+  const untilDate = req.body.until ? new Date(req.body.until) : null;
+  if (!untilDate || Number.isNaN(untilDate.getTime())) return res.status(400).json({ error: "Date de fin de mute invalide." });
+  const until = untilDate.toISOString();
   if (ROLE_ORDER[target.role] >= ROLE_ORDER[req.user.role]) return res.status(403).json({ error: "Vous ne pouvez pas mute ce rôle." });
   db.prepare("UPDATE users SET mute_until = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(until, target.id);
   moderationLog({ targetId: target.id, actorId: req.user.id, type: "mute", reason: req.body.reason, expiresAt: until });

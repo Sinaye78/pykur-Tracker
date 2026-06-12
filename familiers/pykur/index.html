@@ -11858,7 +11858,7 @@ body.night .dungeon-card .dungeon-mini{
 .admin-server-card h4,.admin-action-group h4{margin:0 0 10px}
 .admin-server-card p{margin:5px 0;color:#684725}
 .admin-user-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;margin-bottom:14px}
-.admin-user-search input,.admin-event-settings input,.admin-target-notification textarea,.admin-target-event select{width:100%;border:1px solid rgba(119,79,28,.3);border-radius:9px;background:#fffdf7;padding:10px 12px;font:inherit}
+.admin-user-search input,.admin-event-settings input,.admin-target-notification textarea,.admin-target-event select,.admin-target-event input,.admin-duration-grid input,.admin-duration-grid select{width:100%;border:1px solid rgba(119,79,28,.3);border-radius:9px;background:#fffdf7;padding:10px 12px;font:inherit}
 .admin-target-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;margin-bottom:12px}
 .admin-target-head h3{margin:0 0 4px}
 .admin-permission-badge{display:inline-flex;padding:4px 8px;border-radius:999px;background:#e5e7eb;color:#374151;font-size:10px;font-weight:900;text-transform:uppercase}
@@ -11871,13 +11871,15 @@ body.night .dungeon-card .dungeon-mini{
 .admin-action-group.danger{border-color:rgba(185,28,28,.3);background:rgba(254,226,226,.42)}
 .admin-target-notification textarea{min-height:76px;resize:vertical;margin-bottom:8px}
 .admin-target-event{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.admin-target-event+.admin-target-event{margin-top:8px}
+.admin-duration-grid{display:grid;grid-template-columns:minmax(76px,.6fr) minmax(100px,.8fr) minmax(180px,1.6fr) auto auto auto;gap:8px;align-items:center}
 .admin-event-settings{display:grid;grid-template-columns:auto repeat(2,minmax(120px,180px)) auto auto;gap:10px;align-items:end;margin-bottom:14px;padding:14px;border:1px solid rgba(119,79,28,.2);border-radius:10px;background:rgba(255,253,247,.78)}
 .admin-event-settings label{font-size:11px;font-weight:900;color:#624321}.admin-event-settings label span{display:block;margin-bottom:5px}
 .admin-command-list{display:grid;gap:8px}.admin-command-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px 12px;border:1px solid rgba(119,79,28,.17);border-radius:8px;background:rgba(255,255,255,.6)}
 .admin-command-row small{display:block;color:#795834;margin-top:3px}.admin-command-status{align-self:center;padding:4px 8px;border-radius:999px;background:#e5e7eb;font-size:10px;font-weight:900}.admin-command-status.completed{background:#dcfce7;color:#166534}.admin-command-status.failed{background:#fee2e2;color:#991b1b}.admin-command-status.pending,.admin-command-status.delivered{background:#fef3c7;color:#92400e}
 .admin-command-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px}.admin-command-actions .btn{padding:5px 8px;font-size:10px}
 .admin-local-toolbar{margin-top:12px}
-@media(max-width:850px){.admin-console-shell{grid-template-columns:1fr}.admin-console-nav{flex-direction:row;overflow:auto;border-right:0;border-bottom:1px solid rgba(119,79,28,.2);padding:9px}.admin-console-nav button{white-space:nowrap}.admin-dashboard-metrics{grid-template-columns:repeat(2,1fr)}.admin-target-actions,.admin-server-grid,.admin-profile-list{grid-template-columns:1fr}.admin-event-settings{grid-template-columns:1fr 1fr}.admin-event-settings .btn{width:100%}}
+@media(max-width:850px){.admin-console-shell{grid-template-columns:1fr}.admin-console-nav{flex-direction:row;overflow:auto;border-right:0;border-bottom:1px solid rgba(119,79,28,.2);padding:9px}.admin-console-nav button{white-space:nowrap}.admin-dashboard-metrics{grid-template-columns:repeat(2,1fr)}.admin-target-actions,.admin-server-grid,.admin-profile-list{grid-template-columns:1fr}.admin-event-settings{grid-template-columns:1fr 1fr}.admin-event-settings .btn{width:100%}.admin-duration-grid{grid-template-columns:1fr 1fr}.admin-duration-grid input:nth-child(3){grid-column:1/-1}}
 @media(max-width:560px){.admin-dashboard-metrics,.admin-event-settings{grid-template-columns:1fr}.admin-console-content{padding:12px}}
 
 .auth-widget{
@@ -13337,8 +13339,8 @@ const defaultData=()=>({
   session:{active:false,startedAt:null,sessionStartedAt:null,totalSeconds:0,runs:{morose:0,tynril:0},ppStart:0,ppGain:0,lastSummary:null},
   ui:{farm:"morose",tab:"morose",monsterSort:"total",monsterView:"comfortable",monsterSearch:"",monsterFavs:[],activityDensity:"compact",collapsedActivityDays:[],capyMode:false,helpSeen:false},
   hud:{windows:{},z:10050},
-  achievements:{unlocked:{},secretCategoriesUnlocked:false,eggCollected:false,counters:{happiosHover:0}},
-  gallery:{completedPykurs:[],eventsDiscovered:{},currentCycleArchived:false,currentCycleCompletionSeen:false},
+  achievements:{unlocked:{},removedUnlocked:{},secretCategoriesUnlocked:false,eggCollected:false,counters:{happiosHover:0}},
+  gallery:{completedPykurs:[],eventsDiscovered:{},removedPykurs:{},removedEvents:{},currentCycleArchived:false,currentCycleCompletionSeen:false},
   dofusDetection:{enabled:false,cooldownSeconds:45,scanIntervalMs:1000,status:"Inactif",refs:{morose:{imageKey:null,zone:null,threshold:82},tynril:{imageKey:null,zone:null,threshold:82}}},
   createdAt:new Date().toISOString(),
   activity:[],
@@ -13573,7 +13575,7 @@ function authRender(){
   const friendsButton=socialAssetButton({id:"authFriendsPanel",asset:"ami.png",title:"Amis",description:pendingFriends?`${pendingFriends} demande${pendingFriends>1?"s":""} en attente. Ouvrez la liste pour les traiter.`:"Gérer vos amis et vos demandes.",className:"auth-friends-button",badge:friendsBadge});
   const moderationButton=["moderator","admin"].includes(user.role) ? socialAssetButton({id:"authModerationOverview",asset:"moderation.png",title:"Modération",description:"Ouvrir les signalements, sanctions et journaux de modération."}) : "";
   const adminButton=["moderator","admin"].includes(user.role) ? socialAssetButton({id:"authAdminPanel",asset:"admin.png",title:"Centre de contrôle",description:"Ouvrir les outils autorisés pour votre rôle."}) : "";
-  box.innerHTML='<button class="auth-user-chip account-open tooltip" id="accountProfileOpen" type="button" data-tooltip="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-green auth-icon-btn tooltip '+(chatState.mentionUnread?'has-notification':'')+'" id="authChatboxPanel" type="button" aria-label="Chat global" data-tooltip="Chat global'+(chatState.mentionUnread?' · '+chatState.mentionUnread+' mention(s) non lue(s)':'')+'">💬'+chatBadge+'</button><button class="btn btn-blue auth-icon-btn tooltip '+(messageState.unread?'has-notification':'')+'" id="authDirectMessages" type="button" aria-label="Messages privés" data-tooltip="Messages privés'+(messageState.unread?' · '+messageState.unread+' nouveau(x)':'')+'">✉'+directBadge+'</button><button class="btn btn-gray auth-icon-btn tooltip '+(pendingFriends?'has-notification':'')+'" id="authSocialMenu" type="button" aria-label="Menu social" data-tooltip="Menu social'+(pendingFriends?' · '+pendingFriends+' demande(s) en attente':'')+'">☰'+socialMenuBadge+'</button><div class="auth-menu-panel" id="authMenuPanel">'+memberButton+friendsButton+moderationButton+adminButton+'<button class="btn btn-gray auth-danger-btn" id="authLogout" type="button">Déconnexion</button></div>';
+  box.innerHTML='<button class="auth-user-chip account-open tooltip" id="accountProfileOpen" type="button" data-tooltip="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-green auth-icon-btn tooltip '+(chatState.mentionUnread?'has-notification':'')+'" id="authChatboxPanel" type="button" aria-label="Chat global" data-tooltip="Chat global'+(chatState.mentionUnread?' · '+chatState.mentionUnread+' mention(s) non lue(s)':'')+'">💬'+chatBadge+'</button><button class="btn btn-blue auth-icon-btn tooltip '+(messageState.unread?'has-notification':'')+'" id="authDirectMessages" type="button" aria-label="Messages privés" data-tooltip="Messages privés'+(messageState.unread?' · '+messageState.unread+' nouveau(x)':'')+'">✉'+directBadge+'</button><button class="btn btn-blue auth-icon-btn tooltip '+(pendingFriends?'has-notification':'')+'" id="authSocialMenu" type="button" aria-label="Menu social" data-tooltip="Menu social'+(pendingFriends?' · '+pendingFriends+' demande(s) en attente':'')+'">☰'+socialMenuBadge+'</button><div class="auth-menu-panel" id="authMenuPanel">'+memberButton+friendsButton+moderationButton+adminButton+'<button class="btn btn-gray auth-danger-btn" id="authLogout" type="button">Déconnexion</button></div>';
   if($("#accountProfileOpen"))$("#accountProfileOpen").onclick=openAccountProfile;
   if($("#authCommunitySearch"))$("#authCommunitySearch").onclick=openCommunityDirectory;
   if($("#authFriendsPanel"))$("#authFriendsPanel").onclick=openFriendsPanel;
@@ -14786,6 +14788,14 @@ const processedAdminCommands=new Set();
 
 function adminResetGalleryCommand(){
   const empty=clone(defaultData().gallery);
+  const removedPykurs={};
+  const removedEvents={};
+  adminGallerySources().forEach(source=>{
+    (source.completedPykurs||[]).forEach(item=>{if(item?.id)removedPykurs[item.id]=new Date().toISOString()});
+    Object.keys(source.eventsDiscovered||{}).forEach(id=>removedEvents[id]=new Date().toISOString());
+  });
+  empty.removedPykurs=removedPykurs;
+  empty.removedEvents=removedEvents;
   store.sharedGallery=clone(empty);
   Object.values(store.profiles||{}).forEach(profile=>{if(profile?.data)profile.data.gallery=clone(empty)});
   data.gallery=clone(empty);
@@ -14793,6 +14803,9 @@ function adminResetGalleryCommand(){
 
 function adminResetAchievementsCommand(){
   const empty=clone(defaultData().achievements);
+  const removedUnlocked={};
+  adminAchievementSources().forEach(source=>Object.keys(source.unlocked||{}).forEach(id=>removedUnlocked[id]=new Date().toISOString()));
+  empty.removedUnlocked=removedUnlocked;
   store.sharedAchievements=clone(empty);
   Object.values(store.profiles||{}).forEach(profile=>{if(profile?.data)profile.data.achievements=clone(empty)});
   data.achievements=clone(empty);
@@ -14800,7 +14813,7 @@ function adminResetAchievementsCommand(){
 
 function adminResetProfileCommand(profileId){
   const profile=store.profiles?.[profileId];
-  if(!profile?.data)throw new Error("Profil Pykur introuvable.");
+  if(!profile?.data)return;
   const previous=profile.data;
   const fresh=defaultData();
   fresh.settings=clone(previous.settings||fresh.settings);
@@ -14813,7 +14826,7 @@ function adminResetProfileCommand(profileId){
 }
 
 function adminDeleteProfileCommand(profileId){
-  if(!store.profiles?.[profileId])throw new Error("Profil Pykur introuvable.");
+  if(!store.profiles?.[profileId])return;
   if(Object.keys(store.profiles).length<=1)throw new Error("Le dernier profil ne peut pas être supprimé.");
   store.deletedProfiles=Object.assign({},store.deletedProfiles||{});
   store.deletedProfiles[profileId]=new Date().toISOString();
@@ -14825,16 +14838,65 @@ function adminDeleteProfileCommand(profileId){
   }
 }
 
+function adminRenameProfileCommand(profileId,name){
+  const profile=store.profiles?.[profileId];
+  if(!profile)return;
+  profile.name=String(name||"").trim().slice(0,80)||profile.name;
+}
+
+function adminGallerySources(){
+  const sources=[];
+  if(store.sharedGallery)sources.push(store.sharedGallery);
+  Object.values(store.profiles||{}).forEach(profile=>{if(profile?.data?.gallery)sources.push(profile.data.gallery)});
+  return sources;
+}
+
+function adminAchievementSources(){
+  const sources=[];
+  if(store.sharedAchievements)sources.push(store.sharedAchievements);
+  Object.values(store.profiles||{}).forEach(profile=>{if(profile?.data?.achievements)sources.push(profile.data.achievements)});
+  return sources;
+}
+
+function adminRemoveAchievementCommand(id){
+  adminAchievementSources().forEach(source=>{
+    delete source.unlocked?.[id];
+    source.removedUnlocked=Object.assign({},source.removedUnlocked||{},{[id]:new Date().toISOString()});
+  });
+}
+
+function adminRemoveGalleryEventCommand(id){
+  adminGallerySources().forEach(source=>{
+    delete source.eventsDiscovered?.[id];
+    source.removedEvents=Object.assign({},source.removedEvents||{},{[id]:new Date().toISOString()});
+  });
+}
+
+function adminRemoveGalleryPykurCommand(id){
+  adminGallerySources().forEach(source=>{
+    source.completedPykurs=(source.completedPykurs||[]).filter(item=>String(item?.id||"")!==String(id)).map((item,index)=>({...item,number:index+1}));
+    source.removedPykurs=Object.assign({},source.removedPykurs||{},{[id]:new Date().toISOString()});
+  });
+}
+
 async function executeAdminCommand(command){
   if(!command?.id || processedAdminCommands.has(command.id))return;
   processedAdminCommands.add(command.id);
   let ok=true;
   let message="Commande exécutée.";
+  let logoutAfterAck=false;
   try{
     const payload=command.payload||{};
     if(command.type==="notification"){
       toast(payload.message||"Message de l'équipe.",payload.level||"info",payload.sound||"click");
       message="Notification affichée.";
+    }else if(command.type==="popup-message"){
+      await showDialog(payload.message||"Message de l'équipe.",{type:"alert",title:"Message de l'équipe",subtitle:"Cette information vous a été adressée personnellement.",okLabel:"J'ai compris"});
+      message="Popup affichée.";
+    }else if(command.type==="kick"){
+      await showDialog(payload.message||"Votre session a été interrompue par l'équipe de modération.",{type:"alert",title:"Session interrompue",subtitle:"Vous allez être déconnecté du compte cloud.",danger:true,okLabel:"Fermer"});
+      logoutAfterAck=true;
+      message="Utilisateur déconnecté.";
     }else if(command.type==="living-event"){
       if(!livingStart(payload.eventId,{admin:true,replay:true}))throw new Error("Événement indisponible dans cet affichage.");
       message="Événement ciblé lancé.";
@@ -14854,6 +14916,22 @@ async function executeAdminCommand(command){
       adminDeleteProfileCommand(payload.profileId);
       ensureData();save();renderProfiles();renderAll();
       toast("Un profil Pykur a été supprimé par un administrateur.","warning","warning");
+    }else if(command.type==="rename-profile"){
+      adminRenameProfileCommand(payload.profileId,payload.name);
+      save();renderProfiles();renderAll();
+      toast("Un profil Pykur a été renommé par un administrateur.","info","click");
+    }else if(command.type==="remove-achievement"){
+      adminRemoveAchievementCommand(payload.achievementId);
+      save();renderAchievements();renderHiddenSecretEgg();
+      toast("Un succès a été retiré par un administrateur.","warning","warning");
+    }else if(command.type==="remove-gallery-event"){
+      adminRemoveGalleryEventCommand(payload.eventId);
+      save();renderGallery();
+      toast("Un événement a été retiré de votre galerie.","warning","warning");
+    }else if(command.type==="remove-gallery-pykur"){
+      adminRemoveGalleryPykurCommand(payload.pykurId);
+      save();renderGallery();
+      toast("Un Pykur archivé a été retiré de votre galerie.","warning","warning");
     }else if(command.type==="recalculate-achievements"){
       recalculateAchievements({silent:true});
       message="Succès recalculés.";
@@ -14863,13 +14941,14 @@ async function executeAdminCommand(command){
     }else{
       throw new Error("Commande administrative inconnue.");
     }
-    if(authState.user && command.type!=="notification" && command.type!=="living-event")await cloudSyncNow({silent:true});
+    if(authState.user && !["notification","popup-message","kick","living-event"].includes(command.type))await cloudSyncNow({silent:true});
   }catch(error){
     ok=false;
     message=error.message||"Échec de la commande.";
   }
   try{
     await authFetch(`/account/admin-commands/${encodeURIComponent(command.id)}/complete`,{method:"POST",body:JSON.stringify({ok,message})});
+    if(logoutAfterAck)authLogout();
   }catch(error){
     processedAdminCommands.delete(command.id);
     console.warn("Confirmation de commande administrative reportée",error?.message||error);
@@ -15055,6 +15134,7 @@ function renderChatbox(){
       const system=item.type==="achievement" || item.type==="pykur";
       const canModerate=["moderator","admin"].includes(authState.user?.role);
       const canOwn=item.isMine;
+      const canEditOwn=canOwn && item.type==="message";
       return `
         <article class="chat-message ${system?"system":""} role-${escapeHtml(sender.role||"user")}">
           ${avatarMarkup(sender)}
@@ -15066,7 +15146,7 @@ function renderChatbox(){
           </div>
           <div class="chat-message-actions">
             <button class="btn btn-gray" type="button" data-chat-reply="${escapeHtml(sender.pseudo||"")}">@</button>
-            ${canOwn?`<button class="btn btn-blue" type="button" data-chat-edit="${item.id}">Modifier</button>`:""}
+            ${canEditOwn?`<button class="btn btn-blue" type="button" data-chat-edit="${item.id}">Modifier</button>`:""}
             ${canOwn||canModerate?`<button class="btn btn-red" type="button" data-chat-delete="${item.id}">Supprimer</button>`:""}
             ${!canOwn?`<button class="btn btn-orange" type="button" data-chat-report="${item.id}">Report</button><button class="btn btn-gray" type="button" data-chat-ignore="${escapeHtml(sender.pseudo||"")}">Ignorer</button>`:""}
           </div>
@@ -17500,7 +17580,7 @@ function adminConsoleHas(permission){return !!adminConsolePayload?.permissions?.
 function adminConsoleEventLabel(id){return LIVING_EVENT_DEFS.find(item=>item.id===id)?.label||id||"Aucun"}
 function adminConsoleDate(value){return value?new Date(value).toLocaleString("fr-FR"):"-"}
 function adminCommandStatusLabel(status){return ({pending:"En attente",delivered:"Transmise",completed:"Terminée",failed:"Échec",cancelled:"Annulée"})[status]||status}
-function adminCommandTypeLabel(type){return ({notification:"Notification",livingEvent:"Événement",["living-event"]:"Événement ciblé",["reset-gallery"]:"Reset galerie",["reset-achievements"]:"Reset succès",["reset-profile"]:"Reset profil",["reset-pykur"]:"Reset Pykur",["delete-profile"]:"Suppression profil",["recalculate-achievements"]:"Recalcul succès",["repair-progression"]:"Réparation progression"})[type]||type}
+function adminCommandTypeLabel(type){return ({notification:"Notification",["popup-message"]:"Popup persistante",kick:"Déconnexion forcée",livingEvent:"Événement",["living-event"]:"Événement ciblé",["reset-gallery"]:"Reset galerie",["reset-achievements"]:"Reset succès",["reset-profile"]:"Reset profil",["reset-pykur"]:"Reset Pykur",["delete-profile"]:"Suppression profil",["rename-profile"]:"Renommage profil",["remove-achievement"]:"Retrait succès",["remove-gallery-event"]:"Retrait événement",["remove-gallery-pykur"]:"Retrait Pykur archivé",["recalculate-achievements"]:"Recalcul succès",["repair-progression"]:"Réparation progression"})[type]||type}
 
 function adminConsoleCommandRows(items=[]){
   return `<div class="admin-command-list">${items.length?items.map(item=>`<div class="admin-command-row"><div><strong>${escapeHtml(adminCommandTypeLabel(item.type))}</strong>${item.target?` → ${escapeHtml(item.target.pseudo)}`:""}<small>${adminConsoleDate(item.createdAt)}${item.actor?` · par ${escapeHtml(item.actor.pseudo)}`:""}${item.result?.message?` · ${escapeHtml(item.result.message)}`:""}</small></div><div class="admin-command-actions"><span class="admin-command-status ${escapeHtml(item.status)}">${adminCommandStatusLabel(item.status)}</span>${adminConsoleHas("events.configure")&&["pending","delivered"].includes(item.status)?`<button class="btn btn-red" type="button" data-admin-cancel-command="${item.id}">Annuler</button>`:""}</div></div>`).join(""):`<div class="admin-console-empty">Aucune commande récente.</div>`}</div>`;
@@ -17581,26 +17661,77 @@ function renderAdminTarget(payload){
   const user=payload.user||{};
   const permissions=new Set(payload.permissions||[]);
   const profiles=payload.profiles||[];
+  const achievements=payload.achievements||[];
+  const galleryEvents=payload.galleryEvents||[];
+  const galleryPykurs=payload.galleryPykurs||[];
   const canReset=permissions.has("tracker.reset");
+  const canModerate=permissions.has("users.moderate");
   box.className="";
   box.innerHTML=`
     <section class="admin-target-card">
       <div class="admin-target-head"><div><h3>${escapeHtml(user.pseudo||"Utilisateur")}</h3><div class="admin-target-meta"><small>${escapeHtml(user.email||"")} · Cloud ${adminConsoleDate(payload.cloudUpdatedAt)}</small></div></div><span class="admin-permission-badge ${escapeHtml(user.role||"user")}">${authRoleLabel(user.role)}</span></div>
       <div class="admin-profile-list">${profiles.length?profiles.map(profile=>`<label class="admin-profile-option"><input type="radio" name="adminTargetProfile" value="${adminEscapeAttr(profile.id)}" ${profile.active?"checked":""}><span><strong>${escapeHtml(profile.name)}</strong><small>${profile.pp} PP · M ${profile.morose} · T ${profile.tynril}${profile.active?" · actif":""}</small></span></label>`).join(""):`<div class="admin-console-empty">Aucune sauvegarde cloud exploitable.</div>`}</div>
       <div class="admin-target-actions">
-        <article class="admin-action-group"><h4>Communication</h4><div class="admin-target-notification"><textarea id="adminTargetNotification" maxlength="500" placeholder="Notification à afficher au joueur"></textarea><button class="btn btn-blue" id="adminSendTargetNotification" type="button">Envoyer la notification</button></div></article>
+        <article class="admin-action-group"><h4>Communication</h4><div class="admin-target-notification"><textarea id="adminTargetNotification" maxlength="500" placeholder="Message destiné au joueur, conservé s'il est hors ligne"></textarea><div class="admin-action-buttons"><button class="btn btn-blue" id="adminSendTargetNotification" type="button">Notification</button><button class="btn btn-orange" id="adminSendTargetPopup" type="button">Popup persistante</button><button class="btn btn-red" id="adminKickTarget" type="button">Kick avec message</button></div></div></article>
         <article class="admin-action-group"><h4>Événement individuel</h4><div class="admin-target-event"><select id="adminTargetEvent">${LIVING_EVENT_DEFS.map(item=>`<option value="${item.id}">${escapeHtml(item.label)}</option>`).join("")}</select><button class="btn btn-orange" id="adminSendTargetEvent" type="button">Jouer</button></div><p class="options-note">Cosmétique, sans découverte ni récompense.</p></article>
+        ${canModerate?`<article class="admin-action-group"><h4>Modération temporelle</h4><p class="options-note">${user.isBanned?`Compte actuellement banni${user.banUntil?` jusqu'au ${escapeHtml(adminConsoleDate(user.banUntil))}`:" définitivement"}. `:""}${user.muteUntil?`Mute actif jusqu'au ${escapeHtml(adminConsoleDate(user.muteUntil))}.`:""}</p><div class="admin-duration-grid"><input id="adminModerationDuration" type="number" min="1" max="525600" value="24"><select id="adminModerationUnit"><option value="minutes">minutes</option><option value="hours" selected>heures</option><option value="days">jours</option></select><input id="adminModerationReason" type="text" maxlength="300" placeholder="Motif affiché au joueur"><button class="btn btn-orange" id="adminMuteTarget" type="button">Mute</button><button class="btn btn-red" id="adminBanTarget" type="button">Ban temporaire</button><button class="btn btn-red" id="adminBanPermanentTarget" type="button">Ban définitif</button></div><div class="admin-action-buttons">${user.muteUntil?`<button class="btn btn-gray" id="adminUnmuteTarget" type="button">Retirer le mute</button>`:""}${user.isBanned?`<button class="btn btn-blue" id="adminUnbanTarget" type="button">Débannir</button>`:""}</div></article>`:""}
         ${canReset?`<article class="admin-action-group"><h4>Réparation</h4><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer la progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer les succès</button></div></article>
+        <article class="admin-action-group"><h4>Édition ciblée</h4><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer le profil sélectionné</button></div>${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer ce succès</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer l'événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un Pykur archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">Pykur #${item.number||"?"} · ${escapeHtml(item.profileName)} · ${item.pp} PP</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer le Pykur</button></div>`:`<p class="options-note">Aucun Pykur archivé.</p>`}</article>
         <article class="admin-action-group danger"><h4>Données du compte</h4><div class="admin-action-buttons"><button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button><button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button><button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset Pykur</button><button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button></div></article>`:""}
       </div>
       <h4>Commandes récentes</h4>${adminConsoleCommandRows(payload.commands||[])}
     </section>`;
   $("#adminSendTargetNotification")?.addEventListener("click",()=>sendAdminTargetCommand("notification",{message:$("#adminTargetNotification")?.value||""},false));
+  $("#adminSendTargetPopup")?.addEventListener("click",()=>sendAdminTargetCommand("popup-message",{message:$("#adminTargetNotification")?.value||""},false));
+  $("#adminKickTarget")?.addEventListener("click",()=>sendAdminTargetCommand("kick",{message:$("#adminTargetNotification")?.value||"Votre session a été interrompue par l'équipe de modération."},true));
   $("#adminSendTargetEvent")?.addEventListener("click",()=>sendAdminTargetCommand("living-event",{eventId:$("#adminTargetEvent")?.value},false));
+  $("#adminRenameTargetProfile")?.addEventListener("click",()=>sendAdminTargetCommand("rename-profile",{profileId:adminTargetSelectedProfile(),name:$("#adminTargetProfileName")?.value||""},true));
+  $("#adminRemoveTargetAchievement")?.addEventListener("click",()=>sendAdminTargetCommand("remove-achievement",{achievementId:$("#adminTargetAchievement")?.value||""},true));
+  $("#adminRemoveTargetGalleryEvent")?.addEventListener("click",()=>sendAdminTargetCommand("remove-gallery-event",{eventId:$("#adminTargetGalleryEvent")?.value||""},true));
+  $("#adminRemoveTargetGalleryPykur")?.addEventListener("click",()=>sendAdminTargetCommand("remove-gallery-pykur",{pykurId:$("#adminTargetGalleryPykur")?.value||""},true));
+  $("#adminMuteTarget")?.addEventListener("click",()=>adminModerateTarget("mute"));
+  $("#adminBanTarget")?.addEventListener("click",()=>adminModerateTarget("ban"));
+  $("#adminBanPermanentTarget")?.addEventListener("click",()=>adminModerateTarget("ban",true));
+  $("#adminUnmuteTarget")?.addEventListener("click",()=>adminLiftModeration("unmute"));
+  $("#adminUnbanTarget")?.addEventListener("click",()=>adminLiftModeration("unban"));
   box.querySelectorAll("[data-admin-target-command]").forEach(button=>button.addEventListener("click",()=>{
     const payloadData=button.dataset.needsProfile?{profileId:adminTargetSelectedProfile()}:{};
     sendAdminTargetCommand(button.dataset.adminTargetCommand,payloadData,true);
   }));
+}
+
+function adminModerationUntil(){
+  const value=Math.max(1,Number($("#adminModerationDuration")?.value)||1);
+  const unit=$("#adminModerationUnit")?.value||"hours";
+  const multiplier=unit==="minutes"?60000:unit==="days"?86400000:3600000;
+  return new Date(Date.now()+value*multiplier).toISOString();
+}
+
+async function adminModerateTarget(action,permanent=false){
+  const target=adminConsoleTarget?.user;
+  if(!target)return;
+  const reason=String($("#adminModerationReason")?.value||"").trim();
+  const label=action==="mute"?"mute":(permanent?"ban définitif":"ban temporaire");
+  if(!await showConfirm(`Appliquer un ${label} à ${target.pseudo} ?`,{title:"Action de modération",danger:action==="ban",okLabel:"Confirmer"}))return;
+  try{
+    const body={reason};
+    if(!permanent)body.until=adminModerationUntil();
+    await authFetch(`/moderation/users/${encodeURIComponent(target.id)}/${action}`,{method:"POST",body:JSON.stringify(body)});
+    toast(`${label} appliqué.`,"success","success");
+    await searchAdminTarget();await loadAdminConsole();
+  }catch(error){toast(error.message||"Action de modération impossible.","error","error")}
+}
+
+async function adminLiftModeration(action){
+  const target=adminConsoleTarget?.user;
+  if(!target)return;
+  const label=action==="unmute"?"retirer le mute":"débannir";
+  if(!await showConfirm(`${label[0].toUpperCase()+label.slice(1)} ${target.pseudo} ?`,{title:"Lever une sanction",okLabel:"Confirmer"}))return;
+  try{
+    await authFetch(`/moderation/users/${encodeURIComponent(target.id)}/${action}`,{method:"POST",body:JSON.stringify({reason:"Sanction levée depuis le centre de contrôle."})});
+    toast("Sanction levée.","success","success");
+    await searchAdminTarget();await loadAdminConsole();
+  }catch(error){toast(error.message||"Impossible de lever la sanction.","error","error")}
 }
 
 async function searchAdminTarget(){
@@ -19921,6 +20052,10 @@ function normalizeGallery(gallery){
   normalized.completedPykurs=Array.isArray(normalized.completedPykurs)?normalized.completedPykurs:[];
   normalized.completedPykurs=normalized.completedPykurs.map(item=>item&&typeof item==="object"?{...item,image:assetPath(item.image)}:item);
   normalized.eventsDiscovered=Object.assign({},normalized.eventsDiscovered||{});
+  normalized.removedPykurs=Object.assign({},normalized.removedPykurs||{});
+  normalized.removedEvents=Object.assign({},normalized.removedEvents||{});
+  normalized.completedPykurs=normalized.completedPykurs.filter(item=>!normalized.removedPykurs[String(item?.id||"")]);
+  Object.keys(normalized.removedEvents).forEach(id=>delete normalized.eventsDiscovered[id]);
   normalized.currentCycleArchived=!!normalized.currentCycleArchived;
   normalized.currentCycleCompletionSeen=!!normalized.currentCycleCompletionSeen;
   return normalized;
@@ -19929,14 +20064,19 @@ function normalizeGallery(gallery){
 function mergeGalleries(baseGallery, extraGallery){
   const base=normalizeGallery(baseGallery);
   const extra=normalizeGallery(extraGallery);
+  base.removedPykurs=Object.assign({},base.removedPykurs||{},extra.removedPykurs||{});
+  base.removedEvents=Object.assign({},base.removedEvents||{},extra.removedEvents||{});
+  const removedPykurs=new Set(Object.keys(base.removedPykurs));
+  base.completedPykurs=base.completedPykurs.filter(item=>!removedPykurs.has(String(item?.id||"")));
   const seen=new Set(base.completedPykurs.map(item=>item.id).filter(Boolean));
   extra.completedPykurs.forEach(item=>{
-    if(item?.id && seen.has(item.id))return;
+    if(removedPykurs.has(String(item?.id||"")) || (item?.id && seen.has(item.id)))return;
     base.completedPykurs.push(item);
     if(item?.id)seen.add(item.id);
   });
   base.completedPykurs=base.completedPykurs.map((item,index)=>({...item,number:index+1}));
   Object.entries(extra.eventsDiscovered||{}).forEach(([id,item])=>{
+    if(base.removedEvents[id])return;
     const current=base.eventsDiscovered[id];
     if(!current){
       base.eventsDiscovered[id]=Object.assign({},item);
@@ -19946,6 +20086,7 @@ function mergeGalleries(baseGallery, extraGallery){
     if(item.firstSeen && (!current.firstSeen || new Date(item.firstSeen)<new Date(current.firstSeen)))current.firstSeen=item.firstSeen;
     if(item.lastSeen && (!current.lastSeen || new Date(item.lastSeen)>new Date(current.lastSeen)))current.lastSeen=item.lastSeen;
   });
+  Object.keys(base.removedEvents).forEach(id=>delete base.eventsDiscovered[id]);
   return base;
 }
 
@@ -19953,6 +20094,8 @@ function normalizeAchievements(achievements){
   const base=defaultData().achievements;
   const normalized=Object.assign({},base,achievements||{});
   normalized.unlocked=Object.assign({},normalized.unlocked||{});
+  normalized.removedUnlocked=Object.assign({},normalized.removedUnlocked||{});
+  Object.keys(normalized.removedUnlocked).forEach(id=>delete normalized.unlocked[id]);
   normalized.counters=Object.assign({happiosHover:0},normalized.counters||{});
   normalized.secretCategoriesUnlocked=!!normalized.secretCategoriesUnlocked;
   normalized.eggCollected=!!normalized.eggCollected;
@@ -19962,8 +20105,9 @@ function normalizeAchievements(achievements){
 function mergeAchievements(baseAchievements, extraAchievements){
   const base=normalizeAchievements(baseAchievements);
   const extra=normalizeAchievements(extraAchievements);
+  base.removedUnlocked=Object.assign({},base.removedUnlocked||{},extra.removedUnlocked||{});
   Object.entries(extra.unlocked||{}).forEach(([id,item])=>{
-    if(!item)return;
+    if(!item || base.removedUnlocked[id])return;
     const current=base.unlocked[id];
     if(!current || (item.date && current.date && new Date(item.date)<new Date(current.date))){
       base.unlocked[id]=Object.assign({},item);
@@ -20637,6 +20781,7 @@ function markGalleryEventDiscovered(id){
   ensureData();
   if(!galleryEventIds().includes(id))return;
   const gallery=activeGallery();
+  if(gallery.removedEvents)delete gallery.removedEvents[id];
   const now=new Date().toISOString();
   const item=gallery.eventsDiscovered[id]||{count:0,firstSeen:now,lastSeen:null};
   item.count=(item.count||0)+1;
@@ -20930,6 +21075,10 @@ async function resetGallery(){
     html:`<p>Tous les Pykurs archivés et événements découverts seront supprimés.</p><p><strong>Cette action est irréversible.</strong></p>`
   }))return;
   const gallery=clone(defaultData().gallery);
+  gallery.removedPykurs=Object.assign({},before.removedPykurs||{});
+  (before.completedPykurs||[]).forEach(item=>{if(item?.id)gallery.removedPykurs[item.id]=new Date().toISOString()});
+  gallery.removedEvents=Object.assign({},before.removedEvents||{});
+  Object.keys(before.eventsDiscovered||{}).forEach(id=>gallery.removedEvents[id]=new Date().toISOString());
   gallery.currentCycleArchived=currentPP()>=PP_MAX;
   gallery.currentCycleCompletionSeen=currentPP()>=PP_MAX;
   syncActiveGallery(gallery);
@@ -20947,6 +21096,7 @@ async function deleteGalleryPykur(id){
   if(!id || !await showConfirm("Supprimer ce Pykur de la galerie ?",{title:"Supprimer Pykur",danger:true,okLabel:"Supprimer"}))return;
   const gallery=activeGallery();
   gallery.completedPykurs=(gallery.completedPykurs||[]).filter(item=>item.id!==id).map((item,index)=>({...item,number:index+1}));
+  gallery.removedPykurs=Object.assign({},gallery.removedPykurs||{},{[id]:new Date().toISOString()});
   syncActiveGallery(gallery);
   save();
   renderGallery();
@@ -21276,6 +21426,7 @@ function unlockAchievement(id,{silent=false,celebrate=!silent}={}){
   ensureAchievements();
   const achievement=ACHIEVEMENTS[id];
   if(!achievement || isAchievementUnlocked(id))return false;
+  if(data.achievements.removedUnlocked)delete data.achievements.removedUnlocked[id];
   data.achievements.unlocked[id]={date:new Date().toISOString()};
   if(!silent){
     showAchievementToast(id);
@@ -21376,7 +21527,10 @@ function tickSecretGateOld(){
 async function resetAchievements(){
   if(!await showConfirm("Remettre tous les succès à zéro ? Les catégories secrètes seront à nouveau masquées.",{title:"Reset succès",danger:true,okLabel:"Reset"}))return;
   const eggCollected=!!data.achievements?.eggCollected;
+  const removedUnlocked=Object.assign({},data.achievements?.removedUnlocked||{});
+  Object.keys(data.achievements?.unlocked||{}).forEach(id=>removedUnlocked[id]=new Date().toISOString());
   data.achievements=clone(defaultData().achievements);
+  data.achievements.removedUnlocked=removedUnlocked;
   data.achievements.eggCollected=eggCollected;
   save();
   renderHiddenSecretEgg();
