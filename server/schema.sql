@@ -213,3 +213,31 @@ CREATE TABLE IF NOT EXISTS living_event_schedule (
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS living_event_settings (
+  id INTEGER PRIMARY KEY CHECK(id = 1),
+  paused INTEGER NOT NULL DEFAULT 0,
+  min_cooldown_seconds INTEGER NOT NULL DEFAULT 600,
+  max_cooldown_seconds INTEGER NOT NULL DEFAULT 1500,
+  updated_by_user_id INTEGER,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS admin_commands (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  target_user_id INTEGER NOT NULL,
+  actor_user_id INTEGER NOT NULL,
+  type TEXT NOT NULL,
+  payload TEXT NOT NULL DEFAULT '{}',
+  status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','delivered','completed','failed','cancelled')),
+  delivered_at TEXT,
+  completed_at TEXT,
+  result TEXT,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(target_user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY(actor_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_commands_target ON admin_commands(target_user_id,status,created_at);
+INSERT OR IGNORE INTO living_event_settings(id) VALUES(1);

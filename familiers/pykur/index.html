@@ -11832,6 +11832,54 @@ body.night .dungeon-card .dungeon-mini{
 }
 
 /* User panel: a light parchment extension of the tracker shell. */
+.admin-console-modal{
+  width:min(1180px,96vw)!important;
+  height:min(900px,94vh)!important;
+  max-width:none!important;
+}
+.admin-console-modal .modal-body{padding:0!important;overflow:hidden!important}
+.admin-console-shell{display:grid;grid-template-columns:210px minmax(0,1fr);height:100%;min-height:0;background:rgba(246,238,220,.94)}
+.admin-console-nav{display:flex;flex-direction:column;gap:5px;padding:16px 12px;border-right:1px solid rgba(119,79,28,.2);background:linear-gradient(180deg,rgba(102,62,22,.1),rgba(255,252,242,.42))}
+.admin-console-nav button{min-height:42px;padding:0 13px;border:0;border-radius:8px;background:transparent;color:#4b2f19;text-align:left;font-weight:900;cursor:pointer}
+.admin-console-nav button:hover{background:rgba(180,123,35,.1)}
+.admin-console-nav button.active{background:#81501b;color:#fff;box-shadow:inset 3px 0 #facc15}
+.admin-console-content{min-width:0;min-height:0;overflow:auto;padding:18px}
+.admin-console-panel{display:none}
+.admin-console-panel.active{display:block}
+.admin-console-heading{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
+.admin-console-heading h3{margin:0 0 3px;font-size:20px}
+.admin-console-heading p{margin:0;color:#725130;font-size:12px}
+.admin-console-loading,.admin-console-empty{padding:26px;border:1px dashed rgba(119,79,28,.3);border-radius:10px;color:#725130;text-align:center;background:rgba(255,252,242,.48)}
+.admin-dashboard-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.admin-metric-card,.admin-server-card,.admin-target-card,.admin-action-group{padding:14px;border:1px solid rgba(119,79,28,.2);border-radius:10px;background:rgba(255,253,247,.8);box-shadow:0 5px 15px rgba(75,45,14,.05)}
+.admin-metric-card small,.admin-target-meta small{display:block;color:#86633d;font-weight:900;text-transform:uppercase;font-size:10px}
+.admin-metric-card strong{display:block;margin-top:5px;font-size:24px;color:#352113}
+.admin-server-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.admin-server-card h4,.admin-action-group h4{margin:0 0 10px}
+.admin-server-card p{margin:5px 0;color:#684725}
+.admin-user-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;margin-bottom:14px}
+.admin-user-search input,.admin-event-settings input,.admin-target-notification textarea,.admin-target-event select{width:100%;border:1px solid rgba(119,79,28,.3);border-radius:9px;background:#fffdf7;padding:10px 12px;font:inherit}
+.admin-target-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;margin-bottom:12px}
+.admin-target-head h3{margin:0 0 4px}
+.admin-permission-badge{display:inline-flex;padding:4px 8px;border-radius:999px;background:#e5e7eb;color:#374151;font-size:10px;font-weight:900;text-transform:uppercase}
+.admin-permission-badge.admin{background:#fee2e2;color:#b91c1c}.admin-permission-badge.moderator{background:#ffedd5;color:#c2410c}
+.admin-profile-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.admin-profile-option{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid rgba(119,79,28,.18);border-radius:8px;background:rgba(255,255,255,.58)}
+.admin-profile-option span{min-width:0}.admin-profile-option small{display:block;color:#795834}
+.admin-target-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.admin-action-buttons{display:flex;flex-wrap:wrap;gap:7px}
+.admin-action-group.danger{border-color:rgba(185,28,28,.3);background:rgba(254,226,226,.42)}
+.admin-target-notification textarea{min-height:76px;resize:vertical;margin-bottom:8px}
+.admin-target-event{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.admin-event-settings{display:grid;grid-template-columns:auto repeat(2,minmax(120px,180px)) auto auto;gap:10px;align-items:end;margin-bottom:14px;padding:14px;border:1px solid rgba(119,79,28,.2);border-radius:10px;background:rgba(255,253,247,.78)}
+.admin-event-settings label{font-size:11px;font-weight:900;color:#624321}.admin-event-settings label span{display:block;margin-bottom:5px}
+.admin-command-list{display:grid;gap:8px}.admin-command-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px 12px;border:1px solid rgba(119,79,28,.17);border-radius:8px;background:rgba(255,255,255,.6)}
+.admin-command-row small{display:block;color:#795834;margin-top:3px}.admin-command-status{align-self:center;padding:4px 8px;border-radius:999px;background:#e5e7eb;font-size:10px;font-weight:900}.admin-command-status.completed{background:#dcfce7;color:#166534}.admin-command-status.failed{background:#fee2e2;color:#991b1b}.admin-command-status.pending,.admin-command-status.delivered{background:#fef3c7;color:#92400e}
+.admin-command-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px}.admin-command-actions .btn{padding:5px 8px;font-size:10px}
+.admin-local-toolbar{margin-top:12px}
+@media(max-width:850px){.admin-console-shell{grid-template-columns:1fr}.admin-console-nav{flex-direction:row;overflow:auto;border-right:0;border-bottom:1px solid rgba(119,79,28,.2);padding:9px}.admin-console-nav button{white-space:nowrap}.admin-dashboard-metrics{grid-template-columns:repeat(2,1fr)}.admin-target-actions,.admin-server-grid,.admin-profile-list{grid-template-columns:1fr}.admin-event-settings{grid-template-columns:1fr 1fr}.admin-event-settings .btn{width:100%}}
+@media(max-width:560px){.admin-dashboard-metrics,.admin-event-settings{grid-template-columns:1fr}.admin-console-content{padding:12px}}
+
 .auth-widget{
   gap:5px;
   min-height:38px;
@@ -13027,48 +13075,75 @@ body.night .dungeon-card .dungeon-mini{
 </div>
     </div>
 <div class="modal-bg" id="livingEventAdmin">
-  <div class="modal">
-    <div class="modal-head"><div><h2>🛠️ Admin Panel</h2><p>Testez les événements, easter eggs et ambiances du tracker.</p></div><button class="btn btn-red modal-close" data-close="livingEventAdmin">✕</button></div>
+  <div class="modal admin-console-modal">
+    <div class="modal-head"><div><h2>Centre de contrôle</h2><p>Administration, événements, utilisateurs et outils de diagnostic.</p></div><button class="btn btn-red modal-close" data-close="livingEventAdmin">✕</button></div>
     <div class="modal-body">
-      <div class="living-admin-status">
-        <div>Événement actif : <span id="livingEventActiveLabel">Aucun</span></div>
-        <div>Ambiance passive : <span id="passiveAmbienceActiveLabel">Aucune</span></div>
-        <div>Prochain événement global : <span id="livingEventNextLabel">-</span></div>
-        <div>Départ serveur : <span id="livingEventStartLabel">-</span></div>
-        <div>Cooldown global : <span id="livingEventCooldownLabel">-</span></div>
-        <div>Ambiance visuelle locale : <span id="passiveVisualCooldownLabel">-</span></div>
-        <div>Ambiance sonore locale : <span id="passiveSoundCooldownLabel">-</span></div>
-        <div>Système passif : <span id="passiveSystemLabel">-</span></div>
-      </div>
-      <div class="living-admin-options">
-        <div>
-          <label><input type="checkbox" id="adminAutoCloseAfterAction"> Fermer le panel après une action</label>
-          <small>Après fermeture, appuyez sur A pour rouvrir rapidement le panel pendant le délai choisi.</small>
+      <div class="admin-console-shell">
+        <nav class="admin-console-nav" aria-label="Sections du centre de contrôle">
+          <button class="active" type="button" data-admin-console-tab="dashboard">Vue générale</button>
+          <button type="button" data-admin-console-tab="users">Utilisateurs</button>
+          <button type="button" data-admin-console-tab="events">Événements</button>
+          <button type="button" data-admin-console-tab="local">Tests locaux</button>
+          <button type="button" data-admin-console-tab="achievements" data-admin-permission="achievements.manage">Succès locaux</button>
+          <button type="button" data-admin-console-tab="logs">Journal</button>
+          <button type="button" data-admin-console-tab="preferences">Préférences</button>
+        </nav>
+        <div class="admin-console-content">
+          <section class="admin-console-panel active" data-admin-console-panel="dashboard">
+            <div id="adminConsoleDashboard" class="admin-console-loading">Chargement de l'état serveur...</div>
+          </section>
+          <section class="admin-console-panel" data-admin-console-panel="users">
+            <div class="admin-console-heading"><div><h3>Contrôle utilisateur</h3><p>Recherchez un pseudo puis choisissez une action autorisée par votre rôle.</p></div></div>
+            <div class="admin-user-search"><input id="adminTargetPseudo" type="search" placeholder="Pseudo exact du joueur"><button class="btn btn-blue" id="adminTargetSearch" type="button">Rechercher</button></div>
+            <div id="adminTargetWorkspace" class="admin-console-empty">Aucun utilisateur sélectionné.</div>
+          </section>
+          <section class="admin-console-panel" data-admin-console-panel="events">
+            <div class="admin-console-heading"><div><h3>Planning serveur</h3><p>Le même événement et le même cooldown sont partagés par tous les joueurs.</p></div></div>
+            <div id="adminServerEventSettings"></div>
+            <div class="living-admin-grid" id="livingEventButtons"></div>
+          </section>
+          <section class="admin-console-panel" data-admin-console-panel="local">
+            <div class="living-admin-status">
+              <div>Événement actif : <span id="livingEventActiveLabel">Aucun</span></div>
+              <div>Ambiance passive : <span id="passiveAmbienceActiveLabel">Aucune</span></div>
+              <div>Prochain événement global : <span id="livingEventNextLabel">-</span></div>
+              <div>Départ serveur : <span id="livingEventStartLabel">-</span></div>
+              <div>Cooldown global : <span id="livingEventCooldownLabel">-</span></div>
+              <div>Ambiance visuelle locale : <span id="passiveVisualCooldownLabel">-</span></div>
+              <div>Ambiance sonore locale : <span id="passiveSoundCooldownLabel">-</span></div>
+              <div>Système passif : <span id="passiveSystemLabel">-</span></div>
+            </div>
+            <div class="toolbar admin-local-toolbar">
+              <button class="btn btn-red" id="livingStopEvent" type="button">Arrêter l'événement</button>
+              <button class="btn btn-red" id="livingStopAll" type="button">Tout arrêter</button>
+              <button class="btn btn-blue" id="livingSkipCooldown" type="button">Actualiser le planning</button>
+              <button class="btn btn-orange" id="livingTestSounds" type="button">Tester sons</button>
+              <button class="btn btn-blue" id="passiveToggleAdmin" type="button">Ambiances on/off</button>
+              <button class="btn btn-gray" id="passiveStopAdmin" type="button">Stop ambiance</button>
+              <button class="btn btn-orange" id="passiveTestSoundsAdmin" type="button">Tester sons passifs</button>
+              <button class="btn btn-gray" id="livingRefreshAdmin" type="button">Rafraîchir</button>
+            </div>
+            <div class="living-admin-grid" id="livingLocalTestButtons"></div>
+          </section>
+          <section class="admin-console-panel" data-admin-console-panel="achievements" data-admin-permission="achievements.manage">
+            <div class="admin-achievement-tools">
+              <label class="admin-achievement-sound"><input type="checkbox" id="adminAchievementSounds"> Jouer sons et notifications lors du give admin</label>
+              <button class="btn btn-blue" type="button" data-admin-achievement-action="give-all">Donner tous les succès</button>
+              <button class="btn btn-gray" type="button" data-admin-achievement-action="remove-all">Retirer tous les succès</button>
+              <button class="btn btn-orange" type="button" data-admin-achievement-action="recalculate">Recalculer les succès</button>
+              <button class="btn btn-red" type="button" data-admin-achievement-action="reset-all">Réinitialiser tous les succès</button>
+            </div>
+            <div id="adminAchievementList"></div>
+          </section>
+          <section class="admin-console-panel" data-admin-console-panel="logs"><div id="adminConsoleLogs" class="admin-console-loading">Chargement du journal...</div></section>
+          <section class="admin-console-panel" data-admin-console-panel="preferences">
+            <div class="living-admin-options">
+              <div><label><input type="checkbox" id="adminAutoCloseAfterAction"> Fermer le panel après une action</label><small>Après fermeture, appuyez sur A pour le rouvrir rapidement pendant le délai choisi.</small></div>
+              <label class="living-admin-delay">Délai <input id="adminQuickReopenSeconds" type="number" min="5" max="300" step="5" value="45"> s</label>
+            </div>
+          </section>
         </div>
-        <label class="living-admin-delay">Délai <input id="adminQuickReopenSeconds" type="number" min="5" max="300" step="5" value="45"> s</label>
       </div>
-      <div class="toolbar">
-        <button class="btn btn-red" id="livingStopEvent" type="button">Arrêter l'événement</button>
-        <button class="btn btn-red" id="livingStopAll" type="button">Tout arrêter</button>
-        <button class="btn btn-blue" id="livingSkipCooldown" type="button">Actualiser le planning</button>
-        <button class="btn btn-orange" id="livingTestSounds" type="button">Tester sons</button>
-        <button class="btn btn-blue" id="passiveToggleAdmin" type="button">Ambiances on/off</button>
-        <button class="btn btn-gray" id="passiveStopAdmin" type="button">Stop ambiance</button>
-        <button class="btn btn-orange" id="passiveTestSoundsAdmin" type="button">Tester sons passifs</button>
-        <button class="btn btn-gray" id="livingRefreshAdmin" type="button">Rafraîchir</button>
-      </div>
-      <div class="living-admin-grid" id="livingEventButtons"></div>
-      <details class="living-admin-section">
-        <summary>Succès</summary>
-        <div class="admin-achievement-tools">
-          <label class="admin-achievement-sound"><input type="checkbox" id="adminAchievementSounds"> Jouer sons et notifications lors du give admin</label>
-          <button class="btn btn-blue" type="button" data-admin-achievement-action="give-all">Donner tous les succès</button>
-          <button class="btn btn-gray" type="button" data-admin-achievement-action="remove-all">Retirer tous les succès</button>
-          <button class="btn btn-orange" type="button" data-admin-achievement-action="recalculate">Recalculer les succès</button>
-          <button class="btn btn-red" type="button" data-admin-achievement-action="reset-all">Réinitialiser tous les succès</button>
-        </div>
-        <div id="adminAchievementList"></div>
-      </details>
     </div>
     <div class="modal-foot"><button class="btn btn-gray" data-close="livingEventAdmin">Fermer</button></div>
   </div>
@@ -13497,7 +13572,7 @@ function authRender(){
   const memberButton=socialAssetButton({id:"authCommunitySearch",asset:"membre.png",title:"Membres",description:"Rechercher un membre et consulter son profil communautaire."});
   const friendsButton=socialAssetButton({id:"authFriendsPanel",asset:"ami.png",title:"Amis",description:pendingFriends?`${pendingFriends} demande${pendingFriends>1?"s":""} en attente. Ouvrez la liste pour les traiter.`:"Gérer vos amis et vos demandes.",className:"auth-friends-button",badge:friendsBadge});
   const moderationButton=["moderator","admin"].includes(user.role) ? socialAssetButton({id:"authModerationOverview",asset:"moderation.png",title:"Modération",description:"Ouvrir les signalements, sanctions et journaux de modération."}) : "";
-  const adminButton=user.role==="admin" ? socialAssetButton({id:"authAdminPanel",asset:"admin.png",title:"Admin panel",description:"Ouvrir les outils administrateur du tracker."}) : "";
+  const adminButton=["moderator","admin"].includes(user.role) ? socialAssetButton({id:"authAdminPanel",asset:"admin.png",title:"Centre de contrôle",description:"Ouvrir les outils autorisés pour votre rôle."}) : "";
   box.innerHTML='<button class="auth-user-chip account-open tooltip" id="accountProfileOpen" type="button" data-tooltip="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-green auth-icon-btn tooltip '+(chatState.mentionUnread?'has-notification':'')+'" id="authChatboxPanel" type="button" aria-label="Chat global" data-tooltip="Chat global'+(chatState.mentionUnread?' · '+chatState.mentionUnread+' mention(s) non lue(s)':'')+'">💬'+chatBadge+'</button><button class="btn btn-blue auth-icon-btn tooltip '+(messageState.unread?'has-notification':'')+'" id="authDirectMessages" type="button" aria-label="Messages privés" data-tooltip="Messages privés'+(messageState.unread?' · '+messageState.unread+' nouveau(x)':'')+'">✉'+directBadge+'</button><button class="btn btn-gray auth-icon-btn tooltip '+(pendingFriends?'has-notification':'')+'" id="authSocialMenu" type="button" aria-label="Menu social" data-tooltip="Menu social'+(pendingFriends?' · '+pendingFriends+' demande(s) en attente':'')+'">☰'+socialMenuBadge+'</button><div class="auth-menu-panel" id="authMenuPanel">'+memberButton+friendsButton+moderationButton+adminButton+'<button class="btn btn-gray auth-danger-btn" id="authLogout" type="button">Déconnexion</button></div>';
   if($("#accountProfileOpen"))$("#accountProfileOpen").onclick=openAccountProfile;
   if($("#authCommunitySearch"))$("#authCommunitySearch").onclick=openCommunityDirectory;
@@ -14700,6 +14775,115 @@ function stopMessagePolling(){
     clearInterval(chatState.pingTimer);
     chatState.pingTimer=null;
   }
+  if(adminCommandTimer){
+    clearInterval(adminCommandTimer);
+    adminCommandTimer=null;
+  }
+}
+
+let adminCommandTimer=null;
+const processedAdminCommands=new Set();
+
+function adminResetGalleryCommand(){
+  const empty=clone(defaultData().gallery);
+  store.sharedGallery=clone(empty);
+  Object.values(store.profiles||{}).forEach(profile=>{if(profile?.data)profile.data.gallery=clone(empty)});
+  data.gallery=clone(empty);
+}
+
+function adminResetAchievementsCommand(){
+  const empty=clone(defaultData().achievements);
+  store.sharedAchievements=clone(empty);
+  Object.values(store.profiles||{}).forEach(profile=>{if(profile?.data)profile.data.achievements=clone(empty)});
+  data.achievements=clone(empty);
+}
+
+function adminResetProfileCommand(profileId){
+  const profile=store.profiles?.[profileId];
+  if(!profile?.data)throw new Error("Profil Pykur introuvable.");
+  const previous=profile.data;
+  const fresh=defaultData();
+  fresh.settings=clone(previous.settings||fresh.settings);
+  fresh.achievements=clone(previous.achievements||fresh.achievements);
+  fresh.gallery=clone(previous.gallery||fresh.gallery);
+  fresh.dofusDetection=clone(previous.dofusDetection||fresh.dofusDetection);
+  fresh.createdAt=new Date().toISOString();
+  profile.data=fresh;
+  if(profileId===activeProfile)data=clone(fresh);
+}
+
+function adminDeleteProfileCommand(profileId){
+  if(!store.profiles?.[profileId])throw new Error("Profil Pykur introuvable.");
+  if(Object.keys(store.profiles).length<=1)throw new Error("Le dernier profil ne peut pas être supprimé.");
+  store.deletedProfiles=Object.assign({},store.deletedProfiles||{});
+  store.deletedProfiles[profileId]=new Date().toISOString();
+  delete store.profiles[profileId];
+  if(activeProfile===profileId){
+    activeProfile=Object.keys(store.profiles)[0];
+    store.active=activeProfile;
+    data=clone(store.profiles[activeProfile].data);
+  }
+}
+
+async function executeAdminCommand(command){
+  if(!command?.id || processedAdminCommands.has(command.id))return;
+  processedAdminCommands.add(command.id);
+  let ok=true;
+  let message="Commande exécutée.";
+  try{
+    const payload=command.payload||{};
+    if(command.type==="notification"){
+      toast(payload.message||"Message de l'équipe.",payload.level||"info",payload.sound||"click");
+      message="Notification affichée.";
+    }else if(command.type==="living-event"){
+      if(!livingStart(payload.eventId,{admin:true,replay:true}))throw new Error("Événement indisponible dans cet affichage.");
+      message="Événement ciblé lancé.";
+    }else if(command.type==="reset-gallery"){
+      adminResetGalleryCommand();
+      save();renderGallery();
+      toast("Votre galerie a été réinitialisée par un administrateur.","warning","warning");
+    }else if(command.type==="reset-achievements"){
+      adminResetAchievementsCommand();
+      save();renderAchievements();renderHiddenSecretEgg();
+      toast("Vos succès ont été réinitialisés par un administrateur.","warning","warning");
+    }else if(command.type==="reset-profile" || command.type==="reset-pykur"){
+      adminResetProfileCommand(payload.profileId);
+      ensureData();save();renderProfiles();renderAll();
+      toast("Un profil Pykur a été réinitialisé par un administrateur.","warning","warning");
+    }else if(command.type==="delete-profile"){
+      adminDeleteProfileCommand(payload.profileId);
+      ensureData();save();renderProfiles();renderAll();
+      toast("Un profil Pykur a été supprimé par un administrateur.","warning","warning");
+    }else if(command.type==="recalculate-achievements"){
+      recalculateAchievements({silent:true});
+      message="Succès recalculés.";
+    }else if(command.type==="repair-progression"){
+      ensureData();save();renderAll();
+      message="Progression normalisée et recalculée.";
+    }else{
+      throw new Error("Commande administrative inconnue.");
+    }
+    if(authState.user && command.type!=="notification" && command.type!=="living-event")await cloudSyncNow({silent:true});
+  }catch(error){
+    ok=false;
+    message=error.message||"Échec de la commande.";
+  }
+  try{
+    await authFetch(`/account/admin-commands/${encodeURIComponent(command.id)}/complete`,{method:"POST",body:JSON.stringify({ok,message})});
+  }catch(error){
+    processedAdminCommands.delete(command.id);
+    console.warn("Confirmation de commande administrative reportée",error?.message||error);
+  }
+}
+
+async function pollAdminCommands(){
+  if(!authState.user)return;
+  try{
+    const result=await authFetch("/account/admin-commands");
+    for(const command of result.commands||[])await executeAdminCommand(command);
+  }catch(error){
+    if(!isTransientApiError(error))console.warn("Commandes administratives indisponibles",error?.message||error);
+  }
 }
 
 async function refreshMessageNotifications({silent=false}={}){
@@ -14739,12 +14923,14 @@ function startSocialPolling(){
   refreshChatPingNotifications({silent:true});
   refreshWarningNotifications({silent:true});
   refreshFriendSummary({silent:true});
+  pollAdminCommands();
   messageState.timer=setInterval(()=>refreshMessageNotifications(),3000);
   chatState.pingTimer=setInterval(()=>{
     refreshChatPingNotifications();
     refreshWarningNotifications();
     refreshFriendSummary({silent:true});
   },5000);
+  adminCommandTimer=setInterval(pollAdminCommands,3000);
 }
 
 async function loadMessageThread(pseudo,{silent=false,preserveScroll=false}={}){
@@ -17071,7 +17257,10 @@ const livingState={
   serverLastWarningAt:0,
   serverRemainingMs:0,
   serverReceivedAt:0,
-  serverStartsAt:0
+  serverStartsAt:0,
+  serverPaused:false,
+  serverMinCooldownSeconds:600,
+  serverMaxCooldownSeconds:1500
 };
 
 function livingLayer(){return $("#livingEventsLayer")}
@@ -17260,6 +17449,9 @@ async function livingPollServer(){
     const payload=await response.json();
     const shared=payload?.event;
     if(!shared?.id || !Number.isFinite(Number(shared.sequence)))return;
+    livingState.serverPaused=!!payload?.settings?.paused;
+    livingState.serverMinCooldownSeconds=Number(payload?.settings?.minCooldownSeconds)||600;
+    livingState.serverMaxCooldownSeconds=Number(payload?.settings?.maxCooldownSeconds)||1500;
     const startsInMs=Number.isFinite(Number(shared.startsInMs)) ? Number(shared.startsInMs) : Math.max(0,Number(shared.startsAt)-Number(payload.serverTime||Date.now()));
     const endsInMs=Number.isFinite(Number(shared.endsInMs)) ? Number(shared.endsInMs) : Math.max(0,Number(shared.endsAt)-Number(payload.serverTime||Date.now()));
     const startsAt=Date.now()+startsInMs;
@@ -17273,11 +17465,11 @@ async function livingPollServer(){
     livingState.serverReceivedAt=performance.now();
     livingState.serverStartsAt=startsAt;
     const now=Date.now();
-    if(now>=alertAt && now<startsAt && livingState.serverAlertSequence!==sequence){
+    if(!livingState.serverPaused && now>=alertAt && now<startsAt && livingState.serverAlertSequence!==sequence){
       livingState.serverAlertSequence=sequence;
       livingToast("Quelque chose semble se préparer...","info",LIVE_ASSETS.eventAlert);
     }
-    if(now>=startsAt && now<endsAt && livingState.serverStartedSequence!==sequence){
+    if(!livingState.serverPaused && now>=startsAt && now<endsAt && livingState.serverStartedSequence!==sequence){
       if(livingState.active && livingState.source!=="server")return;
       const started=livingStart(shared.id,{synchronized:true,remainingMs:endsAt-now});
       if(started)livingState.serverStartedSequence=sequence;
@@ -17301,7 +17493,137 @@ function livingResetScheduler(){
   livingStopServerSync({resetSequence:false});
   livingSchedule();
 }
+let adminConsolePayload=null;
+let adminConsoleTarget=null;
+
+function adminConsoleHas(permission){return !!adminConsolePayload?.permissions?.includes(permission)}
+function adminConsoleEventLabel(id){return LIVING_EVENT_DEFS.find(item=>item.id===id)?.label||id||"Aucun"}
+function adminConsoleDate(value){return value?new Date(value).toLocaleString("fr-FR"):"-"}
+function adminCommandStatusLabel(status){return ({pending:"En attente",delivered:"Transmise",completed:"Terminée",failed:"Échec",cancelled:"Annulée"})[status]||status}
+function adminCommandTypeLabel(type){return ({notification:"Notification",livingEvent:"Événement",["living-event"]:"Événement ciblé",["reset-gallery"]:"Reset galerie",["reset-achievements"]:"Reset succès",["reset-profile"]:"Reset profil",["reset-pykur"]:"Reset Pykur",["delete-profile"]:"Suppression profil",["recalculate-achievements"]:"Recalcul succès",["repair-progression"]:"Réparation progression"})[type]||type}
+
+function adminConsoleCommandRows(items=[]){
+  return `<div class="admin-command-list">${items.length?items.map(item=>`<div class="admin-command-row"><div><strong>${escapeHtml(adminCommandTypeLabel(item.type))}</strong>${item.target?` → ${escapeHtml(item.target.pseudo)}`:""}<small>${adminConsoleDate(item.createdAt)}${item.actor?` · par ${escapeHtml(item.actor.pseudo)}`:""}${item.result?.message?` · ${escapeHtml(item.result.message)}`:""}</small></div><div class="admin-command-actions"><span class="admin-command-status ${escapeHtml(item.status)}">${adminCommandStatusLabel(item.status)}</span>${adminConsoleHas("events.configure")&&["pending","delivered"].includes(item.status)?`<button class="btn btn-red" type="button" data-admin-cancel-command="${item.id}">Annuler</button>`:""}</div></div>`).join(""):`<div class="admin-console-empty">Aucune commande récente.</div>`}</div>`;
+}
+
+function renderAdminConsole(){
+  if(!adminConsolePayload)return;
+  const metrics=adminConsolePayload.metrics||{};
+  const schedule=adminConsolePayload.eventSchedule||{};
+  const event=schedule.event||{};
+  const settings=schedule.settings||{};
+  $$('[data-admin-permission]').forEach(element=>{
+    element.hidden=!adminConsoleHas(element.dataset.adminPermission);
+  });
+  const dashboard=$("#adminConsoleDashboard");
+  if(dashboard)dashboard.innerHTML=`
+    <div class="admin-dashboard-metrics">
+      <article class="admin-metric-card"><small>Utilisateurs</small><strong>${metrics.users||0}</strong></article>
+      <article class="admin-metric-card"><small>En ligne</small><strong>${metrics.online||0}</strong></article>
+      <article class="admin-metric-card"><small>Commandes en attente</small><strong>${metrics.pendingCommands||0}</strong></article>
+      <article class="admin-metric-card"><small>Signalements ouverts</small><strong>${metrics.openReports||0}</strong></article>
+    </div>
+    <div class="admin-server-grid">
+      <article class="admin-server-card"><h4>Planning événementiel</h4><p><strong>${settings.paused?"En pause":adminConsoleEventLabel(event.id)}</strong></p><p>Départ : ${adminConsoleDate(event.startsAt)}</p><p>Cooldown : ${Math.ceil((event.startsInMs||0)/1000)}s</p></article>
+      <article class="admin-server-card"><h4>Vos permissions</h4><p>${(adminConsolePayload.permissions||[]).map(item=>`<span class="admin-permission-badge">${escapeHtml(item)}</span>`).join(" ")}</p><button class="btn btn-gray" id="adminOpenModerationOverview" type="button">Ouvrir le tableau de modération</button></article>
+    </div>`;
+  const eventSettings=$("#adminServerEventSettings");
+  if(eventSettings)eventSettings.innerHTML=adminConsoleHas("events.configure")?`
+    <div class="admin-event-settings">
+      <label><input type="checkbox" id="adminEventsPaused" ${settings.paused?"checked":""}> Mettre en pause</label>
+      <label><span>Cooldown minimum (s)</span><input id="adminEventCooldownMin" type="number" min="30" max="86400" value="${settings.minCooldownSeconds||600}"></label>
+      <label><span>Cooldown maximum (s)</span><input id="adminEventCooldownMax" type="number" min="30" max="172800" value="${settings.maxCooldownSeconds||1500}"></label>
+      <button class="btn btn-blue" id="adminSaveEventSettings" type="button">Enregistrer</button>
+      <button class="btn btn-orange" id="adminRescheduleEvent" type="button">Replanifier</button>
+    </div>`:`<div class="options-note">Vous pouvez tester ou cibler un événement, mais seul un administrateur peut modifier le planning global.</div>`;
+  const logs=$("#adminConsoleLogs");
+  if(logs)logs.innerHTML=adminConsoleCommandRows(adminConsolePayload.recentCommands||[]);
+  bindAdminConsoleDynamicActions();
+}
+
+async function loadAdminConsole(){
+  try{
+    adminConsolePayload=await authFetch("/admin/console");
+    renderAdminConsole();
+  }catch(error){
+    ["#adminConsoleDashboard","#adminConsoleLogs"].forEach(selector=>{const el=$(selector);if(el)el.innerHTML=`<div class="admin-console-empty">${escapeHtml(error.message||"Centre de contrôle indisponible.")}</div>`});
+  }
+}
+
+function bindAdminConsoleDynamicActions(){
+  $("#adminSaveEventSettings")?.addEventListener("click",()=>saveAdminEventSettings(false));
+  $("#adminRescheduleEvent")?.addEventListener("click",()=>saveAdminEventSettings(true));
+  $("#adminOpenModerationOverview")?.addEventListener("click",()=>{
+    closeModal("livingEventAdmin");
+    openModerationOverview();
+  });
+}
+
+async function saveAdminEventSettings(reschedule=false){
+  try{
+    await authFetch("/admin/events/settings",{method:"PUT",body:JSON.stringify({paused:!!$("#adminEventsPaused")?.checked,minCooldownSeconds:Number($("#adminEventCooldownMin")?.value),maxCooldownSeconds:Number($("#adminEventCooldownMax")?.value),reschedule})});
+    toast(reschedule?"Planning global replanifié.":"Réglages événementiels enregistrés.","success","success");
+    await loadAdminConsole();await livingPollServer();
+  }catch(error){toast(error.message||"Réglages impossibles.","error","error")}
+}
+
+function adminConsoleSelectTab(tab){
+  $$("[data-admin-console-tab]").forEach(button=>button.classList.toggle("active",button.dataset.adminConsoleTab===tab));
+  $$("[data-admin-console-panel]").forEach(panel=>panel.classList.toggle("active",panel.dataset.adminConsolePanel===tab));
+}
+
+function adminTargetSelectedProfile(){return document.querySelector('input[name="adminTargetProfile"]:checked')?.value||""}
+
+function renderAdminTarget(payload){
+  adminConsoleTarget=payload;
+  const box=$("#adminTargetWorkspace");
+  if(!box)return;
+  const user=payload.user||{};
+  const permissions=new Set(payload.permissions||[]);
+  const profiles=payload.profiles||[];
+  const canReset=permissions.has("tracker.reset");
+  box.className="";
+  box.innerHTML=`
+    <section class="admin-target-card">
+      <div class="admin-target-head"><div><h3>${escapeHtml(user.pseudo||"Utilisateur")}</h3><div class="admin-target-meta"><small>${escapeHtml(user.email||"")} · Cloud ${adminConsoleDate(payload.cloudUpdatedAt)}</small></div></div><span class="admin-permission-badge ${escapeHtml(user.role||"user")}">${authRoleLabel(user.role)}</span></div>
+      <div class="admin-profile-list">${profiles.length?profiles.map(profile=>`<label class="admin-profile-option"><input type="radio" name="adminTargetProfile" value="${adminEscapeAttr(profile.id)}" ${profile.active?"checked":""}><span><strong>${escapeHtml(profile.name)}</strong><small>${profile.pp} PP · M ${profile.morose} · T ${profile.tynril}${profile.active?" · actif":""}</small></span></label>`).join(""):`<div class="admin-console-empty">Aucune sauvegarde cloud exploitable.</div>`}</div>
+      <div class="admin-target-actions">
+        <article class="admin-action-group"><h4>Communication</h4><div class="admin-target-notification"><textarea id="adminTargetNotification" maxlength="500" placeholder="Notification à afficher au joueur"></textarea><button class="btn btn-blue" id="adminSendTargetNotification" type="button">Envoyer la notification</button></div></article>
+        <article class="admin-action-group"><h4>Événement individuel</h4><div class="admin-target-event"><select id="adminTargetEvent">${LIVING_EVENT_DEFS.map(item=>`<option value="${item.id}">${escapeHtml(item.label)}</option>`).join("")}</select><button class="btn btn-orange" id="adminSendTargetEvent" type="button">Jouer</button></div><p class="options-note">Cosmétique, sans découverte ni récompense.</p></article>
+        ${canReset?`<article class="admin-action-group"><h4>Réparation</h4><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer la progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer les succès</button></div></article>
+        <article class="admin-action-group danger"><h4>Données du compte</h4><div class="admin-action-buttons"><button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button><button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button><button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset Pykur</button><button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button></div></article>`:""}
+      </div>
+      <h4>Commandes récentes</h4>${adminConsoleCommandRows(payload.commands||[])}
+    </section>`;
+  $("#adminSendTargetNotification")?.addEventListener("click",()=>sendAdminTargetCommand("notification",{message:$("#adminTargetNotification")?.value||""},false));
+  $("#adminSendTargetEvent")?.addEventListener("click",()=>sendAdminTargetCommand("living-event",{eventId:$("#adminTargetEvent")?.value},false));
+  box.querySelectorAll("[data-admin-target-command]").forEach(button=>button.addEventListener("click",()=>{
+    const payloadData=button.dataset.needsProfile?{profileId:adminTargetSelectedProfile()}:{};
+    sendAdminTargetCommand(button.dataset.adminTargetCommand,payloadData,true);
+  }));
+}
+
+async function searchAdminTarget(){
+  const pseudo=String($("#adminTargetPseudo")?.value||"").trim();
+  if(!pseudo)return toast("Indiquez un pseudo.","warning","warning");
+  const box=$("#adminTargetWorkspace");if(box){box.className="admin-console-loading";box.textContent="Chargement du compte..."}
+  try{renderAdminTarget(await authFetch(`/admin/users/${encodeURIComponent(pseudo)}/control`))}
+  catch(error){if(box){box.className="admin-console-empty";box.textContent=error.message||"Utilisateur introuvable."}}
+}
+
+async function sendAdminTargetCommand(type,payload={},danger=false){
+  const target=adminConsoleTarget?.user;
+  if(!target)return;
+  if(danger && !await showConfirm(`Confirmer l'action « ${type} » sur ${target.pseudo} ?`,{title:"Action administrative",danger:true,okLabel:"Confirmer"}))return;
+  try{
+    await authFetch(`/admin/users/${encodeURIComponent(target.id)}/commands`,{method:"POST",body:JSON.stringify({type,payload})});
+    toast("Commande enregistrée et transmise au joueur.","success","success");
+    await searchAdminTarget();await loadAdminConsole();
+  }catch(error){toast(error.message||"Commande impossible.","error","error")}
+}
+
 function livingOpenAdmin(){
+  if(!authState.user || !["moderator","admin"].includes(authState.user.role))return toast("Accès réservé à l'équipe.","error","error");
   closeHelp();
   if(activeDialog)closeDialog(activeDialog.type==="prompt"?null:false);
   $$(".modal-bg.show,.side-panel-bg.show").forEach(layer=>{
@@ -17310,6 +17632,7 @@ function livingOpenAdmin(){
   livingBuildAdmin();
   $$("#livingEventAdmin .living-admin-section").forEach(section=>{section.open=false});
   livingRenderAdmin();
+  loadAdminConsole();
   openModal("livingEventAdmin");
   if(data.settings.hudMode)bringHudToFront("livingEventAdmin");
 }
@@ -17371,19 +17694,28 @@ const ADMIN_PANEL_COMMANDS=[
 ];
 function livingBuildAdmin(){
   const box=$("#livingEventButtons");
-  if(!box || box.dataset.ready)return;
+  const localBox=$("#livingLocalTestButtons");
+  const role=authState.user?.role||"";
+  if(!box || !localBox || (box.dataset.ready && box.dataset.role===role))return;
   box.dataset.ready="1";
+  box.dataset.role=role;
   const eventById=new Map(LIVING_EVENT_DEFS.map(ev=>[ev.id,ev]));
-  const sections=LIVING_ADMIN_GROUPS.map((group,index)=>{
+  const eventSections=LIVING_ADMIN_GROUPS.map(group=>{
     const buttons=group.ids
       .map(id=>eventById.get(id))
       .filter(Boolean)
-      .map(ev=>`<button class="btn ${ev.legendary?"btn-orange":"btn-blue"}" type="button" data-living-event="${ev.id}">${ev.label}</button>`)
+      .map(ev=>`<button class="btn ${ev.legendary?"btn-orange":"btn-blue"}" type="button" data-admin-force-event="${ev.id}" ${authState.user?.role==="admin"?"":"disabled"}>${ev.label}</button>`)
       .join("");
     return `<details class="living-admin-section"><summary>${group.title}</summary><div class="living-admin-buttons">${buttons}</div></details>`;
   });
-  sections.push(`<details class="living-admin-section"><summary>Easter Eggs</summary><div class="living-admin-buttons">${LIVING_ADMIN_EASTER_EGGS.map(egg=>`<button class="btn btn-gray" type="button" data-admin-easter="${egg.id}">${egg.label}</button>`).join("")}</div></details>`);
-  sections.push(`<details class="living-admin-section"><summary>Commandes</summary><div class="living-admin-buttons">${ADMIN_PANEL_COMMANDS.map(cmd=>`<button class="btn btn-orange" type="button" data-admin-command="${cmd.id}">${cmd.label}</button>`).join("")}</div></details>`);
+  box.innerHTML=eventSections.join("");
+  const localSections=LIVING_ADMIN_GROUPS.map(group=>{
+    const buttons=group.ids.map(id=>eventById.get(id)).filter(Boolean).map(ev=>`<button class="btn ${ev.legendary?"btn-orange":"btn-blue"}" type="button" data-living-event="${ev.id}">${ev.label}</button>`).join("");
+    return `<details class="living-admin-section"><summary>${group.title}</summary><div class="living-admin-buttons">${buttons}</div></details>`;
+  });
+  localSections.push(`<details class="living-admin-section"><summary>Easter Eggs</summary><div class="living-admin-buttons">${LIVING_ADMIN_EASTER_EGGS.map(egg=>`<button class="btn btn-gray" type="button" data-admin-easter="${egg.id}">${egg.label}</button>`).join("")}</div></details>`);
+  const localCommands=authState.user?.role==="admin"?ADMIN_PANEL_COMMANDS:ADMIN_PANEL_COMMANDS.filter(cmd=>["pc","tel"].includes(cmd.id));
+  localSections.push(`<details class="living-admin-section"><summary>Commandes locales</summary><div class="living-admin-buttons">${localCommands.map(cmd=>`<button class="btn btn-orange" type="button" data-admin-command="${cmd.id}">${cmd.label}</button>`).join("")}</div></details>`);
   const passiveButtons=PASSIVE_AMBIENCE_EVENTS.map(item=>{
     const main=`<button class="btn btn-blue" type="button" data-passive-ambience="${item.id}">${item.label}</button>`;
     const variants=(item.variants||[])
@@ -17391,8 +17723,8 @@ function livingBuildAdmin(){
       .join("");
     return main+variants;
   }).join("");
-  sections.push(`<details class="living-admin-section"><summary>Ambiances passives</summary><div class="living-admin-buttons">${passiveButtons}</div></details>`);
-  box.innerHTML=sections.join("");
+  localSections.push(`<details class="living-admin-section"><summary>Ambiances passives</summary><div class="living-admin-buttons">${passiveButtons}</div></details>`);
+  localBox.innerHTML=localSections.join("");
 }
 function livingRenderAdmin(){
   const active=$("#livingEventActiveLabel");
@@ -17411,7 +17743,7 @@ function livingRenderAdmin(){
   if(cooldown){
     const elapsed=livingState.serverReceivedAt ? performance.now()-livingState.serverReceivedAt : 0;
     const remain=Math.max(0,livingState.serverRemainingMs-elapsed);
-    cooldown.textContent=livingState.active && livingState.source==="server" ? `En cours · ${Math.ceil(remain/1000)}s` : remain ? `${Math.ceil(remain/1000)}s` : "Synchronisation...";
+    cooldown.textContent=livingState.serverPaused ? "En pause" : livingState.active && livingState.source==="server" ? `En cours · ${Math.ceil(remain/1000)}s` : remain ? `${Math.ceil(remain/1000)}s` : "Synchronisation...";
   }
   if(passiveVisual){
     const remain=Math.max(0,(passiveState.visualCooldownUntil||0)-Date.now());
@@ -19339,12 +19671,6 @@ function handleSecretKeys(e){
   if(e.key.length!==1)return false;
   secretBuffer=(secretBuffer+e.key.toLowerCase()).slice(-16);
   charlieBuffer=secretBuffer;
-  if(secretBuffer.endsWith("adminpanel")){
-    secretBuffer="";
-    charlieBuffer="";
-    livingOpenAdmin();
-    return true;
-  }
   if(secretBuffer.endsWith("adminoeuf")){
     secretBuffer="";
     charlieBuffer="";
@@ -19410,10 +19736,6 @@ function handleSecretKeys(e){
     charlieBuffer="";
     toggleAlhass();
     return true;
-  }
-  const adminWord="adminpanel";
-  for(let i=1;i<=Math.min(secretBuffer.length,adminWord.length);i++){
-    if(adminWord.startsWith(secretBuffer.slice(-i)))return true;
   }
   return false;
 }
@@ -24893,6 +25215,13 @@ if($("#passiveToggleAdmin"))$("#passiveToggleAdmin").onclick=()=>{passiveToggleA
 if($("#passiveStopAdmin"))$("#passiveStopAdmin").onclick=()=>{passiveStop({reschedule:true});toast("Ambiance passive arrêtée.","info","click");adminPanelAfterAction()};
 if($("#passiveTestSoundsAdmin"))$("#passiveTestSoundsAdmin").onclick=()=>{passiveTestSoundAdmin();adminPanelAfterAction()};
 if($("#livingRefreshAdmin"))$("#livingRefreshAdmin").onclick=()=>livingPollServer();
+$$('[data-admin-console-tab]').forEach(button=>button.addEventListener("click",()=>adminConsoleSelectTab(button.dataset.adminConsoleTab)));
+if($("#adminTargetSearch"))$("#adminTargetSearch").onclick=searchAdminTarget;
+if($("#adminTargetPseudo"))$("#adminTargetPseudo").addEventListener("keydown",event=>{
+  if(event.key!=="Enter")return;
+  event.preventDefault();
+  searchAdminTarget();
+});
 if($("#adminAchievementSounds"))$("#adminAchievementSounds").onchange=e=>{
   adminAchievementSounds=!!e.target.checked;
   toast(adminAchievementSounds?"Sons admin activés pour les succès.":"Sons admin désactivés pour les succès.","info","click");
@@ -24981,6 +25310,28 @@ $("#saveMobs").onclick=saveMobEditor;
 
 document.addEventListener("click",async e=>{
   if(e.target.closest("button,.dungeon-mini.full"))playSound("click");
+  const globalEventBtn=e.target.closest("[data-admin-force-event]");
+  if(globalEventBtn){
+    try{
+      await authFetch("/admin/events/force",{method:"POST",body:JSON.stringify({eventId:globalEventBtn.dataset.adminForceEvent})});
+      toast("Événement global lancé pour tous les joueurs.","success","success");
+      await loadAdminConsole();
+      await livingPollServer();
+      adminPanelAfterAction();
+    }catch(error){toast(error.message||"Lancement global impossible.","error","error")}
+    return;
+  }
+  const cancelCommandBtn=e.target.closest("[data-admin-cancel-command]");
+  if(cancelCommandBtn){
+    if(!await showConfirm("Annuler cette commande avant son exécution ?",{title:"Annuler la commande",danger:true,okLabel:"Annuler"}))return;
+    try{
+      await authFetch(`/admin/commands/${encodeURIComponent(cancelCommandBtn.dataset.adminCancelCommand)}/cancel`,{method:"POST",body:JSON.stringify({reason:"Annulée depuis le centre de contrôle"})});
+      toast("Commande annulée.","info","click");
+      await loadAdminConsole();
+      if(adminConsoleTarget)await searchAdminTarget();
+    }catch(error){toast(error.message||"Annulation impossible.","error","error")}
+    return;
+  }
   const livingBtn=e.target.closest("[data-living-event]");
   if(livingBtn){
     const started=livingStart(livingBtn.dataset.livingEvent,{admin:true});

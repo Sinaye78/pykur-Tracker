@@ -172,6 +172,30 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS living_event_settings (
+    id INTEGER PRIMARY KEY CHECK(id = 1),
+    paused INTEGER NOT NULL DEFAULT 0,
+    min_cooldown_seconds INTEGER NOT NULL DEFAULT 600,
+    max_cooldown_seconds INTEGER NOT NULL DEFAULT 1500,
+    updated_by_user_id INTEGER,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(updated_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+  );
+  CREATE TABLE IF NOT EXISTS admin_commands (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    target_user_id INTEGER NOT NULL,
+    actor_user_id INTEGER NOT NULL,
+    type TEXT NOT NULL,
+    payload TEXT NOT NULL DEFAULT '{}',
+    status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','delivered','completed','failed','cancelled')),
+    delivered_at TEXT,
+    completed_at TEXT,
+    result TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(target_user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(actor_user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+  CREATE INDEX IF NOT EXISTS idx_admin_commands_target ON admin_commands(target_user_id,status,created_at);
   CREATE INDEX IF NOT EXISTS idx_reports_status ON message_reports(status, created_at);
 `);
 ensureColumn("private_messages", "edited_at", "TEXT");
@@ -186,6 +210,7 @@ ensureColumn("message_reports", "resolution_action", "TEXT");
 ensureColumn("message_reports", "resolution_note", "TEXT");
 db.prepare("INSERT OR IGNORE INTO chat_settings(id,locked,slow_mode_seconds) VALUES(1,0,0)").run();
 db.prepare("INSERT OR IGNORE INTO security_settings(id) VALUES(1)").run();
+db.prepare("INSERT OR IGNORE INTO living_event_settings(id) VALUES(1)").run();
 
 const LIVING_EVENT_CATALOG = Object.freeze([
   { id: "rain", duration: 20000 },
@@ -229,7 +254,10 @@ function pickLivingEvent() {
 
 function createLivingEventSchedule(previousSequence = 0) {
   const event = pickLivingEvent();
-  const startsAt = Date.now() + randomInteger(10 * 60 * 1000, 25 * 60 * 1000);
+  const settings = db.prepare("SELECT * FROM living_event_settings WHERE id = 1").get() || {};
+  const minSeconds = Math.max(30, Number(settings.min_cooldown_seconds) || 600);
+  const maxSeconds = Math.max(minSeconds, Number(settings.max_cooldown_seconds) || 1500);
+  const startsAt = Date.now() + randomInteger(minSeconds * 1000, maxSeconds * 1000);
   const endsAt = startsAt + event.duration;
   db.prepare(`
     INSERT INTO living_event_schedule(id,sequence,event_id,starts_at,ends_at)
@@ -246,6 +274,8 @@ function createLivingEventSchedule(previousSequence = 0) {
 
 function currentLivingEventSchedule() {
   let row = db.prepare("SELECT * FROM living_event_schedule WHERE id = 1").get();
+  const settings = db.prepare("SELECT paused FROM living_event_settings WHERE id = 1").get();
+  if (settings?.paused && row) return row;
   const known = row && LIVING_EVENT_CATALOG.some((event) => event.id === row.event_id);
   if (!known || Number(row.ends_at) <= Date.now()) row = createLivingEventSchedule(row?.sequence || 0);
   return row;
@@ -253,11 +283,18 @@ function currentLivingEventSchedule() {
 
 function publicLivingEventSchedule() {
   const row = currentLivingEventSchedule();
+  const settings = db.prepare("SELECT paused,min_cooldown_seconds,max_cooldown_seconds,updated_at FROM living_event_settings WHERE id = 1").get();
   const now = Date.now();
   const startsAt = Number(row.starts_at);
   const endsAt = Number(row.ends_at);
   return {
     serverTime: now,
+    settings: {
+      paused: !!settings?.paused,
+      minCooldownSeconds: Number(settings?.min_cooldown_seconds) || 600,
+      maxCooldownSeconds: Number(settings?.max_cooldown_seconds) || 1500,
+      updatedAt: settings?.updated_at || null
+    },
     event: {
       sequence: Number(row.sequence),
       id: row.event_id,
@@ -266,7 +303,7 @@ function publicLivingEventSchedule() {
       endsAt,
       startsInMs: Math.max(0, startsAt - now),
       endsInMs: Math.max(0, endsAt - now),
-      phase: now < startsAt ? "upcoming" : "active"
+      phase: settings?.paused ? "paused" : (now < startsAt ? "upcoming" : "active")
     }
   };
 }
@@ -813,6 +850,77 @@ function requireRole(role) {
   };
 }
 
+const ADMIN_PERMISSION_MATRIX = Object.freeze({
+  moderator: [
+    "console.view", "users.view", "users.moderate", "notifications.send",
+    "events.target", "logs.view", "reports.manage", "chat.configure"
+  ],
+  admin: [
+    "console.view", "users.view", "users.moderate", "users.delete", "notifications.send",
+    "events.target", "events.configure", "tracker.reset", "achievements.manage",
+    "gallery.manage", "profiles.manage", "roles.manage", "security.configure",
+    "logs.view", "reports.manage", "chat.configure"
+  ]
+});
+
+function adminPermissions(user) {
+  return [...(ADMIN_PERMISSION_MATRIX[user?.role] || [])];
+}
+
+function requirePermission(permission) {
+  return (req, res, next) => {
+    if (!adminPermissions(req.user).includes(permission)) {
+      return res.status(403).json({ error: "Permission insuffisante.", permission });
+    }
+    next();
+  };
+}
+
+function adminCommandView(row) {
+  return {
+    id: Number(row.id),
+    type: row.type,
+    payload: safeParseJson(row.payload, {}),
+    status: row.status,
+    createdAt: row.created_at,
+    deliveredAt: row.delivered_at,
+    completedAt: row.completed_at,
+    result: safeParseJson(row.result, null),
+    actor: row.actor_pseudo ? { pseudo: row.actor_pseudo, role: row.actor_role } : null,
+    target: row.target_pseudo ? { pseudo: row.target_pseudo, role: row.target_role } : null
+  };
+}
+
+function queueAdminCommand({ actor, target, type, payload = {} }) {
+  const info = db.prepare(`
+    INSERT INTO admin_commands(target_user_id,actor_user_id,type,payload)
+    VALUES(?,?,?,?)
+  `).run(target.id, actor.id, type, JSON.stringify(payload || {}));
+  logCommunity({
+    userId: actor.id,
+    type: "admin_command",
+    body: type,
+    meta: { commandId: info.lastInsertRowid, targetId: target.id, targetPseudo: target.pseudo, payload }
+  });
+  return info.lastInsertRowid;
+}
+
+const CLOUD_PP_NEEDS = Object.freeze({
+  chiendent: 80, nerbe: 80, fecorce: 60, abrakleur: 40, bitouf: 40,
+  floribonde: 40, brouture: 60, tynrilAhuri: 3, tynrilPerfide: 3,
+  tynrilDeconcerte: 3, tynrilConsterne: 3
+});
+
+function cloudProfilePP(profileData) {
+  const totals = {};
+  for (const source of ["morose", "tynril", "zone"]) {
+    for (const [id, value] of Object.entries(profileData?.mobs?.[source] || {})) {
+      totals[id] = (totals[id] || 0) + Math.max(0, Number(value) || 0);
+    }
+  }
+  return Object.entries(CLOUD_PP_NEEDS).reduce((sum, [id, need]) => sum + Math.floor((totals[id] || 0) / need), 0);
+}
+
 function friendshipPair(idA, idB) {
   const a = Number(idA);
   const b = Number(idB);
@@ -1282,6 +1390,38 @@ app.get("/api/cloud/save", requireAuth, (req, res) => {
   res.json({ payload: row ? JSON.parse(row.payload) : null, updatedAt: row?.updated_at || null });
 });
 
+app.get("/api/account/admin-commands", requireAuth, (req, res) => {
+  const rows = db.prepare(`
+    SELECT c.*, actor.pseudo AS actor_pseudo, actor.role AS actor_role
+    FROM admin_commands c
+    LEFT JOIN users actor ON actor.id = c.actor_user_id
+    WHERE c.target_user_id = ?
+      AND (c.status = 'pending' OR (c.status = 'delivered' AND datetime(c.delivered_at) <= datetime('now','-2 minutes')))
+    ORDER BY c.created_at ASC
+    LIMIT 30
+  `).all(req.user.id);
+  if (rows.length) {
+    const ids = rows.map((row) => Number(row.id));
+    if (ids.length) {
+      const placeholders = ids.map(() => "?").join(",");
+      db.prepare(`UPDATE admin_commands SET status = 'delivered', delivered_at = CURRENT_TIMESTAMP WHERE id IN (${placeholders})`).run(...ids);
+    }
+  }
+  res.json({ commands: rows.map(adminCommandView) });
+});
+
+app.post("/api/account/admin-commands/:id/complete", requireAuth, (req, res) => {
+  const command = db.prepare("SELECT * FROM admin_commands WHERE id = ? AND target_user_id = ?").get(Number(req.params.id), req.user.id);
+  if (!command) return res.status(404).json({ error: "Commande introuvable." });
+  if (!["pending", "delivered"].includes(command.status)) {
+    return res.status(409).json({ error: "Cette commande est deja terminee." });
+  }
+  const status = req.body.ok === false ? "failed" : "completed";
+  const result = JSON.stringify({ message: String(req.body.message || "").slice(0, 500) });
+  db.prepare("UPDATE admin_commands SET status = ?, result = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?").run(status, result, command.id);
+  res.json({ ok: true });
+});
+
 app.get("/api/community/users", (req, res) => {
   const query = cleanPseudo(req.query.q || "");
   if (query.length < 2) return res.json({ users: [] });
@@ -1665,6 +1805,146 @@ app.get("/api/social/messages/:pseudo", requireAuth, (req, res) => {
       messages: rows.map((row) => publicMessage(row, req.user.id))
     }
   });
+});
+
+app.get("/api/admin/console", requireAuth, requireRole("moderator"), requirePermission("console.view"), (req, res) => {
+  const schedule = publicLivingEventSchedule();
+  const recentCommands = db.prepare(`
+    SELECT c.*, actor.pseudo AS actor_pseudo, actor.role AS actor_role,
+           target.pseudo AS target_pseudo, target.role AS target_role
+    FROM admin_commands c
+    LEFT JOIN users actor ON actor.id = c.actor_user_id
+    LEFT JOIN users target ON target.id = c.target_user_id
+    ORDER BY c.created_at DESC LIMIT 40
+  `).all().map(adminCommandView);
+  res.json({
+    role: req.user.role,
+    permissions: adminPermissions(req.user),
+    eventSchedule: schedule,
+    metrics: {
+      users: db.prepare("SELECT COUNT(*) AS count FROM users").get().count,
+      online: db.prepare("SELECT COUNT(*) AS count FROM users WHERE datetime(last_login_at) >= datetime('now','-5 minutes') AND is_banned = 0").get().count,
+      pendingCommands: db.prepare("SELECT COUNT(*) AS count FROM admin_commands WHERE status IN ('pending','delivered')").get().count,
+      openReports: db.prepare("SELECT COUNT(*) AS count FROM message_reports WHERE status = 'open'").get().count
+    },
+    recentCommands
+  });
+});
+
+app.get("/api/admin/users/:pseudo/control", requireAuth, requireRole("moderator"), requirePermission("users.view"), (req, res) => {
+  const target = db.prepare("SELECT * FROM users WHERE lower(pseudo) = lower(?)").get(cleanPseudo(req.params.pseudo));
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  const save = db.prepare("SELECT payload,updated_at FROM cloud_saves WHERE user_id = ?").get(target.id);
+  const payload = safeParseJson(save?.payload, null);
+  const profiles = Object.entries(payload?.store?.profiles || {}).map(([id, profile]) => ({
+    id,
+    name: String(profile?.name || "Profil sans nom").slice(0, 80),
+    pp: cloudProfilePP(profile?.data),
+    morose: Number(profile?.data?.runs?.morose || 0),
+    tynril: Number(profile?.data?.runs?.tynril || 0),
+    active: id === payload?.store?.active
+  }));
+  const commands = db.prepare(`
+    SELECT c.*, actor.pseudo AS actor_pseudo, actor.role AS actor_role,
+           target.pseudo AS target_pseudo, target.role AS target_role
+    FROM admin_commands c
+    LEFT JOIN users actor ON actor.id = c.actor_user_id
+    LEFT JOIN users target ON target.id = c.target_user_id
+    WHERE c.target_user_id = ? ORDER BY c.created_at DESC LIMIT 25
+  `).all(target.id).map(adminCommandView);
+  res.json({
+    user: moderationUserView(target, req.user),
+    profiles,
+    cloudUpdatedAt: save?.updated_at || null,
+    history: moderationHistory(target.id),
+    commands,
+    permissions: adminPermissions(req.user)
+  });
+});
+
+app.post("/api/admin/users/:id/commands", requireAuth, requireRole("moderator"), (req, res) => {
+  const target = getUserById(req.params.id);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (Number(target.id) === Number(req.user.id) && req.body.type !== "notification") {
+    return res.status(400).json({ error: "Cette action ne peut pas cibler votre propre compte." });
+  }
+  const type = String(req.body.type || "");
+  const payload = req.body.payload && typeof req.body.payload === "object" ? req.body.payload : {};
+  const moderatorTypes = new Set(["notification", "living-event"]);
+  const adminTypes = new Set([
+    "notification", "living-event", "reset-gallery", "reset-achievements",
+    "reset-profile", "reset-pykur", "delete-profile", "recalculate-achievements", "repair-progression"
+  ]);
+  const allowed = req.user.role === "admin" ? adminTypes : moderatorTypes;
+  if (!allowed.has(type)) return res.status(403).json({ error: "Action non autorisee pour votre role." });
+  const permissionByType = {
+    notification: "notifications.send",
+    "living-event": "events.target",
+    "reset-gallery": "gallery.manage",
+    "reset-achievements": "achievements.manage",
+    "recalculate-achievements": "achievements.manage",
+    "reset-profile": "tracker.reset",
+    "reset-pykur": "tracker.reset",
+    "repair-progression": "tracker.reset",
+    "delete-profile": "profiles.manage"
+  };
+  if (!adminPermissions(req.user).includes(permissionByType[type])) {
+    return res.status(403).json({ error: "Permission insuffisante.", permission: permissionByType[type] });
+  }
+  if (Number(target.id) !== Number(req.user.id) && !canModerateTarget(req.user, target)) {
+    return res.status(403).json({ error: "Vous ne pouvez pas agir sur ce role." });
+  }
+  if (type === "living-event" && !LIVING_EVENT_CATALOG.some((event) => event.id === payload.eventId)) {
+    return res.status(400).json({ error: "Evenement inconnu." });
+  }
+  if (["reset-profile", "reset-pykur", "delete-profile"].includes(type) && !String(payload.profileId || "")) {
+    return res.status(400).json({ error: "Profil cible requis." });
+  }
+  if (type === "notification") {
+    payload.message = String(payload.message || "").trim().slice(0, 500);
+    if (!payload.message) return res.status(400).json({ error: "Message requis." });
+  }
+  const id = queueAdminCommand({ actor: req.user, target, type, payload });
+  res.status(201).json({ ok: true, commandId: id });
+});
+
+app.post("/api/admin/events/force", requireAuth, requireRole("admin"), requirePermission("events.configure"), (req, res) => {
+  const event = LIVING_EVENT_CATALOG.find((item) => item.id === String(req.body.eventId || ""));
+  if (!event) return res.status(400).json({ error: "Evenement inconnu." });
+  const current = db.prepare("SELECT sequence FROM living_event_schedule WHERE id = 1").get();
+  const startsAt = Date.now() + Math.max(0, Math.min(300, Number(req.body.delaySeconds) || 0)) * 1000;
+  const endsAt = startsAt + event.duration;
+  db.prepare(`
+    INSERT INTO living_event_schedule(id,sequence,event_id,starts_at,ends_at)
+    VALUES(1,?,?,?,?)
+    ON CONFLICT(id) DO UPDATE SET sequence=excluded.sequence,event_id=excluded.event_id,
+      starts_at=excluded.starts_at,ends_at=excluded.ends_at,updated_at=CURRENT_TIMESTAMP
+  `).run(Number(current?.sequence || 0) + 1, event.id, startsAt, endsAt);
+  logCommunity({ userId: req.user.id, type: "event_force", body: event.id, meta: { startsAt } });
+  res.json(publicLivingEventSchedule());
+});
+
+app.put("/api/admin/events/settings", requireAuth, requireRole("admin"), requirePermission("events.configure"), (req, res) => {
+  const min = Math.max(30, Math.min(86400, Math.round(Number(req.body.minCooldownSeconds) || 600)));
+  const max = Math.max(min, Math.min(172800, Math.round(Number(req.body.maxCooldownSeconds) || 1500)));
+  const paused = req.body.paused ? 1 : 0;
+  db.prepare(`UPDATE living_event_settings SET paused=?,min_cooldown_seconds=?,max_cooldown_seconds=?,updated_by_user_id=?,updated_at=CURRENT_TIMESTAMP WHERE id=1`)
+    .run(paused, min, max, req.user.id);
+  if (!paused && req.body.reschedule) {
+    const current = db.prepare("SELECT sequence FROM living_event_schedule WHERE id=1").get();
+    createLivingEventSchedule(current?.sequence || 0);
+  }
+  logCommunity({ userId: req.user.id, type: "event_settings", body: paused ? "paused" : "active", meta: { min, max } });
+  res.json(publicLivingEventSchedule());
+});
+
+app.post("/api/admin/commands/:id/cancel", requireAuth, requireRole("admin"), (req, res) => {
+  const command = db.prepare("SELECT * FROM admin_commands WHERE id = ?").get(Number(req.params.id));
+  if (!command) return res.status(404).json({ error: "Commande introuvable." });
+  if (!['pending','delivered'].includes(command.status)) return res.status(409).json({ error: "Commande deja terminee." });
+  db.prepare("UPDATE admin_commands SET status='cancelled',completed_at=CURRENT_TIMESTAMP,result=? WHERE id=?")
+    .run(JSON.stringify({ message: String(req.body.reason || "Annulee par un administrateur").slice(0, 300) }), command.id);
+  res.json({ ok: true });
 });
 
 app.get("/api/moderation/users", requireAuth, requireRole("moderator"), (req, res) => {
