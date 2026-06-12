@@ -95,6 +95,8 @@ function Invoke-ProcessLogged([string]$FilePath, [string[]]$Arguments, [string]$
     $psi.UseShellExecute = $false
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
+    $psi.StandardOutputEncoding = [System.Text.Encoding]::UTF8
+    $psi.StandardErrorEncoding = [System.Text.Encoding]::UTF8
     $psi.CreateNoWindow = $true
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = $psi
@@ -118,7 +120,7 @@ function Get-SshArguments([string]$RemoteCommand) {
 
 function Invoke-Ssh([string]$Command) {
     if (-not $Script:SshExe) { throw "OpenSSH est introuvable sur Windows." }
-    return Invoke-ProcessLogged $Script:SshExe (Get-SshArguments $Command)
+    return Invoke-ProcessLogged $Script:SshExe (Get-SshArguments "export LANG=C.UTF-8 LC_ALL=C.UTF-8; $Command")
 }
 
 function Get-DeployRemoteCommand {
