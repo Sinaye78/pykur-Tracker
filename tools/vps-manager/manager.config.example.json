@@ -1,0 +1,10 @@
+{
+  "host": "185.248.33.97",
+  "port": 22,
+  "user": "root",
+  "remotePath": "/var/www/pykur-tracker",
+  "branch": "main",
+  "siteUrl": "https://familier-tracker.fr",
+  "sshKey": "",
+  "launchAtWindowsStartup": true
+}

@@ -33,3 +33,6 @@ Thumbs.db
 # Local browser/test profiles
 .chrome-qa-profile/
 .edge-qa-profile/
+
+# Local VPS manager configuration
+tools/vps-manager/manager.config.json
