@@ -1,6 +1,6 @@
 # Pykur Tracker API
 
-Backend de préparation pour la version 1.5 : comptes, rôles, modération, récupération de mot de passe et sauvegarde cloud.
+Backend officiel de la version 1.5 : comptes, rôles, modération, communauté, récupération de mot de passe et sauvegarde cloud.
 
 ## Installation locale
 

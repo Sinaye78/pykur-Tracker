@@ -1294,7 +1294,7 @@ async function sendEmailVerificationEmail(user, link) {
 }
 
 app.get("/api/health", (req, res) => {
-  res.json({ ok: true, service: "pykur-tracker", version: "1.5.0-preview" });
+  res.json({ ok: true, service: "pykur-tracker", version: "1.5.0" });
 });
 
 app.get("/api/events/living", (req, res) => {

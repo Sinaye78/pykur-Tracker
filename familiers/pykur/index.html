@@ -4409,6 +4409,31 @@ body.no-anim .app.milestone-flash{
   gap:9px;
 }
 
+.community-online-section{
+  margin-top:18px;
+  padding-top:16px;
+  border-top:1px solid rgba(120,80,36,.18);
+}
+
+.community-online-section h3{
+  margin:0 0 4px;
+  color:#2f1d10;
+  font-size:16px;
+}
+
+.community-online-section>p{
+  margin:0 0 10px;
+  color:#73522d;
+  font-size:11px;
+  font-weight:750;
+}
+
+.community-online-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:9px;
+}
+
 .community-search-result{
   display:flex;
   align-items:center;
@@ -11872,15 +11897,18 @@ body.night .dungeon-card .dungeon-mini{
 .admin-target-notification textarea{min-height:76px;resize:vertical;margin-bottom:8px}
 .admin-target-event{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 .admin-target-event+.admin-target-event{margin-top:8px}
-.admin-duration-grid{display:grid;grid-template-columns:minmax(76px,.6fr) minmax(100px,.8fr) minmax(180px,1.6fr) auto auto auto;gap:8px;align-items:center}
+.admin-duration-grid{display:grid;gap:10px}
+.admin-duration-fields{display:grid;grid-template-columns:84px 100px minmax(0,1fr);gap:8px;align-items:center}
+.admin-duration-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
+.admin-duration-actions .btn{width:100%;min-width:0;white-space:normal;line-height:1.15}
 .admin-event-settings{display:grid;grid-template-columns:auto repeat(2,minmax(120px,180px)) auto auto;gap:10px;align-items:end;margin-bottom:14px;padding:14px;border:1px solid rgba(119,79,28,.2);border-radius:10px;background:rgba(255,253,247,.78)}
 .admin-event-settings label{font-size:11px;font-weight:900;color:#624321}.admin-event-settings label span{display:block;margin-bottom:5px}
 .admin-command-list{display:grid;gap:8px}.admin-command-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px 12px;border:1px solid rgba(119,79,28,.17);border-radius:8px;background:rgba(255,255,255,.6)}
 .admin-command-row small{display:block;color:#795834;margin-top:3px}.admin-command-status{align-self:center;padding:4px 8px;border-radius:999px;background:#e5e7eb;font-size:10px;font-weight:900}.admin-command-status.completed{background:#dcfce7;color:#166534}.admin-command-status.failed{background:#fee2e2;color:#991b1b}.admin-command-status.pending,.admin-command-status.delivered{background:#fef3c7;color:#92400e}
 .admin-command-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px}.admin-command-actions .btn{padding:5px 8px;font-size:10px}
 .admin-local-toolbar{margin-top:12px}
-@media(max-width:850px){.admin-console-shell{grid-template-columns:1fr}.admin-console-nav{flex-direction:row;overflow:auto;border-right:0;border-bottom:1px solid rgba(119,79,28,.2);padding:9px}.admin-console-nav button{white-space:nowrap}.admin-dashboard-metrics{grid-template-columns:repeat(2,1fr)}.admin-target-actions,.admin-server-grid,.admin-profile-list{grid-template-columns:1fr}.admin-event-settings{grid-template-columns:1fr 1fr}.admin-event-settings .btn{width:100%}.admin-duration-grid{grid-template-columns:1fr 1fr}.admin-duration-grid input:nth-child(3){grid-column:1/-1}}
-@media(max-width:560px){.admin-dashboard-metrics,.admin-event-settings{grid-template-columns:1fr}.admin-console-content{padding:12px}}
+@media(max-width:850px){.admin-console-shell{grid-template-columns:1fr}.admin-console-nav{flex-direction:row;overflow:auto;border-right:0;border-bottom:1px solid rgba(119,79,28,.2);padding:9px}.admin-console-nav button{white-space:nowrap}.admin-dashboard-metrics{grid-template-columns:repeat(2,1fr)}.admin-target-actions,.admin-server-grid,.admin-profile-list{grid-template-columns:1fr}.admin-event-settings{grid-template-columns:1fr 1fr}.admin-event-settings .btn{width:100%}.admin-duration-fields{grid-template-columns:1fr 1fr}.admin-duration-fields input:last-child{grid-column:1/-1}}
+@media(max-width:560px){.admin-dashboard-metrics,.admin-event-settings{grid-template-columns:1fr}.admin-console-content{padding:12px}.admin-duration-actions{grid-template-columns:1fr}}
 
 .auth-widget{
   gap:5px;
@@ -11946,6 +11974,20 @@ body.night .dungeon-card .dungeon-mini{
 .auth-widget .auth-icon-btn.has-notification{
   border-color:rgba(197,139,20,.68)!important;
   box-shadow:0 0 0 2px rgba(250,204,21,.13),0 4px 10px rgba(83,53,12,.14)!important;
+}
+
+.auth-widget #authDirectMessages,
+.auth-widget #authSocialMenu{
+  background:linear-gradient(180deg,#3b82f6,#1d4ed8)!important;
+  border-color:rgba(30,64,175,.58)!important;
+  color:#fff!important;
+  filter:none;
+}
+
+.auth-widget #authDirectMessages:hover,
+.auth-widget #authSocialMenu:hover{
+  background:linear-gradient(180deg,#60a5fa,#2563eb)!important;
+  box-shadow:0 5px 12px rgba(37,99,235,.28),inset 0 1px 0 rgba(255,255,255,.3)!important;
 }
 
 .auth-notification-badge{
@@ -12329,7 +12371,7 @@ body.night .dungeon-card .dungeon-mini{
       <div class="dashboard-bottom-actions version-actions quick-projection-spacer">
         <button class="btn btn-orange tooltip" id="monsterLauncher" data-tooltip="Ouvre la fenêtre des monstres tués.">Monstres</button>
         <div class="version-panel" aria-label="Version actuelle du tracker">
-          <strong>Version 1.4</strong>
+          <strong>Version 1.5</strong>
           <button class="btn btn-gray tooltip" id="changelogButton" type="button" data-tooltip="Affiche les changements de la version actuelle.">Changelog</button>
         </div>
       </div>
@@ -12669,6 +12711,13 @@ body.night .dungeon-card .dungeon-mini{
       <div class="community-search-results" id="communitySearchResults">
         <div class="community-profile-empty">Saisissez au moins 2 caractères pour rechercher un membre.</div>
       </div>
+      <section class="community-online-section" aria-labelledby="communityOnlineTitle">
+        <h3 id="communityOnlineTitle">Membres en ligne</h3>
+        <p>Le staff est affiché en priorité.</p>
+        <div class="community-online-list" id="communityDirectoryOnline">
+          <div class="community-profile-empty">Chargement des membres connectés...</div>
+        </div>
+      </section>
     </div>
     <div class="modal-foot"><button class="btn btn-gray" data-close="communityDirectoryModal">Fermer</button></div>
   </div>
@@ -12742,8 +12791,8 @@ body.night .dungeon-card .dungeon-mini{
     <div class="modal-body">
       <div class="changelog-shell">
         <div class="changelog-tabs" role="tablist" aria-label="Versions du changelog">
-          <button class="btn btn-gray changelog-tab roadmap" type="button" data-changelog-version="1.5">Version 1.5<span>À venir</span></button>
-          <button class="btn btn-gray changelog-tab active" type="button" data-changelog-version="1.4">Version 1.4<span>04 juin 2026</span></button>
+          <button class="btn btn-gray changelog-tab active" type="button" data-changelog-version="1.5">Version 1.5<span>12 juin 2026</span></button>
+          <button class="btn btn-gray changelog-tab" type="button" data-changelog-version="1.4">Version 1.4<span>04 juin 2026</span></button>
           <button class="btn btn-gray changelog-tab" type="button" data-changelog-version="1.3">Version 1.3<span>03 juin 2026</span></button>
           <button class="btn btn-gray changelog-tab" type="button" data-changelog-version="1.2">Version 1.2<span>02 juin 2026</span></button>
         </div>
@@ -15420,7 +15469,42 @@ async function openCommunityProfilePreview(){
 
 function openCommunityDirectory(){
   openModal("communityDirectoryModal");
+  loadCommunityDirectoryOnline();
   setTimeout(()=>$("#communitySearchInput")?.focus(),60);
+}
+
+function renderCommunityDirectoryOnline(users=[]){
+  const box=$("#communityDirectoryOnline");
+  if(!box)return;
+  if(!users.length){
+    box.innerHTML=`<div class="community-profile-empty">Aucun membre en ligne actuellement.</div>`;
+    return;
+  }
+  box.innerHTML=users.map(user=>`
+    <button class="online-user-row role-${escapeHtml(user.role||"user")}" type="button" data-directory-online-user="${escapeHtml(user.pseudo)}">
+      ${avatarMarkup(user)}
+      <span><strong>${escapeHtml(user.pseudo)}</strong><small>${authRoleLabel(user.role)} · En ligne</small></span>
+    </button>
+  `).join("");
+  box.querySelectorAll("[data-directory-online-user]").forEach(button=>{
+    button.addEventListener("click",()=>openCommunityProfileByPseudo(button.dataset.directoryOnlineUser,{updateUrl:true}));
+  });
+}
+
+async function loadCommunityDirectoryOnline(){
+  const box=$("#communityDirectoryOnline");
+  if(!box)return;
+  if(!authState.user){
+    box.innerHTML=`<div class="community-profile-empty">Connectez-vous pour voir les membres en ligne.</div>`;
+    return;
+  }
+  box.innerHTML=`<div class="community-profile-empty">Chargement des membres connectés...</div>`;
+  try{
+    const result=await authFetch("/social/online");
+    renderCommunityDirectoryOnline(result.users||[]);
+  }catch(error){
+    box.innerHTML=`<div class="community-profile-empty">${escapeHtml(error.message||"Liste indisponible.")}</div>`;
+  }
 }
 
 function renderCommunitySearchResults(users,query=""){
@@ -15665,7 +15749,7 @@ function cloudPayload(){
   store.lastCloudPreparedAt=new Date().toISOString();
   return {
     app:"pykur-tracker",
-    version:"1.5.0-preview",
+    version:"1.5.0",
     savedAt:new Date().toISOString(),
     store:clone(store)
   };
@@ -17674,7 +17758,7 @@ function renderAdminTarget(payload){
       <div class="admin-target-actions">
         <article class="admin-action-group"><h4>Communication</h4><div class="admin-target-notification"><textarea id="adminTargetNotification" maxlength="500" placeholder="Message destiné au joueur, conservé s'il est hors ligne"></textarea><div class="admin-action-buttons"><button class="btn btn-blue" id="adminSendTargetNotification" type="button">Notification</button><button class="btn btn-orange" id="adminSendTargetPopup" type="button">Popup persistante</button><button class="btn btn-red" id="adminKickTarget" type="button">Kick avec message</button></div></div></article>
         <article class="admin-action-group"><h4>Événement individuel</h4><div class="admin-target-event"><select id="adminTargetEvent">${LIVING_EVENT_DEFS.map(item=>`<option value="${item.id}">${escapeHtml(item.label)}</option>`).join("")}</select><button class="btn btn-orange" id="adminSendTargetEvent" type="button">Jouer</button></div><p class="options-note">Cosmétique, sans découverte ni récompense.</p></article>
-        ${canModerate?`<article class="admin-action-group"><h4>Modération temporelle</h4><p class="options-note">${user.isBanned?`Compte actuellement banni${user.banUntil?` jusqu'au ${escapeHtml(adminConsoleDate(user.banUntil))}`:" définitivement"}. `:""}${user.muteUntil?`Mute actif jusqu'au ${escapeHtml(adminConsoleDate(user.muteUntil))}.`:""}</p><div class="admin-duration-grid"><input id="adminModerationDuration" type="number" min="1" max="525600" value="24"><select id="adminModerationUnit"><option value="minutes">minutes</option><option value="hours" selected>heures</option><option value="days">jours</option></select><input id="adminModerationReason" type="text" maxlength="300" placeholder="Motif affiché au joueur"><button class="btn btn-orange" id="adminMuteTarget" type="button">Mute</button><button class="btn btn-red" id="adminBanTarget" type="button">Ban temporaire</button><button class="btn btn-red" id="adminBanPermanentTarget" type="button">Ban définitif</button></div><div class="admin-action-buttons">${user.muteUntil?`<button class="btn btn-gray" id="adminUnmuteTarget" type="button">Retirer le mute</button>`:""}${user.isBanned?`<button class="btn btn-blue" id="adminUnbanTarget" type="button">Débannir</button>`:""}</div></article>`:""}
+        ${canModerate?`<article class="admin-action-group"><h4>Modération temporelle</h4><p class="options-note">${user.isBanned?`Compte actuellement banni${user.banUntil?` jusqu'au ${escapeHtml(adminConsoleDate(user.banUntil))}`:" définitivement"}. `:""}${user.muteUntil?`Mute actif jusqu'au ${escapeHtml(adminConsoleDate(user.muteUntil))}.`:"Définissez une durée et un motif avant d'appliquer une sanction."}</p><div class="admin-duration-grid"><div class="admin-duration-fields"><input id="adminModerationDuration" type="number" min="1" max="525600" value="24" aria-label="Durée de la sanction"><select id="adminModerationUnit" aria-label="Unité de durée"><option value="minutes">minutes</option><option value="hours" selected>heures</option><option value="days">jours</option></select><input id="adminModerationReason" type="text" maxlength="300" placeholder="Motif affiché au joueur"></div><div class="admin-duration-actions"><button class="btn btn-orange" id="adminMuteTarget" type="button">Mute temporaire</button><button class="btn btn-red" id="adminBanTarget" type="button">Ban temporaire</button><button class="btn btn-red" id="adminBanPermanentTarget" type="button">Ban définitif</button>${user.muteUntil?`<button class="btn btn-gray" id="adminUnmuteTarget" type="button">Retirer le mute</button>`:""}${user.isBanned?`<button class="btn btn-blue" id="adminUnbanTarget" type="button">Débannir</button>`:""}</div></div></article>`:""}
         ${canReset?`<article class="admin-action-group"><h4>Réparation</h4><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer la progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer les succès</button></div></article>
         <article class="admin-action-group"><h4>Édition ciblée</h4><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer le profil sélectionné</button></div>${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer ce succès</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer l'événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un Pykur archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">Pykur #${item.number||"?"} · ${escapeHtml(item.profileName)} · ${item.pp} PP</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer le Pykur</button></div>`:`<p class="options-note">Aucun Pykur archivé.</p>`}</article>
         <article class="admin-action-group danger"><h4>Données du compte</h4><div class="admin-action-buttons"><button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button><button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button><button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset Pykur</button><button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button></div></article>`:""}
@@ -25037,16 +25121,18 @@ if($("#monsterLauncher"))$("#monsterLauncher").onclick=()=>{unlockAchievement("o
 const CHANGELOG_ENTRIES={
   "1.5":{
     title:"Version 1.5",
-    date:"À venir",
-    summary:"Prochaine grande étape prévue : faire évoluer le tracker local vers une plateforme connectée et communautaire.",
+    date:"12 juin 2026",
+    summary:"Première version connectée officielle : comptes cloud, communauté, modération et événements synchronisés rejoignent le tracker complet.",
     items:[
-      ["Hébergement officiel","Passage sur VPS avec un vrai nom de domaine pour rendre le tracker plus accessible."],
-      ["Comptes utilisateurs","Création d'un système de compte pour retrouver sa progression plus facilement."],
-      ["Sauvegarde cloud","Stockage des données en base de données pour les comptes membres."],
-      ["Profils communautaires","Possibilité de consulter les profils publics des autres utilisateurs."],
-      ["Partage social","Partage de succès, galeries et anciennes aventures de Pykur."],
-      ["Messagerie","Ajout prévu de messages privés entre utilisateurs."],
-      ["Chatbox communautaire","Espace de discussion pour échanger autour du tracker et de la progression."]
+      ["Hébergement officiel","Mise en ligne sur VPS, domaine familier-tracker.fr et connexion HTTPS."],
+      ["Comptes et cloud","Inscription, validation par email, récupération de mot de passe et sauvegarde cloud automatique."],
+      ["Profils communautaires","Recherche de membres, profils publics, confidentialité, avatars et consultation des profils Pykur autorisés."],
+      ["Espace social","Amis, messages privés, chat global, mentions, notifications et présence en ligne."],
+      ["Partages communautaires","Publication contrôlée des succès et des Pykurs terminés dans le chat."],
+      ["Modération complète","Signalements, avertissements, mutes, bans, journaux et centre de contrôle avec permissions."],
+      ["Événements synchronisés","Planning des événements vivants géré par le serveur pour tous les joueurs."],
+      ["Stabilité des données","Synchronisation renforcée des profils, succès et galeries, avec suppressions persistantes."],
+      ["Interface modernisée","Boutons illustrés, panneaux sociaux remaniés et meilleure adaptation aux différentes résolutions."]
     ]
   },
   "1.4":{
@@ -25089,8 +25175,8 @@ const CHANGELOG_ENTRIES={
   }
 };
 
-function renderChangelog(version="1.4"){
-  const entry=CHANGELOG_ENTRIES[version]||CHANGELOG_ENTRIES["1.4"];
+function renderChangelog(version="1.5"){
+  const entry=CHANGELOG_ENTRIES[version]||CHANGELOG_ENTRIES["1.5"];
   const box=$("#changelogContent");
   if(!box)return;
   $$(".changelog-tab").forEach(btn=>btn.classList.toggle("active",btn.dataset.changelogVersion===version));
@@ -25108,7 +25194,7 @@ function renderChangelog(version="1.4"){
   `;
 }
 
-if($("#changelogButton"))$("#changelogButton").onclick=()=>{renderChangelog("1.4");openModal("changelogModal")};
+if($("#changelogButton"))$("#changelogButton").onclick=()=>{renderChangelog("1.5");openModal("changelogModal")};
 if($("#achievementsButton"))$("#achievementsButton").onclick=()=>{renderAchievements();openModal("achievementsModal")};
 if($("#galleryButton"))$("#galleryButton").onclick=()=>{renderGallery();showGalleryEvents(false);openModal("galleryModal")};
 if($("#resetGallery"))$("#resetGallery").onclick=resetGallery;

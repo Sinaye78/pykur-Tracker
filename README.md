@@ -8,7 +8,7 @@ Tracker de progression autour du Pykur : suivi Morose/Tynril, prospection, stati
 - `mobile.html` : redirection vers la version mobile Pykur.
 - `familiers/pykur/` : application Pykur complète.
 - `familiers/pykur/assets/` : assets du familier Pykur.
-- `server/` : API Node.js de préparation v1.5 pour comptes, rôles, modération et sauvegarde cloud.
+- `server/` : API Node.js v1.5 pour comptes, rôles, modération, communauté et sauvegarde cloud.
 
 ## Lancement local statique
 
