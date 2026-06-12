@@ -12759,6 +12759,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
           <h3>Modifier l'email</h3>
           <form class="account-form" id="accountEmailForm">
             <input id="accountEmailInput" type="email" autocomplete="email" placeholder="nouvel@email.fr">
+            <input id="accountEmailPassword" type="password" autocomplete="current-password" placeholder="Mot de passe actuel">
             <button class="btn btn-blue" type="submit">Enregistrer l'email</button>
           </form>
         </section>
@@ -15338,7 +15339,7 @@ async function openMessagesPanel(pseudo=null){
   else renderMessageThread(null);
 }
 
-function renderChatbox(){
+function renderChatbox({forceBottom=false}={}){
   const feed=$("#chatboxFeed");
   const online=$("#chatboxOnlineList");
   const stateLabel=$("#chatboxStateLabel");
@@ -15356,6 +15357,9 @@ function renderChatbox(){
   }
   if(chatSubmit)chatSubmit.disabled=chatLocked;
   if(feed){
+    const previousScrollTop=feed.scrollTop;
+    const previousScrollHeight=feed.scrollHeight;
+    const wasNearBottom=previousScrollHeight-feed.clientHeight-previousScrollTop<=80;
     const visible=chatState.messages.filter(item=>{
       const isShare=item.type==="achievement" || item.type==="pykur" || item.meta?.system;
       if(chatState.hideShares && isShare)return false;
@@ -15404,7 +15408,8 @@ function renderChatbox(){
     feed.querySelectorAll("[data-chat-reply]").forEach(button=>{
       button.addEventListener("click",()=>prefillChatMention(button.dataset.chatReply));
     });
-    feed.scrollTop=feed.scrollHeight;
+    if(forceBottom || wasNearBottom)feed.scrollTop=feed.scrollHeight;
+    else feed.scrollTop=Math.min(previousScrollTop,Math.max(0,feed.scrollHeight-feed.clientHeight));
   }
   if(online){
     const ignored=chatState.ignored||[];
@@ -15431,7 +15436,7 @@ function renderChatbox(){
   }
 }
 
-async function loadChatbox({silent=false}={}){
+async function loadChatbox({silent=false,forceBottom=false}={}){
   if(!authState.user || chatState.refreshing)return;
   chatState.refreshing=true;
   try{
@@ -15444,7 +15449,7 @@ async function loadChatbox({silent=false}={}){
     chatState.ignored=chat.ignored||[];
     chatState.online=online.users||[];
     detectChatPings();
-    renderChatbox();
+    renderChatbox({forceBottom});
   }catch(error){
     if(!silent)toast(error.message||"Chat indisponible.","error","error");
   }finally{
@@ -15518,7 +15523,7 @@ async function openChatboxPanel(){
   openModal("chatboxModal");
   if($("#chatHideShares"))$("#chatHideShares").checked=chatState.hideShares;
   if($("#chatHideText"))$("#chatHideText").checked=chatState.hideText;
-  await loadChatbox();
+  await loadChatbox({forceBottom:true});
   stopChatboxPolling();
   chatState.timer=setInterval(()=>loadChatbox({silent:true}),3000);
 }
@@ -15532,7 +15537,7 @@ async function sendChatMessage(event){
   try{
     await authFetch("/social/chat",{method:"POST",body:JSON.stringify({body,type:"message"})});
     if(input)input.value="";
-    await loadChatbox({silent:true});
+    await loadChatbox({silent:true,forceBottom:true});
   }catch(error){
     toast(error.message||"Message impossible à envoyer.","error","error");
   }
@@ -15755,9 +15760,11 @@ async function saveAccountEmail(event){
   event.preventDefault();
   if(!authState.user)return authOpen("login");
   const email=$("#accountEmailInput")?.value||"";
+  const currentPassword=$("#accountEmailPassword")?.value||"";
   try{
-    const result=await authFetch("/account/email",{method:"PUT",body:JSON.stringify({email})});
+    const result=await authFetch("/account/email",{method:"PUT",body:JSON.stringify({email,currentPassword})});
     authState.user=result.user;
+    if($("#accountEmailPassword"))$("#accountEmailPassword").value="";
     authRender();
     renderAccountProfile();
     toast("Email mis à jour.","success","success");
@@ -15772,7 +15779,12 @@ async function saveAccountPassword(event){
   const currentPassword=$("#accountCurrentPassword")?.value||"";
   const newPassword=$("#accountNewPassword")?.value||"";
   try{
-    await authFetch("/account/password",{method:"PUT",body:JSON.stringify({currentPassword,newPassword})});
+    const result=await authFetch("/account/password",{method:"PUT",body:JSON.stringify({currentPassword,newPassword})});
+    if(result.token){
+      authState.token=result.token;
+      localStorage.setItem(AUTH_TOKEN_KEY,authState.token);
+    }
+    if(result.user)authState.user=result.user;
     if($("#accountCurrentPassword"))$("#accountCurrentPassword").value="";
     if($("#accountNewPassword"))$("#accountNewPassword").value="";
     toast("Mot de passe mis à jour.","success","success");

@@ -17,6 +17,14 @@ const DB_PATH = process.env.DB_PATH ? path.resolve(__dirname, process.env.DB_PAT
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://127.0.0.1:8765";
 const APP_PUBLIC_URL = process.env.APP_PUBLIC_URL || CLIENT_ORIGIN;
 const ROLE_ORDER = { user: 1, moderator: 2, admin: 3 };
+const PUBLIC_DEPLOYMENT = !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(APP_PUBLIC_URL);
+
+if (PUBLIC_DEPLOYMENT && (JWT_SECRET === "dev-only-change-me" || JWT_SECRET.length < 32)) {
+  throw new Error("JWT_SECRET doit contenir au moins 32 caracteres aleatoires en production.");
+}
+if (PUBLIC_DEPLOYMENT && !/^https:\/\//i.test(APP_PUBLIC_URL)) {
+  console.warn("[security] APP_PUBLIC_URL devrait utiliser HTTPS en production.");
+}
 
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 const db = new Database(DB_PATH);
@@ -35,6 +43,7 @@ ensureColumn("users", "email_verified_at", "TEXT");
 ensureColumn("users", "avatar_url", "TEXT");
 ensureColumn("users", "first_login_announcement_at", "TEXT");
 ensureColumn("users", "deletion_requested_at", "TEXT");
+ensureColumn("users", "session_version", "INTEGER NOT NULL DEFAULT 0");
 db.prepare("UPDATE users SET email_verified_at = COALESCE(email_verified_at, created_at) WHERE email_verified_at IS NULL AND last_login_at IS NOT NULL").run();
 
 db.exec(`
@@ -316,11 +325,20 @@ const app = express();
 const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 app.set("trust proxy", 1);
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors({ origin: CLIENT_ORIGIN, credentials: true }));
+const allowedOrigins = CLIENT_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean);
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(Object.assign(new Error("Origine non autorisee."), { status: 403, code: "CORS_DENIED" }));
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: "2mb" }));
 app.use((req, res, next) => {
-  req.requestId = String(req.headers["x-request-id"] || crypto.randomUUID());
+  const incomingRequestId = String(req.headers["x-request-id"] || "");
+  req.requestId = /^[a-zA-Z0-9._:-]{1,100}$/.test(incomingRequestId) ? incomingRequestId : crypto.randomUUID();
   res.setHeader("X-Request-Id", req.requestId);
+  res.setHeader("Cache-Control", "no-store");
   const startedAt = Date.now();
   res.on("finish", () => {
     if (res.statusCode >= 429) {
@@ -341,6 +359,37 @@ app.use(rateLimit({
   })
 }));
 const passwordResetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false });
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+  message: { error: "Trop de tentatives de connexion. Reessayez dans 15 minutes.", code: "AUTH_RATE_LIMITED" }
+});
+const registrationLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Trop de creations de compte depuis cette connexion. Reessayez plus tard.", code: "REGISTER_RATE_LIMITED" }
+});
+const socialWriteLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 40,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `user:${req.user.id}`,
+  message: { error: "Trop de messages envoyes. Ralentissez quelques instants.", code: "SOCIAL_RATE_LIMITED" }
+});
+const socialReportLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `user:${req.user.id}`,
+  message: { error: "Trop de signalements envoyes. Reessayez plus tard.", code: "REPORT_RATE_LIMITED" }
+});
 
 const DEFAULT_ACCOUNT_PREFERENCES = {
   publicProfile: false,
@@ -426,7 +475,7 @@ function publicCommunityUser(user) {
 }
 
 function signUser(user) {
-  return jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign({ id: user.id, role: user.role, sv: Number(user.session_version || 0) }, JWT_SECRET, { expiresIn: "7d" });
 }
 
 const PUBLIC_MOBS = {
@@ -824,6 +873,7 @@ function authenticateRequest(req, res, next, { allowBanned = false } = {}) {
     const payload = jwt.verify(token, JWT_SECRET);
     const user = getUserById(payload.id);
     if (!user) return res.status(401).json({ error: "Compte introuvable." });
+    if (Number(payload.sv || 0) !== Number(user.session_version || 0)) return res.status(401).json({ error: "Session expirée. Reconnectez-vous." });
     if (user.is_banned && !allowBanned) {
       return res.status(403).json({ error: user.ban_until ? `Compte banni jusqu'au ${user.ban_until}.` : "Compte banni." });
     }
@@ -849,7 +899,7 @@ function optionalAuth(req, res, next) {
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     const user = getUserById(payload.id);
-    if (user && !user.is_banned) req.user = user;
+    if (user && Number(payload.sv || 0) === Number(user.session_version || 0) && !user.is_banned) req.user = user;
   } catch {
     req.user = null;
   }
@@ -1266,7 +1316,8 @@ function mailTransport() {
 async function sendPasswordResetEmail(user, link) {
   const transporter = mailTransport();
   if (!transporter) {
-    console.warn(`[password-reset] SMTP non configuré. Lien pour ${user.email}: ${link}`);
+    if (PUBLIC_DEPLOYMENT) throw new Error("SMTP non configure en production.");
+    console.warn(`[password-reset] SMTP non configure. Lien de test: ${link}`);
     return;
   }
   await transporter.sendMail({
@@ -1281,7 +1332,8 @@ async function sendPasswordResetEmail(user, link) {
 async function sendEmailVerificationEmail(user, link) {
   const transporter = mailTransport();
   if (!transporter) {
-    console.warn(`[email-verification] SMTP non configure. Lien pour ${user.email}: ${link}`);
+    if (PUBLIC_DEPLOYMENT) throw new Error("SMTP non configure en production.");
+    console.warn(`[email-verification] SMTP non configure. Lien de test: ${link}`);
     return;
   }
   await transporter.sendMail({
@@ -1302,23 +1354,27 @@ app.get("/api/events/living", (req, res) => {
   res.json(publicLivingEventSchedule());
 });
 
-app.post("/api/auth/register", asyncRoute(async (req, res) => {
+app.post("/api/auth/register", registrationLimiter, asyncRoute(async (req, res) => {
   const pseudo = cleanPseudo(req.body.pseudo);
   const email = String(req.body.email || "").trim().toLowerCase();
   const password = String(req.body.password || "");
   if (!isValidPseudo(pseudo)) return res.status(400).json({ error: "Pseudo invalide : 3 à 24 caractères." });
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "Email invalide." });
-  if (password.length < 8) return res.status(400).json({ error: "Le mot de passe doit contenir au moins 8 caractères." });
+  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "Email invalide." });
+  if (password.length < 8 || password.length > 128) return res.status(400).json({ error: "Le mot de passe doit contenir entre 8 et 128 caractères." });
 
-  const count = db.prepare("SELECT COUNT(*) AS count FROM users").get().count;
-  const role = count === 0 ? "admin" : "user";
   const hash = await bcrypt.hash(password, 12);
   try {
-    const info = db.prepare(`
-      INSERT INTO users(pseudo,email,password_hash,role)
-      VALUES(?,?,?,?)
-    `).run(pseudo, email, hash, role);
-    const user = getUserById(info.lastInsertRowid);
+    const created = db.transaction(() => {
+      const count = db.prepare("SELECT COUNT(*) AS count FROM users").get().count;
+      const role = count === 0 ? "admin" : "user";
+      const info = db.prepare(`
+        INSERT INTO users(pseudo,email,password_hash,role)
+        VALUES(?,?,?,?)
+      `).run(pseudo, email, hash, role);
+      return { id: info.lastInsertRowid, role };
+    })();
+    const role = created.role;
+    const user = getUserById(created.id);
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     db.prepare("DELETE FROM email_verification_tokens WHERE user_id = ? AND used_at IS NULL").run(user.id);
@@ -1364,10 +1420,13 @@ app.post("/api/auth/verify-email/confirm", passwordResetLimiter, (req, res) => {
   res.json({ token: signUser(user), user: publicUser(user) });
 });
 
-app.post("/api/auth/login", asyncRoute(async (req, res) => {
+app.post("/api/auth/login", loginLimiter, asyncRoute(async (req, res) => {
   purgeExpiredClosedAccounts();
   const identifier = String(req.body.identifier || "").trim();
   const password = String(req.body.password || "");
+  if (!identifier || identifier.length > 254 || password.length > 128) {
+    return res.status(401).json({ error: "Identifiants incorrects." });
+  }
   const user = db.prepare("SELECT * FROM users WHERE lower(email) = lower(?) OR lower(pseudo) = lower(?)").get(identifier, identifier);
   if (!user || !(await bcrypt.compare(password, user.password_hash))) {
     return res.status(401).json({ error: "Identifiants incorrects." });
@@ -1403,7 +1462,11 @@ app.post("/api/auth/password-reset/request", passwordResetLimiter, asyncRoute(as
       INSERT INTO password_reset_tokens(user_id,token_hash,expires_at)
       VALUES(?,?,?)
     `).run(user.id, tokenHash(token), expiresAt);
-    await sendPasswordResetEmail(user, resetLink(token));
+    try {
+      await sendPasswordResetEmail(user, resetLink(token));
+    } catch (error) {
+      console.error("[password-reset] Envoi impossible.", error?.message || error);
+    }
   }
   res.json({ ok: true, message: "Si un compte correspond, un email de récupération vient d'être envoyé." });
 }));
@@ -1412,7 +1475,7 @@ app.post("/api/auth/password-reset/confirm", passwordResetLimiter, asyncRoute(as
   const token = String(req.body.token || "");
   const newPassword = String(req.body.newPassword || "");
   if (token.length < 32) return res.status(400).json({ error: "Lien de récupération invalide." });
-  if (newPassword.length < 8) return res.status(400).json({ error: "Le nouveau mot de passe doit contenir au moins 8 caractères." });
+  if (newPassword.length < 8 || newPassword.length > 128) return res.status(400).json({ error: "Le nouveau mot de passe doit contenir entre 8 et 128 caractères." });
   const row = db.prepare(`
     SELECT prt.*, users.password_hash
     FROM password_reset_tokens prt
@@ -1424,7 +1487,7 @@ app.post("/api/auth/password-reset/confirm", passwordResetLimiter, asyncRoute(as
   }
   const hash = await bcrypt.hash(newPassword, 12);
   const transaction = db.transaction(() => {
-    db.prepare("UPDATE users SET password_hash = ?, last_login_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(hash, row.user_id);
+    db.prepare("UPDATE users SET password_hash = ?, session_version = session_version + 1, last_login_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(hash, row.user_id);
     db.prepare("UPDATE password_reset_tokens SET used_at = CURRENT_TIMESTAMP WHERE id = ?").run(row.id);
   });
   transaction();
@@ -1445,9 +1508,11 @@ app.post("/api/account/close", requireAuth, (req, res) => {
   res.json({ ok: true, deletionDelayDays: 30 });
 });
 
-app.put("/api/account/email", requireAuth, (req, res) => {
+app.put("/api/account/email", requireAuth, asyncRoute(async (req, res) => {
   const email = String(req.body.email || "").trim().toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "Email invalide." });
+  const currentPassword = String(req.body.currentPassword || "");
+  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: "Email invalide." });
+  if (!(await bcrypt.compare(currentPassword, req.user.password_hash))) return res.status(401).json({ error: "Mot de passe actuel incorrect." });
   try {
     db.prepare("UPDATE users SET email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(email, req.user.id);
     logCommunity({ userId: req.user.id, type: "account_email", body: "Email du compte modifie." });
@@ -1456,17 +1521,18 @@ app.put("/api/account/email", requireAuth, (req, res) => {
     if (String(error.message).includes("UNIQUE")) return res.status(409).json({ error: "Email déjà utilisé." });
     throw error;
   }
-});
+}));
 
 app.put("/api/account/password", requireAuth, asyncRoute(async (req, res) => {
   const currentPassword = String(req.body.currentPassword || "");
   const newPassword = String(req.body.newPassword || "");
   if (!(await bcrypt.compare(currentPassword, req.user.password_hash))) return res.status(401).json({ error: "Mot de passe actuel incorrect." });
-  if (newPassword.length < 8) return res.status(400).json({ error: "Le nouveau mot de passe doit contenir au moins 8 caractères." });
+  if (newPassword.length < 8 || newPassword.length > 128) return res.status(400).json({ error: "Le nouveau mot de passe doit contenir entre 8 et 128 caractères." });
   const hash = await bcrypt.hash(newPassword, 12);
-  db.prepare("UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(hash, req.user.id);
+  db.prepare("UPDATE users SET password_hash = ?, session_version = session_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(hash, req.user.id);
   logCommunity({ userId: req.user.id, type: "account_password", body: "Mot de passe modifie." });
-  res.json({ ok: true });
+  const user = getUserById(req.user.id);
+  res.json({ ok: true, token: signUser(user), user: publicUser(user) });
 }));
 
 app.put("/api/account/preferences", requireAuth, (req, res) => {
@@ -1507,21 +1573,28 @@ app.get("/api/account/warnings", requireAuth, (req, res) => {
 });
 
 app.put("/api/cloud/save", requireAuth, (req, res) => {
-  const incomingPayload = req.body.payload || {};
+  const incomingPayload = req.body.payload;
+  if (!incomingPayload || typeof incomingPayload !== "object" || Array.isArray(incomingPayload)) {
+    return res.status(400).json({ error: "Sauvegarde cloud invalide." });
+  }
   const nextPayload = Object.assign({}, incomingPayload || {}, {
     savedAt: new Date().toISOString()
   });
+  const serializedPayload = JSON.stringify(nextPayload);
+  if (Buffer.byteLength(serializedPayload, "utf8") > 1_750_000) {
+    return res.status(413).json({ error: "Sauvegarde cloud trop volumineuse." });
+  }
   db.prepare(`
     INSERT INTO cloud_saves(user_id,payload,updated_at)
     VALUES(?,?,CURRENT_TIMESTAMP)
     ON CONFLICT(user_id) DO UPDATE SET payload = excluded.payload, updated_at = CURRENT_TIMESTAMP
-  `).run(req.user.id, JSON.stringify(nextPayload));
+  `).run(req.user.id, serializedPayload);
   res.json({ ok: true, payload: nextPayload });
 });
 
 app.get("/api/cloud/save", requireAuth, (req, res) => {
   const row = db.prepare("SELECT payload, updated_at FROM cloud_saves WHERE user_id = ?").get(req.user.id);
-  res.json({ payload: row ? JSON.parse(row.payload) : null, updatedAt: row?.updated_at || null });
+  res.json({ payload: row ? safeParseJson(row.payload, null) : null, updatedAt: row?.updated_at || null });
 });
 
 app.get("/api/account/admin-commands", requireCommandAuth, (req, res) => {
@@ -1634,7 +1707,7 @@ app.get("/api/social/chat", requireAuth, (req, res) => {
   res.json({ messages: rows.map((row) => publicChatMessage(row, req.user.id)), settings: chatSettings(), ignored });
 });
 
-app.post("/api/social/chat", requireAuth, (req, res) => {
+app.post("/api/social/chat", requireAuth, socialWriteLimiter, (req, res) => {
   db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP WHERE id = ?").run(req.user.id);
   if (req.user.mute_until && !isExpired(req.user.mute_until)) {
     return res.status(403).json({ error: `Vous êtes mute jusqu'au ${req.user.mute_until}.` });
@@ -1691,7 +1764,7 @@ app.delete("/api/social/chat/:id", requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
-app.post("/api/social/chat/:id/report", requireAuth, (req, res) => {
+app.post("/api/social/chat/:id/report", requireAuth, socialReportLimiter, (req, res) => {
   const id = Number(req.params.id);
   const reason = String(req.body.reason || "").trim().slice(0, 300);
   const row = db.prepare("SELECT * FROM chat_messages WHERE id = ? AND deleted_at IS NULL").get(id);
@@ -1852,7 +1925,7 @@ app.post("/api/social/messages/read-all", requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
-app.post("/api/social/messages/:pseudo", requireAuth, (req, res) => {
+app.post("/api/social/messages/:pseudo", requireAuth, socialWriteLimiter, (req, res) => {
   const target = getTargetUserByPseudo(req.params.pseudo);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (!canMessageUser(req.user, target)) return res.status(403).json({ error: "Vous devez être amis et les messages privés doivent être autorisés." });
@@ -1899,7 +1972,7 @@ app.delete("/api/social/messages/:pseudo/:id", requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
-app.post("/api/social/messages/:pseudo/:id/report", requireAuth, (req, res) => {
+app.post("/api/social/messages/:pseudo/:id/report", requireAuth, socialReportLimiter, (req, res) => {
   const target = getTargetUserByPseudo(req.params.pseudo);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (!canMessageUser(req.user, target)) return res.status(403).json({ error: "Vous devez etre amis pour signaler cette conversation." });

@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
   avatar_url TEXT,
   first_login_announcement_at TEXT,
   deletion_requested_at TEXT,
+  session_version INTEGER NOT NULL DEFAULT 0,
   preferences TEXT NOT NULL DEFAULT '{}',
   email_verified_at TEXT,
   is_banned INTEGER NOT NULL DEFAULT 0,
