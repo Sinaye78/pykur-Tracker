@@ -12363,6 +12363,361 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
   .profile-actions{grid-template-columns:1fr}
 }
 
+/* Staff workspaces: large, structured dashboards for administration and moderation. */
+#livingEventAdmin,
+#moderationOverviewModal{
+  padding:14px!important;
+}
+
+#livingEventAdmin .admin-console-modal,
+#moderationOverviewModal .moderation-console-modal{
+  width:min(1500px,calc(100vw - 28px))!important;
+  height:min(930px,calc(100vh - 28px))!important;
+  max-width:none!important;
+  max-height:none!important;
+  border-width:1px;
+  border-radius:13px;
+  box-shadow:0 28px 80px rgba(20,12,5,.58),inset 0 1px 0 rgba(255,255,255,.52);
+}
+
+#livingEventAdmin .modal-head,
+#moderationOverviewModal .modal-head{
+  min-height:70px;
+  padding:14px 20px;
+}
+
+#livingEventAdmin .modal-head h2,
+#moderationOverviewModal .modal-head h2{
+  font-size:25px;
+}
+
+#livingEventAdmin .modal-body,
+#moderationOverviewModal .modal-body{
+  min-height:0;
+  padding:0!important;
+  overflow:hidden!important;
+}
+
+#livingEventAdmin .modal-foot,
+#moderationOverviewModal .modal-foot{
+  min-height:48px;
+  padding:7px 14px;
+}
+
+/* Centre de contrôle */
+#livingEventAdmin .admin-console-shell{
+  grid-template-columns:230px minmax(0,1fr);
+  height:100%;
+  min-height:0;
+  background:
+    linear-gradient(90deg,rgba(119,79,28,.04),transparent 25%),
+    rgba(247,240,225,.96);
+}
+
+#livingEventAdmin .admin-console-nav{
+  gap:7px;
+  padding:20px 14px;
+  overflow-y:auto;
+  border-right:1px solid rgba(107,70,25,.22);
+  background:
+    linear-gradient(180deg,rgba(111,69,25,.14),rgba(255,252,242,.52)),
+    repeating-linear-gradient(0deg,rgba(126,83,31,.025) 0 1px,transparent 1px 18px);
+}
+
+#livingEventAdmin .admin-console-nav button{
+  min-height:46px;
+  padding:0 15px;
+  border:1px solid transparent;
+  border-radius:8px;
+  font-size:13px;
+}
+
+#livingEventAdmin .admin-console-nav button:hover{
+  border-color:rgba(126,83,31,.14);
+  background:rgba(255,255,255,.55);
+}
+
+#livingEventAdmin .admin-console-nav button.active{
+  border-color:rgba(250,204,21,.36);
+  background:linear-gradient(135deg,#8c571d,#6d3d13);
+  box-shadow:inset 4px 0 #facc15,0 6px 14px rgba(73,42,12,.14);
+}
+
+#livingEventAdmin .admin-console-content{
+  min-height:0;
+  padding:24px 26px 30px;
+  overflow:auto;
+  overflow-x:hidden;
+  scrollbar-gutter:stable;
+}
+
+#livingEventAdmin .admin-console-heading{
+  margin-bottom:18px;
+  padding-bottom:13px;
+  border-bottom:1px solid rgba(119,79,28,.16);
+}
+
+#livingEventAdmin .admin-console-heading h3{font-size:22px}
+#livingEventAdmin .admin-console-heading p{font-size:13px;line-height:1.45}
+
+#livingEventAdmin .admin-dashboard-metrics{
+  grid-template-columns:repeat(4,minmax(150px,1fr));
+  gap:13px;
+  margin-bottom:18px;
+}
+
+#livingEventAdmin .admin-metric-card,
+#livingEventAdmin .admin-server-card,
+#livingEventAdmin .admin-target-card,
+#livingEventAdmin .admin-action-group{
+  padding:17px;
+  border-color:rgba(107,70,25,.22);
+  border-radius:10px;
+  background:rgba(255,253,247,.88);
+  box-shadow:0 8px 22px rgba(72,43,13,.065),inset 0 1px 0 rgba(255,255,255,.7);
+}
+
+#livingEventAdmin .admin-metric-card{min-height:96px}
+#livingEventAdmin .admin-metric-card strong{font-size:27px}
+
+#livingEventAdmin .admin-server-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:15px;
+}
+
+#livingEventAdmin .admin-broadcast-card{
+  padding:20px;
+  border-color:rgba(180,123,35,.34);
+  background:linear-gradient(135deg,rgba(255,249,227,.98),rgba(246,225,180,.78));
+  box-shadow:0 10px 26px rgba(114,67,13,.09),inset 0 1px 0 rgba(255,255,255,.78);
+}
+
+#livingEventAdmin .admin-broadcast-grid{
+  grid-template-columns:minmax(360px,1fr) minmax(170px,220px) auto;
+  gap:12px;
+}
+
+#livingEventAdmin .admin-broadcast-grid textarea{min-height:94px}
+#livingEventAdmin .living-admin-status{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+#livingEventAdmin .living-admin-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:11px}
+
+/* Tableau de modération */
+#moderationOverviewModal #moderationOverviewContent{
+  height:100%;
+  min-height:0;
+}
+
+#moderationOverviewModal .moderation-console{
+  display:grid;
+  grid-template-columns:220px minmax(0,1fr);
+  grid-template-rows:auto minmax(0,1fr);
+  gap:0;
+  background:
+    linear-gradient(90deg,rgba(119,79,28,.04),transparent 24%),
+    rgba(247,240,225,.96);
+}
+
+#moderationOverviewModal .moderation-summary-grid{
+  grid-column:1/-1;
+  grid-row:1;
+  grid-template-columns:repeat(5,minmax(140px,1fr));
+  gap:11px;
+  padding:16px 18px;
+  border-bottom:1px solid rgba(107,70,25,.2);
+  background:rgba(255,250,239,.72);
+}
+
+#moderationOverviewModal .moderation-summary-card{
+  min-height:88px;
+  padding:13px 15px;
+  border-radius:10px;
+  background:rgba(255,255,255,.82);
+  box-shadow:0 7px 18px rgba(73,43,12,.06),inset 0 1px 0 rgba(255,255,255,.72);
+}
+
+#moderationOverviewModal .moderation-summary-card strong{font-size:27px}
+
+#moderationOverviewModal .moderation-tabs{
+  grid-column:1;
+  grid-row:2;
+  position:static;
+  z-index:auto;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:7px;
+  min-height:0;
+  margin:0;
+  padding:18px 13px;
+  overflow-y:auto;
+  border-right:1px solid rgba(107,70,25,.22);
+  background:
+    linear-gradient(180deg,rgba(111,69,25,.14),rgba(255,252,242,.52)),
+    repeating-linear-gradient(0deg,rgba(126,83,31,.025) 0 1px,transparent 1px 18px);
+  backdrop-filter:none;
+}
+
+#moderationOverviewModal .moderation-tabs button{
+  width:100%;
+  min-height:44px;
+  padding:0 13px;
+  border:1px solid transparent;
+  border-radius:8px;
+  background:transparent;
+  color:#4b2f19;
+  text-align:left;
+  font-size:12px;
+  font-weight:900;
+}
+
+#moderationOverviewModal .moderation-tabs button:hover{
+  border-color:rgba(126,83,31,.14);
+  background:rgba(255,255,255,.55);
+}
+
+#moderationOverviewModal .moderation-tabs button.active{
+  color:#fff;
+  border-color:rgba(147,197,253,.34);
+  background:linear-gradient(135deg,#315ca9,#234886);
+  box-shadow:inset 4px 0 #93c5fd,0 6px 14px rgba(30,64,175,.14);
+}
+
+#moderationOverviewModal .moderation-section{
+  grid-column:2;
+  grid-row:2;
+  min-width:0;
+  min-height:0;
+  padding:22px 25px 30px;
+  overflow:auto;
+  overflow-x:hidden;
+  scrollbar-gutter:stable;
+}
+
+#moderationOverviewModal .moderation-section.hidden{display:none!important}
+
+#moderationOverviewModal .moderation-section-heading{
+  margin-bottom:16px;
+  padding-bottom:12px;
+  border-bottom:1px solid rgba(119,79,28,.16);
+}
+
+#moderationOverviewModal .moderation-section-heading h3{font-size:21px}
+#moderationOverviewModal .moderation-section-heading p{font-size:13px;line-height:1.45}
+
+#moderationOverviewModal .moderation-dashboard-grid{
+  grid-template-columns:minmax(0,2fr) minmax(300px,.85fr);
+  gap:16px;
+}
+
+#moderationOverviewModal .moderation-workspace,
+#moderationOverviewModal .moderation-quick-list{
+  align-content:start;
+}
+
+#moderationOverviewModal .moderation-workspace{
+  padding:17px;
+  border:1px solid rgba(107,70,25,.2);
+  border-radius:11px;
+  background:rgba(255,253,247,.82);
+  box-shadow:0 8px 22px rgba(72,43,13,.06),inset 0 1px 0 rgba(255,255,255,.7);
+}
+
+#moderationOverviewModal .moderation-report-list{gap:12px}
+#moderationOverviewModal .moderation-report{padding:16px;border-radius:10px}
+
+#moderationOverviewModal .moderation-quick-list{
+  gap:10px;
+  padding:15px;
+  border:1px solid rgba(107,70,25,.18);
+  border-radius:11px;
+  background:rgba(255,253,247,.66);
+}
+
+#moderationOverviewModal .moderation-quick-row{
+  min-height:48px;
+  padding:10px 12px;
+  background:rgba(255,255,255,.8);
+}
+
+#moderationOverviewModal .moderation-toolbar{
+  grid-template-columns:minmax(260px,1fr) minmax(150px,190px) minmax(150px,190px) auto;
+  gap:11px;
+}
+
+#moderationOverviewModal .moderation-settings-grid{gap:15px}
+
+@media(max-width:1050px){
+  #livingEventAdmin .admin-console-shell{grid-template-columns:190px minmax(0,1fr)}
+  #livingEventAdmin .admin-dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #livingEventAdmin .living-admin-status{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #moderationOverviewModal .moderation-console{grid-template-columns:185px minmax(0,1fr)}
+  #moderationOverviewModal .moderation-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #moderationOverviewModal .moderation-dashboard-grid{grid-template-columns:minmax(0,1.5fr) minmax(260px,.8fr)}
+}
+
+@media(max-width:780px){
+  #livingEventAdmin,
+  #moderationOverviewModal{padding:6px!important}
+  #livingEventAdmin .admin-console-modal,
+  #moderationOverviewModal .moderation-console-modal{
+    width:calc(100vw - 12px)!important;
+    height:calc(100vh - 12px)!important;
+  }
+  #livingEventAdmin .admin-console-shell{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+  #livingEventAdmin .admin-console-nav{
+    flex-direction:row;
+    padding:8px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    border-right:0;
+    border-bottom:1px solid rgba(107,70,25,.22);
+  }
+  #livingEventAdmin .admin-console-nav button{min-width:max-content;min-height:40px}
+  #livingEventAdmin .admin-console-content{padding:16px}
+  #livingEventAdmin .admin-server-grid,
+  #livingEventAdmin .admin-target-actions,
+  #livingEventAdmin .admin-broadcast-grid{grid-template-columns:1fr}
+  #moderationOverviewModal .moderation-console{
+    grid-template-columns:1fr;
+    grid-template-rows:auto auto minmax(0,1fr);
+  }
+  #moderationOverviewModal .moderation-summary-grid{
+    grid-column:1;
+    grid-template-columns:none;
+    grid-auto-flow:column;
+    grid-auto-columns:minmax(155px,1fr);
+    padding:11px;
+    overflow-x:auto;
+  }
+  #moderationOverviewModal .moderation-tabs{
+    grid-column:1;
+    grid-row:2;
+    flex-direction:row;
+    padding:8px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    border-right:0;
+    border-bottom:1px solid rgba(107,70,25,.22);
+  }
+  #moderationOverviewModal .moderation-tabs button{width:auto;min-width:max-content;min-height:40px}
+  #moderationOverviewModal .moderation-section{grid-column:1;grid-row:3;padding:16px}
+  #moderationOverviewModal .moderation-dashboard-grid,
+  #moderationOverviewModal .moderation-settings-grid{grid-template-columns:1fr}
+  #moderationOverviewModal .moderation-toolbar{grid-template-columns:1fr 1fr}
+}
+
+@media(max-width:520px){
+  #livingEventAdmin .modal-head,
+  #moderationOverviewModal .modal-head{padding:11px 12px}
+  #livingEventAdmin .modal-head h2,
+  #moderationOverviewModal .modal-head h2{font-size:20px}
+  #livingEventAdmin .admin-dashboard-metrics,
+  #livingEventAdmin .living-admin-status,
+  #moderationOverviewModal .moderation-toolbar{grid-template-columns:1fr}
+  #livingEventAdmin .admin-console-content,
+  #moderationOverviewModal .moderation-section{padding:12px}
+}
+
 </style>
 </head>
 <body>
