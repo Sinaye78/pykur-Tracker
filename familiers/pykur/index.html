@@ -12162,6 +12162,57 @@ body.night .dungeon-card .dungeon-mini{
   }
 }
 
+/* Profil communautaire et outils staff */
+#communityProfileModal .modal{width:min(900px,94vw)}
+#moderationModal .modal{width:min(980px,95vw)}
+.community-profile-shell{display:grid;gap:0;border:1px solid rgba(116,77,30,.22);border-radius:14px;overflow:hidden;background:rgba(255,252,244,.74);box-shadow:0 12px 30px rgba(56,34,12,.08)}
+.community-profile-shell.is-staff-view{border-color:rgba(184,75,55,.34)}
+.community-staff-banner{display:flex;align-items:center;gap:12px;padding:9px 15px;background:linear-gradient(90deg,rgba(153,27,27,.94),rgba(194,65,12,.86));color:#fff}
+.community-staff-banner span{font-size:11px;font-weight:1000;text-transform:uppercase;letter-spacing:.04em}
+.community-staff-banner p{margin:0;font-size:11px;opacity:.88}
+.community-profile-shell .community-profile-hero{border:0;border-radius:0;box-shadow:none;background:linear-gradient(135deg,rgba(255,252,243,.98),rgba(247,226,184,.82));padding:18px 20px}
+.community-profile-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.community-profile-name-row h3{margin:0}
+.community-profile-identity>p{margin:4px 0 0;color:#765126}
+.community-profile-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.community-profile-meta span{padding:4px 8px;border:1px solid rgba(121,82,35,.18);border-radius:999px;background:rgba(255,255,255,.56);font-size:10px;font-weight:900;color:#765126}
+.community-profile-toolbar{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;padding:12px 16px;border-top:1px solid rgba(121,82,35,.14);background:rgba(244,232,205,.62)}
+.community-profile-toolbar-group{display:grid;gap:6px}
+.community-profile-toolbar-group>small{font-size:9px;font-weight:1000;text-transform:uppercase;color:#846238}
+.community-profile-toolbar-group>div{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.community-profile-toolbar .community-friend-actions{display:inline-flex;margin:0;gap:7px}
+.community-profile-toolbar-group.is-staff{padding-left:14px;border-left:1px solid rgba(121,82,35,.18)}
+.community-profile-tabs{display:flex;gap:6px;padding:6px;border:1px solid rgba(119,79,28,.2);border-radius:12px;background:rgba(244,234,214,.75);position:sticky;top:0;z-index:2}
+.community-profile-tabs button{flex:1;min-height:38px;border:0;border-radius:8px;background:transparent;color:#63441f;font-weight:950;cursor:pointer}
+.community-profile-tabs button:hover{background:rgba(255,255,255,.55)}
+.community-profile-tabs button.is-active{background:#fffaf0;color:#1d4ed8;box-shadow:0 3px 10px rgba(61,39,15,.12)}
+.community-profile-tabs button span{display:inline-flex;min-width:20px;justify-content:center;margin-left:5px;padding:2px 6px;border-radius:999px;background:#dbeafe;font-size:10px}
+.community-profile-tab-panel{display:none}
+.community-profile-tab-panel.is-active{display:grid;gap:12px}
+.community-section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 4px}
+.community-section-heading small{display:block;color:#8b673d;font-weight:900;text-transform:uppercase;font-size:9px}
+.community-section-heading h4{margin:2px 0 0;font-size:16px}
+.community-section-heading>span{padding:5px 9px;border-radius:999px;background:#fef3c7;color:#7c4a03;font-size:11px;font-weight:950}
+.community-collection-card{min-height:150px}
+
+.moderation-workspace-tabs{display:flex;gap:6px;padding:6px;border-radius:12px;background:#eee3cc;border:1px solid rgba(107,72,31,.2)}
+.moderation-workspace-tabs button{flex:1;min-height:38px;border:0;border-radius:8px;background:transparent;font-weight:950;color:#60421f;cursor:pointer}
+.moderation-workspace-tabs button.is-active{background:#fffaf0;color:#b45309;box-shadow:0 4px 12px rgba(54,32,10,.12)}
+.moderation-workspace-panel{display:none;gap:12px}.moderation-workspace-panel.is-active{display:grid}
+.moderation-identity-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:16px;border-radius:13px;background:linear-gradient(135deg,#fffaf0,#f3dfb9);border:1px solid rgba(126,82,31,.22)}
+.moderation-identity-card .chat-avatar{width:58px;height:58px}
+.moderation-identity-card h3{margin:0;font-size:20px}.moderation-identity-card p{margin:4px 0 0;color:#765126}
+.moderation-form-card{display:grid;gap:10px;padding:14px;border:1px solid rgba(119,79,28,.2);border-radius:12px;background:rgba(255,252,244,.8)}
+.moderation-form-card h4,.moderation-form-card p{margin:0}.moderation-form-card p{font-size:11px;color:#745735}
+.moderation-form-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.moderation-form-row input,.moderation-form-card textarea{flex:1;min-width:180px}
+.moderation-restriction-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.moderation-restriction-grid label{display:flex;align-items:flex-start;gap:9px;padding:10px;border:1px solid rgba(119,79,28,.17);border-radius:10px;background:rgba(255,255,255,.55);font-weight:850}
+.moderation-restriction-grid label span{display:grid;gap:2px}.moderation-restriction-grid small{font-size:10px;color:#6b7280;font-weight:700}
+.moderation-security-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.moderation-pseudo-history{display:grid;gap:7px}.moderation-pseudo-history>div{display:grid;grid-template-columns:1fr auto;gap:6px;padding:9px;border-radius:9px;background:rgba(255,255,255,.55)}
+.moderation-pseudo-history small{grid-column:1/-1;color:#7a5b36}
+@media(max-width:700px){.community-profile-toolbar{align-items:stretch;flex-direction:column}.community-profile-toolbar-group.is-staff{padding:10px 0 0;border-left:0;border-top:1px solid rgba(121,82,35,.18)}.community-profile-tabs{overflow-x:auto}.community-profile-tabs button{min-width:120px}.moderation-workspace-tabs{overflow-x:auto}.moderation-workspace-tabs button{min-width:120px}.moderation-identity-card{grid-template-columns:auto 1fr}.moderation-identity-card>.community-role-badge{grid-column:2}.moderation-restriction-grid,.moderation-security-grid{grid-template-columns:1fr}}
+
 /* ===== Phase finale de polish visuel et ergonomique ===== */
 body{
   background:
@@ -14488,20 +14539,34 @@ function renderCommunityProfile(profile){
   const social=profile?.social||{};
   const canSeeDetails=!profile?.isPrivate || !!profile?.moderationView;
   box.innerHTML=`
-    <section class="community-profile-hero role-${escapeHtml(profile?.role||"user")}">
-      ${avatarMarkup(profile,"chat-avatar community-avatar")}
-      <div>
-        <h3 class="community-profile-title">${escapeHtml(profile?.pseudo||"Profil")} ${memberStatusMarkup(profile)}</h3>
-        <p>${profile?.isPrivate?"Profil privé · ":""}Compte créé le ${profile?.createdAt?formatDateShort(profile.createdAt):"date inconnue"}</p>
-        <div class="community-profile-hero-actions">
-          ${socialActionButton({asset:"copierprofil.png",title:"Copier le profil",description:"Copier le lien public de ce profil.",attributes:`data-community-copy-link="${escapeHtml(profile?.pseudo||"")}"`})}
-          ${socialActionButton({asset:"recherchermembre.png",title:"Rechercher un membre",description:"Ouvrir l'annuaire des membres.",className:"btn-gray",attributes:"data-community-open-search"})}
-          ${profile?.moderationView?`<span class="community-moderation-badge">Vue modération</span>`:""}
-          ${canOpenModerationTools(profile)?`<button class="btn btn-orange" type="button" data-community-moderate="${escapeHtml(profile?.pseudo||"")}">Modérer</button>`:""}
+    <section class="community-profile-shell ${profile?.moderationView?"is-staff-view":""}">
+      ${profile?.moderationView?`<div class="community-staff-banner"><span>Vue équipe</span><p>Les informations privées sont visibles uniquement pour vos missions de modération.</p></div>`:""}
+      <div class="community-profile-hero role-${escapeHtml(profile?.role||"user")}">
+        ${avatarMarkup(profile,"chat-avatar community-avatar")}
+        <div class="community-profile-identity">
+          <div class="community-profile-name-row">
+            <h3 class="community-profile-title">${escapeHtml(profile?.pseudo||"Profil")}</h3>
+            ${memberStatusMarkup(profile)}
+          </div>
+          <p>${profile?.isPrivate?"Profil privé · ":""}Compte créé le ${profile?.createdAt?formatDateShort(profile.createdAt):"date inconnue"}</p>
+          <div class="community-profile-meta">
+            <span>${profiles.length} profil${profiles.length>1?"s":""} Pykur visible${profiles.length>1?"s":""}</span>
+            <span>${achievements.length} succès visible${achievements.length>1?"s":""}</span>
+          </div>
         </div>
-        <div class="community-friend-actions" data-community-social-actions></div>
+        <span class="community-role-badge role-${escapeHtml(profile?.role||"user")}">${authRoleLabel(profile?.role)}</span>
       </div>
-      <span class="community-role-badge role-${escapeHtml(profile?.role||"user")}">${authRoleLabel(profile?.role)}</span>
+      <div class="community-profile-toolbar">
+        <div class="community-profile-toolbar-group">
+          <small>Actions sociales</small>
+          <div>
+            ${socialActionButton({asset:"copierprofil.png",title:"Copier le profil",description:"Copier le lien public de ce profil.",attributes:`data-community-copy-link="${escapeHtml(profile?.pseudo||"")}"`})}
+            ${socialActionButton({asset:"recherchermembre.png",title:"Rechercher un membre",description:"Ouvrir l'annuaire des membres.",className:"btn-gray",attributes:"data-community-open-search"})}
+            <span class="community-friend-actions" data-community-social-actions></span>
+          </div>
+        </div>
+        ${canOpenModerationTools(profile)?`<div class="community-profile-toolbar-group is-staff"><small>Outils équipe</small><button class="btn btn-orange" type="button" data-community-moderate="${escapeHtml(profile?.pseudo||"")}">Ouvrir la modération</button></div>`:""}
+      </div>
     </section>
     ${profile?.isPrivate && !profile?.moderationView?`
       <section class="community-private-note">
@@ -14509,7 +14574,14 @@ function renderCommunityProfile(profile){
       </section>
     `:""}
     ${canSeeDetails?`
-    <section class="community-profile-grid">
+    <nav class="community-profile-tabs" aria-label="Sections du profil">
+      <button class="is-active" type="button" data-community-tab="progression">Progression</button>
+      <button type="button" data-community-tab="collection">Collection</button>
+      <button type="button" data-community-tab="achievements">Succès <span>${achievements.length}</span></button>
+    </nav>
+    <div class="community-profile-tab-panel is-active" data-community-panel="progression">
+      <section class="community-section-heading"><div><small>Parcours Pykur</small><h4>Progression visible</h4></div><span>${profiles.length} profil${profiles.length>1?"s":""}</span></section>
+      <section class="community-profile-grid">
       ${profiles.length ? profiles.map(item=>`
           <article class="community-profile-card">
             <h4>${escapeHtml(item.name)}${item.isMain?" · Principal":""}</h4>
@@ -14520,9 +14592,11 @@ function renderCommunityProfile(profile){
           ${item.stats?`<p>Temps chrono : ${item.stats.chronoTotalSeconds?formatDuration(item.stats.chronoTotalSeconds):"—"}</p>`:""}
         </article>
       `).join("") : `<div class="community-profile-empty">Aucun profil Pykur visible publiquement.</div>`}
-    </section>
-    <section class="community-profile-card">
-      <h4>Résumé public</h4>
+      </section>
+    </div>
+    <div class="community-profile-tab-panel" data-community-panel="collection">
+      <section class="community-profile-card community-collection-card">
+      <div class="community-section-heading"><div><small>Mémoire du joueur</small><h4>Collection publique</h4></div></div>
       <div class="community-profile-summary-grid">
         ${profile?.gallery
           ? `<div class="community-profile-summary-item"><small>Pykurs terminés</small>${profile.gallery.completedPykurs || 0}</div>
@@ -14530,9 +14604,11 @@ function renderCommunityProfile(profile){
           : `<div class="community-profile-summary-item"><small>Galerie</small>Masquée</div>`}
         <div class="community-profile-summary-item"><small>Succès visibles</small>${achievements.length}</div>
       </div>
-    </section>
-    <section class="community-profile-card">
-      <h4>Succès visibles</h4>
+      </section>
+    </div>
+    <div class="community-profile-tab-panel" data-community-panel="achievements">
+      <section class="community-profile-card">
+      <div class="community-section-heading"><div><small>Accomplissements</small><h4>Succès visibles</h4></div><span>${achievements.length}</span></div>
       ${achievements.length
         ? `<div class="community-achievement-list">
             ${achievements.slice(0,6).map(({item,achievement})=>`
@@ -14545,7 +14621,8 @@ function renderCommunityProfile(profile){
           ${achievements.length>6?`<p>${achievements.length-6} autres succès visibles.</p>`:""}
           ${hiddenAchievementCount>0?`<p>${hiddenAchievementCount} succès secret${hiddenAchievementCount>1?"s":""} masqué${hiddenAchievementCount>1?"s":""}.</p>`:""}`
         : `<p>Aucun succès public visible pour le moment.</p>`}
-    </section>
+      </section>
+    </div>
     `:""}
   `;
   renderCommunitySocialActions(box.querySelector("[data-community-social-actions]"),profile?.pseudo,social);
@@ -14560,6 +14637,11 @@ function renderCommunityProfile(profile){
   });
   box.querySelector("[data-community-open-search]")?.addEventListener("click",openCommunityDirectory);
   box.querySelector("[data-community-moderate]")?.addEventListener("click",event=>openModerationPanel(event.currentTarget.dataset.communityModerate));
+  box.querySelectorAll("[data-community-tab]").forEach(button=>button.addEventListener("click",()=>{
+    const tab=button.dataset.communityTab;
+    box.querySelectorAll("[data-community-tab]").forEach(item=>item.classList.toggle("is-active",item===button));
+    box.querySelectorAll("[data-community-panel]").forEach(panel=>panel.classList.toggle("is-active",panel.dataset.communityPanel===tab));
+  }));
 }
 
 function moderationActionLabel(type){
@@ -14587,7 +14669,7 @@ function moderationUntil(hours){
   return new Date(Date.now()+hours*60*60*1000).toISOString();
 }
 
-function renderModerationPanel(data,pseudo){
+function renderModerationPanelLegacy(data,pseudo){
   const box=$("#moderationContent");
   if(!box)return;
   const user=data?.user||{};
@@ -14680,6 +14762,132 @@ function moderationStateBadges(user={}){
   if(["moderator","admin"].includes(user.role))badges.push(`<span class="moderation-state-badge is-team">${authRoleLabel(user.role)}</span>`);
   if(!badges.length)badges.push(`<span class="moderation-state-badge">Actif</span>`);
   return badges.join("");
+}
+
+function renderModerationPanel(data,pseudo){
+  const box=$("#moderationContent");
+  if(!box)return;
+  const user=data?.user||{};
+  const history=Array.isArray(data?.history)?data.history:[];
+  const pseudoRows=Array.isArray(data?.pseudoHistory)?data.pseudoHistory:[];
+  const permissions=new Set(data?.permissions||[]);
+  const can=permission=>permissions.has(permission)&&!!user.canModerate;
+  const restrictions=user.socialRestrictions||{};
+  box.innerHTML=`
+    <section class="moderation-identity-card role-${escapeHtml(user.role||"user")}">
+      ${avatarMarkup(user)}
+      <div><h3>${escapeHtml(user.pseudo||pseudo||"Membre")} ${memberStatusMarkup(user)}</h3><p>${escapeHtml(user.email||"Email masqué")} · inscrit le ${user.createdAt?formatDateShort(user.createdAt):"-"}</p></div>
+      <span class="community-role-badge role-${escapeHtml(user.role||"user")}">${authRoleLabel(user.role)}</span>
+    </section>
+    <nav class="moderation-workspace-tabs" aria-label="Sections de modération">
+      <button class="is-active" type="button" data-moderation-tab="overview">Vue d'ensemble</button>
+      <button type="button" data-moderation-tab="restrictions">Restrictions</button>
+      <button type="button" data-moderation-tab="security">Sécurité</button>
+      <button type="button" data-moderation-tab="history">Historique</button>
+    </nav>
+    <div class="moderation-workspace-panel is-active" data-moderation-panel="overview">
+      <section class="moderation-status-grid">
+        <div class="moderation-info"><small>Ban</small><strong>${user.isBanned?"Actif":"Aucun"}</strong></div>
+        <div class="moderation-info"><small>Fin ban</small><strong>${moderationDateText(user.banUntil)}</strong></div>
+        <div class="moderation-info"><small>Mute</small><strong>${user.muteUntil?moderationDateText(user.muteUntil):"Aucun"}</strong></div>
+        <div class="moderation-info"><small>Mot de passe</small><strong>${user.passwordResetRequired?"Réinitialisation requise":"Normal"}</strong></div>
+      </section>
+      <section class="moderation-security-grid">
+        <article class="moderation-form-card"><h4>Sanctions du compte</h4><p>Chaque action exige une raison et reste tracée dans l'audit.</p><div class="moderation-form-row">
+          <button class="btn btn-red" type="button" data-moderation-action="ban24" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${can("users.ban")?"":"disabled"}>Ban 24h</button>
+          <button class="btn btn-red" type="button" data-moderation-action="banPermanent" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${can("users.ban")?"":"disabled"}>Ban permanent</button>
+          <button class="btn btn-gray" type="button" data-moderation-action="unban" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${can("users.ban")?"":"disabled"}>Débannir</button>
+        </div></article>
+        <article class="moderation-form-card"><h4>Communication</h4><p>Avertissement ou suspension temporaire de la messagerie.</p><div class="moderation-form-row">
+          <button class="btn btn-blue" type="button" data-moderation-action="warn" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${can("users.warn")?"":"disabled"}>Avertir</button>
+          <button class="btn btn-orange" type="button" data-moderation-action="mute1" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${can("users.mute")?"":"disabled"}>Mute 1h</button>
+          <button class="btn btn-orange" type="button" data-moderation-action="mute24" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${can("users.mute")?"":"disabled"}>Mute 24h</button>
+          <button class="btn btn-gray" type="button" data-moderation-action="unmute" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${can("users.mute")?"":"disabled"}>Démute</button>
+        </div></article>
+      </section>
+      ${permissions.has("users.notes")?`<section class="moderation-form-card"><h4>Note interne</h4><p>Visible uniquement par l'équipe. N'y placez aucune donnée inutilement sensible.</p><textarea id="moderationStaffNote" rows="4" maxlength="2000" placeholder="Contexte utile pour les prochaines interventions...">${escapeHtml(user.staffNote||"")}</textarea><div><button class="btn btn-blue" type="button" data-save-staff-note="${user.id}">Enregistrer la note</button></div></section>`:""}
+    </div>
+    <div class="moderation-workspace-panel" data-moderation-panel="restrictions">
+      <section class="moderation-form-card"><h4>Accès communautaires ciblés</h4><p>Ces restrictions n'affectent ni la progression ni les données du Pykur.</p>
+        <div class="moderation-restriction-grid">
+          <label><input type="checkbox" data-user-restriction="chat" ${restrictions.chat?"checked":""}><span>Chat global<small>Empêche l'envoi de messages publics.</small></span></label>
+          <label><input type="checkbox" data-user-restriction="privateMessages" ${restrictions.privateMessages?"checked":""}><span>Messages privés<small>Empêche l'envoi de nouveaux MP.</small></span></label>
+          <label><input type="checkbox" data-user-restriction="friendRequests" ${restrictions.friendRequests?"checked":""}><span>Demandes d'ami<small>Empêche de solliciter de nouveaux membres.</small></span></label>
+          <label><input type="checkbox" data-user-restriction="sharing" ${restrictions.sharing?"checked":""}><span>Partages automatiques<small>Bloque les annonces de succès et Pykurs.</small></span></label>
+          <label><input type="checkbox" id="moderationProfileLocked" ${user.profileLocked?"checked":""}><span>Profil public verrouillé<small>Le profil reste privé jusqu'à levée manuelle.</small></span></label>
+          <label><input type="checkbox" id="moderationAvatarLocked" ${user.avatarLocked?"checked":""}><span>Avatar verrouillé<small>Empêche la modification de la photo.</small></span></label>
+        </div>
+        <div class="moderation-form-row"><input id="moderationRestrictionReason" maxlength="500" placeholder="Raison obligatoire"><button class="btn btn-orange" type="button" data-save-user-restrictions="${user.id}" ${can("users.restrict")?"":"disabled"}>Appliquer les restrictions</button></div>
+      </section>
+    </div>
+    <div class="moderation-workspace-panel" data-moderation-panel="security">
+      <section class="moderation-security-grid">
+        <article class="moderation-form-card"><h4>Identité du compte</h4><p>Le changement de pseudo conserve un historique complet.</p><div class="moderation-form-row"><input id="moderationNewPseudo" maxlength="24" value="${escapeHtml(user.pseudo||"")}"><button class="btn btn-blue" type="button" data-rename-user="${user.id}" ${can("users.rename")?"":"disabled"}>Modifier le pseudo</button></div></article>
+        <article class="moderation-form-card"><h4>Sessions actives</h4><p>Déconnecte tous les appareils sans modifier le mot de passe.</p><button class="btn btn-red" type="button" data-revoke-user-sessions="${user.id}" ${can("users.sessions.revoke")?"":"disabled"}>Révoquer toutes les sessions</button></article>
+        <article class="moderation-form-card"><h4>Réinitialisation du mot de passe</h4><p>Envoie un lien sécurisé et bloque les anciennes sessions.</p><button class="btn btn-orange" type="button" data-force-password-reset="${user.id}" ${can("users.password.reset")?"":"disabled"}>Forcer la réinitialisation</button></article>
+        ${authState.user?.role==="admin"?`<article class="moderation-form-card moderation-danger-zone"><h4>Administration du compte</h4><p>Gestion du rôle et suppression définitive.</p><div class="moderation-form-row">${user.role==="moderator"?`<button class="btn btn-gray" data-moderation-action="roleUser" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}">Retirer modo</button>`:`<button class="btn btn-blue" data-moderation-action="roleModerator" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}">Passer modo</button>`}<button class="btn btn-red" data-moderation-action="deleteUser" data-user-id="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}" ${user.canDelete?"":"disabled"}>Supprimer le compte</button></div></article>`:""}
+      </section>
+      <section class="moderation-form-card"><h4>Historique des pseudos</h4><div class="moderation-pseudo-history">${pseudoRows.length?pseudoRows.map(row=>`<div><strong>${escapeHtml(row.oldPseudo)} → ${escapeHtml(row.newPseudo)}</strong><time>${row.createdAt?formatDateShort(row.createdAt):"-"}</time><small>${escapeHtml(row.reason)} · par ${escapeHtml(row.actorPseudo||"Équipe")}</small></div>`).join(""):`<div class="community-profile-empty">Aucun changement de pseudo.</div>`}</div></section>
+    </div>
+    <div class="moderation-workspace-panel" data-moderation-panel="history">
+      <section class="community-profile-card"><h4>Historique récent ${history.length&&permissions.has("users.history.manage")?`<button class="btn btn-red" type="button" data-reset-moderation-history="${user.id}" data-pseudo="${escapeHtml(user.pseudo)}">Vider l'historique</button>`:""}</h4><div class="moderation-history">${history.length?history.map(row=>`<div class="moderation-history-row"><span class="moderation-history-type">${moderationActionLabel(row.type)}</span><span>${escapeHtml(row.reason||"Aucune raison indiquée")}<br><small>Par ${escapeHtml(row.actor?.pseudo||"Système")}</small></span><time>${row.createdAt?formatDateShort(row.createdAt):"-"}</time>${permissions.has("users.history.manage")?`<button class="btn btn-gray" type="button" data-delete-moderation-history="${escapeHtml(String(row.id))}" data-pseudo="${escapeHtml(user.pseudo)}">Retirer</button>`:""}</div>`).join(""):`<div class="community-profile-empty">Aucune action récente.</div>`}</div></section>
+    </div>`;
+  box.querySelectorAll("[data-moderation-tab]").forEach(button=>button.addEventListener("click",()=>{
+    box.querySelectorAll("[data-moderation-tab]").forEach(item=>item.classList.toggle("is-active",item===button));
+    box.querySelectorAll("[data-moderation-panel]").forEach(panel=>panel.classList.toggle("is-active",panel.dataset.moderationPanel===button.dataset.moderationTab));
+  }));
+  box.querySelectorAll("[data-moderation-action]").forEach(button=>button.addEventListener("click",()=>runModerationAction(button.dataset.moderationAction,button.dataset.userId,button.dataset.pseudo)));
+  box.querySelectorAll("[data-delete-moderation-history]").forEach(button=>button.addEventListener("click",()=>deleteModerationHistoryEntry(button.dataset.deleteModerationHistory,button.dataset.pseudo)));
+  box.querySelector("[data-reset-moderation-history]")?.addEventListener("click",event=>resetModerationHistory(event.currentTarget.dataset.resetModerationHistory,event.currentTarget.dataset.pseudo));
+  box.querySelector("[data-save-staff-note]")?.addEventListener("click",()=>saveModerationNote(user.id,user.pseudo));
+  box.querySelector("[data-save-user-restrictions]")?.addEventListener("click",()=>saveModerationRestrictions(user.id,user.pseudo));
+  box.querySelector("[data-rename-user]")?.addEventListener("click",()=>renameModeratedUser(user.id,user.pseudo));
+  box.querySelector("[data-revoke-user-sessions]")?.addEventListener("click",()=>runModerationSecurityAction("sessions/revoke",user.id,user.pseudo));
+  box.querySelector("[data-force-password-reset]")?.addEventListener("click",()=>runModerationSecurityAction("password-reset",user.id,user.pseudo));
+}
+
+async function saveModerationNote(userId,pseudo){
+  try{
+    await authFetch(`/moderation/users/${encodeURIComponent(userId)}/note`,{method:"PUT",body:JSON.stringify({note:$("#moderationStaffNote")?.value||""})});
+    toast("Note interne enregistrée.","success","success");
+  }catch(error){toast(error.message||"Note impossible à enregistrer.","error","error")}
+}
+
+async function saveModerationRestrictions(userId,pseudo){
+  const reason=String($("#moderationRestrictionReason")?.value||"").trim();
+  if(reason.length<3)return toast("Indiquez une raison pour modifier les restrictions.","warning","warning");
+  const restrictions={};
+  document.querySelectorAll("[data-user-restriction]").forEach(input=>{restrictions[input.dataset.userRestriction]=!!input.checked});
+  try{
+    await authFetch(`/moderation/users/${encodeURIComponent(userId)}/restrictions`,{method:"PUT",body:JSON.stringify({restrictions,profileLocked:!!$("#moderationProfileLocked")?.checked,avatarLocked:!!$("#moderationAvatarLocked")?.checked,reason})});
+    toast("Restrictions mises à jour.","success","success");
+    await openModerationPanel(pseudo);
+  }catch(error){toast(error.message||"Restrictions impossibles à appliquer.","error","error")}
+}
+
+async function renameModeratedUser(userId,currentPseudo){
+  const nextPseudo=String($("#moderationNewPseudo")?.value||"").trim();
+  if(!nextPseudo||nextPseudo===currentPseudo)return toast("Indiquez un nouveau pseudo.","warning","warning");
+  const reason=await moderationReason("rename",currentPseudo);
+  if(reason===null)return;
+  try{
+    await authFetch(`/moderation/users/${encodeURIComponent(userId)}/pseudo`,{method:"PUT",body:JSON.stringify({pseudo:nextPseudo,reason})});
+    toast("Pseudo modifié et historisé.","success","success");
+    await openModerationPanel(nextPseudo);
+  }catch(error){toast(error.message||"Modification du pseudo impossible.","error","error")}
+}
+
+async function runModerationSecurityAction(path,userId,pseudo){
+  const isPassword=path==="password-reset";
+  const reason=await moderationReason(path,pseudo);
+  if(reason===null)return;
+  const confirmed=await showConfirm(isPassword?`Forcer ${pseudo} à définir un nouveau mot de passe ?`:`Déconnecter ${pseudo} de tous ses appareils ?`,{title:isPassword?"Réinitialisation de sécurité":"Révocation des sessions",danger:true,okLabel:"Confirmer"});
+  if(!confirmed)return;
+  try{
+    await authFetch(`/moderation/users/${encodeURIComponent(userId)}/${path}`,{method:"POST",body:JSON.stringify({reason})});
+    toast(isPassword?"Lien de réinitialisation envoyé.":"Toutes les sessions ont été révoquées.","success","success");
+    await openModerationPanel(pseudo);
+  }catch(error){toast(error.message||"Action de sécurité impossible.","error","error")}
 }
 
 function moderationAccountRows(items,empty="Aucun compte correspondant."){

@@ -8,6 +8,11 @@ CREATE TABLE IF NOT EXISTS users (
   first_login_announcement_at TEXT,
   deletion_requested_at TEXT,
   session_version INTEGER NOT NULL DEFAULT 0,
+  password_reset_required INTEGER NOT NULL DEFAULT 0,
+  social_restrictions TEXT NOT NULL DEFAULT '{}',
+  profile_locked INTEGER NOT NULL DEFAULT 0,
+  avatar_locked INTEGER NOT NULL DEFAULT 0,
+  staff_note TEXT,
   preferences TEXT NOT NULL DEFAULT '{}',
   email_verified_at TEXT,
   is_banned INTEGER NOT NULL DEFAULT 0,
@@ -224,6 +229,19 @@ CREATE TABLE IF NOT EXISTS staff_permission_overrides (
   FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY(updated_by_user_id) REFERENCES users(id) ON DELETE RESTRICT
 );
+
+CREATE TABLE IF NOT EXISTS user_pseudo_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  old_pseudo TEXT NOT NULL,
+  new_pseudo TEXT NOT NULL,
+  actor_user_id INTEGER NOT NULL,
+  reason TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY(actor_user_id) REFERENCES users(id) ON DELETE RESTRICT
+);
+CREATE INDEX IF NOT EXISTS idx_user_pseudo_history_user ON user_pseudo_history(user_id, created_at);
 
 CREATE TABLE IF NOT EXISTS moderation_audit_log (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

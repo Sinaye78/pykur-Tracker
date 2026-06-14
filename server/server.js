@@ -45,6 +45,11 @@ ensureColumn("users", "first_login_announcement_at", "TEXT");
 ensureColumn("users", "deletion_requested_at", "TEXT");
 ensureColumn("users", "session_version", "INTEGER NOT NULL DEFAULT 0");
 ensureColumn("users", "presence_seen_at", "TEXT");
+ensureColumn("users", "password_reset_required", "INTEGER NOT NULL DEFAULT 0");
+ensureColumn("users", "social_restrictions", "TEXT NOT NULL DEFAULT '{}'");
+ensureColumn("users", "profile_locked", "INTEGER NOT NULL DEFAULT 0");
+ensureColumn("users", "avatar_locked", "INTEGER NOT NULL DEFAULT 0");
+ensureColumn("users", "staff_note", "TEXT");
 db.prepare("UPDATE users SET email_verified_at = COALESCE(email_verified_at, created_at) WHERE email_verified_at IS NULL AND last_login_at IS NOT NULL").run();
 
 function ensureCaseInsensitiveUserIndexes() {
@@ -257,6 +262,18 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_audit_target ON moderation_audit_log(target_user_id, created_at);
   CREATE TRIGGER IF NOT EXISTS moderation_audit_no_update BEFORE UPDATE ON moderation_audit_log BEGIN SELECT RAISE(ABORT, 'moderation audit log is immutable'); END;
   CREATE TRIGGER IF NOT EXISTS moderation_audit_no_delete BEFORE DELETE ON moderation_audit_log BEGIN SELECT RAISE(ABORT, 'moderation audit log is immutable'); END;
+  CREATE TABLE IF NOT EXISTS user_pseudo_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    old_pseudo TEXT NOT NULL,
+    new_pseudo TEXT NOT NULL,
+    actor_user_id INTEGER NOT NULL,
+    reason TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY(actor_user_id) REFERENCES users(id) ON DELETE RESTRICT
+  );
+  CREATE INDEX IF NOT EXISTS idx_user_pseudo_history_user ON user_pseudo_history(user_id, created_at);
 `);
 ensureColumn("private_messages", "edited_at", "TEXT");
 ensureColumn("private_messages", "deleted_at", "TEXT");
@@ -488,6 +505,28 @@ function cleanPreferences(value) {
   };
 }
 
+const DEFAULT_SOCIAL_RESTRICTIONS = Object.freeze({
+  chat: false,
+  privateMessages: false,
+  friendRequests: false,
+  sharing: false
+});
+
+function parseSocialRestrictions(value) {
+  const parsed = Object.assign({}, DEFAULT_SOCIAL_RESTRICTIONS, safeParseJson(value, {}));
+  return {
+    chat: !!parsed?.chat,
+    privateMessages: !!parsed?.privateMessages,
+    friendRequests: !!parsed?.friendRequests,
+    sharing: !!parsed?.sharing
+  };
+}
+
+function socialRestrictionError(user, key, label) {
+  if (!parseSocialRestrictions(user?.social_restrictions)[key]) return null;
+  return { error: `${label} temporairement restreint par l'équipe de modération.`, code: "SOCIAL_RESTRICTED" };
+}
+
 function publicUser(user) {
   if (!user) return null;
   const banned = !!user.is_banned;
@@ -527,7 +566,7 @@ function publicCommunityUser(user) {
     isOnline: !banned && isRecentlyOnline(user.presence_seen_at),
     isBanned: banned,
     banUntil: user.ban_until,
-    publicProfile: !!preferences.publicProfile,
+    publicProfile: !!preferences.publicProfile && !user.profile_locked,
     allowPrivateMessages: !!preferences.allowPrivateMessages
   };
 }
@@ -614,7 +653,8 @@ function buildCommunityProfile(user, savePayload, options = {}) {
   const preferences = parsePreferences(user.preferences);
   const banned = !!user.is_banned;
   const moderationView = !!options.moderationView;
-  if (!preferences.publicProfile && !moderationView) {
+  const profileIsPrivate = !preferences.publicProfile || !!user.profile_locked;
+  if (profileIsPrivate && !moderationView) {
     return {
       pseudo: user.pseudo,
       role: user.role,
@@ -662,9 +702,9 @@ function buildCommunityProfile(user, savePayload, options = {}) {
     isOnline: !banned && isRecentlyOnline(user.presence_seen_at),
     isBanned: banned,
     banUntil: user.ban_until,
-    isPrivate: !preferences.publicProfile,
+    isPrivate: profileIsPrivate,
     preferences: {
-      publicProfile: !!preferences.publicProfile,
+      publicProfile: !!preferences.publicProfile && !user.profile_locked,
       showSecondaryProfiles: !!preferences.showSecondaryProfiles,
       hidePykurProfileNames: !!preferences.hidePykurProfileNames,
       hideDetailedStats: !!preferences.hideDetailedStats,
@@ -1007,6 +1047,11 @@ const ADMIN_PERMISSION_CATALOG = Object.freeze([
   { id: "users.mute", group: "Utilisateurs", label: "Mute", description: "Restreindre temporairement la messagerie d'un membre." },
   { id: "users.ban", group: "Utilisateurs", label: "Bannir", description: "Bannir, debannir ou deconnecter un membre." },
   { id: "users.history.manage", group: "Utilisateurs", label: "Corriger l'historique", description: "Retirer les sanctions recentes affichees, sans effacer l'audit." },
+  { id: "users.notes", group: "Utilisateurs", label: "Notes internes", description: "Conserver une note visible uniquement par l'equipe." },
+  { id: "users.restrict", group: "Utilisateurs", label: "Restreindre les fonctions sociales", description: "Bloquer separement chat, messages, amis, partages, avatar ou profil public." },
+  { id: "users.rename", group: "Utilisateurs", label: "Modifier un pseudo", description: "Renommer un membre avec historique obligatoire." },
+  { id: "users.sessions.revoke", group: "Securite", label: "Revoquer les sessions", description: "Deconnecter le membre de tous ses appareils." },
+  { id: "users.password.reset", group: "Securite", label: "Forcer un nouveau mot de passe", description: "Envoyer un lien de recuperation et bloquer la connexion actuelle." },
   { id: "users.delete", group: "Utilisateurs", label: "Supprimer un compte", description: "Suppression definitive d'un compte. Reserve aux administrateurs." },
   { id: "reports.view", group: "Signalements", label: "Consulter les signalements", description: "Lire les dossiers, messages et contextes conserves." },
   { id: "reports.assign", group: "Signalements", label: "Organiser les dossiers", description: "Assigner, prioriser et annoter un signalement." },
@@ -1031,6 +1076,7 @@ const ALL_ADMIN_PERMISSIONS = ADMIN_PERMISSION_CATALOG.map((permission) => permi
 const ADMIN_PERMISSION_MATRIX = Object.freeze({
   moderator: [
     "console.view", "users.view", "users.warn", "users.mute", "users.ban", "users.history.manage",
+    "users.notes", "users.restrict",
     "reports.view", "reports.assign", "reports.resolve", "logs.view",
     "notifications.send", "events.target", "chat.configure", "chat.clear"
   ],
@@ -1388,7 +1434,24 @@ function moderationUserView(user, actor) {
   }
   base.canModerate = canModerateTarget(actor, user);
   base.canDelete = actor?.role === "admin" && user.role !== "admin" && Number(actor.id) !== Number(user.id);
+  base.socialRestrictions = parseSocialRestrictions(user.social_restrictions);
+  base.profileLocked = !!user.profile_locked;
+  base.avatarLocked = !!user.avatar_locked;
+  base.passwordResetRequired = !!user.password_reset_required;
+  base.staffNote = hasPermission(actor, "users.notes") ? String(user.staff_note || "") : "";
   return base;
+}
+
+function pseudoHistory(targetId) {
+  return db.prepare(`
+    SELECT h.id,h.old_pseudo AS oldPseudo,h.new_pseudo AS newPseudo,h.reason,h.created_at AS createdAt,
+           actor.pseudo AS actorPseudo
+    FROM user_pseudo_history h
+    LEFT JOIN users actor ON actor.id = h.actor_user_id
+    WHERE h.user_id = ?
+    ORDER BY h.created_at DESC
+    LIMIT 20
+  `).all(targetId);
 }
 
 function moderationHistory(targetId) {
@@ -1678,6 +1741,9 @@ app.post("/api/auth/login", loginLimiter, asyncRoute(async (req, res) => {
   if (!user.email_verified_at) {
     return res.status(403).json({ error: "Veuillez confirmer votre email avant de vous connecter." });
   }
+  if (user.password_reset_required) {
+    return res.status(403).json({ error: "La securite de ce compte exige un nouveau mot de passe. Utilisez Mot de passe oublie." });
+  }
   db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP, presence_seen_at = CURRENT_TIMESTAMP, deletion_requested_at = NULL WHERE id = ?").run(user.id);
   const refreshed = getUserById(user.id);
   announceFirstLogin(refreshed);
@@ -1721,7 +1787,7 @@ app.post("/api/auth/password-reset/confirm", passwordResetLimiter, asyncRoute(as
   }
   const hash = await bcrypt.hash(newPassword, 12);
   const transaction = db.transaction(() => {
-    db.prepare("UPDATE users SET password_hash = ?, session_version = session_version + 1, last_login_at = CURRENT_TIMESTAMP, presence_seen_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(hash, row.user_id);
+    db.prepare("UPDATE users SET password_hash = ?, password_reset_required = 0, session_version = session_version + 1, last_login_at = CURRENT_TIMESTAMP, presence_seen_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(hash, row.user_id);
     db.prepare("UPDATE password_reset_tokens SET used_at = CURRENT_TIMESTAMP WHERE id = ?").run(row.id);
   });
   transaction();
@@ -1776,12 +1842,14 @@ app.put("/api/account/password", requireAuth, asyncRoute(async (req, res) => {
 
 app.put("/api/account/preferences", requireAuth, (req, res) => {
   const preferences = cleanPreferences(req.body.preferences);
+  if (req.user.profile_locked) preferences.publicProfile = false;
   db.prepare("UPDATE users SET preferences = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(JSON.stringify(preferences), req.user.id);
   res.json({ user: publicUser(getUserById(req.user.id)) });
 });
 
 app.put("/api/account/avatar", requireAuth, (req, res) => {
   try {
+    if (req.user.avatar_locked) return res.status(403).json({ error: "Votre photo de profil est verrouillee par la moderation." });
     const avatarUrl = cleanAvatarUrl(req.body.avatarUrl);
     db.prepare("UPDATE users SET avatar_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(avatarUrl || null, req.user.id);
     logCommunity({ userId: req.user.id, type: "avatar", body: avatarUrl ? "Photo de profil modifiee." : "Photo de profil supprimee." });
@@ -1952,6 +2020,8 @@ app.post("/api/social/chat", requireAuth, socialWriteLimiter, (req, res) => {
     return res.status(403).json({ error: `Vous êtes mute jusqu'au ${req.user.mute_until}.` });
   }
   const type = ["message", "achievement", "pykur"].includes(req.body.type) ? req.body.type : "message";
+  const restriction = socialRestrictionError(req.user, type === "message" ? "chat" : "sharing", type === "message" ? "Le chat global est" : "Le partage automatique est");
+  if (restriction) return res.status(403).json(restriction);
   const body = String(req.body.body || "").trim();
   const meta = req.body.meta && typeof req.body.meta === "object" ? req.body.meta : {};
   const settings = chatSettings();
@@ -2069,6 +2139,8 @@ app.get("/api/social/friends", requireAuth, (req, res) => {
 });
 
 app.post("/api/social/friends/:pseudo/request", requireAuth, (req, res) => {
+  const restriction = socialRestrictionError(req.user, "friendRequests", "L'envoi de demandes d'ami est");
+  if (restriction) return res.status(403).json(restriction);
   const target = getTargetUserByPseudo(req.params.pseudo);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (Number(target.id) === Number(req.user.id)) return res.status(400).json({ error: "Impossible de vous ajouter vous-même." });
@@ -2168,6 +2240,8 @@ app.post("/api/social/messages/read-all", requireAuth, (req, res) => {
 });
 
 app.post("/api/social/messages/:pseudo", requireAuth, socialWriteLimiter, (req, res) => {
+  const restriction = socialRestrictionError(req.user, "privateMessages", "La messagerie privee est");
+  if (restriction) return res.status(403).json(restriction);
   const target = getTargetUserByPseudo(req.params.pseudo);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (!canMessageUser(req.user, target)) return res.status(403).json({ error: "Vous devez être amis et les messages privés doivent être autorisés." });
@@ -2884,9 +2958,92 @@ app.get("/api/moderation/users/:pseudo", requireAuth, requireRole("moderator"), 
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   res.json({
     user: moderationUserView(target, req.user),
-    history: moderationHistory(target.id)
+    history: moderationHistory(target.id),
+    pseudoHistory: pseudoHistory(target.id),
+    permissions: adminPermissions(req.user)
   });
 });
+
+function requiredModerationReason(value) {
+  const reason = String(value || "").trim().slice(0, 500);
+  return reason.length >= 3 ? reason : "";
+}
+
+app.put("/api/moderation/users/:id/pseudo", requireAuth, requireRole("moderator"), requirePermission("users.rename"), (req, res) => {
+  const target = getUserById(req.params.id);
+  const pseudo = cleanPseudo(req.body.pseudo);
+  const reason = requiredModerationReason(req.body.reason);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Modification non autorisee." });
+  if (!reason) return res.status(400).json({ error: "Une raison est obligatoire." });
+  if (!isValidPseudo(pseudo)) return res.status(400).json({ error: "Pseudo invalide : 3 a 24 caracteres." });
+  if (pseudo.toLowerCase() === String(target.pseudo).toLowerCase()) return res.status(400).json({ error: "Ce pseudo est deja utilise par ce compte." });
+  if (db.prepare("SELECT id FROM users WHERE lower(pseudo)=lower(?) AND id<>?").get(pseudo, target.id)) return res.status(409).json({ error: "Pseudo deja utilise." });
+  const oldPseudo = target.pseudo;
+  db.transaction(() => {
+    db.prepare("UPDATE users SET pseudo=?, updated_at=CURRENT_TIMESTAMP WHERE id=?").run(pseudo, target.id);
+    db.prepare("INSERT INTO user_pseudo_history(user_id,old_pseudo,new_pseudo,actor_user_id,reason) VALUES(?,?,?,?,?)").run(target.id, oldPseudo, pseudo, req.user.id, reason);
+  })();
+  auditLog({ actorId: req.user.id, targetId: target.id, action: "user.pseudo.update", entityType: "user", entityId: target.id, details: { oldPseudo, newPseudo: pseudo, reason }, req });
+  res.json({ user: moderationUserView(getUserById(target.id), req.user) });
+});
+
+app.put("/api/moderation/users/:id/note", requireAuth, requireRole("moderator"), requirePermission("users.notes"), (req, res) => {
+  const target = getUserById(req.params.id);
+  const note = String(req.body.note || "").trim().slice(0, 2000);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Modification non autorisee." });
+  db.prepare("UPDATE users SET staff_note=?, updated_at=CURRENT_TIMESTAMP WHERE id=?").run(note || null, target.id);
+  auditLog({ actorId: req.user.id, targetId: target.id, action: "user.note.update", entityType: "user", entityId: target.id, details: { noteLength: note.length }, req });
+  res.json({ ok: true });
+});
+
+app.put("/api/moderation/users/:id/restrictions", requireAuth, requireRole("moderator"), requirePermission("users.restrict"), (req, res) => {
+  const target = getUserById(req.params.id);
+  const reason = requiredModerationReason(req.body.reason);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Modification non autorisee." });
+  if (!reason) return res.status(400).json({ error: "Une raison est obligatoire." });
+  const restrictions = parseSocialRestrictions(req.body.restrictions);
+  const profileLocked = !!req.body.profileLocked;
+  const avatarLocked = !!req.body.avatarLocked;
+  db.prepare("UPDATE users SET social_restrictions=?, profile_locked=?, avatar_locked=?, updated_at=CURRENT_TIMESTAMP WHERE id=?")
+    .run(JSON.stringify(restrictions), profileLocked ? 1 : 0, avatarLocked ? 1 : 0, target.id);
+  auditLog({ actorId: req.user.id, targetId: target.id, action: "user.restrictions.update", entityType: "user", entityId: target.id, details: { restrictions, profileLocked, avatarLocked, reason }, req });
+  res.json({ user: moderationUserView(getUserById(target.id), req.user) });
+});
+
+app.post("/api/moderation/users/:id/sessions/revoke", requireAuth, requireRole("moderator"), requirePermission("users.sessions.revoke"), (req, res) => {
+  const target = getUserById(req.params.id);
+  const reason = requiredModerationReason(req.body.reason);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Action non autorisee." });
+  if (!reason) return res.status(400).json({ error: "Une raison est obligatoire." });
+  db.prepare("UPDATE users SET session_version=session_version+1, presence_seen_at=NULL, updated_at=CURRENT_TIMESTAMP WHERE id=?").run(target.id);
+  auditLog({ actorId: req.user.id, targetId: target.id, action: "user.sessions.revoke", entityType: "user", entityId: target.id, details: { reason }, req });
+  res.json({ ok: true });
+});
+
+app.post("/api/moderation/users/:id/password-reset", requireAuth, requireRole("moderator"), requirePermission("users.password.reset"), asyncRoute(async (req, res) => {
+  const target = getUserById(req.params.id);
+  const reason = requiredModerationReason(req.body.reason);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Action non autorisee." });
+  if (!reason) return res.status(400).json({ error: "Une raison est obligatoire." });
+  const token = crypto.randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+  db.prepare("DELETE FROM password_reset_tokens WHERE user_id=? AND used_at IS NULL").run(target.id);
+  db.prepare("INSERT INTO password_reset_tokens(user_id,token_hash,expires_at) VALUES(?,?,?)").run(target.id, tokenHash(token), expiresAt);
+  try {
+    await sendPasswordResetEmail(target, resetLink(token));
+  } catch (error) {
+    db.prepare("DELETE FROM password_reset_tokens WHERE user_id=? AND token_hash=?").run(target.id, tokenHash(token));
+    throw error;
+  }
+  db.prepare("UPDATE users SET password_reset_required=1, session_version=session_version+1, presence_seen_at=NULL, updated_at=CURRENT_TIMESTAMP WHERE id=?").run(target.id);
+  auditLog({ actorId: req.user.id, targetId: target.id, action: "user.password_reset.force", entityType: "user", entityId: target.id, details: { reason }, req });
+  res.json({ ok: true });
+}));
 
 app.delete("/api/moderation/actions/:id", requireAuth, requireRole("moderator"), requirePermission("users.history.manage"), (req, res) => {
   const id = Number(req.params.id);
