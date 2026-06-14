@@ -12176,7 +12176,17 @@ body.night{background:linear-gradient(rgba(0,0,0,.79),rgba(0,0,0,.79)),url("./as
     repeating-linear-gradient(90deg,rgba(113,77,31,.022) 0 1px,transparent 1px 34px),
     repeating-linear-gradient(0deg,rgba(113,77,31,.018) 0 1px,transparent 1px 34px),
     rgba(234,214,179,.965)!important;
-  box-shadow:0 26px 70px rgba(18,10,4,.38),inset 0 1px 0 rgba(255,255,255,.55)!important;
+  border-color:rgba(112,76,32,.48)!important;
+  box-shadow:
+    0 28px 72px rgba(18,10,4,.43),
+    0 0 0 1px rgba(255,244,215,.18),
+    inset 0 1px 0 rgba(255,255,255,.60)!important;
+}
+
+.side > .card:first-child,
+.profile-row,
+.hero{
+  border-color:rgba(112,76,34,.42)!important;
 }
 
 .dungeon-card,
@@ -12185,11 +12195,20 @@ body.night{background:linear-gradient(rgba(0,0,0,.79),rgba(0,0,0,.79)),url("./as
 .projection-card,
 .stats-fantasy-card,
 .hero,
-.profile-row{
+.profile-row,
+.side > .card:first-child{
   box-shadow:
-    0 10px 24px rgba(74,46,14,.075),
+    0 10px 24px rgba(74,46,14,.12),
+    0 2px 5px rgba(74,46,14,.07),
     inset 0 1px 0 rgba(255,255,255,.72),
-    inset 0 -1px 0 rgba(119,76,23,.07)!important;
+    inset 0 -1px 0 rgba(119,76,23,.10)!important;
+}
+
+.session-card{
+  border-color:rgba(162,132,85,.40)!important;
+  box-shadow:
+    0 12px 26px rgba(20,14,8,.20),
+    inset 0 1px 0 rgba(255,255,255,.08)!important;
 }
 .dungeon-card::before,
 .projection-card::before,
