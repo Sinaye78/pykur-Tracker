@@ -13776,6 +13776,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
         <nav class="admin-console-nav" aria-label="Sections du centre de contrôle">
           <button class="active" type="button" data-admin-console-tab="dashboard">Vue générale</button>
           <button type="button" data-admin-console-tab="users">Utilisateurs</button>
+          <button type="button" data-admin-console-tab="moderation">Modération</button>
           <button type="button" data-admin-console-tab="events">Événements</button>
           <button type="button" data-admin-console-tab="local">Tests locaux</button>
           <button type="button" data-admin-console-tab="achievements" data-admin-permission="achievements.manage">Succès locaux</button>
@@ -13790,6 +13791,12 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
             <div class="admin-console-heading"><div><h3>Contrôle utilisateur</h3><p>Recherchez un pseudo puis choisissez une action autorisée par votre rôle.</p></div></div>
             <div class="admin-user-search"><input id="adminTargetPseudo" type="search" placeholder="Pseudo exact du joueur"><button class="btn btn-blue" id="adminTargetSearch" type="button">Rechercher</button></div>
             <div id="adminTargetWorkspace" class="admin-console-empty">Aucun utilisateur sélectionné.</div>
+          </section>
+          <section class="admin-console-panel" data-admin-console-panel="moderation">
+            <div class="admin-console-heading"><div><h3>Modération</h3><p>Centralisez les signalements, sanctions, journaux et permissions d'équipe.</p></div></div>
+            <div id="adminModerationOverviewEmbed" class="moderation-panel moderation-console">
+              <div class="admin-console-loading">Chargement du tableau de modération...</div>
+            </div>
           </section>
           <section class="admin-console-panel" data-admin-console-panel="events">
             <div class="admin-console-heading"><div><h3>Planning serveur</h3><p>Le même événement et le même cooldown sont partagés par tous les joueurs.</p></div></div>
@@ -14279,9 +14286,9 @@ function authRender(){
   if($("#authFriendsPanel"))$("#authFriendsPanel").onclick=openFriendsPanel;
   if($("#authChatboxPanel"))$("#authChatboxPanel").onclick=openChatboxPanel;
   if($("#authDirectMessages"))$("#authDirectMessages").onclick=()=>openMessagesPanel();
-  if($("#authModerationOverview"))$("#authModerationOverview").onclick=openModerationOverview;
+  if($("#authModerationOverview"))$("#authModerationOverview").onclick=()=>openControlCenterSection("moderation");
   if($("#authLogout"))$("#authLogout").onclick=authLogout;
-  if($("#authAdminPanel"))$("#authAdminPanel").onclick=()=>livingOpenAdmin();
+  if($("#authAdminPanel"))$("#authAdminPanel").onclick=()=>openControlCenterSection("dashboard");
   if($("#authSocialMenu"))$("#authSocialMenu").onclick=()=>box.classList.toggle("menu-open");
   renderCloudStatus();
 }
@@ -14636,7 +14643,7 @@ function renderCommunityProfile(profile){
     }
   });
   box.querySelector("[data-community-open-search]")?.addEventListener("click",openCommunityDirectory);
-  box.querySelector("[data-community-moderate]")?.addEventListener("click",event=>openModerationPanel(event.currentTarget.dataset.communityModerate));
+  box.querySelector("[data-community-moderate]")?.addEventListener("click",event=>openControlCenterForUser(event.currentTarget.dataset.communityModerate));
   box.querySelectorAll("[data-community-tab]").forEach(button=>button.addEventListener("click",()=>{
     const tab=button.dataset.communityTab;
     box.querySelectorAll("[data-community-tab]").forEach(item=>item.classList.toggle("is-active",item===button));
@@ -15025,7 +15032,7 @@ function securitySettingsPanel(settings={}){
 }
 
 function renderModerationOverview(payload={}){
-  const box=$("#moderationOverviewContent");
+  const box=$("#adminModerationOverviewEmbed") || $("#moderationOverviewContent");
   if(!box)return;
   moderationPermissions=payload.permissions||[];
   moderationStaffPermissions=payload.staffPermissions||[];
@@ -15160,7 +15167,7 @@ function renderModerationOverview(payload={}){
     });
   });
   box.querySelectorAll("[data-overview-moderate]").forEach(button=>{
-    if(button.dataset.overviewModerate)button.addEventListener("click",()=>openModerationPanel(button.dataset.overviewModerate));
+    if(button.dataset.overviewModerate)button.addEventListener("click",()=>openControlCenterForUser(button.dataset.overviewModerate));
   });
   const rerenderWithFocus=(input,stateSetter)=>input?.addEventListener("input",event=>{
     stateSetter(event.target.value||"");
@@ -15287,10 +15294,9 @@ async function resolveModerationReport(id){
   }
 }
 
-async function openModerationOverview(){
+async function loadModerationOverviewPanel(){
   if(!authState.user || !["moderator","admin"].includes(authState.user.role))return;
-  const box=$("#moderationOverviewContent");
-  openModal("moderationOverviewModal");
+  const box=$("#adminModerationOverviewEmbed") || $("#moderationOverviewContent");
   if(box)box.innerHTML=`<div class="community-profile-empty">Chargement du tableau de modération...</div>`;
   try{
     const payload=await authFetch("/moderation/overview");
@@ -15298,6 +15304,15 @@ async function openModerationOverview(){
   }catch(error){
     if(box)box.innerHTML=`<div class="community-profile-empty">${escapeHtml(error.message||"Tableau de modération indisponible.")}</div>`;
   }
+}
+
+async function openModerationOverview(){
+  if(!authState.user || !["moderator","admin"].includes(authState.user.role))return;
+  if($("#livingEventAdmin")?.classList.contains("show")){
+    adminConsoleSelectTab("moderation");
+    return;
+  }
+  openControlCenterSection("moderation");
 }
 
 async function moderationReason(action,pseudo){
@@ -18614,8 +18629,7 @@ function bindAdminConsoleDynamicActions(){
   $("#adminSaveEventSettings")?.addEventListener("click",()=>saveAdminEventSettings(false));
   $("#adminRescheduleEvent")?.addEventListener("click",()=>saveAdminEventSettings(true));
   $("#adminOpenModerationOverview")?.addEventListener("click",()=>{
-    closeModal("livingEventAdmin");
-    openModerationOverview();
+    adminConsoleSelectTab("moderation");
   });
   $("#adminSendBroadcast")?.addEventListener("click",sendAdminBroadcast);
 }
@@ -18645,6 +18659,7 @@ async function saveAdminEventSettings(reschedule=false){
 function adminConsoleSelectTab(tab){
   $$("[data-admin-console-tab]").forEach(button=>button.classList.toggle("active",button.dataset.adminConsoleTab===tab));
   $$("[data-admin-console-panel]").forEach(panel=>panel.classList.toggle("active",panel.dataset.adminConsolePanel===tab));
+  if(tab==="moderation")loadModerationOverviewPanel();
 }
 
 function adminTargetSelectedProfile(){return document.querySelector('input[name="adminTargetProfile"]:checked')?.value||""}
@@ -18748,7 +18763,7 @@ async function sendAdminTargetCommand(type,payload={},danger=false){
   }catch(error){toast(error.message||"Commande impossible.","error","error")}
 }
 
-function livingOpenAdmin(){
+function livingOpenAdmin(targetTab="dashboard",targetPseudo=""){
   if(!authState.user || !["moderator","admin"].includes(authState.user.role))return toast("Accès réservé à l'équipe.","error","error");
   closeHelp();
   if(activeDialog)closeDialog(activeDialog.type==="prompt"?null:false);
@@ -18760,7 +18775,21 @@ function livingOpenAdmin(){
   livingRenderAdmin();
   loadAdminConsole();
   openModal("livingEventAdmin");
+  adminConsoleSelectTab(targetTab||"dashboard");
+  if(targetPseudo){
+    const input=$("#adminTargetPseudo");
+    if(input){
+      input.value=targetPseudo;
+      searchAdminTarget();
+    }
+  }
   if(data.settings.hudMode)bringHudToFront("livingEventAdmin");
+}
+function openControlCenterSection(tab="dashboard"){
+  livingOpenAdmin(tab||"dashboard");
+}
+function openControlCenterForUser(pseudo=""){
+  livingOpenAdmin("users",pseudo);
 }
 function adminPanelReopenSeconds(){
   return Math.max(5,Math.min(300,parseInt(data?.settings?.adminQuickReopenSeconds,10)||45));
