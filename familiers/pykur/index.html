@@ -12557,10 +12557,85 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
 
 #livingEventAdmin .admin-metric-card{min-height:96px}
 #livingEventAdmin .admin-metric-card strong{font-size:27px}
+#livingEventAdmin .admin-metric-card span{
+  display:block;
+  margin-top:3px;
+  color:#6b7280;
+  font-size:11px;
+  font-weight:800;
+}
+#livingEventAdmin .admin-metric-card.is-danger{
+  border-color:rgba(185,28,28,.28);
+  background:linear-gradient(135deg,rgba(255,247,237,.94),rgba(254,226,226,.6));
+}
+#livingEventAdmin .admin-metric-card.is-warning{
+  border-color:rgba(217,119,6,.28);
+  background:linear-gradient(135deg,rgba(255,251,235,.96),rgba(254,243,199,.62));
+}
 
 #livingEventAdmin .admin-server-grid{
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:15px;
+}
+
+#livingEventAdmin .admin-dashboard-layout{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:15px;
+}
+
+#livingEventAdmin .admin-dashboard-layout .admin-broadcast-card{
+  grid-column:1/-1;
+}
+
+#livingEventAdmin .admin-section-card{
+  margin-bottom:16px;
+  padding:17px;
+  border:1px solid rgba(107,70,25,.2);
+  border-radius:12px;
+  background:rgba(255,253,247,.88);
+  box-shadow:0 8px 22px rgba(72,43,13,.06),inset 0 1px 0 rgba(255,255,255,.72);
+}
+
+#livingEventAdmin .inline-heading{
+  align-items:center;
+  margin-bottom:16px;
+}
+
+#livingEventAdmin .admin-state-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+
+#livingEventAdmin .admin-state-grid div{
+  min-height:64px;
+  padding:11px 12px;
+  border:1px solid rgba(107,70,25,.15);
+  border-radius:10px;
+  background:rgba(255,255,255,.66);
+}
+
+#livingEventAdmin .admin-state-grid small{
+  display:block;
+  margin-bottom:4px;
+  color:#7a552e;
+  font-size:10px;
+  font-weight:1000;
+  text-transform:uppercase;
+}
+
+#livingEventAdmin .admin-state-grid strong{
+  font-size:14px;
+}
+
+#livingEventAdmin .admin-permission-cloud{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:0;
+  max-height:156px;
+  overflow:auto;
 }
 
 #livingEventAdmin .admin-broadcast-card{
@@ -12578,6 +12653,69 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
 #livingEventAdmin .admin-broadcast-grid textarea{min-height:94px}
 #livingEventAdmin .living-admin-status{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 #livingEventAdmin .living-admin-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:11px}
+#livingEventAdmin .living-admin-section{
+  border-color:rgba(107,70,25,.18);
+  background:rgba(255,255,255,.58);
+}
+#livingEventAdmin .living-admin-section summary{
+  min-height:42px;
+  padding:0 12px;
+  font-weight:1000;
+}
+#livingEventAdmin .admin-local-toolbar{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:8px;
+}
+#livingEventAdmin .admin-log-toolbar{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  margin-bottom:12px;
+}
+#livingEventAdmin .admin-log-toolbar input{
+  width:100%;
+  border:1px solid rgba(107,70,25,.24);
+  border-radius:10px;
+  background:#fffdf7;
+  padding:11px 13px;
+  font:inherit;
+}
+#livingEventAdmin .admin-command-main{
+  min-width:0;
+}
+#livingEventAdmin .admin-command-main>span{
+  margin-left:6px;
+  color:#725130;
+  font-weight:900;
+}
+#livingEventAdmin .admin-command-row details{
+  margin-top:8px;
+}
+#livingEventAdmin .admin-command-row summary{
+  cursor:pointer;
+  color:#2563eb;
+  font-size:11px;
+  font-weight:900;
+}
+#livingEventAdmin .admin-command-row pre{
+  max-height:160px;
+  overflow:auto;
+  margin:6px 0 0;
+  padding:10px;
+  border-radius:8px;
+  background:rgba(17,24,39,.9);
+  color:#e5e7eb;
+  font-family:Consolas,monospace;
+  font-size:11px;
+  white-space:pre-wrap;
+}
+#livingEventAdmin .admin-toggle-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:900;
+}
 
 #livingEventAdmin .admin-member-workspace{
   display:grid;
@@ -14104,52 +14242,73 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
           <section class="admin-console-panel" data-admin-console-panel="events">
             <div class="admin-console-heading"><div><h3>Planning serveur</h3><p>Le même événement et le même cooldown sont partagés par tous les joueurs.</p></div></div>
             <div id="adminServerEventSettings"></div>
-            <div class="living-admin-grid" id="livingEventButtons"></div>
+            <article class="admin-section-card">
+              <div class="admin-section-title"><h4>Déclenchement serveur</h4><span>tests globaux</span></div>
+              <p class="options-note">Ces actions lancent ou planifient un événement côté serveur. Elles doivent rester réservées aux tests contrôlés.</p>
+              <div class="living-admin-grid" id="livingEventButtons"></div>
+            </article>
           </section>
           <section class="admin-console-panel" data-admin-console-panel="local">
-            <div class="living-admin-status">
-              <div>Événement actif : <span id="livingEventActiveLabel">Aucun</span></div>
-              <div>Ambiance passive : <span id="passiveAmbienceActiveLabel">Aucune</span></div>
-              <div>Prochain événement global : <span id="livingEventNextLabel">-</span></div>
-              <div>Départ serveur : <span id="livingEventStartLabel">-</span></div>
-              <div>Cooldown global : <span id="livingEventCooldownLabel">-</span></div>
-              <div>Ambiance visuelle locale : <span id="passiveVisualCooldownLabel">-</span></div>
-              <div>Ambiance sonore locale : <span id="passiveSoundCooldownLabel">-</span></div>
-              <div>Système passif : <span id="passiveSystemLabel">-</span></div>
-            </div>
-            <div class="toolbar admin-local-toolbar">
-              <button class="btn btn-red" id="livingStopEvent" type="button">Arrêter l'événement</button>
-              <button class="btn btn-red" id="livingStopAll" type="button">Tout arrêter</button>
-              <button class="btn btn-blue" id="livingSkipCooldown" type="button">Actualiser le planning</button>
-              <button class="btn btn-orange" id="livingTestSounds" type="button">Tester sons</button>
-              <button class="btn btn-blue" id="passiveToggleAdmin" type="button">Ambiances on/off</button>
-              <button class="btn btn-gray" id="passiveStopAdmin" type="button">Stop ambiance</button>
-              <button class="btn btn-orange" id="passiveTestSoundsAdmin" type="button">Tester sons passifs</button>
-              <button class="btn btn-gray" id="livingRefreshAdmin" type="button">Rafraîchir</button>
-            </div>
-            <div class="living-admin-grid" id="livingLocalTestButtons"></div>
+            <div class="admin-console-heading"><div><h3>Tests locaux</h3><p>Outils de diagnostic visuel et sonore sans modifier les données serveur.</p></div></div>
+            <article class="admin-section-card">
+              <div class="admin-section-title"><h4>État courant</h4><span>local</span></div>
+              <div class="living-admin-status">
+                <div>Événement actif : <span id="livingEventActiveLabel">Aucun</span></div>
+                <div>Ambiance passive : <span id="passiveAmbienceActiveLabel">Aucune</span></div>
+                <div>Prochain événement global : <span id="livingEventNextLabel">-</span></div>
+                <div>Départ serveur : <span id="livingEventStartLabel">-</span></div>
+                <div>Cooldown global : <span id="livingEventCooldownLabel">-</span></div>
+                <div>Ambiance visuelle locale : <span id="passiveVisualCooldownLabel">-</span></div>
+                <div>Ambiance sonore locale : <span id="passiveSoundCooldownLabel">-</span></div>
+                <div>Système passif : <span id="passiveSystemLabel">-</span></div>
+              </div>
+            </article>
+            <article class="admin-section-card admin-danger-zone-soft">
+              <div class="admin-section-title"><h4>Contrôles rapides</h4><span>diagnostic</span></div>
+              <div class="toolbar admin-local-toolbar">
+                <button class="btn btn-red" id="livingStopEvent" type="button">Arrêter l'événement</button>
+                <button class="btn btn-red" id="livingStopAll" type="button">Tout arrêter</button>
+                <button class="btn btn-blue" id="livingSkipCooldown" type="button">Actualiser le planning</button>
+                <button class="btn btn-orange" id="livingTestSounds" type="button">Tester sons</button>
+                <button class="btn btn-blue" id="passiveToggleAdmin" type="button">Ambiances on/off</button>
+                <button class="btn btn-gray" id="passiveStopAdmin" type="button">Stop ambiance</button>
+                <button class="btn btn-orange" id="passiveTestSoundsAdmin" type="button">Tester sons passifs</button>
+                <button class="btn btn-gray" id="livingRefreshAdmin" type="button">Rafraîchir</button>
+              </div>
+            </article>
+            <article class="admin-section-card">
+              <div class="admin-section-title"><h4>Catalogues de tests</h4><span>catégories</span></div>
+              <div class="living-admin-grid" id="livingLocalTestButtons"></div>
+            </article>
           </section>
           <section class="admin-console-panel" data-admin-console-panel="achievements" data-admin-permission="achievements.manage">
-            <div class="admin-achievement-tools">
-              <label class="admin-achievement-sound"><input type="checkbox" id="adminAchievementSounds"> Jouer sons et notifications lors du give admin</label>
-              <button class="btn btn-blue" type="button" data-admin-achievement-action="give-all">Donner tous les succès</button>
-              <button class="btn btn-gray" type="button" data-admin-achievement-action="remove-all">Retirer tous les succès</button>
-              <button class="btn btn-orange" type="button" data-admin-achievement-action="recalculate">Recalculer les succès</button>
-              <button class="btn btn-red" type="button" data-admin-achievement-action="reset-all">Réinitialiser tous les succès</button>
-            </div>
-            <div id="adminAchievementList"></div>
+            <div class="admin-console-heading"><div><h3>Succès locaux</h3><p>Outils de test pour votre session locale. Les actions globales dangereuses sont isolées.</p></div></div>
+            <article class="admin-section-card">
+              <div class="admin-section-title"><h4>Actions globales</h4><span>session locale</span></div>
+              <div class="admin-achievement-tools">
+                <label class="admin-achievement-sound"><input type="checkbox" id="adminAchievementSounds"> Jouer sons et notifications lors du give admin</label>
+                <button class="btn btn-blue" type="button" data-admin-achievement-action="give-all">Donner tous les succès</button>
+                <button class="btn btn-gray" type="button" data-admin-achievement-action="remove-all">Retirer tous les succès</button>
+                <button class="btn btn-orange" type="button" data-admin-achievement-action="recalculate">Recalculer les succès</button>
+                <button class="btn btn-red" type="button" data-admin-achievement-action="reset-all">Réinitialiser tous les succès</button>
+              </div>
+            </article>
+            <article class="admin-section-card"><div class="admin-section-title"><h4>Catégories</h4><span>give / retrait</span></div><div id="adminAchievementList"></div></article>
           </section>
           <section class="admin-console-panel" data-admin-console-panel="logs"><div id="adminConsoleLogs" class="admin-console-loading">Chargement du journal...</div></section>
           <section class="admin-console-panel" data-admin-console-panel="preferences">
-            <div class="living-admin-options">
-              <div><label><input type="checkbox" id="adminAutoCloseAfterAction"> Fermer le panel après une action</label><small>Après fermeture, appuyez sur A pour le rouvrir rapidement pendant le délai choisi.</small></div>
-              <label class="living-admin-delay">Délai <input id="adminQuickReopenSeconds" type="number" min="5" max="300" step="5" value="45"> s</label>
-            </div>
+            <div class="admin-console-heading"><div><h3>Préférences staff</h3><p>Réglages personnels du centre de contrôle.</p></div></div>
+            <article class="admin-section-card">
+              <div class="admin-section-title"><h4>Réouverture rapide</h4><span>confort</span></div>
+              <div class="living-admin-options">
+                <div><label><input type="checkbox" id="adminAutoCloseAfterAction"> Fermer le panel après une action</label><small>Après fermeture, appuyez sur A pour le rouvrir rapidement pendant le délai choisi.</small></div>
+                <label class="living-admin-delay">Délai <input id="adminQuickReopenSeconds" type="number" min="5" max="300" step="5" value="45"> s</label>
+              </div>
+            </article>
           </section>
         </div>
       </div>
     </div>
-    <div class="modal-foot"><button class="btn btn-gray" data-close="livingEventAdmin">Fermer</button></div>
   </div>
 </div>
 <div class="modal-bg" id="achievementsModal">
@@ -18872,6 +19031,7 @@ function livingResetScheduler(){
 }
 let adminConsolePayload=null;
 let adminConsoleTarget=null;
+let adminConsoleCommandFilter="";
 
 function adminConsoleHas(permission){return !!adminConsolePayload?.permissions?.includes(permission)}
 function adminConsoleEventLabel(id){return LIVING_EVENT_DEFS.find(item=>item.id===id)?.label||id||"Aucun"}
@@ -18879,8 +19039,23 @@ function adminConsoleDate(value){return value?new Date(value).toLocaleString("fr
 function adminCommandStatusLabel(status){return ({pending:"En attente",delivered:"Transmise",completed:"Terminée",failed:"Échec",cancelled:"Annulée"})[status]||status}
 function adminCommandTypeLabel(type){return ({notification:"Notification",["popup-message"]:"Popup persistante",kick:"Déconnexion forcée",livingEvent:"Événement",["living-event"]:"Événement ciblé",["reset-gallery"]:"Reset galerie",["reset-achievements"]:"Reset succès",["reset-profile"]:"Reset profil",["reset-pykur"]:"Reset Pykur",["delete-profile"]:"Suppression profil",["rename-profile"]:"Renommage profil",["remove-achievement"]:"Retrait succès",["remove-gallery-event"]:"Retrait événement",["remove-gallery-pykur"]:"Retrait Pykur archivé",["recalculate-achievements"]:"Recalcul succès",["repair-progression"]:"Réparation progression"})[type]||type}
 
-function adminConsoleCommandRows(items=[]){
-  return `<div class="admin-command-list">${items.length?items.map(item=>`<div class="admin-command-row"><div><strong>${escapeHtml(adminCommandTypeLabel(item.type))}</strong>${item.target?` → ${escapeHtml(item.target.pseudo)}`:""}<small>${adminConsoleDate(item.createdAt)}${item.actor?` · par ${escapeHtml(item.actor.pseudo)}`:""}${item.result?.message?` · ${escapeHtml(item.result.message)}`:""}</small></div><div class="admin-command-actions"><span class="admin-command-status ${escapeHtml(item.status)}">${adminCommandStatusLabel(item.status)}</span>${adminConsoleHas("events.configure")&&["pending","delivered"].includes(item.status)?`<button class="btn btn-red" type="button" data-admin-cancel-command="${item.id}">Annuler</button>`:""}</div></div>`).join(""):`<div class="admin-console-empty">Aucune commande récente.</div>`}</div>`;
+function adminConsoleCommandRows(items=[],options={}){
+  const filtered=items.filter(item=>{
+    const needle=String(options.filter||"").trim().toLowerCase();
+    if(!needle)return true;
+    return [
+      adminCommandTypeLabel(item.type),
+      item.status,
+      item.target?.pseudo,
+      item.actor?.pseudo,
+      item.result?.message,
+      JSON.stringify(item.payload||{})
+    ].join(" ").toLowerCase().includes(needle);
+  });
+  return `<div class="admin-command-list">${filtered.length?filtered.map(item=>`<div class="admin-command-row">
+    <div class="admin-command-main"><strong>${escapeHtml(adminCommandTypeLabel(item.type))}</strong>${item.target?`<span>→ ${escapeHtml(item.target.pseudo)}</span>`:""}<small>${adminConsoleDate(item.createdAt)}${item.actor?` · par ${escapeHtml(item.actor.pseudo)}`:""}${item.result?.message?` · ${escapeHtml(item.result.message)}`:""}</small>${item.payload&&Object.keys(item.payload).length?`<details><summary>Détails techniques</summary><pre>${escapeHtml(JSON.stringify(item.payload,null,2))}</pre></details>`:""}</div>
+    <div class="admin-command-actions"><span class="admin-command-status ${escapeHtml(item.status)}">${adminCommandStatusLabel(item.status)}</span>${adminConsoleHas("events.configure")&&["pending","delivered"].includes(item.status)?`<button class="btn btn-red" type="button" data-admin-cancel-command="${item.id}">Annuler</button>`:""}</div>
+  </div>`).join(""):`<div class="admin-console-empty">Aucune commande récente.</div>`}</div>`;
 }
 
 function renderAdminConsole(){
@@ -18894,28 +19069,29 @@ function renderAdminConsole(){
   });
   const dashboard=$("#adminConsoleDashboard");
   if(dashboard)dashboard.innerHTML=`
+    <div class="admin-console-heading inline-heading"><div><h3>Vue d'ensemble staff</h3><p>Surveillez l'état général du tracker avant d'intervenir.</p></div><button class="btn btn-gray" id="adminOpenModerationOverview" type="button">Ouvrir la modération</button></div>
     <div class="admin-dashboard-metrics">
-      <article class="admin-metric-card"><small>Utilisateurs</small><strong>${metrics.users||0}</strong></article>
-      <article class="admin-metric-card"><small>En ligne</small><strong>${metrics.online||0}</strong></article>
-      <article class="admin-metric-card"><small>Commandes en attente</small><strong>${metrics.pendingCommands||0}</strong></article>
-      <article class="admin-metric-card"><small>Signalements ouverts</small><strong>${metrics.openReports||0}</strong></article>
+      <article class="admin-metric-card"><small>Utilisateurs</small><strong>${metrics.users||0}</strong><span>comptes inscrits</span></article>
+      <article class="admin-metric-card"><small>En ligne</small><strong>${metrics.online||0}</strong><span>actifs récemment</span></article>
+      <article class="admin-metric-card ${metrics.openReports?"is-danger":""}"><small>Signalements</small><strong>${metrics.openReports||0}</strong><span>à traiter</span></article>
+      <article class="admin-metric-card ${metrics.pendingCommands?"is-warning":""}"><small>Commandes</small><strong>${metrics.pendingCommands||0}</strong><span>en attente</span></article>
     </div>
-    <div class="admin-server-grid">
-      <article class="admin-server-card"><h4>Planning événementiel</h4><p><strong>${settings.paused?"En pause":adminConsoleEventLabel(event.id)}</strong></p><p>Départ : ${adminConsoleDate(event.startsAt)}</p><p>Cooldown : ${Math.ceil((event.startsInMs||0)/1000)}s</p></article>
-      <article class="admin-server-card"><h4>Vos permissions</h4><p>${(adminConsolePayload.permissions||[]).map(item=>`<span class="admin-permission-badge">${escapeHtml(item)}</span>`).join(" ")}</p><button class="btn btn-gray" id="adminOpenModerationOverview" type="button">Ouvrir le tableau de modération</button></article>
-      ${adminConsoleHas("notifications.send")?`<article class="admin-server-card admin-broadcast-card"><h4>Annonce globale</h4><p>Diffusez une information aux membres connectés. Le message est transmis par la file sécurisée du serveur.</p><div class="admin-broadcast-grid"><label><span>Message</span><textarea id="adminBroadcastMessage" maxlength="500" placeholder="Maintenance, mise à jour ou information importante..."></textarea></label><label><span>Affichage</span><select id="adminBroadcastMode"><option value="notification">Notification discrète</option><option value="info">Message d'information</option><option value="popup">Popup important</option></select></label><button class="btn btn-blue" id="adminSendBroadcast" type="button">Envoyer à tous</button></div></article>`:""}
+    <div class="admin-dashboard-layout">
+      <article class="admin-server-card admin-section-card"><div class="admin-section-title"><h4>État serveur</h4><span>${settings.paused?"pause":"actif"}</span></div><div class="admin-state-grid"><div><small>Événement prévu</small><strong>${settings.paused?"Planning en pause":adminConsoleEventLabel(event.id)}</strong></div><div><small>Départ</small><strong>${adminConsoleDate(event.startsAt)}</strong></div><div><small>Cooldown</small><strong>${Math.ceil((event.startsInMs||0)/1000)}s</strong></div><div><small>Santé API</small><strong>Opérationnelle</strong></div></div></article>
+      <article class="admin-server-card admin-section-card"><div class="admin-section-title"><h4>Permissions actives</h4><span>${(adminConsolePayload.permissions||[]).length}</span></div><p class="admin-permission-cloud">${(adminConsolePayload.permissions||[]).map(item=>`<span class="admin-permission-badge">${escapeHtml(item)}</span>`).join(" ")}</p></article>
+      ${adminConsoleHas("notifications.send")?`<article class="admin-server-card admin-section-card admin-broadcast-card"><div class="admin-section-title"><h4>Annonce globale</h4><span>communication</span></div><p>Diffusez une information aux membres connectés. Les messages importants doivent rester rares.</p><div class="admin-broadcast-grid"><label><span>Message</span><textarea id="adminBroadcastMessage" maxlength="500" placeholder="Maintenance, mise à jour ou information importante..."></textarea></label><label><span>Affichage</span><select id="adminBroadcastMode"><option value="notification">Notification discrète</option><option value="info">Message d'information</option><option value="popup">Popup important</option></select></label><button class="btn btn-blue" id="adminSendBroadcast" type="button">Envoyer à tous</button></div></article>`:""}
     </div>`;
   const eventSettings=$("#adminServerEventSettings");
   if(eventSettings)eventSettings.innerHTML=adminConsoleHas("events.configure")?`
-    <div class="admin-event-settings">
-      <label><input type="checkbox" id="adminEventsPaused" ${settings.paused?"checked":""}> Mettre en pause</label>
+    <article class="admin-section-card"><div class="admin-section-title"><h4>Planning serveur</h4><span>global</span></div><p class="options-note">Ces réglages affectent tous les joueurs connectés.</p><div class="admin-event-settings">
+      <label class="admin-toggle-row"><input type="checkbox" id="adminEventsPaused" ${settings.paused?"checked":""}> Mettre en pause</label>
       <label><span>Cooldown minimum (s)</span><input id="adminEventCooldownMin" type="number" min="30" max="86400" value="${settings.minCooldownSeconds||600}"></label>
       <label><span>Cooldown maximum (s)</span><input id="adminEventCooldownMax" type="number" min="30" max="172800" value="${settings.maxCooldownSeconds||1500}"></label>
       <button class="btn btn-blue" id="adminSaveEventSettings" type="button">Enregistrer</button>
       <button class="btn btn-orange" id="adminRescheduleEvent" type="button">Replanifier</button>
-    </div>`:`<div class="options-note">Vous pouvez tester ou cibler un événement, mais seul un administrateur peut modifier le planning global.</div>`;
+    </div></article>`:`<div class="options-note">Vous pouvez tester ou cibler un événement, mais seul un administrateur peut modifier le planning global.</div>`;
   const logs=$("#adminConsoleLogs");
-  if(logs)logs.innerHTML=adminConsoleCommandRows(adminConsolePayload.recentCommands||[]);
+  if(logs)logs.innerHTML=`<div class="admin-console-heading inline-heading"><div><h3>Journal serveur</h3><p>Suivez les commandes envoyées par le staff et leur statut.</p></div></div><section class="admin-section-card"><div class="admin-log-toolbar"><input id="adminCommandLogFilter" value="${escapeHtml(adminConsoleCommandFilter)}" placeholder="Filtrer par acteur, cible, action ou statut..."><button class="btn btn-gray" id="adminRefreshLogs" type="button">Rafraîchir</button></div>${adminConsoleCommandRows(adminConsolePayload.recentCommands||[],{filter:adminConsoleCommandFilter})}</section>`;
   bindAdminConsoleDynamicActions();
 }
 
@@ -18935,6 +19111,14 @@ function bindAdminConsoleDynamicActions(){
     adminConsoleSelectTab("moderation");
   });
   $("#adminSendBroadcast")?.addEventListener("click",sendAdminBroadcast);
+  $("#adminRefreshLogs")?.addEventListener("click",loadAdminConsole);
+  $("#adminCommandLogFilter")?.addEventListener("input",event=>{
+    adminConsoleCommandFilter=event.target.value||"";
+    renderAdminConsole();
+    const input=$("#adminCommandLogFilter");
+    input?.focus();
+    input?.setSelectionRange(input.value.length,input.value.length);
+  });
 }
 
 async function sendAdminBroadcast(){
