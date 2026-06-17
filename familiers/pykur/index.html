@@ -12952,6 +12952,141 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
   align-items:center;
 }
 
+#livingEventAdmin .admin-console-nav button{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:2px;
+}
+#livingEventAdmin .admin-console-nav button span{font-size:13px;line-height:1.1}
+#livingEventAdmin .admin-console-nav button small{
+  color:inherit;
+  font-size:10px;
+  font-weight:800;
+  line-height:1.1;
+  opacity:.68;
+}
+#livingEventAdmin .admin-events-board{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.65fr);gap:14px}
+#livingEventAdmin .admin-clean-member{display:grid;gap:16px}
+#livingEventAdmin .admin-clean-hero{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:18px;
+  border:1px solid rgba(107,70,25,.22);
+  border-radius:14px;
+  background:radial-gradient(circle at 12% 12%,rgba(255,255,255,.78),transparent 32%),linear-gradient(135deg,rgba(255,251,235,.94),rgba(246,225,180,.72));
+  box-shadow:0 10px 24px rgba(72,43,13,.08),inset 0 1px 0 rgba(255,255,255,.78);
+}
+#livingEventAdmin .admin-clean-hero.role-admin,
+#livingEventAdmin .admin-clean-hero.role-moderator{
+  border-color:rgba(239,68,68,.28);
+  background:radial-gradient(circle at 15% 12%,rgba(255,255,255,.82),transparent 31%),linear-gradient(135deg,rgba(255,245,235,.98),rgba(254,205,180,.62));
+}
+#livingEventAdmin .admin-clean-identity{display:flex;align-items:center;gap:15px;min-width:0}
+#livingEventAdmin .admin-clean-identity .chat-avatar{width:66px;height:66px;flex:0 0 auto}
+#livingEventAdmin .admin-clean-title{display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+#livingEventAdmin .admin-clean-title h3{margin:0;font-size:24px}
+#livingEventAdmin .admin-clean-identity p{margin:3px 0 8px;color:#74522f;font-size:12px;font-weight:900}
+#livingEventAdmin .admin-clean-snapshot{
+  min-width:220px;
+  padding:13px 15px;
+  border:1px solid rgba(107,70,25,.16);
+  border-radius:12px;
+  background:rgba(255,255,255,.62);
+  text-align:right;
+}
+#livingEventAdmin .admin-clean-snapshot span,
+#livingEventAdmin .admin-clean-card-head span{display:block;color:#8a6337;font-size:10px;font-weight:1000;text-transform:uppercase}
+#livingEventAdmin .admin-clean-snapshot strong{display:block;margin:3px 0;color:#2f1d0f;font-size:18px}
+#livingEventAdmin .admin-clean-snapshot small{color:#6b7280;font-weight:900}
+#livingEventAdmin .admin-clean-body{display:grid;grid-template-columns:280px minmax(0,1fr);gap:16px;align-items:start}
+#livingEventAdmin .admin-clean-sidebar,
+#livingEventAdmin .admin-clean-main{display:grid;gap:12px}
+#livingEventAdmin .admin-clean-sidebar article,
+#livingEventAdmin .admin-clean-card{
+  padding:15px;
+  border:1px solid rgba(107,70,25,.18);
+  border-radius:12px;
+  background:rgba(255,253,247,.86);
+  box-shadow:0 7px 18px rgba(72,43,13,.055),inset 0 1px 0 rgba(255,255,255,.72);
+}
+#livingEventAdmin .admin-clean-sidebar h4,
+#livingEventAdmin .admin-clean-card h4{margin:0 0 10px}
+#livingEventAdmin .admin-clean-profile-list{display:grid;gap:8px}
+#livingEventAdmin .admin-clean-profile-option{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  border:1px solid rgba(107,70,25,.14);
+  border-radius:10px;
+  background:rgba(255,255,255,.62);
+}
+#livingEventAdmin .admin-clean-profile-option span{display:grid;gap:2px;min-width:0}
+#livingEventAdmin .admin-clean-profile-option small{color:#6b7280;font-size:11px;font-weight:800}
+#livingEventAdmin .admin-mini-stats.clean{display:grid;grid-template-columns:1fr;gap:8px}
+#livingEventAdmin .admin-member-tabs{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:8px;
+  padding:9px;
+  border:1px solid rgba(107,70,25,.16);
+  border-radius:14px;
+  background:rgba(244,233,210,.72);
+}
+#livingEventAdmin .admin-member-tabs button{
+  min-height:58px;
+  padding:9px 10px;
+  border:1px solid rgba(107,70,25,.14);
+  border-radius:10px;
+  background:rgba(255,253,247,.7);
+  color:#4a2e17;
+  cursor:pointer;
+  text-align:left;
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
+}
+#livingEventAdmin .admin-member-tabs button:hover{transform:translateY(-1px);background:#fffdf7;box-shadow:0 5px 12px rgba(72,43,13,.08)}
+#livingEventAdmin .admin-member-tabs button.active{border-color:rgba(250,204,21,.45);background:linear-gradient(135deg,#8c571d,#6d3d13);color:#fff}
+#livingEventAdmin .admin-member-tabs span{display:block;font-size:13px;font-weight:1000}
+#livingEventAdmin .admin-member-tabs small{display:block;margin-top:3px;color:inherit;font-size:10px;font-weight:800;opacity:.7}
+#livingEventAdmin .admin-member-tab-panel{min-height:260px}
+#livingEventAdmin .admin-clean-section-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#livingEventAdmin .admin-clean-card-wide{grid-column:1/-1}
+#livingEventAdmin .admin-clean-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+#livingEventAdmin .admin-clean-card-head strong{color:#2f1d0f;font-size:18px}
+#livingEventAdmin .admin-clean-card textarea,
+#livingEventAdmin .admin-clean-card input,
+#livingEventAdmin .admin-clean-card select{width:100%;border:1px solid rgba(107,70,25,.26);border-radius:10px;background:#fffdf7;padding:11px 13px;font:inherit}
+#livingEventAdmin .admin-clean-card textarea{min-height:88px;resize:vertical}
+#livingEventAdmin .admin-clean-inline-tools,
+#livingEventAdmin .admin-clean-timeline{display:grid;gap:9px}
+#livingEventAdmin .admin-clean-timeline-row{padding:10px 12px;border:1px solid rgba(107,70,25,.14);border-radius:10px;background:rgba(255,255,255,.62)}
+#livingEventAdmin .admin-clean-timeline-row strong,
+#livingEventAdmin .admin-clean-timeline-row small{display:block}
+#livingEventAdmin .admin-clean-timeline-row small{margin-top:3px;color:#6b7280;font-weight:800}
+#livingEventAdmin .admin-clean-moderation-form{display:grid;grid-template-columns:110px 150px minmax(0,1fr);gap:10px}
+#livingEventAdmin .admin-clean-action-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:10px}
+#livingEventAdmin .admin-clean-warning{border-color:rgba(217,119,6,.25);background:linear-gradient(135deg,rgba(255,251,235,.95),rgba(255,247,237,.82))}
+#livingEventAdmin .admin-clean-danger{border-color:rgba(185,28,28,.32);background:linear-gradient(135deg,rgba(255,247,237,.96),rgba(254,226,226,.68))}
+#livingEventAdmin .admin-danger-strip.clean{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:9px}
+#livingEventAdmin .admin-avatar-editor.clean{display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;align-items:start}
+#livingEventAdmin .admin-avatar-editor.clean .chat-avatar{width:72px;height:72px}
+#livingEventAdmin .admin-role-editor.clean{display:grid;grid-template-columns:170px minmax(0,1fr) auto;gap:10px}
+#livingEventAdmin .admin-restriction-grid.clean{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
+#livingEventAdmin .admin-restriction-grid.clean label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:44px;
+  padding:9px 10px;
+  border:1px solid rgba(107,70,25,.14);
+  border-radius:10px;
+  background:rgba(255,255,255,.62);
+  font-weight:900;
+}
+
 #livingEventAdmin .admin-danger-zone-soft{
   border-color:rgba(185,28,28,.25);
   background:linear-gradient(135deg,rgba(255,247,237,.92),rgba(254,226,226,.46));
@@ -13138,6 +13273,10 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
   #livingEventAdmin .admin-console-shell{grid-template-columns:190px minmax(0,1fr)}
   #livingEventAdmin .admin-dashboard-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
   #livingEventAdmin .living-admin-status{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #livingEventAdmin .admin-events-board,
+  #livingEventAdmin .admin-clean-body,
+  #livingEventAdmin .admin-clean-section-grid{grid-template-columns:1fr}
+  #livingEventAdmin .admin-member-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
   #moderationOverviewModal .moderation-console{grid-template-columns:185px minmax(0,1fr)}
   #moderationOverviewModal .moderation-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
   #moderationOverviewModal .moderation-dashboard-grid{grid-template-columns:minmax(0,1.5fr) minmax(260px,.8fr)}
@@ -13167,7 +13306,13 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
   #livingEventAdmin .admin-broadcast-grid,
   #livingEventAdmin .admin-member-hero,
   #livingEventAdmin .admin-member-layout,
+  #livingEventAdmin .admin-clean-moderation-form,
+  #livingEventAdmin .admin-role-editor.clean,
+  #livingEventAdmin .admin-restriction-grid.clean,
   #livingEventAdmin .admin-role-editor{grid-template-columns:1fr}
+  #livingEventAdmin .admin-clean-hero{align-items:flex-start;flex-direction:column}
+  #livingEventAdmin .admin-clean-snapshot{width:100%;min-width:0;text-align:left}
+  #livingEventAdmin .admin-member-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
   #livingEventAdmin .admin-member-side{position:static}
   #moderationOverviewModal .moderation-console{
     grid-template-columns:1fr;
@@ -13205,6 +13350,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
   #moderationOverviewModal .modal-head h2{font-size:20px}
   #livingEventAdmin .admin-dashboard-metrics,
   #livingEventAdmin .living-admin-status,
+  #livingEventAdmin .admin-member-tabs,
   #moderationOverviewModal .moderation-toolbar{grid-template-columns:1fr}
   #livingEventAdmin .admin-console-content,
   #moderationOverviewModal .moderation-section{padding:12px}
@@ -14215,14 +14361,14 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
     <div class="modal-body">
       <div class="admin-console-shell">
         <nav class="admin-console-nav" aria-label="Sections du centre de contrôle">
-          <button class="active" type="button" data-admin-console-tab="dashboard">Vue d'ensemble</button>
-          <button type="button" data-admin-console-tab="users">Membres</button>
-          <button type="button" data-admin-console-tab="moderation">Modération</button>
-          <button type="button" data-admin-console-tab="events">Événements serveur</button>
-          <button type="button" data-admin-console-tab="local">Tests locaux</button>
-          <button type="button" data-admin-console-tab="achievements" data-admin-permission="achievements.manage">Succès locaux</button>
-          <button type="button" data-admin-console-tab="logs">Journal serveur</button>
-          <button type="button" data-admin-console-tab="preferences">Préférences staff</button>
+          <button class="active" type="button" data-admin-console-tab="dashboard"><span>Accueil</span><small>État serveur</small></button>
+          <button type="button" data-admin-console-tab="users"><span>Membres</span><small>Contrôle ciblé</small></button>
+          <button type="button" data-admin-console-tab="moderation"><span>Modération</span><small>Signalements</small></button>
+          <button type="button" data-admin-console-tab="events"><span>Événements</span><small>Serveur & tests</small></button>
+          <button type="button" data-admin-console-tab="achievements" data-admin-permission="achievements.manage"><span>Succès</span><small>Tests locaux</small></button>
+          <button type="button" data-admin-console-tab="permissions"><span>Permissions</span><small>Équipe</small></button>
+          <button type="button" data-admin-console-tab="logs"><span>Logs</span><small>Commandes</small></button>
+          <button type="button" data-admin-console-tab="preferences"><span>Réglages</span><small>Confort staff</small></button>
         </nav>
         <div class="admin-console-content">
           <section class="admin-console-panel active" data-admin-console-panel="dashboard">
@@ -14240,44 +14386,43 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
             </div>
           </section>
           <section class="admin-console-panel" data-admin-console-panel="events">
-            <div class="admin-console-heading"><div><h3>Planning serveur</h3><p>Le même événement et le même cooldown sont partagés par tous les joueurs.</p></div></div>
+            <div class="admin-console-heading"><div><h3>Événements et ambiances</h3><p>Gérez le planning global, puis testez localement les effets sans mélanger les responsabilités.</p></div></div>
             <div id="adminServerEventSettings"></div>
+            <div class="admin-events-board">
+              <article class="admin-section-card">
+                <div class="admin-section-title"><h4>État courant</h4><span>temps réel</span></div>
+                <div class="living-admin-status">
+                  <div>Événement actif : <span id="livingEventActiveLabel">Aucun</span></div>
+                  <div>Ambiance passive : <span id="passiveAmbienceActiveLabel">Aucune</span></div>
+                  <div>Prochain événement global : <span id="livingEventNextLabel">-</span></div>
+                  <div>Départ serveur : <span id="livingEventStartLabel">-</span></div>
+                  <div>Cooldown global : <span id="livingEventCooldownLabel">-</span></div>
+                  <div>Ambiance visuelle locale : <span id="passiveVisualCooldownLabel">-</span></div>
+                  <div>Ambiance sonore locale : <span id="passiveSoundCooldownLabel">-</span></div>
+                  <div>Système passif : <span id="passiveSystemLabel">-</span></div>
+                </div>
+              </article>
+              <article class="admin-section-card admin-danger-zone-soft">
+                <div class="admin-section-title"><h4>Contrôles rapides</h4><span>diagnostic</span></div>
+                <div class="toolbar admin-local-toolbar">
+                  <button class="btn btn-red" id="livingStopEvent" type="button">Arrêter l'événement</button>
+                  <button class="btn btn-red" id="livingStopAll" type="button">Tout arrêter</button>
+                  <button class="btn btn-blue" id="livingSkipCooldown" type="button">Actualiser le planning</button>
+                  <button class="btn btn-orange" id="livingTestSounds" type="button">Tester sons</button>
+                  <button class="btn btn-blue" id="passiveToggleAdmin" type="button">Ambiances on/off</button>
+                  <button class="btn btn-gray" id="passiveStopAdmin" type="button">Stop ambiance</button>
+                  <button class="btn btn-orange" id="passiveTestSoundsAdmin" type="button">Tester sons passifs</button>
+                  <button class="btn btn-gray" id="livingRefreshAdmin" type="button">Rafraîchir</button>
+                </div>
+              </article>
+            </div>
             <article class="admin-section-card">
               <div class="admin-section-title"><h4>Déclenchement serveur</h4><span>tests globaux</span></div>
               <p class="options-note">Ces actions lancent ou planifient un événement côté serveur. Elles doivent rester réservées aux tests contrôlés.</p>
               <div class="living-admin-grid" id="livingEventButtons"></div>
             </article>
-          </section>
-          <section class="admin-console-panel" data-admin-console-panel="local">
-            <div class="admin-console-heading"><div><h3>Tests locaux</h3><p>Outils de diagnostic visuel et sonore sans modifier les données serveur.</p></div></div>
             <article class="admin-section-card">
-              <div class="admin-section-title"><h4>État courant</h4><span>local</span></div>
-              <div class="living-admin-status">
-                <div>Événement actif : <span id="livingEventActiveLabel">Aucun</span></div>
-                <div>Ambiance passive : <span id="passiveAmbienceActiveLabel">Aucune</span></div>
-                <div>Prochain événement global : <span id="livingEventNextLabel">-</span></div>
-                <div>Départ serveur : <span id="livingEventStartLabel">-</span></div>
-                <div>Cooldown global : <span id="livingEventCooldownLabel">-</span></div>
-                <div>Ambiance visuelle locale : <span id="passiveVisualCooldownLabel">-</span></div>
-                <div>Ambiance sonore locale : <span id="passiveSoundCooldownLabel">-</span></div>
-                <div>Système passif : <span id="passiveSystemLabel">-</span></div>
-              </div>
-            </article>
-            <article class="admin-section-card admin-danger-zone-soft">
-              <div class="admin-section-title"><h4>Contrôles rapides</h4><span>diagnostic</span></div>
-              <div class="toolbar admin-local-toolbar">
-                <button class="btn btn-red" id="livingStopEvent" type="button">Arrêter l'événement</button>
-                <button class="btn btn-red" id="livingStopAll" type="button">Tout arrêter</button>
-                <button class="btn btn-blue" id="livingSkipCooldown" type="button">Actualiser le planning</button>
-                <button class="btn btn-orange" id="livingTestSounds" type="button">Tester sons</button>
-                <button class="btn btn-blue" id="passiveToggleAdmin" type="button">Ambiances on/off</button>
-                <button class="btn btn-gray" id="passiveStopAdmin" type="button">Stop ambiance</button>
-                <button class="btn btn-orange" id="passiveTestSoundsAdmin" type="button">Tester sons passifs</button>
-                <button class="btn btn-gray" id="livingRefreshAdmin" type="button">Rafraîchir</button>
-              </div>
-            </article>
-            <article class="admin-section-card">
-              <div class="admin-section-title"><h4>Catalogues de tests</h4><span>catégories</span></div>
+              <div class="admin-section-title"><h4>Tests locaux</h4><span>diagnostic visuel</span></div>
               <div class="living-admin-grid" id="livingLocalTestButtons"></div>
             </article>
           </section>
@@ -14294,6 +14439,10 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
               </div>
             </article>
             <article class="admin-section-card"><div class="admin-section-title"><h4>Catégories</h4><span>give / retrait</span></div><div id="adminAchievementList"></div></article>
+          </section>
+          <section class="admin-console-panel" data-admin-console-panel="permissions">
+            <div class="admin-console-heading"><div><h3>Permissions de l'équipe</h3><p>Attribuez les droits détaillés des modérateurs sans les promouvoir administrateur.</p></div></div>
+            <div id="adminPermissionsWorkspace" class="admin-console-loading">Chargement des permissions...</div>
           </section>
           <section class="admin-console-panel" data-admin-console-panel="logs"><div id="adminConsoleLogs" class="admin-console-loading">Chargement du journal...</div></section>
           <section class="admin-console-panel" data-admin-console-panel="preferences">
@@ -19032,6 +19181,7 @@ function livingResetScheduler(){
 let adminConsolePayload=null;
 let adminConsoleTarget=null;
 let adminConsoleCommandFilter="";
+let adminTargetPanelTab="summary";
 
 function adminConsoleHas(permission){return !!adminConsolePayload?.permissions?.includes(permission)}
 function adminConsoleEventLabel(id){return LIVING_EVENT_DEFS.find(item=>item.id===id)?.label||id||"Aucun"}
@@ -19147,6 +19297,27 @@ function adminConsoleSelectTab(tab){
   $$("[data-admin-console-tab]").forEach(button=>button.classList.toggle("active",button.dataset.adminConsoleTab===tab));
   $$("[data-admin-console-panel]").forEach(panel=>panel.classList.toggle("active",panel.dataset.adminConsolePanel===tab));
   if(tab==="moderation")loadModerationOverviewPanel();
+  if(tab==="permissions")loadAdminPermissionsPanel();
+}
+
+async function loadAdminPermissionsPanel(){
+  const box=$("#adminPermissionsWorkspace");
+  if(!box)return;
+  box.className="admin-console-loading";
+  box.textContent="Chargement des permissions...";
+  try{
+    const payload=await authFetch("/moderation/overview");
+    moderationPermissions=payload.permissions||[];
+    moderationStaffPermissions=payload.staffPermissions||[];
+    box.className="";
+    box.innerHTML=canModeration("permissions.manage")
+      ? moderationPermissionsPanel(payload.permissionCatalog||[],moderationStaffPermissions)
+      : `<div class="admin-console-empty">Vous n'avez pas accès à la gestion des permissions.</div>`;
+    box.querySelectorAll("[data-save-staff-permissions]").forEach(button=>button.addEventListener("click",()=>saveStaffPermissions(Number(button.dataset.saveStaffPermissions))));
+  }catch(error){
+    box.className="admin-console-empty";
+    box.textContent=error.message||"Permissions indisponibles.";
+  }
 }
 
 function adminTargetSelectedProfile(){return document.querySelector('input[name="adminTargetProfile"]:checked')?.value||""}
@@ -19477,6 +19648,131 @@ async function searchAdminTarget(){
   const box=$("#adminTargetWorkspace");if(box){box.className="admin-console-loading";box.textContent="Chargement du compte..."}
   try{renderAdminTarget(await authFetch(`/admin/users/${encodeURIComponent(pseudo)}/control`))}
   catch(error){if(box){box.className="admin-console-empty";box.textContent=error.message||"Utilisateur introuvable."}}
+}
+
+function renderAdminTarget(payload){
+  adminConsoleTarget=payload;
+  const box=$("#adminTargetWorkspace");
+  if(!box)return;
+  const user=payload.user||{};
+  const permissions=new Set(payload.permissions||[]);
+  const profiles=payload.profiles||[];
+  const achievements=payload.achievements||[];
+  const galleryEvents=payload.galleryEvents||[];
+  const galleryPykurs=payload.galleryPykurs||[];
+  const history=payload.history||[];
+  const can=id=>permissions.has(id);
+  const canModerate=!!user.canModerate&&(can("users.warn")||can("users.mute")||can("users.ban")||can("users.history.manage"));
+  const canCommunicate=can("notifications.send");
+  const canTargetEvent=can("events.target");
+  const canAvatar=can("users.avatar.manage");
+  const canRestrict=can("users.restrict");
+  const canIdentity=can("users.rename");
+  const canSecurity=can("users.sessions.revoke")||can("users.password.reset");
+  const canTracker=can("tracker.reset")||can("achievements.manage")||can("gallery.manage")||can("profiles.manage");
+  const canRoles=can("roles.manage");
+  const restrictions=user.socialRestrictions||{};
+  const activeProfile=profiles.find(profile=>profile.active)||profiles[0]||null;
+  const roleOptions=["user","moderator","admin"].map(role=>`<option value="${role}" ${user.role===role?"selected":""}>${escapeHtml(authRoleLabel(role))}</option>`).join("");
+  const tabIds=["summary","tracker","moderation","identity","security","danger"];
+  if(!tabIds.includes(adminTargetPanelTab))adminTargetPanelTab="summary";
+  const recentHistory=history.slice(0,6).map(item=>`<article class="admin-clean-timeline-row"><strong>${escapeHtml(adminCommandTypeLabel(item.type)||item.type||"Action")}</strong><small>${adminConsoleDate(item.createdAt)}${item.actor?.pseudo?` · par ${escapeHtml(item.actor.pseudo)}`:""}${item.reason?` · ${escapeHtml(item.reason)}`:""}</small></article>`).join("");
+  const profileCards=profiles.length?profiles.map(profile=>`<label class="admin-clean-profile-option"><input type="radio" name="adminTargetProfile" value="${adminEscapeAttr(profile.id)}" ${profile.active?"checked":""}><span><strong>${escapeHtml(profile.name)}</strong><small>${profile.pp} PP · Morose ${profile.morose} · Tynril ${profile.tynril}${profile.active?" · actif":""}</small></span></label>`).join(""):`<div class="admin-console-empty">Aucune sauvegarde cloud exploitable.</div>`;
+  const tabButtons=[
+    ["summary","Vue d'ensemble","Contact et commandes"],
+    ["tracker","Tracker","Profils, galerie, succès"],
+    ["moderation","Sanctions","Warn, mute, ban"],
+    ["identity","Identité","Pseudo, avatar, restrictions"],
+    ["security","Sécurité","Rôle et sessions"],
+    ["danger","Zone critique","Actions destructrices"]
+  ].map(([id,label,desc])=>`<button class="${adminTargetPanelTab===id?"active":""}" type="button" data-admin-member-tab="${id}"><span>${label}</span><small>${desc}</small></button>`).join("");
+  const sections={
+    summary:`
+      <section class="admin-clean-section-grid">
+        ${canCommunicate?`<article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Communication</span><strong>Message direct</strong></div><textarea id="adminTargetNotification" maxlength="500" placeholder="Message visible par le joueur, même s'il est hors ligne"></textarea><div class="admin-action-buttons"><button class="btn btn-blue" id="adminSendTargetNotification" type="button">Notification</button><button class="btn btn-orange" id="adminSendTargetPopup" type="button">Popup persistante</button><button class="btn btn-red" id="adminKickTarget" type="button">Kick avec message</button></div></article>`:""}
+        ${canTargetEvent?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Cosmétique</span><strong>Événement ciblé</strong></div><div class="admin-target-event"><select id="adminTargetEvent">${LIVING_EVENT_DEFS.map(item=>`<option value="${item.id}">${escapeHtml(item.label)}</option>`).join("")}</select><button class="btn btn-orange" id="adminSendTargetEvent" type="button">Jouer</button></div><p class="options-note">Ne compte ni comme découverte, ni comme récompense.</p></article>`:""}
+        <article class="admin-clean-card"><div class="admin-clean-card-head"><span>Historique</span><strong>Sanctions récentes</strong></div><div class="admin-clean-timeline">${recentHistory||`<div class="admin-console-empty">Aucune action récente.</div>`}</div></article>
+        <article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>File serveur</span><strong>Commandes récentes</strong></div>${adminConsoleCommandRows(payload.commands||[])}</article>
+      </section>`,
+    tracker:`
+      <section class="admin-clean-section-grid">
+        <article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Profils Pykur</span><strong>Sélectionnez la cible</strong></div><div class="admin-clean-profile-list">${profileCards}</div></article>
+        ${can("tracker.reset")?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Réparation</span><strong>Recalculs sûrs</strong></div><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer la progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer les succès</button></div></article>`:""}
+        ${can("profiles.manage")?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Profil sélectionné</span><strong>Renommage</strong></div><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer</button></div></article>`:""}
+        ${can("achievements.manage")?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Succès</span><strong>Retrait ciblé</strong></div>${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer ce succès</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}</article>`:""}
+        ${can("gallery.manage")?`<article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Galerie</span><strong>Retraits individuels</strong></div><div class="admin-clean-inline-tools">${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer l'événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un Pykur archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">Pykur #${item.number||"?"} · ${escapeHtml(item.profileName)} · ${item.pp} PP</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer le Pykur</button></div>`:`<p class="options-note">Aucun Pykur archivé.</p>`}</div></article>`:""}
+      </section>`,
+    moderation:canModerate?`
+      <section class="admin-clean-section-grid">
+        <article class="admin-clean-card admin-clean-card-wide admin-clean-warning"><div class="admin-clean-card-head"><span>Sanction</span><strong>Durée et motif</strong></div><p class="options-note">Chaque action est visible dans les logs de modération. Le motif doit être clair pour l'utilisateur.</p><div class="admin-clean-moderation-form"><input id="adminModerationDuration" type="number" min="1" max="525600" value="24" aria-label="Durée"><select id="adminModerationUnit" aria-label="Unité"><option value="minutes">minutes</option><option value="hours" selected>heures</option><option value="days">jours</option></select><input id="adminModerationReason" type="text" maxlength="300" placeholder="Motif affiché au joueur"></div><div class="admin-action-buttons admin-clean-action-grid">${can("users.warn")?`<button class="btn btn-blue" id="adminWarnTarget" type="button">Avertir</button>`:""}${can("users.mute")?`<button class="btn btn-orange" id="adminMuteTarget" type="button">Mute temporaire</button>`:""}${can("users.ban")?`<button class="btn btn-red" id="adminBanTarget" type="button">Ban temporaire</button>`:""}${can("users.ban.permanent")?`<button class="btn btn-red" id="adminBanPermanentTarget" type="button">Ban définitif</button>`:""}${user.muteUntil&&can("users.mute")?`<button class="btn btn-gray" id="adminUnmuteTarget" type="button">Retirer le mute</button>`:""}${user.isBanned&&can("users.ban")?`<button class="btn btn-blue" id="adminUnbanTarget" type="button">Débannir</button>`:""}</div></article>
+        <article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Contexte</span><strong>Historique récent</strong></div><div class="admin-clean-timeline">${recentHistory||`<div class="admin-console-empty">Aucune action récente.</div>`}</div></article>
+      </section>`:`<div class="admin-console-empty">Vous ne pouvez pas modérer ce membre.</div>`,
+    identity:`
+      <section class="admin-clean-section-grid">
+        ${canIdentity?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Pseudo</span><strong>Modifier l'identité</strong></div><div class="admin-target-event"><input id="adminTargetNewPseudo" type="text" maxlength="24" placeholder="Nouveau pseudo"><button class="btn btn-blue" id="adminRenameTargetUser" type="button">Renommer</button></div><p class="options-note">Le motif est lu depuis le champ de restrictions si nécessaire.</p></article>`:""}
+        ${canAvatar?`<article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Avatar</span><strong>Changer ou supprimer</strong></div><div class="admin-avatar-editor clean">${avatarMarkup(user)}<div class="admin-avatar-fields"><input id="adminTargetAvatarUrl" type="url" maxlength="800" value="${adminEscapeAttr(user.avatarUrl||"")}" placeholder="Nouvelle URL d'avatar ou vide pour supprimer"><input id="adminTargetAvatarReason" type="text" maxlength="300" placeholder="Motif de modification avatar"><div class="admin-action-buttons"><button class="btn btn-blue" id="adminSaveTargetAvatar" type="button">Changer l'avatar</button><button class="btn btn-red" id="adminClearTargetAvatar" type="button">Supprimer l'avatar</button></div></div></div></article>`:""}
+        ${canRestrict?`<article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Restrictions sociales</span><strong>Limiter temporairement des usages</strong></div><div class="admin-restriction-grid clean">${["chat","privateMessages","friendRequests","shares"].map(key=>`<label><input type="checkbox" data-admin-target-restriction="${key}" ${restrictions[key]?"checked":""}> ${key==="chat"?"Chat global":key==="privateMessages"?"Messages privés":key==="friendRequests"?"Demandes d'ami":"Partages automatiques"}</label>`).join("")}<label><input type="checkbox" id="adminTargetProfileLocked" ${user.profileLocked?"checked":""}> Verrouiller le profil public</label><label><input type="checkbox" id="adminTargetAvatarLocked" ${user.avatarLocked?"checked":""}> Verrouiller l'avatar</label></div><div class="admin-target-event"><input id="adminTargetRestrictionReason" type="text" maxlength="300" placeholder="Motif des restrictions"><button class="btn btn-orange" id="adminSaveTargetRestrictions" type="button">Appliquer les restrictions</button></div></article>`:""}
+      </section>`,
+    security:`
+      <section class="admin-clean-section-grid">
+        ${canRoles?`<article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Rôle</span><strong>Permissions principales</strong></div><p class="options-note">Le changement de rôle est protégé, journalisé et ne peut pas supprimer le dernier administrateur.</p><div class="admin-role-editor clean"><select id="adminTargetRole">${roleOptions}</select><input id="adminTargetRoleReason" type="text" maxlength="300" placeholder="Motif du changement de rôle"><button class="btn btn-blue" id="adminChangeTargetRole" type="button">Appliquer le rôle</button></div></article>`:""}
+        ${canSecurity?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Compte</span><strong>Sessions</strong></div><input id="adminTargetSecurityReason" type="text" maxlength="300" placeholder="Motif sécurité"><div class="admin-action-buttons">${can("users.sessions.revoke")?`<button class="btn btn-red" id="adminRevokeTargetSessions" type="button">Révoquer sessions</button>`:""}${can("users.password.reset")?`<button class="btn btn-orange" id="adminForceTargetPassword" type="button">Forcer mot de passe</button>`:""}</div></article>`:""}
+      </section>`,
+    danger:canTracker?`
+      <section class="admin-clean-section-grid">
+        <article class="admin-clean-card admin-clean-card-wide admin-clean-danger"><div class="admin-clean-card-head"><span>Zone critique</span><strong>Réinitialisations et suppressions</strong></div><p>Ces actions peuvent retirer des données visibles du joueur. Elles demandent une confirmation et sont journalisées côté serveur.</p><div class="admin-danger-strip clean">${can("gallery.manage")?`<button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button>`:""}${can("achievements.manage")?`<button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button>`:""}${can("tracker.reset")?`<button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset Pykur</button>`:""}${can("profiles.manage")?`<button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button>`:""}</div></article>
+      </section>`:`<div class="admin-console-empty">Aucune action critique disponible pour votre rôle.</div>`
+  };
+  box.className="";
+  box.innerHTML=`
+    <section class="admin-clean-member">
+      <header class="admin-clean-hero role-${escapeHtml(user.role||"user")}">
+        <div class="admin-clean-identity">
+          ${avatarMarkup(user)}
+          <div><div class="admin-clean-title"><h3>${escapeHtml(user.pseudo||"Utilisateur")}</h3><span class="admin-role-pill ${escapeHtml(user.role||"user")}">${escapeHtml(authRoleLabel(user.role))}</span></div><p>${escapeHtml(user.email||"Email masqué")} · Cloud ${adminConsoleDate(payload.cloudUpdatedAt)}</p><div class="admin-status-row">${adminTargetStatusChips(user)}</div></div>
+        </div>
+        <div class="admin-clean-snapshot"><span>Profil actif</span><strong>${escapeHtml(activeProfile?.name||"Aucun profil")}</strong><small>${activeProfile?`${activeProfile.pp} PP · Morose ${activeProfile.morose} · Tynril ${activeProfile.tynril}`:"Aucune donnée cloud"}</small></div>
+      </header>
+      <div class="admin-clean-body">
+        <aside class="admin-clean-sidebar">
+          <article><h4>Profils cloud</h4><div class="admin-clean-profile-list">${profileCards}</div></article>
+          <article><h4>Indicateurs</h4><div class="admin-mini-stats clean"><div><small>Succès</small><strong>${achievements.length}</strong></div><div><small>Événements</small><strong>${galleryEvents.length}</strong></div><div><small>Archives</small><strong>${galleryPykurs.length}</strong></div></div></article>
+        </aside>
+        <main class="admin-clean-main">
+          <nav class="admin-member-tabs" aria-label="Contrôle du membre">${tabButtons}</nav>
+          <div class="admin-member-tab-panel">${sections[adminTargetPanelTab]||sections.summary}</div>
+        </main>
+      </div>
+    </section>`;
+  box.querySelectorAll("[data-admin-member-tab]").forEach(button=>button.addEventListener("click",()=>{
+    adminTargetPanelTab=button.dataset.adminMemberTab||"summary";
+    renderAdminTarget(payload);
+  }));
+  $("#adminChangeTargetRole")?.addEventListener("click",adminChangeTargetRole);
+  $("#adminSendTargetNotification")?.addEventListener("click",()=>sendAdminTargetCommand("notification",{message:$("#adminTargetNotification")?.value||""},false));
+  $("#adminSendTargetPopup")?.addEventListener("click",()=>sendAdminTargetCommand("popup-message",{message:$("#adminTargetNotification")?.value||""},false));
+  $("#adminKickTarget")?.addEventListener("click",()=>sendAdminTargetCommand("kick",{message:$("#adminTargetNotification")?.value||"Votre session a été interrompue par l'équipe de modération."},true));
+  $("#adminSendTargetEvent")?.addEventListener("click",()=>sendAdminTargetCommand("living-event",{eventId:$("#adminTargetEvent")?.value},false));
+  $("#adminRenameTargetProfile")?.addEventListener("click",()=>sendAdminTargetCommand("rename-profile",{profileId:adminTargetSelectedProfile(),name:$("#adminTargetProfileName")?.value||""},true));
+  $("#adminRenameTargetUser")?.addEventListener("click",()=>renameAdminTargetUser());
+  $("#adminSaveTargetAvatar")?.addEventListener("click",()=>adminUpdateTargetAvatar(false));
+  $("#adminClearTargetAvatar")?.addEventListener("click",()=>adminUpdateTargetAvatar(true));
+  $("#adminSaveTargetRestrictions")?.addEventListener("click",()=>saveAdminTargetRestrictions());
+  $("#adminRevokeTargetSessions")?.addEventListener("click",()=>adminSecurityTarget("sessions/revoke"));
+  $("#adminForceTargetPassword")?.addEventListener("click",()=>adminSecurityTarget("password-reset"));
+  $("#adminRemoveTargetAchievement")?.addEventListener("click",()=>sendAdminTargetCommand("remove-achievement",{achievementId:$("#adminTargetAchievement")?.value||""},true));
+  $("#adminRemoveTargetGalleryEvent")?.addEventListener("click",()=>sendAdminTargetCommand("remove-gallery-event",{eventId:$("#adminTargetGalleryEvent")?.value||""},true));
+  $("#adminRemoveTargetGalleryPykur")?.addEventListener("click",()=>sendAdminTargetCommand("remove-gallery-pykur",{pykurId:$("#adminTargetGalleryPykur")?.value||""},true));
+  $("#adminWarnTarget")?.addEventListener("click",()=>adminModerateTarget("warn"));
+  $("#adminMuteTarget")?.addEventListener("click",()=>adminModerateTarget("mute"));
+  $("#adminBanTarget")?.addEventListener("click",()=>adminModerateTarget("ban"));
+  $("#adminBanPermanentTarget")?.addEventListener("click",()=>adminModerateTarget("ban",true));
+  $("#adminUnmuteTarget")?.addEventListener("click",()=>adminLiftModeration("unmute"));
+  $("#adminUnbanTarget")?.addEventListener("click",()=>adminLiftModeration("unban"));
+  box.querySelectorAll("[data-admin-target-command]").forEach(button=>button.addEventListener("click",()=>{
+    const payloadData=button.dataset.needsProfile?{profileId:adminTargetSelectedProfile()}:{};
+    sendAdminTargetCommand(button.dataset.adminTargetCommand,payloadData,true);
+  }));
 }
 
 async function sendAdminTargetCommand(type,payload={},danger=false){
