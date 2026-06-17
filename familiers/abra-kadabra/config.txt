@@ -1,0 +1,15 @@
+Configuration future Abra Kadabra
+
+Ce fichier sert de memo pour le branchement complet.
+
+Informations a fournir avant implementation finale :
+1. Nom exact des 3 donjons.
+2. Nombre maximal ou objectif final de Puissance.
+3. Gain de Puissance par donjon ou par monstres.
+4. Limites de runs si elles existent.
+5. Temps moyens par defaut.
+6. Succes dedies a Abra Kadabra.
+7. Libelles exacts pour la detection Dofus.
+
+Une fois ces informations donnees, le registre multi-familiers du tracker pourra relier ce dossier
+a une vraie experience jouable.

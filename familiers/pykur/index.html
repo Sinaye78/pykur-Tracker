@@ -6766,6 +6766,59 @@ body[data-fx="premium"] .milestone-flash{box-shadow:0 0 0 9999px rgba(212,167,60
   opacity:.86;
 }
 
+.familiar-choice-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+  margin:4px 0 12px;
+}
+.familiar-choice-card{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:10px;
+  align-items:flex-start;
+  padding:14px;
+  border:1px solid rgba(171,132,73,.36);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(255,251,235,.94),rgba(247,232,190,.78));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72);
+  cursor:pointer;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.familiar-choice-card:hover,
+.familiar-choice-card.selected{
+  transform:translateY(-1px);
+  border-color:rgba(216,155,23,.78);
+  box-shadow:0 10px 22px rgba(83,52,15,.13),inset 0 1px 0 rgba(255,255,255,.86);
+}
+.familiar-choice-card input{
+  margin-top:4px;
+  accent-color:#d89b17;
+}
+.familiar-choice-card strong{
+  display:block;
+  color:#2b1608;
+  font-size:16px;
+}
+.familiar-choice-card small{
+  display:block;
+  margin-top:5px;
+  color:#694b28;
+  line-height:1.35;
+}
+.familiar-choice-card em{
+  display:inline-flex;
+  margin-top:10px;
+  padding:4px 9px;
+  border-radius:999px;
+  background:rgba(37,99,235,.10);
+  color:#2563eb;
+  font-size:11px;
+  font-style:normal;
+  font-weight:900;
+  text-transform:uppercase;
+}
+
 body.help-active{
   overflow-x:hidden;
 }
@@ -14578,6 +14631,59 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
 <script>
 const PP_MAX=90;
 const RUN_LIMITS={morose:640,tynril:48};
+const FAMILIARS={
+  pykur:{
+    id:"pykur",
+    label:"Pykur",
+    shortLabel:"Pykur",
+    defaultProfileName:"Pykur principal",
+    progressLabel:"Prospection",
+    progressShort:"PP",
+    objectiveLabel:"90 PP",
+    status:"complete",
+    statusLabel:"Tracker complet",
+    description:"Suivi complet de progression, donjons, PP, chrono, galerie, succès et détection Dofus.",
+    dungeons:[
+      {key:"morose",label:"Morose",fullLabel:"Donjon Morose"},
+      {key:"tynril",label:"Tynril",fullLabel:"Donjon Tynril"}
+    ]
+  },
+  "abra-kadabra":{
+    id:"abra-kadabra",
+    label:"Abra Kadabra",
+    shortLabel:"Abra",
+    defaultProfileName:"Abra Kadabra principal",
+    progressLabel:"Puissance",
+    progressShort:"Puissance",
+    objectiveLabel:"objectif à définir",
+    status:"preparation",
+    statusLabel:"Préparation",
+    description:"Nouveau familier prévu pour trois donjons et une progression en puissance. Les assets et règles exactes restent à brancher.",
+    dungeons:[
+      {key:"abra_donjon_1",label:"Donjon Abra 1",fullLabel:"Donjon Abra Kadabra 1"},
+      {key:"abra_donjon_2",label:"Donjon Abra 2",fullLabel:"Donjon Abra Kadabra 2"},
+      {key:"abra_donjon_3",label:"Donjon Abra 3",fullLabel:"Donjon Abra Kadabra 3"}
+    ]
+  }
+};
+function normalizeFamiliarId(id){
+  return FAMILIARS[id] ? id : "pykur";
+}
+function activeFamiliarId(){
+  return normalizeFamiliarId(data?.familiarId);
+}
+function activeFamiliar(){
+  return FAMILIARS[activeFamiliarId()] || FAMILIARS.pykur;
+}
+function familiarFarmLabel(farm,format="short"){
+  const familiar=activeFamiliar();
+  const item=familiar.dungeons.find(entry=>entry.key===farm);
+  if(item)return format==="full" ? item.fullLabel : item.label;
+  return farm==="morose" ? (format==="full"?"Donjon Morose":"Morose") : farm==="tynril" ? (format==="full"?"Donjon Tynril":"Tynril") : farm;
+}
+function isPykurProfile(){
+  return activeFamiliarId()==="pykur";
+}
 const ACHIEVEMENTS=window.PykurCore.ACHIEVEMENTS;
 const ACHIEVEMENT_CATEGORIES=window.PykurCore.ACHIEVEMENT_CATEGORIES;
 const MAIN_ACHIEVEMENT_CATEGORIES=window.PykurCore.MAIN_ACHIEVEMENT_CATEGORIES;
@@ -14635,6 +14741,7 @@ const gains={
 const zoneIds=["abrakleur","bitouf","brouture","chiendent","fecorce","floribonde","nerbe"];
 
 const defaultData=()=>({
+  familiarId:"pykur",
   runs:{morose:0,tynril:0},
   mobs:{morose:{},tynril:{},zone:{}},
   settings:{
@@ -14656,6 +14763,12 @@ const defaultData=()=>({
   activity:[],
   undo:[]
 });
+
+function defaultDataForFamiliar(familiarId="pykur"){
+  const next=defaultData();
+  next.familiarId=normalizeFamiliarId(familiarId);
+  return next;
+}
 
 let store=null;
 let activeProfile=null;
@@ -18849,7 +18962,7 @@ function setPykurImageSafely(src,alt){
 function updateProgressTitle(){
   const title=$("#progressTitle");
   if(!title)return;
-  title.textContent=data.ui?.capyMode ? "Progression du Capykur" : "Progression du Pykur";
+  title.textContent=data.ui?.capyMode ? "Progression du Capykur" : `Progression du ${activeFamiliar().shortLabel}`;
 }
 
 function setCapyMode(enabled,notify=true){
@@ -22026,6 +22139,7 @@ function calcAveragePerActiveDay(){
 }
 
 function ensureData(){
+  data.familiarId=normalizeFamiliarId(data.familiarId);
   if(!data.stats)data.stats=defaultData().stats;
   if(!data.stats.days)data.stats.days={};
   data.session=Object.assign(defaultData().session,data.session||{});
@@ -22084,7 +22198,7 @@ function ensureData(){
 
 function makeStore(){
   const id="p_"+Date.now();
-  return {active:id,galleryShared:true,sharedGallery:defaultData().gallery,optionsShared:false,sharedSettings:defaultData().settings,achievementsShared:false,sharedAchievements:defaultData().achievements,deletedProfiles:{},profiles:{[id]:{name:"Pykur principal",data:defaultData()}}};
+  return {active:id,needsFamiliarChoice:true,galleryShared:true,sharedGallery:defaultData().gallery,optionsShared:false,sharedSettings:defaultData().settings,achievementsShared:false,sharedAchievements:defaultData().achievements,deletedProfiles:{},profiles:{[id]:{name:FAMILIARS.pykur.defaultProfileName,data:defaultDataForFamiliar("pykur")}}};
 }
 
 function normalizeSettings(settings){
@@ -22258,6 +22372,10 @@ function load(){
   Object.keys(store.deletedProfiles).forEach(profileId=>{
     if(store.profiles)delete store.profiles[profileId];
   });
+  Object.values(store.profiles||{}).forEach(profile=>{
+    if(!profile.data)profile.data=defaultDataForFamiliar("pykur");
+    profile.data.familiarId=normalizeFamiliarId(profile.data.familiarId);
+  });
   ensureStoreGallery();
   ensureStoreOptionsSharing();
   ensureStoreAchievementSharing();
@@ -22300,6 +22418,7 @@ function load(){
   renderAll();
   achievementNotificationMuted=false;
   syncChronoTimerForProfile();
+  setTimeout(()=>maybePromptInitialFamiliarChoice(),400);
 }
 
 function save(){
@@ -22592,7 +22711,7 @@ async function dofusOpenConfig(farm){
   dofusState.configFarm=farm;
   dofusState.configZone=null;
   dofusState.configImage=null;
-  $("#dofusConfigTitle").textContent=`Configurer ${farm==="morose"?"Morose":"Tynril"}`;
+  $("#dofusConfigTitle").textContent=`Configurer ${familiarFarmLabel(farm)}`;
   $("#dofusThresholdInput").value=data.dofusDetection.refs[farm]?.threshold||82;
   $("#dofusConfigReadout").textContent="Capture ou importe une image, puis trace une zone.";
   dofusClearCanvas();
@@ -22694,7 +22813,7 @@ async function dofusSaveReference(){
   };
   save();
   dofusRefreshOptions();
-  toast(`Référence ${farm==="morose"?"Morose":"Tynril"} sauvegardée.`,"success","click");
+  toast(`Référence ${familiarFarmLabel(farm)} sauvegardée.`,"success","click");
 }
 
 async function dofusScoreForFarm(farm){
@@ -22752,7 +22871,7 @@ async function dofusTestDetection(){
   scores.sort((a,b)=>b.score-a.score);
   const best=scores[0];
   const ok=best.score>=best.threshold;
-  toast(`Score ${best.farm==="morose"?"Morose":"Tynril"} : ${Math.round(best.score*100)}% - ${ok?"Réussie":"Échec"}`,ok?"success":"warning",ok?"success":"warning");
+  toast(`Score ${familiarFarmLabel(best.farm)} : ${Math.round(best.score*100)}% - ${ok?"Réussie":"Échec"}`,ok?"success":"warning",ok?"success":"warning");
   dofusSetStatus(data.dofusDetection.enabled?"Détection active":"En attente",`Dernier test : ${Math.round(best.score*100)}%`);
 }
 
@@ -22787,7 +22906,7 @@ function dofusAutoAddRun(farm){
   if(select)select.value=previous;
   save();
   renderAll();
-  toast(`Fin de donjon détectée : +1 ${farm==="morose"?"Morose":"Tynril"}`,"success","pp");
+  toast(`Fin de donjon détectée : +1 ${familiarFarmLabel(farm)}`,"success","pp");
   dofusSetStatus("Cooldown",`Cooldown ${data.dofusDetection.cooldownSeconds||45}s`);
 }
 
@@ -22994,7 +23113,8 @@ async function archiveAndRestartPykur(){
   const achievements=clone(data.achievements||defaultData().achievements);
   const gallery=clone(data.gallery||defaultData().gallery);
   const dofusDetection=clone(data.dofusDetection||defaultData().dofusDetection);
-  data=defaultData();
+  const familiarId=activeFamiliarId();
+  data=defaultDataForFamiliar(familiarId);
   data.settings=settings;
   data.achievements=achievements;
   data.gallery=gallery;
@@ -23318,10 +23438,18 @@ const SECRET_COMPLETION_CATEGORIES=["EASTER EGGS","SECRETS"];
 
 function achievementList({mainOnly=false,includeFinal=true}={}){
   return Object.entries(ACHIEVEMENTS||{}).filter(([,achievement])=>{
+    if(!achievementAppliesToActiveFamiliar(achievement))return false;
     if(mainOnly)return MAIN_ACHIEVEMENT_CATEGORIES.includes(achievement.category);
     if(!includeFinal && achievement.category==="FINAL")return false;
     return true;
   });
+}
+
+function achievementAppliesToActiveFamiliar(achievement){
+  if(!achievement)return false;
+  if(SECRET_COMPLETION_CATEGORIES.includes(achievement.category))return true;
+  const familiarId=achievement.familiarId || "pykur";
+  return normalizeFamiliarId(familiarId)===activeFamiliarId();
 }
 
 function isSecretFinalAchievement(id){
@@ -23330,6 +23458,7 @@ function isSecretFinalAchievement(id){
 
 function isAchievementVisibleToPlayer(id,achievement){
   ensureAchievements();
+  if(!achievementAppliesToActiveFamiliar(achievement))return false;
   if(isSecretFinalAchievement(id) && !data.achievements.secretCategoriesUnlocked)return false;
   if((achievement.category==="EASTER EGGS" || achievement.category==="SECRETS") && !data.achievements.secretCategoriesUnlocked)return false;
   return true;
@@ -23482,6 +23611,7 @@ function unlockAchievement(id,{silent=false,celebrate=!silent}={}){
   ensureAchievements();
   const achievement=ACHIEVEMENTS[id];
   if(!achievement || isAchievementUnlocked(id))return false;
+  if(!achievementAppliesToActiveFamiliar(achievement))return false;
   if(data.achievements.removedUnlocked)delete data.achievements.removedUnlocked[id];
   data.achievements.unlocked[id]={date:new Date().toISOString()};
   if(!silent){
@@ -23616,7 +23746,7 @@ function visibleAchievementCategories(){
     if(category==="FINAL"){
       return achievementList().some(([id,achievement])=>achievement.category==="FINAL" && isAchievementVisibleToPlayer(id,achievement));
     }
-    return true;
+    return achievementList().some(([id,achievement])=>achievement.category===category && isAchievementVisibleToPlayer(id,achievement));
   });
 }
 
@@ -24099,6 +24229,7 @@ function closeHelp(){
     setTimeout(()=>window.scrollTo(targetScroll.x,targetScroll.y),80);
     helpScroll=null;
   }
+  setTimeout(()=>maybePromptInitialFamiliarChoice(),120);
 }
 
 function resetPykurVisualState(){
@@ -25204,12 +25335,47 @@ function updatePykurImageByPP(pp){
   setPykurImageSafely(getPykurImageSrc(pp), pp >= PP_MAX ? "AuraPykur" : "Pykur");
 }
 
+function renderFamiliarContext(){
+  const familiar=activeFamiliar();
+  document.body.dataset.familiar=activeFamiliarId();
+  $$(".pp-summary-label").forEach(el=>el.textContent=familiar.progressLabel);
+  $$(".pp-summary-goal").forEach(el=>el.textContent=familiar.id==="pykur" ? "/ 90 PP" : `/ ${familiar.objectiveLabel}`);
+  const progressCaption=$(".side .card:first-child small");
+  if(progressCaption)progressCaption.textContent=`Progression du ${familiar.shortLabel}`;
+  const createButton=$("#createProfile");
+  if(createButton){
+    createButton.dataset.tooltip="Crée un nouveau profil et choisissez le familier à suivre.";
+  }
+  const projectionTitle=$("#projectionModal .modal-head h2 span");
+  if(projectionTitle)projectionTitle.textContent=`Projection du ${familiar.shortLabel}`;
+  const dofusRows=[
+    {key:"morose",button:"#configureMoroseDetection"},
+    {key:"tynril",button:"#configureTynrilDetection"}
+  ];
+  dofusRows.forEach(({key,button})=>{
+    const label=familiarFarmLabel(key);
+    const btn=$(button);
+    const row=btn?.closest(".option-row");
+    if(row){
+      const strong=row.querySelector("strong");
+      const small=row.querySelector("small");
+      if(strong)strong.textContent=`Référence ${label}`;
+      if(small)small.textContent=`Capture ou importe la zone stable du dialogue final ${label}.`;
+    }
+    if(btn){
+      btn.textContent=`Configurer ${label}`;
+      btn.dataset.tooltip=`Configure la référence personnalisée ${label}.`;
+    }
+  });
+}
+
 function renderAll(){
   const pp=currentPP();
   const pct=Math.min(100,(pp/PP_MAX)*100);
   const awaken=pct>=100?"complete":pct>=75?"surge":pct>=50?"pulse":pct>=25?"spark":"seed";
   document.body.dataset.awaken=awaken;
   document.body.dataset.farmActive=data.ui?.farm||"morose";
+  renderFamiliarContext();
   $("#progressFill").style.width=pct+"%";
   $("#progressPercent").textContent=pct.toFixed(2)+" %";
   $("#prospection").textContent=pp;
@@ -25369,13 +25535,74 @@ function renderChronoEstimate(){
   box.innerHTML="";
 }
 
+async function chooseFamiliarForProfile(defaultId="pykur"){
+  let selected=normalizeFamiliarId(defaultId);
+  const cards=Object.values(FAMILIARS).map(familiar=>`
+    <label class="familiar-choice-card ${familiar.id===selected?"selected":""}">
+      <input type="radio" name="newProfileFamiliar" value="${familiar.id}" ${familiar.id===selected?"checked":""}>
+      <span>
+        <strong>${escapeHtml(familiar.label)}</strong>
+        <small>${escapeHtml(familiar.description)}</small>
+        <em>${escapeHtml(familiar.statusLabel)}</em>
+      </span>
+    </label>
+  `).join("");
+  const ok=await showConfirm("",{
+    title:"Choisir un familier",
+    subtitle:"Sélectionnez le familier à suivre pour ce profil.",
+    okLabel:"Continuer",
+    html:`<div class="familiar-choice-grid">${cards}</div><p class="options-note">Les événements vivants et les easter eggs restent communs. Les succès et la détection Dofus s'adapteront au familier actif.</p>`,
+    onRender:({msg})=>{
+      const update=()=>{
+        msg.querySelectorAll(".familiar-choice-card").forEach(card=>{
+          card.classList.toggle("selected",card.querySelector("input")?.checked);
+        });
+        selected=msg.querySelector("input[name='newProfileFamiliar']:checked")?.value || "pykur";
+      };
+      msg.querySelectorAll("input[name='newProfileFamiliar']").forEach(input=>input.addEventListener("change",update));
+      update();
+    }
+  });
+  return ok ? normalizeFamiliarId(selected) : null;
+}
+
+async function maybePromptInitialFamiliarChoice(){
+  if(!store?.needsFamiliarChoice)return;
+  const ids=Object.keys(store.profiles||{});
+  if(ids.length!==1)return;
+  const profile=store.profiles[ids[0]];
+  if(!profile?.data)return;
+  const hasProgress=(profile.data.runs?.morose||0)>0 || (profile.data.runs?.tynril||0)>0 || currentPP()>0;
+  if(hasProgress){
+    store.needsFamiliarChoice=false;
+    save();
+    return;
+  }
+  const familiarId=await chooseFamiliarForProfile(profile.data.familiarId||"pykur");
+  if(!familiarId)return;
+  const familiar=FAMILIARS[familiarId]||FAMILIARS.pykur;
+  profile.data.familiarId=familiar.id;
+  if(profile.name===FAMILIARS.pykur.defaultProfileName)profile.name=familiar.defaultProfileName;
+  activeProfile=ids[0];
+  store.active=activeProfile;
+  data=clone(profile.data);
+  ensureData();
+  store.needsFamiliarChoice=false;
+  save();
+  renderProfiles();
+  renderAll();
+  toast(`${familiar.label} sélectionné pour ce profil.`,"success","click");
+}
+
 function renderProfiles(){
   const select=$("#profileSelect");
   select.innerHTML="";
   for(const id in store.profiles){
+    const profile=store.profiles[id];
+    const familiar=FAMILIARS[normalizeFamiliarId(profile?.data?.familiarId)]||FAMILIARS.pykur;
     const opt=document.createElement("option");
     opt.value=id;
-    opt.textContent=store.profiles[id].name;
+    opt.textContent=familiar.id==="pykur" ? profile.name : `${profile.name} · ${familiar.label}`;
     select.appendChild(opt);
   }
   select.value=activeProfile;
@@ -25383,17 +25610,21 @@ function renderProfiles(){
 
 async function createProfile(){
   if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du Pykur.","warning","warning");
-  const name=((await showPrompt("Nom du profil :",{title:"Créer un profil",defaultValue:"Nouveau Pykur",okLabel:"Créer"}))||"").trim();
+  const familiarId=await chooseFamiliarForProfile("pykur");
+  if(!familiarId)return;
+  const familiar=FAMILIARS[familiarId]||FAMILIARS.pykur;
+  const name=((await showPrompt("Nom du profil :",{title:"Créer un profil",defaultValue:familiar.defaultProfileName,okLabel:"Créer"}))||"").trim();
   if(!name)return;
   save();
   const id="p_"+Date.now();
-  store.profiles[id]={name,data:defaultData()};
+  store.profiles[id]={name,data:defaultDataForFamiliar(familiarId)};
+  store.needsFamiliarChoice=false;
   activeProfile=id;store.active=id;data=clone(store.profiles[id].data);
   applySharedSettingsToData();
   applySharedAchievementsToData();
   syncGlobalSoundSetting();
   ensureData();syncChronoTimerForProfile();save();renderProfiles();renderAll();
-  toast("Profil créé","success");
+  toast(`Profil ${familiar.label} créé`,"success");
 }
 
 async function renameProfile(){
@@ -26764,9 +26995,10 @@ async function resetAll(){
   const achievements=clone(data.achievements||defaultData().achievements);
   const gallery=clone(data.gallery||defaultData().gallery);
   const dofusDetection=clone(data.dofusDetection||defaultData().dofusDetection);
+  const familiarId=activeFamiliarId();
   gallery.currentCycleArchived=false;
   gallery.currentCycleCompletionSeen=false;
-  data=defaultData();data.settings=settings;data.achievements=achievements;data.gallery=gallery;data.dofusDetection=dofusDetection;data.createdAt=new Date().toISOString();
+  data=defaultDataForFamiliar(familiarId);data.settings=settings;data.achievements=achievements;data.gallery=gallery;data.dofusDetection=dofusDetection;data.createdAt=new Date().toISOString();
   ensureData();addActivity("Profil remis à zéro","error");
   unlockAchievement("reset_pykur");
   save();applySettings();renderAll();
@@ -27104,7 +27336,8 @@ const CHANGELOG_ENTRIES={
       ["Modération complète","Signalements, avertissements, mutes, bans, journaux et centre de contrôle avec permissions."],
       ["Événements synchronisés","Planning des événements vivants géré par le serveur pour tous les joueurs."],
       ["Stabilité des données","Synchronisation renforcée des profils, succès et galeries, avec suppressions persistantes."],
-      ["Interface modernisée","Boutons illustrés, panneaux sociaux remaniés et meilleure adaptation aux différentes résolutions."]
+      ["Interface modernisée","Boutons illustrés, panneaux sociaux remaniés et meilleure adaptation aux différentes résolutions."],
+      ["Préparation multi-familiers","Base de profils par familier avec Abra Kadabra préparé pour une future intégration."]
     ]
   },
   "1.4":{

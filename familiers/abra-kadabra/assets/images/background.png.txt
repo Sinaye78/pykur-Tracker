@@ -1,0 +1,10 @@
+Asset attendu : background.png
+
+Role :
+Fond optionnel specifique au familier Abra Kadabra.
+
+Format conseille :
+- image large ;
+- lisible derriere une interface parchemin ;
+- pas trop contrastee ;
+- ambiance compatible Dofus/fantasy.

@@ -1,0 +1,13 @@
+Asset attendu : abra-kadabra.png
+
+Role :
+Image principale du familier Abra Kadabra.
+
+Format conseille :
+- PNG avec fond transparent ;
+- sujet centre ;
+- dimensions propres, idealement 512x512 ou plus ;
+- pas de marge vide excessive autour du familier.
+
+Utilisation future :
+Affichage principal du familier dans le tracker et sur les profils publics.

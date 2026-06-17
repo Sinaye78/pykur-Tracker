@@ -1,0 +1,9 @@
+Asset attendu : donjon-2.png
+
+Role :
+Image du deuxieme donjon permettant de monter Abra Kadabra.
+
+A remplacer quand le nom exact du donjon sera defini.
+
+Utilisation future :
+Carte de donjon, detection Dofus, projection et statistiques.

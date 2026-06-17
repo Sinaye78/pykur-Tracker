@@ -1,0 +1,10 @@
+Asset attendu : abra-kadabra-aura.png
+
+Role :
+Version mise en valeur du familier, utilisee lorsque l'objectif final de puissance est atteint.
+
+Format conseille :
+- PNG transparent ;
+- meme cadrage que abra-kadabra.png ;
+- halo ou aura discret ;
+- ne pas rendre l'image trop lumineuse.

@@ -1,0 +1,7 @@
+Asset attendu : logo.png
+
+Role :
+Petit logo ou embleme du familier Abra Kadabra.
+
+Utilisation future :
+Cartes de selection, profil, galerie et eventuelles petites interfaces propres au familier.
