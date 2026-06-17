@@ -48,7 +48,7 @@ body{
   color:var(--text);
   background:
     linear-gradient(rgba(0,0,0,.46),rgba(0,0,0,.46)),
-    url("./assets/images/fond.png") center/cover fixed no-repeat;
+    var(--familiar-bg,url("./assets/images/fond.png")) center/var(--familiar-bg-size,cover) fixed no-repeat;
 }
 
 body.night{
@@ -59,7 +59,7 @@ body.night{
   --border:#8b6f47;
   background:
     linear-gradient(rgba(0,0,0,.78),rgba(0,0,0,.78)),
-    url("./assets/images/fond.png") center/cover fixed no-repeat;
+    var(--familiar-bg,url("./assets/images/fond.png")) center/var(--familiar-bg-size,cover) fixed no-repeat;
 }
 
 body.no-anim *{animation:none!important;transition:none!important}
@@ -8322,8 +8322,8 @@ body[data-awaken="complete"] .pykur-img{
 .quick-projection{
   position:relative;
   overflow:visible;
-  min-height:128px!important;
-  padding:16px 18px!important;
+  min-height:0!important;
+  padding:14px 18px!important;
   align-items:start!important;
   border-color:rgba(56,189,248,.34)!important;
   background:
@@ -8358,7 +8358,7 @@ body[data-awaken="complete"] .pykur-img{
   color:#2f1d10;
   font-size:19px!important;
   display:block;
-  min-height:54px;
+  min-height:0;
 }
 .quick-projection-hint{
   margin-top:4px;
@@ -8376,6 +8376,22 @@ body[data-awaken="complete"] .pykur-img{
 }
 .quick-projection #projectionButton:hover{
   background:rgba(37,99,235,.08)!important;
+}
+body[data-familiar="abra-kadabra"] .quick-projection{
+  padding:12px 16px!important;
+}
+body[data-familiar="abra-kadabra"] .quick-projection-lines{
+  gap:4px;
+}
+body[data-familiar="abra-kadabra"] .quick-projection-value{
+  font-size:17px!important;
+}
+body[data-familiar="abra-kadabra"] .quick-projection-run{
+  min-height:20px;
+}
+body[data-familiar="abra-kadabra"] .quick-projection-gain{
+  font-size:11px;
+  padding:2px 7px;
 }
 .stats-fantasy-card{
   border-color:rgba(37,99,235,.28)!important;
@@ -12298,9 +12314,9 @@ body{
   background:
     linear-gradient(90deg,rgba(12,8,4,.18),rgba(12,8,4,.035) 23%,rgba(12,8,4,.035) 77%,rgba(12,8,4,.18)),
     linear-gradient(180deg,rgba(255,210,128,.025),rgba(8,5,3,.08)),
-    url("./assets/images/fond.png") center/cover fixed no-repeat!important;
+    var(--familiar-bg,url("./assets/images/fond.png")) center/var(--familiar-bg-size,cover) fixed no-repeat!important;
 }
-body.night{background:linear-gradient(rgba(0,0,0,.79),rgba(0,0,0,.79)),url("./assets/images/fond.png") center/cover fixed no-repeat!important}
+body.night{background:linear-gradient(rgba(0,0,0,.79),rgba(0,0,0,.79)),var(--familiar-bg,url("./assets/images/fond.png")) center/var(--familiar-bg-size,cover) fixed no-repeat!important}
 
 .app{
   background:
@@ -14304,8 +14320,8 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
             <div class="options-action-list">
               <div class="option-row"><div><strong>Activer la détection automatique</strong><small>Analyse périodiquement la fenêtre Dofus partagée.</small></div><button class="btn btn-blue tooltip" id="toggleDofusDetection" data-tooltip="Active ou désactive la détection automatique."></button></div>
               <div class="option-row"><div><strong>Fenêtre Dofus</strong><small>Choisissez volontairement la fenêtre ou l'écran Dofus à analyser.</small></div><button class="btn btn-green tooltip" id="chooseDofusWindow" data-tooltip="Ouvre le partage de fenêtre du navigateur.">Choisir la fenêtre Dofus</button></div>
-              <div class="option-row"><div><strong>Référence Morose</strong><small>Capture ou importe la zone stable du dialogue final Morose.</small></div><button class="btn btn-blue tooltip" id="configureMoroseDetection" data-tooltip="Configure la référence personnalisée Morose.">Configurer Morose</button></div>
-              <div class="option-row"><div><strong>Référence Tynril</strong><small>Capture ou importe la zone stable du dialogue final Tynril.</small></div><button class="btn btn-blue tooltip" id="configureTynrilDetection" data-tooltip="Configure la référence personnalisée Tynril.">Configurer Tynril</button></div>
+              <label class="option-control"><span>Familier configuré</span><select id="dofusFamiliarSelect"></select><small>Par défaut, ce choix suit le familier du profil actif.</small></label>
+              <div id="dofusReferenceRows"></div>
               <div class="option-row"><div><strong>Tester la détection</strong><small>Compare les références enregistrées avec l'image actuelle.</small></div><button class="btn btn-orange tooltip" id="testDofusDetection" data-tooltip="Affiche le meilleur score de correspondance.">Tester la détection</button></div>
               <div class="option-row"><div><strong>Raccourci clavier</strong><small>Active ou désactive la détection sans ouvrir les options. Suppr/Backspace le désactive pendant l'édition.</small></div><button class="btn btn-blue tooltip" id="editDofusShortcut" data-shortcut-edit="toggleDofusDetection" data-tooltip="Configurer le raccourci de détection Dofus.">Désactivé</button></div>
               <label class="option-control"><span>Cooldown de détection</span><input id="dofusCooldownInput" type="number" min="10" max="300" step="5"></label>
@@ -14630,7 +14646,9 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
 <script src="./pykur-core.js"></script>
 <script>
 const PP_MAX=90;
-const RUN_LIMITS={morose:640,tynril:48};
+const ABRA_OBJECTIVE_MAX=55;
+const PYKUR_RUN_LIMITS={morose:640,tynril:48};
+const ABRA_RUN_LIMITS={donjonAbraknyde:9999,cheneMou:9999,salleAbrakne:9999};
 const FAMILIARS={
   pykur:{
     id:"pykur",
@@ -14639,7 +14657,13 @@ const FAMILIARS={
     defaultProfileName:"Pykur principal",
     progressLabel:"Prospection",
     progressShort:"PP",
+    objectiveMax:PP_MAX,
     objectiveLabel:"90 PP",
+    icon:"./assets/images/prospection.png",
+    image:"./assets/images/pykur.png",
+    auraImage:"./assets/images/aurapykur.png",
+    sleepingImage:"./assets/images/evenement/25. Pykur endormi/pykurz.png",
+    background:"./assets/images/fond.png",
     status:"complete",
     statusLabel:"Tracker complet",
     description:"Suivi complet de progression, donjons, PP, chrono, galerie, succès et détection Dofus.",
@@ -14654,15 +14678,21 @@ const FAMILIARS={
     shortLabel:"Abra",
     defaultProfileName:"Abra Kadabra principal",
     progressLabel:"Puissance",
-    progressShort:"Puissance",
-    objectiveLabel:"objectif à définir",
-    status:"preparation",
-    statusLabel:"Préparation",
-    description:"Nouveau familier prévu pour trois donjons et une progression en puissance. Les assets et règles exactes restent à brancher.",
+    progressShort:"puissance",
+    objectiveMax:ABRA_OBJECTIVE_MAX,
+    objectiveLabel:"55 puissance",
+    icon:"../abra-kadabra/assets/images/puissance.png",
+    image:"../abra-kadabra/assets/images/abra-kadabra.png",
+    auraImage:"../abra-kadabra/assets/images/abra-kadabra-aura.png",
+    sleepingImage:"../abra-kadabra/assets/images/abraz.png",
+    background:"../abra-kadabra/assets/images/fond.png",
+    status:"active",
+    statusLabel:"Disponible",
+    description:"Suivi de puissance sur Donjon Abraknyde, Donjon Chêne Mou et boucle de la salle Abrakne.",
     dungeons:[
-      {key:"abra_donjon_1",label:"Donjon Abra 1",fullLabel:"Donjon Abra Kadabra 1"},
-      {key:"abra_donjon_2",label:"Donjon Abra 2",fullLabel:"Donjon Abra Kadabra 2"},
-      {key:"abra_donjon_3",label:"Donjon Abra 3",fullLabel:"Donjon Abra Kadabra 3"}
+      {key:"donjonAbraknyde",label:"Abraknyde",fullLabel:"Donjon Abraknyde",asset:"../abra-kadabra/assets/images/donjons/donjon abraknyde.png"},
+      {key:"cheneMou",label:"Chêne Mou",fullLabel:"Donjon Chêne Mou",asset:"../abra-kadabra/assets/images/donjons/donjon chêne mou.png"},
+      {key:"salleAbrakne",label:"Salle Abrakne",fullLabel:"Salle Abrakne",asset:"../abra-kadabra/assets/images/donjons/salle abrakne.png",special:"salleAbrakne"}
     ]
   }
 };
@@ -14675,11 +14705,42 @@ function activeFamiliarId(){
 function activeFamiliar(){
   return FAMILIARS[activeFamiliarId()] || FAMILIARS.pykur;
 }
+function activeProgressMax(){
+  return activeFamiliar().objectiveMax || PP_MAX;
+}
+function activeProgressShort(){
+  return activeFamiliar().progressShort || "PP";
+}
+function activeFarmKeys(){
+  return activeFamiliar().dungeons.map(entry=>entry.key);
+}
 function familiarFarmLabel(farm,format="short"){
   const familiar=activeFamiliar();
   const item=familiar.dungeons.find(entry=>entry.key===farm);
   if(item)return format==="full" ? item.fullLabel : item.label;
   return farm==="morose" ? (format==="full"?"Donjon Morose":"Morose") : farm==="tynril" ? (format==="full"?"Donjon Tynril":"Tynril") : farm;
+}
+function farmDomId(farm){
+  return String(farm||"").replace(/[^a-zA-Z0-9]+/g," ").trim().replace(/(^|\s)([a-zA-Z0-9])/g,(_,space,letter)=>letter.toUpperCase());
+}
+function farmAverageKey(farm){
+  return farm==="morose" ? "avgMorose" : farm==="tynril" ? "avgTynril" : "avg"+farmDomId(farm);
+}
+function farmDefaultAverage(farm){
+  if(farm==="morose")return 125;
+  if(farm==="tynril")return 600;
+  if(farm==="donjonAbraknyde")return 240;
+  if(farm==="cheneMou")return 360;
+  if(farm==="salleAbrakne")return 10;
+  return 120;
+}
+function formatProgressValue(value=currentPP()){
+  const rounded=Number.isInteger(value) ? value : Math.round(value*10)/10;
+  return `${rounded}`;
+}
+function formatProgressGain(value){
+  if(value===null || value===undefined)return "Indisponible";
+  return `+${formatProgressValue(value)} ${activeProgressShort()}`;
 }
 function isPykurProfile(){
   return activeFamiliarId()==="pykur";
@@ -14720,7 +14781,7 @@ const SHORTCUT_ACTIONS=[
   {id:"toggleDofusDetection",label:"Détection Dofus",description:"Active ou désactive la détection automatique Dofus.",target:"#editDofusShortcut"},
   {id:"openHelp",label:"Aide",description:"Ouvre le guide complet.",target:"#helpButton"}
 ];
-const mobs={
+const PYKUR_MOBS={
   chiendent:{name:"Chiendent",img:"chiendent.png",ppNeed:80,cat:["morose","tynril","zone"]},
   nerbe:{name:"Nerbe",img:"nerbe.png",ppNeed:80,cat:["morose","tynril","zone"]},
   fecorce:{name:"Fécorce",img:"fecorce.png",ppNeed:60,cat:["morose","tynril","zone"]},
@@ -14734,11 +14795,43 @@ const mobs={
   tynrilConsterne:{name:"Tynril Consterné",img:"tynril-consterne.png",ppNeed:3,cat:["tynril"]}
 };
 
-const gains={
+const ABRA_MOBS={
+  cheneMou:{name:"Chêne Mou",imgPath:"../abra-kadabra/assets/images/monstre/chêne mou.png",ppNeed:1,cat:["cheneMou"]},
+  abraknydeAncestral:{name:"Abraknyde Ancestral",imgPath:"../abra-kadabra/assets/images/monstre/abraknyde ancestral.png",ppNeed:10,cat:["donjonAbraknyde"]},
+  abraknydeSombre:{name:"Abraknyde Sombre",imgPath:"../abra-kadabra/assets/images/monstre/abraknyde sombre.png",ppNeed:20,cat:["donjonAbraknyde","cheneMou"]},
+  abrakneSombre:{name:"Abrakne Sombre",imgPath:"../abra-kadabra/assets/images/monstre/abrakne sombre.png",ppNeed:20,cat:["cheneMou"]},
+  abraknyde:{name:"Abraknyde",imgPath:"../abra-kadabra/assets/images/monstre/abraknyde.png",ppNeed:50,cat:["donjonAbraknyde","cheneMou","zone"]},
+  abraknydeVenerable:{name:"Abraknyde Vénérable",imgPath:"../abra-kadabra/assets/images/monstre/abraknyde venerable.png",ppNeed:50,cat:["donjonAbraknyde","cheneMou","zone"]},
+  abrakne:{name:"Abrakne",imgPath:"../abra-kadabra/assets/images/monstre/abrakne.png",ppNeed:50,cat:["donjonAbraknyde","cheneMou","salleAbrakne","zone"]},
+  tronknyde:{name:"Tronknyde",imgPath:"../abra-kadabra/assets/images/monstre/tronknyde.png",ppNeed:150,cat:["donjonAbraknyde","cheneMou","zone"]}
+};
+
+const PYKUR_GAINS={
   morose:{chiendent:1,nerbe:1,fecorce:1,abrakleur:1,bitouf:1,floribonde:2},
   tynril:{tynrilConsterne:1,tynrilDeconcerte:1,tynrilPerfide:1,tynrilAhuri:1,fecorce:2,abrakleur:3,brouture:3,chiendent:5,nerbe:6,floribonde:6,bitouf:10}
 };
-const zoneIds=["abrakleur","bitouf","brouture","chiendent","fecorce","floribonde","nerbe"];
+const ABRA_GAINS={
+  donjonAbraknyde:{abraknyde:5,abraknydeVenerable:14,abraknydeSombre:2,abraknydeAncestral:1,abrakne:11,tronknyde:4},
+  cheneMou:{cheneMou:1,abraknyde:4,tronknyde:3,abraknydeVenerable:1,abraknydeSombre:13,abrakne:1,abrakneSombre:14},
+  salleAbrakne:{abrakne:1}
+};
+const ABRA_SPECIAL_GAINS={
+  salleAbrakneSetup:{abraknyde:4,tronknyde:3,abraknydeVenerable:1,abrakne:1}
+};
+const PYKUR_ZONE_IDS=["abrakleur","bitouf","brouture","chiendent","fecorce","floribonde","nerbe"];
+const ABRA_ZONE_IDS=["abraknyde","tronknyde","abraknydeVenerable","abrakne"];
+let RUN_LIMITS=PYKUR_RUN_LIMITS;
+let mobs=PYKUR_MOBS;
+let gains=PYKUR_GAINS;
+let zoneIds=PYKUR_ZONE_IDS;
+
+function refreshFamiliarRuntime(){
+  const familiarId=activeFamiliarId();
+  RUN_LIMITS=familiarId==="abra-kadabra" ? ABRA_RUN_LIMITS : PYKUR_RUN_LIMITS;
+  mobs=familiarId==="abra-kadabra" ? ABRA_MOBS : PYKUR_MOBS;
+  gains=familiarId==="abra-kadabra" ? ABRA_GAINS : PYKUR_GAINS;
+  zoneIds=familiarId==="abra-kadabra" ? ABRA_ZONE_IDS : PYKUR_ZONE_IDS;
+}
 
 const defaultData=()=>({
   familiarId:"pykur",
@@ -14766,7 +14859,27 @@ const defaultData=()=>({
 
 function defaultDataForFamiliar(familiarId="pykur"){
   const next=defaultData();
-  next.familiarId=normalizeFamiliarId(familiarId);
+  const normalized=normalizeFamiliarId(familiarId);
+  const familiar=FAMILIARS[normalized]||FAMILIARS.pykur;
+  next.familiarId=normalized;
+  next.runs={};
+  next.mobs={zone:{}};
+  next.session.runs={};
+  next.dofusDetection.refs={};
+  familiar.dungeons.forEach(dungeon=>{
+    next.runs[dungeon.key]=0;
+    next.mobs[dungeon.key]={};
+    next.session.runs[dungeon.key]=0;
+    next.dofusDetection.refs[dungeon.key]={imageKey:null,zone:null,threshold:82};
+  });
+  next.ui.farm=familiar.dungeons[0]?.key||"morose";
+  next.ui.tab=next.ui.farm;
+  if(normalized==="abra-kadabra"){
+    next.stats.avgDonjonAbraknyde=240;
+    next.stats.avgCheneMou=360;
+    next.stats.avgSalleAbrakne=10;
+    next.special={salleAbrakneSetupDone:false,salleAbrakneActive:false,salleAbrakneLastActivity:null};
+  }
   return next;
 }
 
@@ -17454,7 +17567,7 @@ function isEmptyStarterStore(inputStore){
 
 function summaryTitle(summary){
   if(!summary.profileCount)return "Aucune donnée détectée";
-  return `${summary.activeName} · ${summary.activePP} / ${PP_MAX} PP`;
+  return `${summary.activeName} · ${summary.activePP} / ${summary.objectiveMax||PP_MAX} ${summary.progressLabel||"PP"}`;
 }
 
 function summaryDetail(summary){
@@ -18946,7 +19059,8 @@ function toggleBrakoEasterEgg(){
 }
 
 function getPykurImageSrc(pp=currentPP()){
-  return pp >= PP_MAX ? AURAPYKUR_IMAGE_SRC : PYKUR_IMAGE_SRC;
+  const familiar=activeFamiliar();
+  return pp >= activeProgressMax() ? (familiar.auraImage||AURAPYKUR_IMAGE_SRC) : (familiar.image||PYKUR_IMAGE_SRC);
 }
 
 function setPykurImageSafely(src,alt){
@@ -19023,7 +19137,7 @@ const LIVING_EVENT_DEFS=[
   {id:"resonance",label:"Résonance du Pykur",message:"Le Pykur réagit étrangement.",duration:8000,sound:"pp",run:livingResonance},
   {id:"unstableAura",label:"Aura instable",message:"Une énergie inhabituelle se manifeste.",duration:15000,sound:"unlock",run:livingAura},
   {id:"shootingStar",label:"Étoile filante",message:"Un éclat traverse le ciel.",duration:3000,sound:"unlock",run:livingStar},
-  {id:"sleepy",label:"Pykur endormi",message:"Le Pykur semble fatigué.",duration:15000,sound:"reset",run:livingSleepy},
+  {id:"sleepy",label:"Familier endormi",message:"Le familier semble fatigué.",duration:15000,sound:"reset",run:livingSleepy},
   {id:"comet",label:"Comète",message:"Un présage traverse le ciel.",duration:4000,sound:"unlock",legendary:true,run:livingComet},
   {id:"awakening",label:"Éveil spontané",message:"Le Pykur libère une énergie ancienne.",duration:8000,sound:"unlock",legendary:true,run:livingAwakening},
   {id:"fakeBug",label:"Faux bug",message:"Erreur 404 : Motivation introuvable.",duration:2000,sound:"error",legendary:true,run:livingFakeBug}
@@ -20846,7 +20960,7 @@ LIVING_EVENT_DEFS.splice(0,LIVING_EVENT_DEFS.length,
   {id:"resonance",label:"Résonance du Pykur",message:"Le Pykur réagit étrangement.",endMessage:"Le calme revient autour du Pykur.",duration:38000,sound:null,run:livingResonance},
   {id:"unstableAura",label:"Aura instable",message:"Une énergie inhabituelle se manifeste.",endMessage:"L'énergie du Pykur se stabilise.",duration:15000,sound:null,run:livingAura},
   {id:"shootingStar",label:"Étoile filante",message:"Un éclat traverse le ciel.",endMessage:"L'éclat disparaît à l'horizon.",duration:5400,sound:LIVE_ASSETS.starSound,run:livingStar},
-  {id:"sleepy",label:"Pykur endormi",message:"Le Pykur semble fatigué.",endMessage:"Le Pykur se réveille doucement.",duration:17000,sound:LIVE_ASSETS.yawnSound,run:livingSleepy},
+  {id:"sleepy",label:"Familier endormi",message:"Le familier semble fatigué.",endMessage:"Le familier se réveille doucement.",duration:17000,sound:LIVE_ASSETS.yawnSound,run:livingSleepy},
   {id:"comet",label:"Comète",message:"Un présage traverse le ciel.",duration:4000,sound:LIVE_ASSETS.starSound,legendary:true,run:livingComet},
   {id:"awakening",label:"Éveil spontané",message:"Le Pykur libère une énergie ancienne.",duration:8000,sound:LIVE_ASSETS.energySound,legendary:true,run:livingAwakening},
   {id:"fakeBug",label:"Faux bug",message:"Erreur 404 : Motivation introuvable.",duration:2000,sound:"error",legendary:true,run:livingFakeBug}
@@ -21924,10 +22038,10 @@ function livingSleepy(){
     if(currentImg){
       currentImg.classList.remove("live-pykur-tired-img");
       currentImg.classList.add("live-pykur-sleeping-img");
-      currentImg.src=LIVE_ASSETS.sleepyPykur;
-      currentImg.alt="Pykur endormi";
+      currentImg.src=activeFamiliar().sleepingImage || LIVE_ASSETS.sleepyPykur;
+      currentImg.alt=`${activeFamiliar().shortLabel} endormi`;
     }
-    livingToast("Le Pykur s'est endormi.","info",null);
+    livingToast(`${activeFamiliar().shortLabel} s'est endormi.`,"info",null);
     for(let i=0;i<3;i++){
       const orb=livingPykurRect();
       const z=livingImg(LIVE_ASSETS.zzz,"live-sleep-zzz",{
@@ -22039,12 +22153,10 @@ function ensureDay(date=today()){
   if(!data.stats.days)data.stats.days={};
 
   if(!data.stats.days[date]){
-    data.stats.days[date]={
-      morose:0,
-      tynril:0,
-      pp:0,
-      startPP:currentPP()
-    };
+    data.stats.days[date]=Object.assign(
+      Object.fromEntries(activeFarmKeys().map(key=>[key,0])),
+      {pp:0,startPP:currentPP()}
+    );
   }
 
   if(data.stats.days[date].startPP===undefined){
@@ -22070,7 +22182,7 @@ function syncTodayPPGain(){
 }
 
 function dayTotal(day){
-  return (day?.morose||0)+(day?.tynril||0);
+  return activeFarmKeys().reduce((sum,key)=>sum+(day?.[key]||0),0);
 }
 
 function sortedActiveDays(){
@@ -22140,20 +22252,22 @@ function calcAveragePerActiveDay(){
 
 function ensureData(){
   data.familiarId=normalizeFamiliarId(data.familiarId);
+  refreshFamiliarRuntime();
+  const farmKeys=activeFarmKeys();
+  const defaultFarm=farmKeys[0]||"morose";
   if(!data.stats)data.stats=defaultData().stats;
   if(!data.stats.days)data.stats.days={};
   data.session=Object.assign(defaultData().session,data.session||{});
-  data.session.runs=Object.assign({morose:0,tynril:0},data.session.runs||{});
+  data.session.runs=Object.assign(Object.fromEntries(farmKeys.map(key=>[key,0])),data.session.runs||{});
   const pausedSessionHasProgress=!data.session.active && (
     (parseInt(data.session.totalSeconds,10)||0)>0 ||
-    (data.session.runs?.morose||0)>0 ||
-    (data.session.runs?.tynril||0)>0
+    farmKeys.some(key=>(data.session.runs?.[key]||0)>0)
   );
   if(!data.session.active && !pausedSessionHasProgress){
     data.session.startedAt=null;
     data.session.sessionStartedAt=null;
     data.session.totalSeconds=0;
-    data.session.runs={morose:0,tynril:0};
+    data.session.runs=Object.fromEntries(farmKeys.map(key=>[key,0]));
     data.session.ppStart=currentPP();
     data.session.ppGain=0;
   }
@@ -22162,38 +22276,47 @@ function ensureData(){
   data.achievements=normalizeAchievements(data.achievements);
   data.gallery=normalizeGallery(data.gallery);
   data.dofusDetection=Object.assign(defaultData().dofusDetection,data.dofusDetection||{});
-  data.dofusDetection.refs=Object.assign(defaultData().dofusDetection.refs,data.dofusDetection.refs||{});
-  ["morose","tynril"].forEach(farm=>{
-    data.dofusDetection.refs[farm]=Object.assign(defaultData().dofusDetection.refs[farm],data.dofusDetection.refs[farm]||{});
+  data.dofusDetection.refs=Object.assign({},data.dofusDetection.refs||{});
+  farmKeys.forEach(farm=>{
+    data.dofusDetection.refs[farm]=Object.assign({imageKey:null,zone:null,threshold:82},data.dofusDetection.refs[farm]||{});
   });
   if(!data.createdAt)data.createdAt=new Date().toISOString();
+  if(!data.special)data.special={};
+  if(activeFamiliarId()==="abra-kadabra"){
+    data.special=Object.assign({salleAbrakneSetupDone:false,salleAbrakneActive:false,salleAbrakneLastActivity:null},data.special||{});
+  }
   data.settings=Object.assign(defaultData().settings,data.settings||{});
   data.settings.keybinds=Object.assign(defaultKeybinds(),data.settings.keybinds||{});
   if(data.settings.shortcutsEnabled===undefined)data.settings.shortcutsEnabled=true;
   data.ui=Object.assign(defaultData().ui,data.ui||{});
+  if(!farmKeys.includes(data.ui.farm))data.ui.farm=defaultFarm;
+  if(![...farmKeys,"zone","all"].includes(data.ui.tab))data.ui.tab=defaultFarm;
   if(data.ui.capyMode===undefined)data.ui.capyMode=false;
   data.chrono=Object.assign(defaultData().chrono,data.chrono||{});
   data.chrono.lastMarkSeconds=Math.max(0,parseInt(data.chrono.lastMarkSeconds,10)||0);
   if(!data.chrono.running)data.chrono.lastMarkSeconds=Math.min(data.chrono.lastMarkSeconds,parseInt(data.chrono.seconds,10)||data.chrono.lastMarkSeconds);
   data.chrono.marks=Array.isArray(data.chrono.marks)?data.chrono.marks:[];
-  if(!data.mobs)data.mobs={morose:{},tynril:{},zone:{}};
-  for(const area of ["morose","tynril","zone"]){
+  if(!data.mobs)data.mobs={zone:{}};
+  for(const area of [...farmKeys,"zone"]){
     if(!data.mobs[area])data.mobs[area]={};
   }
-  data.runs=Object.assign({morose:0,tynril:0},data.runs||{});
-  data.runs.morose=clampRunsToLimit("morose",data.runs.morose||0);
-  data.runs.tynril=clampRunsToLimit("tynril",data.runs.tynril||0);
+  data.runs=Object.assign(Object.fromEntries(farmKeys.map(key=>[key,0])),data.runs||{});
+  farmKeys.forEach(farm=>data.runs[farm]=clampRunsToLimit(farm,data.runs[farm]||0));
   for(const id in mobs){
-    for(const area of ["morose","tynril","zone"]){
+    for(const area of [...farmKeys,"zone"]){
       if(data.mobs[area][id]===undefined)data.mobs[area][id]=0;
       data.mobs[area][id]=Math.max(0,parseInt(data.mobs[area][id],10)||0);
     }
   }
-  ["morose","tynril"].forEach(farm=>{
+  farmKeys.forEach(farm=>{
     for(const id in gains[farm]){
       data.mobs[farm][id]=(data.runs[farm]||0)*gains[farm][id];
     }
   });
+  data.special=Object.assign({},data.special||{});
+  if(activeFamiliarId()==="abra-kadabra"){
+    data.special=Object.assign({salleAbrakneSetupDone:false,salleAbrakneActive:false,salleAbrakneLastActivity:null},data.special||{});
+  }
 }
 
 function makeStore(){
@@ -22381,15 +22504,16 @@ function load(){
   ensureStoreAchievementSharing();
   activeProfile=store.active;
   data=Object.assign(defaultData(), store.profiles[activeProfile]?.data||{});
-  data.runs=Object.assign({morose:0,tynril:0},data.runs||{});
-  data.mobs=Object.assign({morose:{},tynril:{},zone:{}},data.mobs||{});
+  refreshFamiliarRuntime();
+  data.runs=Object.assign(Object.fromEntries(activeFarmKeys().map(key=>[key,0])),data.runs||{});
+  data.mobs=Object.assign({zone:{}},data.mobs||{});
   data.settings=Object.assign(defaultData().settings,data.settings||{});
   data.settings.keybinds=Object.assign(defaultKeybinds(),data.settings.keybinds||{});
   if(data.settings.shortcutsEnabled===undefined)data.settings.shortcutsEnabled=true;
   applySharedSettingsToData();
   data.stats=Object.assign(defaultData().stats,data.stats||{}); if(!data.stats.days)data.stats.days={};
   data.chrono=Object.assign(defaultData().chrono,data.chrono||{}); if(data.chrono.running && !data.chrono.startedAt)data.chrono.startedAt=Date.now();
-  data.session=Object.assign(defaultData().session,data.session||{}); data.session.runs=Object.assign({morose:0,tynril:0},data.session.runs||{});
+  data.session=Object.assign(defaultData().session,data.session||{}); data.session.runs=Object.assign(Object.fromEntries(activeFarmKeys().map(key=>[key,0])),data.session.runs||{});
   data.ui=Object.assign(defaultData().ui,data.ui||{});
   data.ui.monsterFavs=Array.isArray(data.ui.monsterFavs)?data.ui.monsterFavs:[];
   data.ui.collapsedActivityDays=Array.isArray(data.ui.collapsedActivityDays)?data.ui.collapsedActivityDays:[];
@@ -22530,12 +22654,25 @@ const dofusState={
   timer:null,
   cooldownUntil:0,
   configFarm:null,
+  selectedFamiliar:null,
   configImage:null,
   configZone:null,
   dragging:false,
   dragStart:null,
   lastScore:null
 };
+
+function dofusSelectedFamiliarId(){
+  return normalizeFamiliarId(dofusState.selectedFamiliar || activeFamiliarId());
+}
+
+function dofusSelectedFamiliar(){
+  return FAMILIARS[dofusSelectedFamiliarId()] || activeFamiliar();
+}
+
+function dofusFarmKeys(){
+  return dofusSelectedFamiliar().dungeons.map(dungeon=>dungeon.key);
+}
 
 function dofusDefaultConfig(){
   return clone(defaultData().dofusDetection);
@@ -22606,6 +22743,20 @@ function dofusSetStatus(status,detail=status){
 
 function dofusRefreshOptions(){
   if(!data.dofusDetection)data.dofusDetection=dofusDefaultConfig();
+  if(!dofusState.selectedFamiliar)dofusState.selectedFamiliar=activeFamiliarId();
+  const select=$("#dofusFamiliarSelect");
+  if(select){
+    select.innerHTML=Object.entries(FAMILIARS).map(([id,familiar])=>`<option value="${id}">${escapeHtml(familiar.label)}</option>`).join("");
+    select.value=dofusSelectedFamiliarId();
+  }
+  const rows=$("#dofusReferenceRows");
+  if(rows){
+    rows.innerHTML=dofusSelectedFamiliar().dungeons.map(dungeon=>{
+      const label=dungeon.label;
+      return `<div class="option-row dynamic-dofus-ref-row"><div><strong>Référence ${escapeHtml(label)}</strong><small>Capture ou importe la zone stable pour ${escapeHtml(label)}.</small></div><button class="btn btn-blue tooltip" type="button" data-dofus-config-farm="${dungeon.key}" data-tooltip="Configure la référence personnalisée ${escapeHtml(label)}.">Configurer ${escapeHtml(label)}</button></div>`;
+    }).join("");
+    rows.querySelectorAll("[data-dofus-config-farm]").forEach(btn=>btn.addEventListener("click",()=>dofusOpenConfig(btn.dataset.dofusConfigFarm)));
+  }
   setToggleText("toggleDofusDetection",!!data.dofusDetection.enabled);
   if($("#dofusCooldownInput"))$("#dofusCooldownInput").value=data.dofusDetection.cooldownSeconds||45;
   if($("#dofusScanIntervalSelect"))$("#dofusScanIntervalSelect").value=String(data.dofusDetection.scanIntervalMs||1000);
@@ -22863,9 +23014,9 @@ async function dofusTestDetection(){
     toast("Choisissez d'abord la fenêtre Dofus.","warning","warning");
     return;
   }
-  const scores=(await Promise.all(["morose","tynril"].map(dofusScoreForFarm))).filter(Boolean);
+  const scores=(await Promise.all(dofusFarmKeys().map(dofusScoreForFarm))).filter(Boolean);
   if(!scores.length){
-    toast("Configure au moins Morose ou Tynril.","warning","warning");
+    toast("Configure au moins une référence de donjon.","warning","warning");
     return;
   }
   scores.sort((a,b)=>b.score-a.score);
@@ -22881,7 +23032,7 @@ async function dofusDetectionTick(){
     dofusSetStatus("Cooldown",`${Math.ceil((dofusState.cooldownUntil-Date.now())/1000)}s restantes`);
     return;
   }
-  const scores=(await Promise.all(["morose","tynril"].map(dofusScoreForFarm))).filter(Boolean).sort((a,b)=>b.score-a.score);
+  const scores=(await Promise.all(dofusFarmKeys().map(dofusScoreForFarm))).filter(Boolean).sort((a,b)=>b.score-a.score);
   if(!scores.length){
     dofusSetStatus("En attente","Aucune référence configurée.");
     return;
@@ -22897,7 +23048,7 @@ async function dofusDetectionTick(){
 }
 
 function dofusAutoAddRun(farm){
-  const previous=data.ui.farm||"morose";
+  const previous=data.ui.farm||activeFarmKeys()[0]||"morose";
   const select=$("#farmSelect");
   data.ui.farm=farm;
   if(select)select.value=farm;
@@ -22987,6 +23138,10 @@ function completedPykurStats(){
   const method=galleryMethod();
   const pp=currentPP();
   return {
+    familiarId:activeFamiliarId(),
+    familiarLabel:activeFamiliar().label,
+    progressLabel:activeProgressShort(),
+    objectiveMax:activeProgressMax(),
     profileName:store?.profiles?.[activeProfile]?.name||"Profil",
     createdAt:startedAt,
     finishedAt,
@@ -23093,7 +23248,7 @@ function renderCompletionModal(){
 }
 
 function maybeShowCompletionModal(){
-  if(!data?.gallery || data.gallery.currentCycleArchived || data.gallery.currentCycleCompletionSeen || currentPP()<PP_MAX)return;
+  if(!data?.gallery || data.gallery.currentCycleArchived || data.gallery.currentCycleCompletionSeen || currentPP()<activeProgressMax())return;
   data.gallery.currentCycleCompletionSeen=true;
   renderCompletionModal();
   completionLock(true);
@@ -23107,7 +23262,7 @@ function closeCompletionModal(){
 }
 
 async function archiveAndRestartPykur(){
-  if(currentPP()<PP_MAX)return closeCompletionModal();
+  if(currentPP()<activeProgressMax())return closeCompletionModal();
   const archived=maybeArchiveCompletedPykur();
   const settings=clone(data.settings||defaultData().settings);
   const achievements=clone(data.achievements||defaultData().achievements);
@@ -23128,12 +23283,12 @@ async function archiveAndRestartPykur(){
   applySettings();
   renderAll();
   renderGallery();
-  toast(archived?`Pykur #${archived.number} archivé. Nouvelle aventure lancée.`:"Nouvelle aventure lancée.","success","unlock");
+  toast(archived?`${activeFamiliar().shortLabel} #${archived.number} archivé. Nouvelle aventure lancée.`:"Nouvelle aventure lancée.","success","unlock");
   if(archived)shareCommunityMilestone("pykur",{number:archived.number,title:archived.title,pp:archived.pp,method:archived.method,createdAt:archived.createdAt,finishedAt:archived.finishedAt});
 }
 
 function maybeArchiveCompletedPykur(){
-  if(!data?.gallery || data.gallery.currentCycleArchived || currentPP()<PP_MAX)return null;
+  if(!data?.gallery || data.gallery.currentCycleArchived || currentPP()<activeProgressMax())return null;
   const gallery=activeGallery();
   const stats=completedPykurStats();
   const count=(gallery.completedPykurs||[]).length+1;
@@ -23197,7 +23352,7 @@ function renderGallery(){
       + '<span>Durée <strong>'+formatLongDuration(item.durationSeconds||0)+'</strong></span>'
       + '<span>Morose <strong>'+(item.morose||0)+'</strong></span>'
       + '<span>Tynril <strong>'+(item.tynril||0)+'</strong></span>'
-      + '<span class="gallery-stat-pp">PP finale <strong>'+(item.pp||PP_MAX)+' PP</strong></span>'
+      + '<span class="gallery-stat-pp">'+(item.progressLabel||"PP")+' finale <strong>'+(item.pp||PP_MAX)+' '+(item.progressLabel||"PP")+'</strong></span>'
       + '<span>Farm <strong>'+chrono+'</strong></span>'
       + '<span>Best <strong>'+best+'</strong></span>'
       + '<span>Moyenne <strong>'+avg+'</strong></span>'
@@ -23255,8 +23410,8 @@ async function resetGallery(){
   (before.completedPykurs||[]).forEach(item=>{if(item?.id)gallery.removedPykurs[item.id]=new Date().toISOString()});
   gallery.removedEvents=Object.assign({},before.removedEvents||{});
   Object.keys(before.eventsDiscovered||{}).forEach(id=>gallery.removedEvents[id]=new Date().toISOString());
-  gallery.currentCycleArchived=currentPP()>=PP_MAX;
-  gallery.currentCycleCompletionSeen=currentPP()>=PP_MAX;
+  gallery.currentCycleArchived=currentPP()>=activeProgressMax();
+  gallery.currentCycleCompletionSeen=currentPP()>=activeProgressMax();
   syncActiveGallery(gallery);
   save();
   renderGallery();
@@ -23448,6 +23603,7 @@ function achievementList({mainOnly=false,includeFinal=true}={}){
 function achievementAppliesToActiveFamiliar(achievement){
   if(!achievement)return false;
   if(SECRET_COMPLETION_CATEGORIES.includes(achievement.category))return true;
+  if(achievement.category==="TRACKER & UTILISATION")return true;
   const familiarId=achievement.familiarId || "pykur";
   return normalizeFamiliarId(familiarId)===activeFamiliarId();
 }
@@ -23727,6 +23883,7 @@ async function resetAchievements(){
 }
 
 function checkProgressAchievements(){
+  if(activeFamiliarId()!=="pykur")return;
   const pp=currentPP();
   if(pp>=1)unlockAchievement("first_pp");
   if(pp>=30)unlockAchievement("growth");
@@ -23736,6 +23893,7 @@ function checkProgressAchievements(){
 }
 
 function checkDungeonAchievements(){
+  if(activeFamiliarId()!=="pykur")return;
   if((data.runs?.morose||0)>=320 || (data.runs?.tynril||0)>=24)unlockAchievement("halfway_dungeons");
 }
 
@@ -24539,12 +24697,15 @@ function hasBlockingShortcutLayer(){
 }
 
 function switchActiveDungeon(){
-  data.ui.farm=data.ui.farm==="morose"?"tynril":"morose";
+  const farms=activeFarmKeys();
+  const currentIndex=Math.max(0,farms.indexOf(data.ui.farm));
+  data.ui.farm=farms[(currentIndex+1)%farms.length] || data.ui.farm;
+  data.ui.tab=data.ui.farm;
   const select=$("#farmSelect");
   if(select)select.value=data.ui.farm;
   save();
   renderAll();
-  toast(data.ui.farm==="morose"?"Donjon actif : Morose":"Donjon actif : Tynril","info","click");
+  toast(`Donjon actif : ${familiarFarmLabel(data.ui.farm)}`,"info","click");
 }
 
 function toggleChronoShortcut(){
@@ -24758,25 +24919,27 @@ function filterOptionsSearch(){
 
 function totalMobs(){
   const t={};
-  for(const id in mobs)t[id]=(data.mobs.morose[id]||0)+(data.mobs.tynril[id]||0)+(data.mobs.zone[id]||0);
+  const sources=[...activeFarmKeys(),"zone"];
+  for(const id in mobs){
+    t[id]=sources.reduce((sum,source)=>sum+(data.mobs?.[source]?.[id]||0),0);
+  }
   return t;
 }
 
 function ppFrom(src){
   let pp=0;
   for(const id in mobs)pp+=Math.floor((src[id]||0)/mobs[id].ppNeed);
-  return Math.min(pp,PP_MAX);
+  return Math.min(pp,activeProgressMax());
 }
 
 function ppContributionBySource(){
-  const morosePP=ppFrom(data.mobs.morose||{});
-  const tynrilPP=ppFrom(data.mobs.tynril||{});
+  const farmKeys=activeFarmKeys();
+  const byFarm=Object.fromEntries(farmKeys.map(farm=>[farm,ppFrom(data.mobs[farm]||{})]));
   const zonePP=ppFrom(data.mobs.zone||{});
-  const total=morosePP+tynrilPP+zonePP;
+  const total=Object.values(byFarm).reduce((sum,value)=>sum+value,0)+zonePP;
 
   return {
-    morose:morosePP,
-    tynril:tynrilPP,
+    ...byFarm,
     zone:zonePP,
     total
   };
@@ -24810,12 +24973,13 @@ function syncMobsFromRuns(farm){
 }
 
 function simulateRemaining(farm){
-  if(currentPP()>=PP_MAX)return 0;
+  const max=activeProgressMax();
+  if(currentPP()>=max)return 0;
   const sim=clone(totalMobs());
   const limit=RUN_LIMITS[farm]??Number.MAX_SAFE_INTEGER;
   const capacity=Math.max(0,limit-(data.runs[farm]||0));
   let count=0;
-  while(ppFrom(sim)<PP_MAX && count<capacity){
+  while(ppFrom(sim)<max && count<capacity){
     count++;
     for(const id in gains[farm])sim[id]=(sim[id]||0)+gains[farm][id];
   }
@@ -24858,17 +25022,66 @@ function setRunsSynced(farm,value){
   }
 
   if(!Number.isNaN(raw) && raw>next){
-    toast(`${farm==="morose"?"Morose":"Tynril"} limité à ${RUN_LIMITS[farm]} donjons maximum.`,"warning","warning");
+    toast(`${familiarFarmLabel(farm)} limité à ${RUN_LIMITS[farm]} donjons maximum.`,"warning","warning");
   }
 
   return next-old;
+}
+
+function addMobBundleToZone(bundle){
+  if(!data.mobs.zone)data.mobs.zone={};
+  Object.entries(bundle||{}).forEach(([id,count])=>{
+    data.mobs.zone[id]=Math.max(0,(data.mobs.zone[id]||0)+(parseInt(count,10)||0));
+  });
+}
+
+function markAbraRoomReached(){
+  if(activeFamiliarId()!=="abra-kadabra")return;
+  if(!data.special)data.special={};
+  if(data.special.salleAbrakneActive){
+    data.special.salleAbrakneActive=false;
+    data.special.salleAbrakneLastActivity=null;
+    addActivity("Sortie de la salle Abrakne","system");
+    save();
+    renderAll();
+    toast("Boucle Abrakne terminée.","info","click");
+    return;
+  }
+  const oldPower=currentPP();
+  pushUndo();
+  if(!data.special.salleAbrakneSetupDone){
+    data.special.salleAbrakneSetupDone=true;
+    addMobBundleToZone(ABRA_SPECIAL_GAINS.salleAbrakneSetup);
+  }
+  data.special.salleAbrakneActive=true;
+  data.special.salleAbrakneLastActivity=Date.now();
+  data.ui.farm="salleAbrakne";
+  data.ui.tab="salleAbrakne";
+  const newPower=currentPP();
+  addActivity(`Boucle salle Abrakne démarrée`,"success");
+  notifyPPProgress(oldPower,newPower);
+  save();
+  renderAll();
+  toast(data.special.salleAbrakneSetupDone && newPower===oldPower ? "Boucle Abrakne reprise." : "Salle Abrakne prête : les 4 premières salles sont ajoutées.","success","pp");
+}
+
+function expireAbraRoomIfInactive(){
+  if(activeFamiliarId()!=="abra-kadabra" || !data.special?.salleAbrakneActive)return false;
+  const last=parseInt(data.special.salleAbrakneLastActivity,10)||0;
+  if(last && Date.now()-last<3600000)return false;
+  data.special.salleAbrakneActive=false;
+  data.special.salleAbrakneLastActivity=null;
+  addActivity("Boucle Abrakne terminée automatiquement après inactivité","system");
+  save();
+  toast("Boucle Abrakne arrêtée après 1h d'inactivité.","info","click");
+  return true;
 }
 
 function resetMilestonesIfNeeded(){
   const pp=currentPP();
   if(!data.stats.milestones)data.stats.milestones={};
   [10,20,30,40,50,60,70,80,90,100].forEach(p=>{
-    const target=Math.round(PP_MAX*p/100);
+    const target=Math.round(activeProgressMax()*p/100);
     if(pp<target)data.stats.milestones[p]=false;
   });
 }
@@ -24876,10 +25089,15 @@ function resetMilestonesIfNeeded(){
 function addRun(delta){
   if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du Pykur.","warning","warning");
   const selectedFarm=data.ui.farm;
+  expireAbraRoomIfInactive();
+  if(delta>0 && activeFamiliarId()==="abra-kadabra" && selectedFarm==="salleAbrakne" && !data.special?.salleAbrakneActive){
+    markAbraRoomReached();
+    return;
+  }
   if(delta>0 && runLimitReached(selectedFarm)){
-    toast(`${selectedFarm==="morose"?"Morose":"Tynril"} est déjà au maximum (${RUN_LIMITS[selectedFarm]} donjons).`,"warning","warning");
+    toast(`${familiarFarmLabel(selectedFarm)} est déjà au maximum (${RUN_LIMITS[selectedFarm]} donjons).`,"warning","warning");
     alhassReact("guard",true);
-    addActivity(`Ajout bloqué : ${selectedFarm==="morose"?"Morose":"Tynril"} déjà au maximum`,"warning");
+    addActivity(`Ajout bloqué : ${familiarFarmLabel(selectedFarm)} déjà au maximum`,"warning");
     return;
   }
 
@@ -24892,15 +25110,18 @@ function addRun(delta){
   const oldPP=currentPP();
   pushUndo();
   applyRunDelta(farm,delta);
+  if(delta>0 && activeFamiliarId()==="abra-kadabra" && farm==="salleAbrakne" && data.special?.salleAbrakneActive){
+    data.special.salleAbrakneLastActivity=Date.now();
+  }
   recordSessionRun(farm,delta);
   resetMilestonesIfNeeded();
-  const farmLabel=farm==="morose"?"Morose":"Tynril";
+  const farmLabel=familiarFarmLabel(farm);
   addActivity(`${delta>0?"+1":"-1"} donjon ${farmLabel}`,delta>0?"success":"warning");
 
   if(delta>0 && data.settings.autoMarkOnPlus && data.chrono.running && chronoTimer){
     const autoMarked=markTime({silent:true,auto:true,farm});
     if(autoMarked!==false){
-      toast(`Run tryhard ${farm==="morose"?"Morose":"Tynril"} : ${formatChrono(autoMarked)}`,"mark","mark");
+      toast(`Run tryhard ${farmLabel} : ${formatChrono(autoMarked)}`,"mark","mark");
     }
   }
 
@@ -24910,16 +25131,16 @@ function addRun(delta){
   syncTodayPPGain();
   notifyPPProgress(oldPP,newPP);
   if(delta>0){
-    unlockAchievement(farm==="morose"?"first_morose":"first_tynril");
-    const sessionRuns=data.session?.active ? (data.session.runs?.morose||0)+(data.session.runs?.tynril||0) : 0;
+    if(activeFamiliarId()==="pykur")unlockAchievement(farm==="morose"?"first_morose":"first_tynril");
+    const sessionRuns=data.session?.active ? activeFarmKeys().reduce((sum,key)=>sum+(data.session.runs?.[key]||0),0) : 0;
     if(sessionRuns>=10)unlockAchievement("session_10");
     if(sessionRuns>=25)unlockAchievement("session_25");
   }
 
   if(ppDelta>0){
-    addActivity(`Pykur gagne +${ppDelta} PP (${oldPP} → ${newPP})`,"success");
+    addActivity(`${activeFamiliar().shortLabel} gagne +${ppDelta} ${activeProgressShort()} (${oldPP} → ${newPP})`,"success");
   }else if(ppDelta<0){
-    addActivity(`Pykur perd ${Math.abs(ppDelta)} PP (${oldPP} → ${newPP})`,"warning");
+    addActivity(`${activeFamiliar().shortLabel} perd ${Math.abs(ppDelta)} ${activeProgressShort()} (${oldPP} → ${newPP})`,"warning");
   }
 
   checkMilestones(oldPP,newPP);
@@ -24955,7 +25176,7 @@ function formatRate(value,suffix){
 function updateSessionPP(){
   if(!data.session)return;
   if(!data.session.active){
-    const hasProgress=(parseInt(data.session.totalSeconds,10)||0)>0 || (data.session.runs?.morose||0)>0 || (data.session.runs?.tynril||0)>0;
+    const hasProgress=(parseInt(data.session.totalSeconds,10)||0)>0 || activeFarmKeys().some(farm=>(data.session.runs?.[farm]||0)>0);
     if(!hasProgress)data.session.ppGain=0;
     return;
   }
@@ -24984,7 +25205,7 @@ function renderSession(){
   updateSessionPP();
   const elapsed=sessionElapsedSeconds();
   const runSeconds=getChronoSplitSeconds(getChronoSeconds());
-  const totalRuns=(session.runs?.morose||0)+(session.runs?.tynril||0);
+  const totalRuns=activeFarmKeys().reduce((sum,farm)=>sum+(session.runs?.[farm]||0),0);
   const hasPausedProgress=!session.active && (elapsed>0 || totalRuns>0);
   const scopedMarks=currentSessionChronoMarks();
   const hasChronoSplit=scopedMarks.length>0;
@@ -25013,7 +25234,7 @@ function startSession(options={}){
     startedAt:now,
     sessionStartedAt:now,
     totalSeconds:0,
-    runs:{morose:0,tynril:0},
+    runs:Object.fromEntries(activeFarmKeys().map(farm=>[farm,0])),
     ppStart:currentPP(),
     ppGain:0,
     lastSummary:null
@@ -25039,21 +25260,20 @@ function resumeSession(){
   data.session.active=true;
   data.session.startedAt=Date.now();
   if(!data.session.sessionStartedAt)data.session.sessionStartedAt=Date.now();
-  if(!data.session.runs)data.session.runs={morose:0,tynril:0};
+  if(!data.session.runs)data.session.runs=Object.fromEntries(activeFarmKeys().map(farm=>[farm,0]));
+  activeFarmKeys().forEach(farm=>{if(data.session.runs[farm]===undefined)data.session.runs[farm]=0});
   if(data.session.ppStart===undefined)data.session.ppStart=currentPP();
 }
 
 function buildSessionSummary(session=data.session){
   const elapsed=sessionElapsedSeconds();
-  const morose=session.runs?.morose||0;
-  const tynril=session.runs?.tynril||0;
-  const totalRuns=morose+tynril;
+  const farmRuns=Object.fromEntries(activeFarmKeys().map(farm=>[farm,session.runs?.[farm]||0]));
+  const totalRuns=Object.values(farmRuns).reduce((sum,value)=>sum+value,0);
   const pp=session.ppGain||0;
   const hours=elapsed/3600;
   return {
     elapsed,
-    morose,
-    tynril,
+    farmRuns,
     totalRuns,
     pp,
     runsHour:hours>0?totalRuns/hours:0,
@@ -25078,9 +25298,8 @@ function renderSessionSummary(summary){
     </section>
     <section class="session-summary-grid">
       <div><span>Donjons suivis</span><strong>${summary.totalRuns}</strong></div>
-      <div><span>Morose</span><strong>${summary.morose}</strong></div>
-      <div><span>Tynril</span><strong>${summary.tynril}</strong></div>
-      <div><span>PP gagnée</span><strong>+${summary.pp}</strong></div>
+      ${activeFarmKeys().map(farm=>`<div><span>${escapeHtml(familiarFarmLabel(farm))}</span><strong>${summary.farmRuns?.[farm]||0}</strong></div>`).join("")}
+      <div><span>${escapeHtml(activeProgressShort())} gagnée</span><strong>+${summary.pp}</strong></div>
       <div><span>Donjons / heure</span><strong>${formatRate(summary.runsHour,"dj/h")}</strong></div>
       <div><span>Statut</span><strong>${summary.totalRuns>0?summary.status:"Aucun donjon"}</strong></div>
     </section>
@@ -25098,14 +25317,14 @@ function endSession(){
   data.session.totalSeconds=0;
   data.session.startedAt=null;
   data.session.sessionStartedAt=null;
-  data.session.runs={morose:0,tynril:0};
+  data.session.runs=Object.fromEntries(activeFarmKeys().map(farm=>[farm,0]));
   data.session.ppStart=currentPP();
   data.session.ppGain=0;
   data.chrono.seconds=0;
   data.chrono.running=false;
   data.chrono.startedAt=null;
   data.chrono.lastMarkSeconds=0;
-  addActivity(`Session terminée : ${summary.totalRuns} donjon${summary.totalRuns>1?"s":""}, +${summary.pp} PP`,"system");
+  addActivity(`Session terminée : ${summary.totalRuns} donjon${summary.totalRuns>1?"s":""}, +${summary.pp} ${activeProgressShort()}`,"system");
   save();
   renderSession();
   renderChrono();
@@ -25137,8 +25356,9 @@ function notifyPPProgress(oldPP,newPP){
   const diff=newPP-oldPP;
   if(diff===0)return;
 
-  const oldPct=Math.min(100,(oldPP/PP_MAX)*100);
-  const newPct=Math.min(100,(newPP/PP_MAX)*100);
+  const max=activeProgressMax();
+  const oldPct=Math.min(100,(oldPP/max)*100);
+  const newPct=Math.min(100,(newPP/max)*100);
 
   if(diff>0){
     triggerPykurReaction("energy");
@@ -25296,10 +25516,10 @@ function runPykurMicroLife(){
 function checkMilestones(oldPP,newPP){
   if(!data.stats.milestones)data.stats.milestones={};
   [10,20,30,40,50,60,70,80,90,100].forEach(p=>{
-    const target=Math.round(PP_MAX*p/100);
+    const target=Math.round(activeProgressMax()*p/100);
     if(oldPP<target && newPP>=target && !data.stats.milestones[p]){
       data.stats.milestones[p]=true;
-      toast(`🏆 Pykur a atteint ${p}% de progression !`,"milestone","unlock");
+      toast(`🏆 ${activeFamiliar().shortLabel} a atteint ${p}% de progression !`,"milestone","unlock");
       alhassReact("milestone",p>=100);
       milestoneFlash();
       triggerPykurReaction(p>=100 ? "finish" : "milestone");
@@ -25315,7 +25535,7 @@ function updatePykurImageByPP(pp){
   const img=$("#pykurImg");
   if(!img)return;
 
-  img.classList.toggle("aura-active", pp >= PP_MAX && !data.ui?.capyMode);
+  img.classList.toggle("aura-active", pp >= activeProgressMax() && !data.ui?.capyMode);
 
   if(data.ui?.capyMode){
     img.onerror=()=>{
@@ -25323,7 +25543,7 @@ function updatePykurImageByPP(pp){
       if(data.ui)data.ui.capyMode=false;
       document.body.classList.remove("capy-mode");
       updateProgressTitle();
-      setPykurImageSafely(getPykurImageSrc(pp), pp >= PP_MAX ? "AuraPykur" : "Pykur");
+      setPykurImageSafely(getPykurImageSrc(pp), pp >= activeProgressMax() ? `Aura ${activeFamiliar().shortLabel}` : activeFamiliar().shortLabel);
       toast("Capy est introuvable dans ./assets/images/capy.png. Retour du Pykur pour éviter un bug.","error","error");
       save();
     };
@@ -25332,46 +25552,88 @@ function updatePykurImageByPP(pp){
   }
 
   img.onerror=null;
-  setPykurImageSafely(getPykurImageSrc(pp), pp >= PP_MAX ? "AuraPykur" : "Pykur");
+  setPykurImageSafely(getPykurImageSrc(pp), pp >= activeProgressMax() ? `Aura ${activeFamiliar().shortLabel}` : activeFamiliar().shortLabel);
 }
 
 function renderFamiliarContext(){
   const familiar=activeFamiliar();
+  if(!dofusState.selectedFamiliar)dofusState.selectedFamiliar=activeFamiliarId();
   document.body.dataset.familiar=activeFamiliarId();
+  document.documentElement.style.setProperty("--familiar-bg",`url("${familiar.background||"./assets/images/fond.png"}")`);
+  document.documentElement.style.setProperty("--familiar-bg-size",activeFamiliarId()==="abra-kadabra"?"contain":"cover");
   $$(".pp-summary-label").forEach(el=>el.textContent=familiar.progressLabel);
-  $$(".pp-summary-goal").forEach(el=>el.textContent=familiar.id==="pykur" ? "/ 90 PP" : `/ ${familiar.objectiveLabel}`);
+  $$(".pp-summary-goal").forEach(el=>el.textContent=`/ ${familiar.objectiveLabel}`);
+  const ppIcon=$(".pp-summary-icon img");
+  if(ppIcon)ppIcon.src=familiar.icon||"./assets/images/prospection.png";
   const progressCaption=$(".side .card:first-child small");
-  if(progressCaption)progressCaption.textContent=`Progression du ${familiar.shortLabel}`;
+  if(progressCaption)progressCaption.textContent=`Progression du ${familiar.label}`;
+  const farmToggle=$(".farm-toggle");
+  if(farmToggle){
+    farmToggle.innerHTML=familiar.dungeons.map(dungeon=>`<button class="farm-choice tooltip" type="button" data-farm-choice="${dungeon.key}" data-tooltip="Sélectionne ${escapeHtml(dungeon.label)} pour que + Run ajoute ce parcours et ses monstres associés.">${escapeHtml(dungeon.label)}</button>`).join("");
+    farmToggle.querySelectorAll("[data-farm-choice]").forEach(btn=>btn.addEventListener("click",()=>{
+      data.ui.farm=btn.dataset.farmChoice;
+      data.ui.tab=btn.dataset.farmChoice;
+      save();
+      renderAll();
+    }));
+  }
+  const farmSelect=$("#farmSelect");
+  if(farmSelect){
+    farmSelect.innerHTML=familiar.dungeons.map(dungeon=>`<option value="${dungeon.key}">${escapeHtml(dungeon.fullLabel)}</option>`).join("");
+  }
+  const dungeonSummary=$(".dungeon-summary");
+  if(dungeonSummary){
+    dungeonSummary.innerHTML=familiar.dungeons.map(dungeon=>{
+      const id=farmDomId(dungeon.key);
+      return `<div class="card dungeon-card dungeon-${dungeon.key}" data-dungeon-card="${dungeon.key}">
+        <h3>${escapeHtml(dungeon.fullLabel)}</h3>
+        ${dungeon.special==="salleAbrakne"?`<button class="btn ${data.special?.salleAbrakneActive?"btn-red":"btn-orange"} abra-room-button" type="button" id="abraRoomSetup" data-tooltip="${data.special?.salleAbrakneActive?"Termine la boucle Abrakne active.":"Ajoute les monstres des 4 premières salles avant la boucle Abrakne."}">${data.special?.salleAbrakneActive?"Sortir de la salle Abrakne":"Arrivé à la salle Abrakne"}</button>`:""}
+        <div class="dungeon-mini">
+          <div class="dungeon-label">Effectués</div>
+          <div class="dungeon-value green-text" id="done${id}">0</div>
+        </div>
+        <div class="dungeon-mini">
+          <div class="dungeon-label">Restants</div>
+          <div class="dungeon-value red-text" id="remain${id}">0</div>
+        </div>
+        <div class="dungeon-mini full tooltip" id="${dungeon.key}EstimateBox" data-tooltip="Cliquez pour renseigner votre temps moyen.">
+          <div class="dungeon-label">Temps estimé restant</div>
+          <div class="dungeon-value blue-text" id="time${id}">≈ 0s</div>
+        </div>
+      </div>`;
+    }).join("");
+    $("#abraRoomSetup")?.addEventListener("click",markAbraRoomReached);
+    familiar.dungeons.forEach(dungeon=>{
+      $(`#${dungeon.key}EstimateBox`)?.addEventListener("click",()=>setAverageTime(dungeon.key));
+    });
+  }
   const createButton=$("#createProfile");
   if(createButton){
     createButton.dataset.tooltip="Crée un nouveau profil et choisissez le familier à suivre.";
   }
   const projectionTitle=$("#projectionModal .modal-head h2 span");
   if(projectionTitle)projectionTitle.textContent=`Projection du ${familiar.shortLabel}`;
-  const dofusRows=[
-    {key:"morose",button:"#configureMoroseDetection"},
-    {key:"tynril",button:"#configureTynrilDetection"}
-  ];
-  dofusRows.forEach(({key,button})=>{
-    const label=familiarFarmLabel(key);
-    const btn=$(button);
-    const row=btn?.closest(".option-row");
-    if(row){
-      const strong=row.querySelector("strong");
-      const small=row.querySelector("small");
-      if(strong)strong.textContent=`Référence ${label}`;
-      if(small)small.textContent=`Capture ou importe la zone stable du dialogue final ${label}.`;
-    }
-    if(btn){
-      btn.textContent=`Configurer ${label}`;
-      btn.dataset.tooltip=`Configure la référence personnalisée ${label}.`;
-    }
-  });
+  const monsterTabs=$("#monstersModal .monster-tabs");
+  if(monsterTabs){
+    monsterTabs.innerHTML=[
+      ...familiar.dungeons.map(dungeon=>`<button class="btn btn-blue tooltip" data-tab="${dungeon.key}" data-tooltip="Affiche les monstres comptés en ${escapeHtml(dungeon.fullLabel)}.">${escapeHtml(dungeon.label)}</button>`),
+      `<button class="btn btn-blue tooltip" data-tab="zone" data-tooltip="Affiche les monstres ajoutés hors run direct.">Zone</button>`,
+      `<button class="btn btn-blue tooltip" data-tab="all" data-tooltip="Affiche tous les monstres et le total par source.">Tous</button>`,
+      `<button class="btn btn-orange tooltip" id="editMobs" data-tooltip="Corrige manuellement les compteurs de monstres.">Modifier</button>`
+    ].join("");
+    monsterTabs.querySelectorAll("[data-tab]").forEach(btn=>btn.addEventListener("click",()=>{
+      data.ui.tab=btn.dataset.tab;
+      save();
+      renderMonsterTable();
+    }));
+    $("#editMobs")?.addEventListener("click",()=>{renderMobEditor();openModal("editMobsModal")});
+  }
 }
 
 function renderAll(){
   const pp=currentPP();
-  const pct=Math.min(100,(pp/PP_MAX)*100);
+  const max=activeProgressMax();
+  const pct=Math.min(100,(pp/max)*100);
   const awaken=pct>=100?"complete":pct>=75?"surge":pct>=50?"pulse":pct>=25?"spark":"seed";
   document.body.dataset.awaken=awaken;
   document.body.dataset.farmActive=data.ui?.farm||"morose";
@@ -25382,8 +25644,11 @@ function renderAll(){
   updateProgressTitle();
   document.body.classList.toggle("capy-mode",!!data.ui?.capyMode);
   updatePykurImageByPP(pp);
-  $("#doneMorose").textContent=data.runs.morose;
-  $("#doneTynril").textContent=data.runs.tynril;
+  activeFarmKeys().forEach(farm=>{
+    const id=farmDomId(farm);
+    const doneEl=$(`#done${id}`);
+    if(doneEl)doneEl.textContent=data.runs[farm]||0;
+  });
   renderDungeonEstimates();
   $("#farmSelect").value=data.ui.farm;
   updateFarmUI();
@@ -25403,41 +25668,38 @@ function renderAll(){
 }
 
 function updateFarmUI(){
-  const farm=data.ui.farm||"morose";
+  const farms=activeFarmKeys();
+  const farm=farms.includes(data.ui.farm)?data.ui.farm:(farms[0]||"morose");
   $$(".farm-choice").forEach(btn=>{
     const active=btn.dataset.farmChoice===farm;
     btn.classList.toggle("active",active);
     btn.setAttribute("aria-pressed",active?"true":"false");
   });
-  $(".dungeon-morose")?.classList.toggle("active-farm",farm==="morose");
-  $(".dungeon-tynril")?.classList.toggle("active-farm",farm==="tynril");
+  $$("[data-dungeon-card]").forEach(card=>card.classList.toggle("active-farm",card.dataset.dungeonCard===farm));
 }
 
 function updateQuickProjection(){
   const target=$("#nextPPSummary");
   if(!target)return;
   const pp=currentPP();
-  if(pp>=PP_MAX){
+  const max=activeProgressMax();
+  if(pp>=max){
     target.textContent="Objectif atteint";
     return;
   }
-  const nextTarget=Math.min(PP_MAX,Math.floor(pp)+1);
-  const morose=simulateRunsForPP("morose",nextTarget);
-  const tynril=simulateRunsForPP("tynril",nextTarget);
-  const moroseGain=morose===null || morose===undefined ? null : Math.max(0,simulatePPAfterRuns("morose",morose)-pp);
-  const tynrilGain=tynril===null || tynril===undefined ? null : Math.max(0,simulatePPAfterRuns("tynril",tynril)-pp);
-  const fmtPP=value=>Number.isInteger(value)?String(value):String(Math.round(value*10)/10);
-  const formatGain=value=>value===null || value===undefined ? "gain indisponible" : `+${fmtPP(value)} PP`;
+  const nextTarget=Math.min(max,Math.floor(pp)+1);
+  const lines=activeFarmKeys().map(farm=>{
+    const runs=simulateRunsForPP(farm,nextTarget);
+    const gain=runs===null || runs===undefined ? null : Math.max(0,simulatePPAfterRuns(farm,runs)-pp);
+    return `
+      <div class="quick-projection-run">
+        <span>${escapeHtml(familiarFarmLabel(farm))} ${formatProjectionRuns(runs)}</span>
+        <span class="quick-projection-gain">${formatProgressGain(gain)} (${formatProgressValue(pp)} → ${formatProgressValue(pp+(gain||0))})</span>
+      </div>`;
+  }).join("");
   target.innerHTML=`
     <div class="quick-projection-lines">
-      <div class="quick-projection-run">
-        <span>Morose ${formatProjectionRuns(morose)}</span>
-        <span class="quick-projection-gain">${formatGain(moroseGain)} (${fmtPP(pp)} → ${fmtPP(pp+(moroseGain||0))})</span>
-      </div>
-      <div class="quick-projection-run">
-        <span>Tynril ${formatProjectionRuns(tynril)}</span>
-        <span class="quick-projection-gain">${formatGain(tynrilGain)} (${fmtPP(pp)} → ${fmtPP(pp+(tynrilGain||0))})</span>
-      </div>
+      ${lines}
     </div>
   `;
   renderChronoEstimate();
@@ -25445,8 +25707,9 @@ function updateQuickProjection(){
 
 function dungeonEstimateFor(farm){
   const baseRemaining=simulateRemaining(farm);
-  const rawAvg=farm==="morose" ? (parseInt(data.stats.avgMorose,10)||0) : (parseInt(data.stats.avgTynril,10)||0);
-  const avg=rawAvg || (farm==="morose"?125:600);
+  const avgKey=farmAverageKey(farm);
+  const rawAvg=parseInt(data.stats[avgKey],10)||0;
+  const avg=rawAvg || farmDefaultAverage(farm);
   const auto=!!data.settings.autoDungeonEstimate;
   const canUseAuto=auto && rawAvg>0;
   const remaining=baseRemaining;
@@ -25472,17 +25735,13 @@ function averageTimeLabel(seconds){
 }
 
 function renderDungeonEstimates(){
-  const configs={
-    morose:{remain:"#remainMorose",time:"#timeMorose",box:"#moroseEstimateBox"},
-    tynril:{remain:"#remainTynril",time:"#timeTynril",box:"#tynrilEstimateBox"}
-  };
-
-  for(const farm of Object.keys(configs)){
+  for(const farm of activeFarmKeys()){
     const estimate=dungeonEstimateFor(farm);
-    const remainEl=$(configs[farm].remain);
-    const timeEl=$(configs[farm].time);
-    const boxEl=$(configs[farm].box);
-    const label=farm==="morose"?"Morose":"Tynril";
+    const id=farmDomId(farm);
+    const remainEl=$(`#remain${id}`);
+    const timeEl=$(`#time${id}`);
+    const boxEl=$(`#${farm}EstimateBox`);
+    const label=familiarFarmLabel(farm);
 
     if(remainEl){
       remainEl.textContent=estimate.remaining;
@@ -25515,16 +25774,13 @@ function renderDungeonEstimates(){
 function buildChronoEstimate(){
   if(!data.settings.autoDungeonEstimate)return null;
   const elapsed=getChronoSeconds();
-  const avgMorose=parseInt(data.stats.avgMorose,10)||0;
-  const avgTynril=parseInt(data.stats.avgTynril,10)||0;
   if(elapsed<=0)return null;
-  if(avgMorose<=0 || avgTynril<=0)return {message:"Configure les temps moyens Morose et Tynril pour activer l'estimation.",morose:0,tynril:0};
-  const possibleMorose=Math.floor(elapsed/avgMorose);
-  const possibleTynril=Math.floor(elapsed/avgTynril);
+  const missing=activeFarmKeys().filter(farm=>(parseInt(data.stats[farmAverageKey(farm)],10)||0)<=0);
+  if(missing.length)return {message:`Configure les temps moyens ${missing.map(farm=>familiarFarmLabel(farm)).join(", ")} pour activer l'estimation.`};
+  const possible=Object.fromEntries(activeFarmKeys().map(farm=>[farm,Math.floor(elapsed/(parseInt(data.stats[farmAverageKey(farm)],10)||1))]));
   return {
-    morose:possibleMorose,
-    tynril:possibleTynril,
-    message:`Estimation chrono : ${possibleMorose} Morose ou ${possibleTynril} Tynril possibles sur ${formatChrono(elapsed)}.`
+    ...possible,
+    message:`Estimation chrono : ${activeFarmKeys().map(farm=>`${possible[farm]} ${familiarFarmLabel(farm)}`).join(" ou ")} possibles sur ${formatChrono(elapsed)}.`
   };
 }
 
@@ -25696,14 +25952,18 @@ function switchProfile(id){
 }
 
 function renderMonsterTable(){
-  const tab=data.ui.tab||"morose";
+  const validTabs=[...activeFarmKeys(),"zone","all"];
+  if(!validTabs.includes(data.ui.tab))data.ui.tab=activeFarmKeys()[0]||"all";
+  const tab=data.ui.tab;
   const table=$("#monsterTable");
   ensureMonsterTools();
   table.innerHTML="";
+  $$("#monstersModal [data-tab]").forEach(btn=>btn.classList.toggle("active",btn.dataset.tab===tab));
   const header=document.createElement("div");
   header.className="monster-row header "+(tab==="all"?"all":"");
   if(tab==="all"){
-    header.innerHTML="<span></span><span>Monstre</span><span>Morose</span><span>Tynril</span><span>Zone</span><span>Total</span>";
+    header.innerHTML=`<span></span><span>Monstre</span>${activeFarmKeys().map(farm=>`<span>${escapeHtml(familiarFarmLabel(farm))}</span>`).join("")}<span>Zone</span><span>Total</span>`;
+    header.style.gridTemplateColumns=`56px minmax(0,1fr) repeat(${activeFarmKeys().length+2},minmax(54px,auto)) 36px`;
   }else{
     header.innerHTML="<span></span><span>Monstre</span><span>Total</span>";
   }
@@ -25746,14 +26006,16 @@ function renderMonsterTable(){
     const sourceClass=tab==="all"?"":`source-${tab}`;
     const rankClass=data.ui.monsterSort==="total" && index<3 ? `rank-${index+1}` : "";
     const favActive=favs.includes(id);
-    const total=(data.mobs.morose[id]||0)+(data.mobs.tynril[id]||0)+(data.mobs.zone[id]||0);
+    const total=[...activeFarmKeys(),"zone"].reduce((sum,source)=>sum+(data.mobs?.[source]?.[id]||0),0);
     const progressNote=monsterProgressNote(id,total);
     row.className=["monster-row",tab==="all"?"all":"",sourceClass,m.cat.includes(data.ui.farm)?"current-farm":"",favActive?"is-favorite":"",rankClass].filter(Boolean).join(" ");
     const favBtn=`<button class="btn monster-fav ${favActive?"is-active":""}" type="button" data-monster-fav="${id}" aria-label="Favori ${m.name}">${favActive?"★":"☆"}</button>`;
+    const imgSrc=m.imgPath || `./assets/images/${m.img}`;
     if(tab==="all"){
-      row.innerHTML=`<img class="monster-icon" src="./assets/images/${m.img}" alt=""><span class="monster-name">${m.name}<small class="monster-progress-note">${progressNote}</small></span><span class="monster-value">${data.mobs.morose[id]||0}</span><span class="monster-value">${data.mobs.tynril[id]||0}</span><span class="monster-value">${data.mobs.zone[id]||0}</span><span class="monster-value">${total}</span>${favBtn}`;
+      row.style.gridTemplateColumns=`56px minmax(0,1fr) repeat(${activeFarmKeys().length+2},minmax(54px,auto)) 36px`;
+      row.innerHTML=`<img class="monster-icon" src="${imgSrc}" alt=""><span class="monster-name">${m.name}<small class="monster-progress-note">${progressNote}</small></span>${activeFarmKeys().map(farm=>`<span class="monster-value">${data.mobs?.[farm]?.[id]||0}</span>`).join("")}<span class="monster-value">${data.mobs.zone[id]||0}</span><span class="monster-value">${total}</span>${favBtn}`;
     }else{
-      row.innerHTML=`<img class="monster-icon" src="./assets/images/${m.img}" alt=""><span class="monster-name">${m.name}<small class="monster-progress-note">${progressNote}</small></span><span class="monster-value">${data.mobs[tab][id]||0}</span>${favBtn}`;
+      row.innerHTML=`<img class="monster-icon" src="${imgSrc}" alt=""><span class="monster-name">${m.name}<small class="monster-progress-note">${progressNote}</small></span><span class="monster-value">${data.mobs?.[tab]?.[id]||0}</span>${favBtn}`;
     }
     table.appendChild(row);
   });
@@ -25762,11 +26024,11 @@ function renderMonsterTable(){
 function monsterProgressNote(id,totalKills=null){
   const monster=mobs[id];
   const need=parseInt(monster?.ppNeed,10)||0;
-  const total=totalKills!==null ? (parseInt(totalKills,10)||0) : ((data.mobs?.morose?.[id]||0)+(data.mobs?.tynril?.[id]||0)+(data.mobs?.zone?.[id]||0));
-  if(!need)return `${total} tués • palier PP inconnu`;
+  const total=totalKills!==null ? (parseInt(totalKills,10)||0) : ([...activeFarmKeys(),"zone"].reduce((sum,source)=>sum+(data.mobs?.[source]?.[id]||0),0));
+  if(!need)return `${total} tués • palier ${activeProgressShort()} inconnu`;
   const rest=total%need;
   const remaining=rest===0 ? need : need-rest;
-  return `<span class="kill-count">${total} tués</span><span class="pp-rate">+1 PP / ${need}</span><span class="next-pp">${remaining} restant${remaining>1?"s":""}</span>`;
+  return `<span class="kill-count">${total} tués</span><span class="pp-rate">+1 ${activeProgressShort()} / ${need}</span><span class="next-pp">${remaining} restant${remaining>1?"s":""}</span>`;
 }
 
 function renderMonsterSummary(ids,totals,favs){
@@ -26016,7 +26278,7 @@ function formatProjectionRuns(value){
 
 function estimateTimeForRuns(farm,runs){
   if(runs===null || runs===undefined || runs<=0)return "—";
-  const avg=farm==="morose" ? (data.stats.avgMorose||0) : (data.stats.avgTynril||0);
+  const avg=data.stats[farmAverageKey(farm)]||0;
   if(!avg)return "Temps moyen manquant";
   return formatDuration(avg*runs);
 }
@@ -26025,7 +26287,7 @@ let projectionSimulation={morose:0,tynril:0};
 let projectionView="summary";
 
 function resetProjectionSimulation(){
-  projectionSimulation={morose:0,tynril:0};
+  projectionSimulation=Object.fromEntries(activeFarmKeys().map(farm=>[farm,0]));
 }
 
 function setProjectionView(view="summary",shouldRender=true){
@@ -26040,7 +26302,7 @@ function setProjectionView(view="summary",shouldRender=true){
 
 function simulatedProjectionMobs(){
   const sim=clone(totalMobs());
-  ["morose","tynril"].forEach(farm=>{
+  activeFarmKeys().forEach(farm=>{
     const runs=projectionSimulation[farm]||0;
     for(const id in gains[farm])sim[id]=(sim[id]||0)+(gains[farm][id]*runs);
   });
@@ -26072,49 +26334,47 @@ function renderProjection(){
   if(!box)return;
 
   const pp=currentPP();
-  const pct=Math.min(100,(pp/PP_MAX)*100);
-  const nextTarget=Math.min(PP_MAX,Math.floor(pp)+1);
-  const nextMorose=simulateRunsForPP("morose",nextTarget);
-  const nextTynril=simulateRunsForPP("tynril",nextTarget);
-  const nextMoroseGain=nextMorose===null || nextMorose===undefined ? null : Math.max(0,simulatePPAfterRuns("morose",nextMorose)-pp);
-  const nextTynrilGain=nextTynril===null || nextTynril===undefined ? null : Math.max(0,simulatePPAfterRuns("tynril",nextTynril)-pp);
-  const fullMorose=simulateRunsForPP("morose",PP_MAX);
-  const fullTynril=simulateRunsForPP("tynril",PP_MAX);
-  const moroseRate=nextMorose && nextMorose>0 ? (1/nextMorose).toFixed(3) : "—";
-  const tynrilRate=nextTynril && nextTynril>0 ? (1/nextTynril).toFixed(3) : "—";
+  const max=activeProgressMax();
+  const pct=Math.min(100,(pp/max)*100);
+  const nextTarget=Math.min(max,Math.floor(pp)+1);
+  const farmKeys=activeFarmKeys();
+  const farmProjection=farmKeys.map(farm=>{
+    const next=simulateRunsForPP(farm,nextTarget);
+    const nextGain=next===null || next===undefined ? null : Math.max(0,simulatePPAfterRuns(farm,next)-pp);
+    const full=simulateRunsForPP(farm,max);
+    const rate=next && next>0 ? (1/next).toFixed(3) : "—";
+    return {farm,next,nextGain,full,rate};
+  });
   const chronoEstimate=buildChronoEstimate();
-  const fmtProjectionPP=value=>Number.isInteger(value)?String(value):String(Math.round(value*10)/10);
-  const formatProjectionGain=value=>value===null || value===undefined ? "Indisponible" : `+${fmtProjectionPP(value)} PP`;
   const simMobs=simulatedProjectionMobs();
   const simPP=ppFrom(simMobs);
   const simGain=Math.max(0,simPP-pp);
-  const simPct=Math.min(100,(simPP/PP_MAX)*100);
-  const virtualRuns={morose:(data.runs.morose||0)+(projectionSimulation.morose||0),tynril:(data.runs.tynril||0)+(projectionSimulation.tynril||0)};
-  const simMoroseLeft=simulateRunsForPPFromMobs("morose",PP_MAX,simMobs,virtualRuns);
-  const simTynrilLeft=simulateRunsForPPFromMobs("tynril",PP_MAX,simMobs,virtualRuns);
+  const simPct=Math.min(100,(simPP/max)*100);
+  const virtualRuns=Object.fromEntries(farmKeys.map(farm=>[farm,(data.runs[farm]||0)+(projectionSimulation[farm]||0)]));
+  const simLeft=farmKeys.map(farm=>({farm,left:simulateRunsForPPFromMobs(farm,max,simMobs,virtualRuns)}));
+  const progressUnit=activeProgressShort();
 
   box.innerHTML=`
     <div class="projection-view-panel ${projectionView==="summary"?"active":""}" data-projection-panel="summary">
       <section class="projection-card wide">
         <div class="projection-head"><h3>Progression actuelle</h3><span class="projection-badge">${pct.toFixed(1)}%</span></div>
-        <div class="projection-big">${pp} / ${PP_MAX} PP</div>
+        <div class="projection-big">${formatProgressValue(pp)} / ${max} ${progressUnit}</div>
         <div class="projection-sub">Projection basée sur vos monstres et donjons actuels.</div>
         <div class="projection-progress"><span style="width:${pct}%"></span></div>
       </section>
       <section class="projection-card">
-        <div class="projection-head"><h3>Prochaine PP</h3><span class="projection-badge">Gain réel</span></div>
+        <div class="projection-head"><h3>Prochain palier</h3><span class="projection-badge">Gain réel</span></div>
         <div class="projection-lines">
-          <div class="projection-line"><span>Morose</span><strong>${formatProjectionRuns(nextMorose)}</strong></div>
-          <div class="projection-line gain-line"><span>Gain prévu</span><strong>${formatProjectionGain(nextMoroseGain)} (${fmtProjectionPP(pp)} → ${fmtProjectionPP(pp+(nextMoroseGain||0))})</strong></div>
-          <div class="projection-line"><span>Tynril</span><strong>${formatProjectionRuns(nextTynril)}</strong></div>
-          <div class="projection-line gain-line"><span>Gain prévu</span><strong>${formatProjectionGain(nextTynrilGain)} (${fmtProjectionPP(pp)} → ${fmtProjectionPP(pp+(nextTynrilGain||0))})</strong></div>
+          ${farmProjection.map(item=>`
+            <div class="projection-line"><span>${escapeHtml(familiarFarmLabel(item.farm))}</span><strong>${formatProjectionRuns(item.next)}</strong></div>
+            <div class="projection-line gain-line"><span>Gain prévu</span><strong>${formatProgressGain(item.nextGain)} (${formatProgressValue(pp)} → ${formatProgressValue(pp+(item.nextGain||0))})</strong></div>
+          `).join("")}
         </div>
       </section>
       <section class="projection-card">
-        <div class="projection-head"><h3>Objectif 100%</h3><span class="projection-badge">${PP_MAX} PP</span></div>
+        <div class="projection-head"><h3>Objectif 100%</h3><span class="projection-badge">${max} ${progressUnit}</span></div>
         <div class="projection-lines">
-          <div class="projection-line"><span>Morose restant</span><strong>${formatProjectionRuns(fullMorose)}</strong></div>
-          <div class="projection-line"><span>Tynril restant</span><strong>${formatProjectionRuns(fullTynril)}</strong></div>
+          ${farmProjection.map(item=>`<div class="projection-line"><span>${escapeHtml(familiarFarmLabel(item.farm))} restant</span><strong>${formatProjectionRuns(item.full)}</strong></div>`).join("")}
         </div>
         <div class="projection-summary-note">Consultez l'onglet Détails pour les estimations de temps et les rendements.</div>
       </section>
@@ -26125,28 +26385,21 @@ function renderProjection(){
         <div class="projection-head"><h3>Simulateur de donjons</h3><span class="projection-badge">Simulateur</span></div>
         <div class="projection-sub">Ces valeurs ne modifient pas votre Pykur, ne sauvegardent rien et ne débloquent aucun succès.</div>
         <div class="projection-sim-grid">
-          <div class="projection-sim-control">
-            <span>Morose</span>
-            <span class="projection-sim-count">${projectionSimulation.morose||0}</span>
-            <button class="btn btn-gray" type="button" data-projection-sim="morose" data-delta="-1">-</button>
-            <button class="btn btn-blue" type="button" data-projection-sim="morose" data-delta="1">+</button>
-          </div>
-          <div class="projection-sim-control">
-            <span>Tynril</span>
-            <span class="projection-sim-count">${projectionSimulation.tynril||0}</span>
-            <button class="btn btn-gray" type="button" data-projection-sim="tynril" data-delta="-1">-</button>
-            <button class="btn btn-blue" type="button" data-projection-sim="tynril" data-delta="1">+</button>
-          </div>
+          ${farmKeys.map(farm=>`<div class="projection-sim-control">
+            <span>${escapeHtml(familiarFarmLabel(farm))}</span>
+            <span class="projection-sim-count">${projectionSimulation[farm]||0}</span>
+            <button class="btn btn-gray" type="button" data-projection-sim="${farm}" data-delta="-1">-</button>
+            <button class="btn btn-blue" type="button" data-projection-sim="${farm}" data-delta="1">+</button>
+          </div>`).join("")}
         </div>
         <div class="projection-sim-grid">
-          <button class="btn btn-blue" type="button" data-projection-sim="morose" data-delta="10">+10 Morose</button>
-          <button class="btn btn-blue" type="button" data-projection-sim="tynril" data-delta="10">+10 Tynril</button>
+          ${farmKeys.map(farm=>`<button class="btn btn-blue" type="button" data-projection-sim="${farm}" data-delta="10">+10 ${escapeHtml(familiarFarmLabel(farm))}</button>`).join("")}
         </div>
         <div class="projection-sim-summary">
-          <div class="projection-sim-pill"><span>PP simulée</span><strong>${fmtProjectionPP(pp)} → ${fmtProjectionPP(simPP)}</strong></div>
-          <div class="projection-sim-pill"><span>Gain simulé</span><strong>+${fmtProjectionPP(simGain)} PP</strong></div>
+          <div class="projection-sim-pill"><span>${escapeHtml(activeProgressShort())} simulée</span><strong>${formatProgressValue(pp)} → ${formatProgressValue(simPP)}</strong></div>
+          <div class="projection-sim-pill"><span>Gain simulé</span><strong>+${formatProgressValue(simGain)} ${progressUnit}</strong></div>
           <div class="projection-sim-pill"><span>Progression</span><strong>${simPct.toFixed(1)}%</strong></div>
-          <div class="projection-sim-pill"><span>Restant 100%</span><strong>M ${formatProjectionRuns(simMoroseLeft)} · T ${formatProjectionRuns(simTynrilLeft)}</strong></div>
+          <div class="projection-sim-pill"><span>Restant 100%</span><strong>${simLeft.map(item=>`${escapeHtml(familiarFarmLabel(item.farm))} ${formatProjectionRuns(item.left)}`).join(" · ")}</strong></div>
         </div>
         <div class="projection-sim-note">
           <button class="btn btn-gray" type="button" data-projection-sim-reset>Reset simulation</button>
@@ -26159,22 +26412,19 @@ function renderProjection(){
       <section class="projection-card">
         <div class="projection-head"><h3>Temps prochaine PP</h3><span class="projection-badge">Prochain palier</span></div>
         <div class="projection-lines">
-          <div class="projection-line"><span>Morose</span><strong>${estimateTimeForRuns("morose",nextMorose)}</strong></div>
-          <div class="projection-line"><span>Tynril</span><strong>${estimateTimeForRuns("tynril",nextTynril)}</strong></div>
+          ${farmProjection.map(item=>`<div class="projection-line"><span>${escapeHtml(familiarFarmLabel(item.farm))}</span><strong>${estimateTimeForRuns(item.farm,item.next)}</strong></div>`).join("")}
         </div>
       </section>
       <section class="projection-card">
-        <div class="projection-head"><h3>Temps objectif 100%</h3><span class="projection-badge">${PP_MAX} PP</span></div>
+        <div class="projection-head"><h3>Temps objectif 100%</h3><span class="projection-badge">${max} ${progressUnit}</span></div>
         <div class="projection-lines">
-          <div class="projection-line"><span>Morose</span><strong>${estimateTimeForRuns("morose",fullMorose)}</strong></div>
-          <div class="projection-line"><span>Tynril</span><strong>${estimateTimeForRuns("tynril",fullTynril)}</strong></div>
+          ${farmProjection.map(item=>`<div class="projection-line"><span>${escapeHtml(familiarFarmLabel(item.farm))}</span><strong>${estimateTimeForRuns(item.farm,item.full)}</strong></div>`).join("")}
         </div>
       </section>
       <section class="projection-card wide">
         <div class="projection-head"><h3>Rendement et calcul</h3><span class="projection-badge">Optimisation</span></div>
         <div class="projection-lines">
-          <div class="projection-line"><span>Rendement Morose</span><strong>${moroseRate} PP/donjon</strong></div>
-          <div class="projection-line"><span>Rendement Tynril</span><strong>${tynrilRate} PP/donjon</strong></div>
+          ${farmProjection.map(item=>`<div class="projection-line"><span>Rendement ${escapeHtml(familiarFarmLabel(item.farm))}</span><strong>${item.rate} ${progressUnit}/run</strong></div>`).join("")}
           <div class="projection-line"><span>Mode tryhard auto</span><strong>${data.settings.autoMarkOnPlus?'<span class="tryhard-chip">Activé</span>':'Désactivé'}</strong></div>
           <div class="projection-line"><span>Calcul chrono</span><strong>${chronoEstimate?chronoEstimate.message:"Désactivé"}</strong></div>
         </div>
@@ -26619,8 +26869,21 @@ function renderChronoHistory(){
 }
 
 function renderRunTimesPanel(){
-  const targets={morose:$("#runTimesMorose"),tynril:$("#runTimesTynril")};
-  const statTargets={morose:$("#runStatsMorose"),tynril:$("#runStatsTynril")};
+  const columns=$("#runTimesPanel .run-time-columns");
+  if(columns){
+    columns.innerHTML=activeFarmKeys().map(farm=>{
+      const id=farmDomId(farm);
+      return `<section class="run-time-category">
+        <div class="run-time-category-head">
+          <h3>${escapeHtml(familiarFarmLabel(farm,"full"))}</h3>
+          <div class="run-time-stats" id="runStats${id}">0 temps</div>
+        </div>
+        <div class="run-time-table" id="runTimes${id}"></div>
+      </section>`;
+    }).join("");
+  }
+  const targets=Object.fromEntries(activeFarmKeys().map(farm=>[farm,$(`#runTimes${farmDomId(farm)}`)]));
+  const statTargets=Object.fromEntries(activeFarmKeys().map(farm=>[farm,$(`#runStats${farmDomId(farm)}`)]));
 
   for(const farm in targets){
     const box=targets[farm];
@@ -26830,7 +27093,7 @@ function resetChrono(){
 }
 
 function syncAverageFromChronoMarks(farm){
-  const key=farm==="morose"?"avgMorose":"avgTynril";
+  const key=farmAverageKey(farm);
   const marks=(data.chrono.marks||[])
     .map(mark=>mark && mark.farm===farm ? parseInt(mark.time,10) : 0)
     .filter(time=>Number.isFinite(time) && time>0)
@@ -26892,14 +27155,20 @@ function markTime(options={}){
 function buildMobEditor(){
   const c=$("#mobEditList");
   c.innerHTML="";
+  const header=$("#editMobsModal .mob-edit-grid.header");
+  if(header){
+    header.innerHTML=`<span></span><span>Monstre</span>${activeFarmKeys().map(farm=>`<span>${escapeHtml(familiarFarmLabel(farm))}</span>`).join("")}<span>Zone</span>`;
+    header.style.gridTemplateColumns=`52px 1fr repeat(${activeFarmKeys().length+1},minmax(82px,100px))`;
+  }
   for(const id in mobs){
     const row=document.createElement("div");
     row.className="mob-edit-card";
+    row.style.gridTemplateColumns=`52px 1fr repeat(${activeFarmKeys().length+1},minmax(82px,100px))`;
+    const imgSrc=mobs[id].imgPath || `./assets/images/${mobs[id].img}`;
     row.innerHTML=`
-      <img src="./assets/images/${mobs[id].img}" alt="">
+      <img src="${imgSrc}" alt="">
       <span>${mobs[id].name}</span>
-      <input type="number" min="0" data-mob="${id}" data-area="morose" value="${data.mobs.morose[id]||0}">
-      <input type="number" min="0" data-mob="${id}" data-area="tynril" value="${data.mobs.tynril[id]||0}">
+      ${activeFarmKeys().map(farm=>`<input type="number" min="0" data-mob="${id}" data-area="${farm}" value="${data.mobs?.[farm]?.[id]||0}">`).join("")}
       <input type="number" min="0" data-mob="${id}" data-area="zone" value="${data.mobs.zone[id]||0}">
     `;
     c.appendChild(row);
@@ -26922,9 +27191,9 @@ function saveMobEditor(){
   notifyPPProgress(oldPP,newPP);
 
   if(ppDelta>0){
-    addActivity(`Pykur gagne +${ppDelta} PP (${oldPP} → ${newPP})`,"success");
+    addActivity(`${activeFamiliar().shortLabel} gagne +${ppDelta} ${activeProgressShort()} (${oldPP} → ${newPP})`,"success");
   }else if(ppDelta<0){
-    addActivity(`Pykur perd ${Math.abs(ppDelta)} PP (${oldPP} → ${newPP})`,"warning");
+    addActivity(`${activeFamiliar().shortLabel} perd ${Math.abs(ppDelta)} ${activeProgressShort()} (${oldPP} → ${newPP})`,"warning");
   }
 
   checkMilestones(oldPP,newPP);
@@ -26935,7 +27204,7 @@ function saveMobEditor(){
 async function editRuns(){
   if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du Pykur.","warning","warning");
   const farm=data.ui.farm;
-  const label=farm==="morose"?"Morose":"Tynril";
+  const label=familiarFarmLabel(farm);
   const val=await showPrompt(`Nombre de donjons ${label} :`, {title:"Modifier le donjon",defaultValue:String(data.runs[farm]),okLabel:"Modifier"});
   if(val===null)return;
 
@@ -27013,8 +27282,8 @@ async function resetAll(){
 }
 
 async function setAverageTime(farm){
-  const key=farm==="morose"?"avgMorose":"avgTynril";
-  const label=farm==="morose"?"Morose":"Tynril";
+  const key=farmAverageKey(farm);
+  const label=familiarFarmLabel(farm);
   const estimate=dungeonEstimateFor(farm);
   const currentValue=estimate.rawAvg>0 ? averageTimeLabel(estimate.rawAvg) : "";
 
@@ -27073,9 +27342,7 @@ async function dofusExportImages(){
   const keys=new Set();
   Object.values(store?.profiles||{}).forEach(profile=>{
     const refs=profile?.data?.dofusDetection?.refs||{};
-    ["morose","tynril"].forEach(farm=>{
-      if(refs[farm]?.imageKey)keys.add(refs[farm].imageKey);
-    });
+    Object.values(refs).forEach(ref=>{if(ref?.imageKey)keys.add(ref.imageKey)});
   });
   const images={};
   for(const key of keys){
@@ -27618,8 +27885,10 @@ if($("#toggleDofusDetection"))$("#toggleDofusDetection").onclick=()=>{
   save();
 };
 if($("#chooseDofusWindow"))$("#chooseDofusWindow").onclick=dofusChooseWindow;
-if($("#configureMoroseDetection"))$("#configureMoroseDetection").onclick=()=>dofusOpenConfig("morose");
-if($("#configureTynrilDetection"))$("#configureTynrilDetection").onclick=()=>dofusOpenConfig("tynril");
+if($("#dofusFamiliarSelect"))$("#dofusFamiliarSelect").onchange=e=>{
+  dofusState.selectedFamiliar=normalizeFamiliarId(e.target.value);
+  dofusRefreshOptions();
+};
 if($("#testDofusDetection"))$("#testDofusDetection").onclick=dofusTestDetection;
 if($("#openDofusTutorial"))$("#openDofusTutorial").onclick=()=>openModal("dofusTutorialModal");
 if($("#dofusCooldownInput"))$("#dofusCooldownInput").onchange=e=>{
