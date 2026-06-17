@@ -3179,6 +3179,25 @@ app.post("/api/moderation/users/:id/unmute", requireAuth, requireRole("moderator
 app.post("/api/admin/users/:id/role", requireAuth, requireRole("admin"), requirePermission("roles.manage"), (req, res) => {
   const target = getUserById(req.params.id);
   const role = String(req.body.role || "");
+  const reason = requiredModerationReason(req.body.reason) || "Changement de role depuis le centre de controle.";
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (Number(target.id) === Number(req.user.id)) return res.status(400).json({ error: "Vous ne pouvez pas modifier votre propre role." });
+  if (!["user", "moderator", "admin"].includes(role)) return res.status(400).json({ error: "Role invalide." });
+  if (target.role === role) return res.json({ user: publicUser(target) });
+  if (target.role === "admin" && role !== "admin") {
+    const adminCount = db.prepare("SELECT COUNT(*) AS count FROM users WHERE role = 'admin'").get().count || 0;
+    if (adminCount <= 1) return res.status(400).json({ error: "Impossible de retirer le dernier admin." });
+  }
+  db.prepare("UPDATE users SET role = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(role, target.id);
+  if (role !== "moderator") db.prepare("DELETE FROM staff_permission_overrides WHERE user_id = ?").run(target.id);
+  moderationLog({ targetId: target.id, actorId: req.user.id, type: ROLE_ORDER[role] > ROLE_ORDER[target.role] ? "promote" : "demote", reason, req });
+  auditLog({ actorId: req.user.id, targetId: target.id, action: "user.role.update", entityType: "user", entityId: target.id, details: { from: target.role, to: role, reason }, req });
+  res.json({ user: publicUser(getUserById(target.id)) });
+});
+
+app.post("/api/admin/users/:id/role-legacy", requireAuth, requireRole("admin"), requirePermission("roles.manage"), (req, res) => {
+  const target = getUserById(req.params.id);
+  const role = String(req.body.role || "");
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (Number(target.id) === Number(req.user.id)) return res.status(400).json({ error: "Vous ne pouvez pas modifier votre propre rôle." });
   if (target.role === "admin") return res.status(403).json({ error: "Impossible de modifier un admin depuis cette interface." });

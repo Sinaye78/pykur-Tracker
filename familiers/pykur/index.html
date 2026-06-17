@@ -12579,6 +12579,278 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
 #livingEventAdmin .living-admin-status{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 #livingEventAdmin .living-admin-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:11px}
 
+#livingEventAdmin .admin-member-workspace{
+  display:grid;
+  gap:16px;
+}
+
+#livingEventAdmin .admin-member-hero{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(210px,280px);
+  gap:18px;
+  align-items:center;
+  padding:18px;
+  border:1px solid rgba(107,70,25,.22);
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 12% 20%,rgba(255,236,168,.62),transparent 34%),
+    linear-gradient(135deg,rgba(255,252,242,.96),rgba(239,218,176,.78));
+  box-shadow:0 12px 28px rgba(72,43,13,.08),inset 0 1px 0 rgba(255,255,255,.78);
+}
+
+#livingEventAdmin .admin-member-hero.admin,
+#livingEventAdmin .admin-member-hero.moderator{
+  border-color:rgba(220,38,38,.28);
+  background:
+    radial-gradient(circle at 12% 20%,rgba(255,236,168,.62),transparent 34%),
+    linear-gradient(135deg,rgba(255,251,238,.98),rgba(255,215,191,.72));
+}
+
+#livingEventAdmin .admin-member-main{
+  display:flex;
+  gap:15px;
+  align-items:center;
+  min-width:0;
+}
+
+#livingEventAdmin .admin-member-main .user-avatar,
+#livingEventAdmin .admin-avatar-preview .user-avatar{
+  width:58px;
+  height:58px;
+  flex:0 0 58px;
+}
+
+#livingEventAdmin .admin-member-title{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+}
+
+#livingEventAdmin .admin-member-title h3{
+  margin:0;
+  font-size:24px;
+}
+
+#livingEventAdmin .admin-member-main p{
+  margin:4px 0 8px;
+  color:#6e4d2c;
+  font-size:12px;
+  font-weight:800;
+}
+
+#livingEventAdmin .admin-role-pill{
+  display:inline-flex;
+  align-items:center;
+  min-height:26px;
+  padding:0 12px;
+  border-radius:999px;
+  background:#e5e7eb;
+  color:#374151;
+  font-size:11px;
+  font-weight:1000;
+  text-transform:uppercase;
+}
+
+#livingEventAdmin .admin-role-pill.admin{
+  background:linear-gradient(180deg,#ffe08a,#facc15);
+  color:#5f2d0a;
+}
+
+#livingEventAdmin .admin-role-pill.moderator{
+  background:linear-gradient(180deg,#fed7aa,#f97316);
+  color:#4a1d08;
+}
+
+#livingEventAdmin .admin-member-snapshot{
+  display:grid;
+  gap:3px;
+  padding:13px;
+  border:1px solid rgba(107,70,25,.18);
+  border-radius:12px;
+  background:rgba(255,255,255,.68);
+}
+
+#livingEventAdmin .admin-member-snapshot span,
+#livingEventAdmin .admin-card-eyebrow{
+  color:#7a552e;
+  font-size:10px;
+  font-weight:1000;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+
+#livingEventAdmin .admin-member-snapshot strong{font-size:17px}
+#livingEventAdmin .admin-member-snapshot small{color:#6b7280;font-weight:800}
+
+#livingEventAdmin .admin-member-layout{
+  display:grid;
+  grid-template-columns:300px minmax(0,1fr);
+  gap:16px;
+  align-items:start;
+}
+
+#livingEventAdmin .admin-member-side,
+#livingEventAdmin .admin-member-mainpanel{
+  display:grid;
+  gap:14px;
+  min-width:0;
+}
+
+#livingEventAdmin .admin-member-side{
+  position:sticky;
+  top:0;
+}
+
+#livingEventAdmin .admin-profile-list.compact{
+  display:grid;
+  grid-template-columns:1fr;
+  max-height:260px;
+  overflow:auto;
+}
+
+#livingEventAdmin .admin-mini-stats{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+
+#livingEventAdmin .admin-mini-stats div{
+  padding:10px;
+  border:1px solid rgba(107,70,25,.16);
+  border-radius:10px;
+  background:rgba(255,255,255,.7);
+}
+
+#livingEventAdmin .admin-mini-stats small{
+  display:block;
+  color:#6b7280;
+  font-size:10px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+
+#livingEventAdmin .admin-mini-stats strong{
+  font-size:22px;
+  color:#1f2937;
+}
+
+#livingEventAdmin .admin-timeline{
+  display:grid;
+  gap:8px;
+}
+
+#livingEventAdmin .admin-timeline-row{
+  padding:10px;
+  border:1px solid rgba(107,70,25,.15);
+  border-radius:10px;
+  background:rgba(255,255,255,.66);
+}
+
+#livingEventAdmin .admin-timeline-row strong,
+#livingEventAdmin .admin-timeline-row small{
+  display:block;
+}
+
+#livingEventAdmin .admin-timeline-row small{
+  margin-top:3px;
+  color:#6b7280;
+  font-size:11px;
+  font-weight:800;
+}
+
+#livingEventAdmin .admin-control-band,
+#livingEventAdmin .admin-control-columns{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(270px,1fr));
+  gap:14px;
+}
+
+#livingEventAdmin .admin-control-card{
+  min-width:0;
+  padding:16px;
+  border:1px solid rgba(107,70,25,.2);
+  border-radius:12px;
+  background:rgba(255,253,247,.88);
+  box-shadow:0 8px 20px rgba(72,43,13,.055),inset 0 1px 0 rgba(255,255,255,.78);
+}
+
+#livingEventAdmin .admin-control-card h4{
+  margin:4px 0 8px;
+  font-size:18px;
+}
+
+#livingEventAdmin .admin-control-card p{
+  margin:0 0 12px;
+  color:#6e4d2c;
+  font-size:12px;
+  font-weight:800;
+  line-height:1.35;
+}
+
+#livingEventAdmin .admin-control-card textarea,
+#livingEventAdmin .admin-control-card input,
+#livingEventAdmin .admin-control-card select{
+  width:100%;
+  border:1px solid rgba(107,70,25,.26);
+  border-radius:10px;
+  background:#fffdf7;
+  padding:10px 12px;
+  font:inherit;
+}
+
+#livingEventAdmin .admin-control-card textarea{min-height:86px;resize:vertical}
+#livingEventAdmin .admin-control-card-wide{grid-column:1/-1}
+
+#livingEventAdmin .admin-control-card-role{
+  border-color:rgba(37,99,235,.2);
+  background:linear-gradient(135deg,rgba(239,246,255,.78),rgba(255,253,247,.9));
+}
+
+#livingEventAdmin .admin-role-editor{
+  display:grid;
+  grid-template-columns:150px minmax(0,1fr) auto;
+  gap:9px;
+  align-items:center;
+}
+
+#livingEventAdmin .admin-danger-zone-soft{
+  border-color:rgba(185,28,28,.25);
+  background:linear-gradient(135deg,rgba(255,247,237,.92),rgba(254,226,226,.46));
+}
+
+#livingEventAdmin .admin-moderation-grid{
+  display:grid;
+  gap:10px;
+}
+
+#livingEventAdmin .admin-avatar-editor.compact{
+  margin-top:10px;
+}
+
+#livingEventAdmin .admin-restriction-grid.compact{
+  margin-top:12px;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+#livingEventAdmin .admin-data-tools{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:12px;
+}
+
+#livingEventAdmin .admin-data-tools section{
+  padding:13px;
+  border:1px solid rgba(107,70,25,.14);
+  border-radius:11px;
+  background:rgba(255,255,255,.58);
+}
+
+#livingEventAdmin .admin-data-tools h5{
+  margin:0 0 9px;
+  color:#4b2f19;
+}
+
 /* Tableau de modération */
 #moderationOverviewModal #moderationOverviewContent{
   height:100%;
@@ -12754,7 +13026,11 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
   #livingEventAdmin .admin-console-content{padding:16px}
   #livingEventAdmin .admin-server-grid,
   #livingEventAdmin .admin-target-actions,
-  #livingEventAdmin .admin-broadcast-grid{grid-template-columns:1fr}
+  #livingEventAdmin .admin-broadcast-grid,
+  #livingEventAdmin .admin-member-hero,
+  #livingEventAdmin .admin-member-layout,
+  #livingEventAdmin .admin-role-editor{grid-template-columns:1fr}
+  #livingEventAdmin .admin-member-side{position:static}
   #moderationOverviewModal .moderation-console{
     grid-template-columns:1fr;
     grid-template-rows:auto auto minmax(0,1fr);
@@ -13801,21 +14077,21 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
     <div class="modal-body">
       <div class="admin-console-shell">
         <nav class="admin-console-nav" aria-label="Sections du centre de contrôle">
-          <button class="active" type="button" data-admin-console-tab="dashboard">Vue générale</button>
-          <button type="button" data-admin-console-tab="users">Utilisateurs</button>
+          <button class="active" type="button" data-admin-console-tab="dashboard">Vue d'ensemble</button>
+          <button type="button" data-admin-console-tab="users">Membres</button>
           <button type="button" data-admin-console-tab="moderation">Modération</button>
-          <button type="button" data-admin-console-tab="events">Événements</button>
+          <button type="button" data-admin-console-tab="events">Événements serveur</button>
           <button type="button" data-admin-console-tab="local">Tests locaux</button>
           <button type="button" data-admin-console-tab="achievements" data-admin-permission="achievements.manage">Succès locaux</button>
-          <button type="button" data-admin-console-tab="logs">Journal</button>
-          <button type="button" data-admin-console-tab="preferences">Préférences</button>
+          <button type="button" data-admin-console-tab="logs">Journal serveur</button>
+          <button type="button" data-admin-console-tab="preferences">Préférences staff</button>
         </nav>
         <div class="admin-console-content">
           <section class="admin-console-panel active" data-admin-console-panel="dashboard">
             <div id="adminConsoleDashboard" class="admin-console-loading">Chargement de l'état serveur...</div>
           </section>
           <section class="admin-console-panel" data-admin-console-panel="users">
-            <div class="admin-console-heading"><div><h3>Contrôle utilisateur</h3><p>Recherchez un pseudo puis choisissez une action autorisée par votre rôle.</p></div></div>
+            <div class="admin-console-heading"><div><h3>Centre membre</h3><p>Recherchez un pseudo, consultez sa fiche complète et appliquez uniquement les actions autorisées par votre rôle.</p></div></div>
             <div class="admin-user-search"><input id="adminTargetPseudo" type="search" placeholder="Pseudo exact du joueur"><button class="btn btn-blue" id="adminTargetSearch" type="button">Rechercher</button></div>
             <div id="adminTargetWorkspace" class="admin-console-empty">Aucun utilisateur sélectionné.</div>
           </section>
@@ -18778,6 +19054,138 @@ function renderAdminTarget(payload){
     const payloadData=button.dataset.needsProfile?{profileId:adminTargetSelectedProfile()}:{};
     sendAdminTargetCommand(button.dataset.adminTargetCommand,payloadData,true);
   }));
+}
+
+function renderAdminTarget(payload){
+  adminConsoleTarget=payload;
+  const box=$("#adminTargetWorkspace");
+  if(!box)return;
+  const user=payload.user||{};
+  const permissions=new Set(payload.permissions||[]);
+  const profiles=payload.profiles||[];
+  const achievements=payload.achievements||[];
+  const galleryEvents=payload.galleryEvents||[];
+  const galleryPykurs=payload.galleryPykurs||[];
+  const history=payload.history||[];
+  const can=id=>permissions.has(id);
+  const canModerate=!!user.canModerate&&(can("users.warn")||can("users.mute")||can("users.ban")||can("users.history.manage"));
+  const canCommunicate=can("notifications.send");
+  const canTargetEvent=can("events.target");
+  const canAvatar=can("users.avatar.manage");
+  const canRestrict=can("users.restrict");
+  const canIdentity=can("users.rename");
+  const canSecurity=can("users.sessions.revoke")||can("users.password.reset");
+  const canTracker=can("tracker.reset")||can("achievements.manage")||can("gallery.manage")||can("profiles.manage");
+  const canRoles=can("roles.manage");
+  const restrictions=user.socialRestrictions||{};
+  const activeProfile=profiles.find(profile=>profile.active)||profiles[0]||null;
+  const profileSummary=activeProfile?`${activeProfile.pp} PP · M ${activeProfile.morose} · T ${activeProfile.tynril}${activeProfile.active?" · actif":""}`:"Aucune sauvegarde cloud";
+  const roleOptions=["user","moderator","admin"].map(role=>`<option value="${role}" ${user.role===role?"selected":""}>${escapeHtml(authRoleLabel(role))}</option>`).join("");
+  const recentHistory=history.slice(0,5).map(item=>`<div class="admin-timeline-row"><strong>${escapeHtml(adminCommandTypeLabel(item.type)||item.type||"Action")}</strong><small>${adminConsoleDate(item.createdAt)}${item.actor?.pseudo?` · ${escapeHtml(item.actor.pseudo)}`:""}${item.reason?` · ${escapeHtml(item.reason)}`:""}</small></div>`).join("");
+  box.className="";
+  box.innerHTML=`
+    <section class="admin-member-workspace">
+      <header class="admin-member-hero ${escapeHtml(user.role||"user")}">
+        <div class="admin-member-main">
+          ${avatarMarkup(user)}
+          <div>
+            <div class="admin-member-title">
+              <h3>${escapeHtml(user.pseudo||"Utilisateur")}</h3>
+              <span class="admin-role-pill ${escapeHtml(user.role||"user")}">${escapeHtml(authRoleLabel(user.role))}</span>
+            </div>
+            <p>${escapeHtml(user.email||"Email masque")} · Cloud ${adminConsoleDate(payload.cloudUpdatedAt)}</p>
+            <div class="admin-status-row">${adminTargetStatusChips(user)}</div>
+          </div>
+        </div>
+        <div class="admin-member-snapshot">
+          <span>Profil actif</span>
+          <strong>${escapeHtml(activeProfile?.name||"Aucun profil")}</strong>
+          <small>${escapeHtml(profileSummary)}</small>
+        </div>
+      </header>
+
+      <div class="admin-member-layout">
+        <aside class="admin-member-side">
+          <article class="admin-action-group">
+            <div class="admin-section-title"><h4>Profils cloud</h4><span>${profiles.length} profil${profiles.length>1?"s":""}</span></div>
+            <div class="admin-profile-list compact">${profiles.length?profiles.map(profile=>`<label class="admin-profile-option"><input type="radio" name="adminTargetProfile" value="${adminEscapeAttr(profile.id)}" ${profile.active?"checked":""}><span><strong>${escapeHtml(profile.name)}</strong><small>${profile.pp} PP · Morose ${profile.morose} · Tynril ${profile.tynril}${profile.active?" · actif":""}</small></span></label>`).join(""):`<div class="admin-console-empty">Aucune sauvegarde cloud exploitable.</div>`}</div>
+          </article>
+          <article class="admin-action-group">
+            <div class="admin-section-title"><h4>Résumé</h4><span>lecture rapide</span></div>
+            <div class="admin-mini-stats">
+              <div><small>Succès</small><strong>${achievements.length}</strong></div>
+              <div><small>Événements</small><strong>${galleryEvents.length}</strong></div>
+              <div><small>Pykurs archivés</small><strong>${galleryPykurs.length}</strong></div>
+            </div>
+          </article>
+          <article class="admin-action-group">
+            <div class="admin-section-title"><h4>Historique récent</h4><span>sanctions</span></div>
+            <div class="admin-timeline">${recentHistory||`<div class="admin-console-empty">Aucune action récente.</div>`}</div>
+          </article>
+        </aside>
+
+        <div class="admin-member-mainpanel">
+          <div class="admin-control-band">
+            ${canRoles?`<article class="admin-control-card admin-control-card-role"><div class="admin-card-eyebrow">Permissions</div><h4>Rôle du compte</h4><p>Promouvez ou rétrogradez un membre. Cette action est journalisée et protégée contre la perte du dernier admin.</p><div class="admin-role-editor"><select id="adminTargetRole">${roleOptions}</select><input id="adminTargetRoleReason" type="text" maxlength="300" placeholder="Motif du changement de rôle"><button class="btn btn-blue" id="adminChangeTargetRole" type="button">Appliquer le rôle</button></div></article>`:""}
+            ${canCommunicate?`<article class="admin-control-card"><div class="admin-card-eyebrow">Intervention</div><h4>Contacter le joueur</h4><textarea id="adminTargetNotification" maxlength="500" placeholder="Message visible par le joueur, même hors ligne"></textarea><div class="admin-action-buttons"><button class="btn btn-blue" id="adminSendTargetNotification" type="button">Notification</button><button class="btn btn-orange" id="adminSendTargetPopup" type="button">Popup</button><button class="btn btn-red" id="adminKickTarget" type="button">Kick</button></div></article>`:""}
+            ${canTargetEvent?`<article class="admin-control-card"><div class="admin-card-eyebrow">Cosmétique</div><h4>Événement ciblé</h4><div class="admin-target-event"><select id="adminTargetEvent">${LIVING_EVENT_DEFS.map(item=>`<option value="${item.id}">${escapeHtml(item.label)}</option>`).join("")}</select><button class="btn btn-orange" id="adminSendTargetEvent" type="button">Jouer</button></div><p class="options-note">Aucun succès, aucune découverte, aucun bonus.</p></article>`:""}
+          </div>
+
+          ${canModerate?`<article class="admin-control-card admin-control-card-wide admin-danger-zone-soft"><div class="admin-section-title"><h4>Modération immédiate</h4><span>motif obligatoire</span></div><div class="admin-moderation-grid"><div class="admin-duration-fields"><input id="adminModerationDuration" type="number" min="1" max="525600" value="24" aria-label="Durée"><select id="adminModerationUnit" aria-label="Unité"><option value="minutes">minutes</option><option value="hours" selected>heures</option><option value="days">jours</option></select><input id="adminModerationReason" type="text" maxlength="300" placeholder="Motif affiché au joueur"></div><div class="admin-duration-actions">${can("users.warn")?`<button class="btn btn-blue" id="adminWarnTarget" type="button">Avertir</button>`:""}${can("users.mute")?`<button class="btn btn-orange" id="adminMuteTarget" type="button">Mute</button>`:""}${can("users.ban")?`<button class="btn btn-red" id="adminBanTarget" type="button">Ban temporaire</button>`:""}${can("users.ban.permanent")?`<button class="btn btn-red" id="adminBanPermanentTarget" type="button">Ban définitif</button>`:""}${user.muteUntil&&can("users.mute")?`<button class="btn btn-gray" id="adminUnmuteTarget" type="button">Retirer mute</button>`:""}${user.isBanned&&can("users.ban")?`<button class="btn btn-blue" id="adminUnbanTarget" type="button">Débannir</button>`:""}</div></div></article>`:""}
+
+          <div class="admin-control-columns">
+            ${(canIdentity||canAvatar||canRestrict)?`<article class="admin-control-card"><div class="admin-card-eyebrow">Identité publique</div><h4>Pseudo, avatar et restrictions</h4>${canIdentity?`<div class="admin-target-event"><input id="adminTargetNewPseudo" type="text" maxlength="24" placeholder="Nouveau pseudo"><button class="btn btn-blue" id="adminRenameTargetUser" type="button">Renommer</button></div>`:""}${canAvatar?`<div class="admin-avatar-editor compact"><div class="admin-avatar-preview">${avatarMarkup(user)}</div><div class="admin-avatar-fields"><input id="adminTargetAvatarUrl" type="url" maxlength="800" value="${adminEscapeAttr(user.avatarUrl||"")}" placeholder="URL d'avatar ou vide pour supprimer"><input id="adminTargetAvatarReason" type="text" maxlength="300" placeholder="Motif avatar"><div class="admin-action-buttons"><button class="btn btn-blue" id="adminSaveTargetAvatar" type="button">Changer</button><button class="btn btn-red" id="adminClearTargetAvatar" type="button">Supprimer</button></div></div></div>`:""}${canRestrict?`<div class="admin-restriction-grid compact">${["chat","privateMessages","friendRequests","shares"].map(key=>`<label><input type="checkbox" data-admin-target-restriction="${key}" ${restrictions[key]?"checked":""}> ${key==="chat"?"Chat global":key==="privateMessages"?"Messages privés":key==="friendRequests"?"Demandes d'ami":"Partages automatiques"}</label>`).join("")}<label><input type="checkbox" id="adminTargetProfileLocked" ${user.profileLocked?"checked":""}> Verrouiller le profil</label><label><input type="checkbox" id="adminTargetAvatarLocked" ${user.avatarLocked?"checked":""}> Verrouiller l'avatar</label></div><div class="admin-target-event"><input id="adminTargetRestrictionReason" type="text" maxlength="300" placeholder="Motif restrictions"><button class="btn btn-orange" id="adminSaveTargetRestrictions" type="button">Appliquer</button></div>`:""}</article>`:""}
+            ${canSecurity?`<article class="admin-control-card"><div class="admin-card-eyebrow">Sécurité</div><h4>Sessions et mot de passe</h4><input id="adminTargetSecurityReason" type="text" maxlength="300" placeholder="Motif sécurité"><div class="admin-action-buttons">${can("users.sessions.revoke")?`<button class="btn btn-red" id="adminRevokeTargetSessions" type="button">Révoquer sessions</button>`:""}${can("users.password.reset")?`<button class="btn btn-orange" id="adminForceTargetPassword" type="button">Forcer mot de passe</button>`:""}</div></article>`:""}
+          </div>
+
+          ${canTracker?`<article class="admin-control-card admin-control-card-wide"><div class="admin-section-title"><h4>Données tracker</h4><span>réparation et suppressions ciblées</span></div><div class="admin-data-tools">${can("tracker.reset")?`<section><h5>Réparer</h5><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer succès</button></div></section>`:""}${can("profiles.manage")?`<section><h5>Profils</h5><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer profil</button></div></section>`:""}${can("achievements.manage")?`<section><h5>Succès</h5>${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}</section>`:""}${can("gallery.manage")?`<section><h5>Galerie</h5>${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un Pykur archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">Pykur #${item.number||"?"} · ${escapeHtml(item.profileName)} · ${item.pp} PP</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer Pykur</button></div>`:`<p class="options-note">Aucun Pykur archivé.</p>`}</section>`:""}</div><div class="admin-danger-strip">${can("gallery.manage")?`<button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button>`:""}${can("achievements.manage")?`<button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button>`:""}${can("tracker.reset")?`<button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset Pykur</button>`:""}${can("profiles.manage")?`<button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button>`:""}</div></article>`:""}
+
+          <article class="admin-control-card admin-control-card-wide"><div class="admin-section-title"><h4>Commandes récentes</h4><span>file serveur</span></div>${adminConsoleCommandRows(payload.commands||[])}</article>
+        </div>
+      </div>
+    </section>`;
+  $("#adminChangeTargetRole")?.addEventListener("click",adminChangeTargetRole);
+  $("#adminSendTargetNotification")?.addEventListener("click",()=>sendAdminTargetCommand("notification",{message:$("#adminTargetNotification")?.value||""},false));
+  $("#adminSendTargetPopup")?.addEventListener("click",()=>sendAdminTargetCommand("popup-message",{message:$("#adminTargetNotification")?.value||""},false));
+  $("#adminKickTarget")?.addEventListener("click",()=>sendAdminTargetCommand("kick",{message:$("#adminTargetNotification")?.value||"Votre session a été interrompue par l'équipe de modération."},true));
+  $("#adminSendTargetEvent")?.addEventListener("click",()=>sendAdminTargetCommand("living-event",{eventId:$("#adminTargetEvent")?.value},false));
+  $("#adminRenameTargetProfile")?.addEventListener("click",()=>sendAdminTargetCommand("rename-profile",{profileId:adminTargetSelectedProfile(),name:$("#adminTargetProfileName")?.value||""},true));
+  $("#adminRenameTargetUser")?.addEventListener("click",()=>renameAdminTargetUser());
+  $("#adminSaveTargetAvatar")?.addEventListener("click",()=>adminUpdateTargetAvatar(false));
+  $("#adminClearTargetAvatar")?.addEventListener("click",()=>adminUpdateTargetAvatar(true));
+  $("#adminSaveTargetRestrictions")?.addEventListener("click",()=>saveAdminTargetRestrictions());
+  $("#adminRevokeTargetSessions")?.addEventListener("click",()=>adminSecurityTarget("sessions/revoke"));
+  $("#adminForceTargetPassword")?.addEventListener("click",()=>adminSecurityTarget("password-reset"));
+  $("#adminRemoveTargetAchievement")?.addEventListener("click",()=>sendAdminTargetCommand("remove-achievement",{achievementId:$("#adminTargetAchievement")?.value||""},true));
+  $("#adminRemoveTargetGalleryEvent")?.addEventListener("click",()=>sendAdminTargetCommand("remove-gallery-event",{eventId:$("#adminTargetGalleryEvent")?.value||""},true));
+  $("#adminRemoveTargetGalleryPykur")?.addEventListener("click",()=>sendAdminTargetCommand("remove-gallery-pykur",{pykurId:$("#adminTargetGalleryPykur")?.value||""},true));
+  $("#adminWarnTarget")?.addEventListener("click",()=>adminModerateTarget("warn"));
+  $("#adminMuteTarget")?.addEventListener("click",()=>adminModerateTarget("mute"));
+  $("#adminBanTarget")?.addEventListener("click",()=>adminModerateTarget("ban"));
+  $("#adminBanPermanentTarget")?.addEventListener("click",()=>adminModerateTarget("ban",true));
+  $("#adminUnmuteTarget")?.addEventListener("click",()=>adminLiftModeration("unmute"));
+  $("#adminUnbanTarget")?.addEventListener("click",()=>adminLiftModeration("unban"));
+  box.querySelectorAll("[data-admin-target-command]").forEach(button=>button.addEventListener("click",()=>{
+    const payloadData=button.dataset.needsProfile?{profileId:adminTargetSelectedProfile()}:{};
+    sendAdminTargetCommand(button.dataset.adminTargetCommand,payloadData,true);
+  }));
+}
+
+async function adminChangeTargetRole(){
+  const target=adminConsoleTarget?.user;
+  if(!target)return;
+  const role=String($("#adminTargetRole")?.value||"");
+  const reason=String($("#adminTargetRoleReason")?.value||"").trim();
+  if(!role)return toast("Choisissez un rôle.","warning","warning");
+  if(role===target.role)return toast("Ce membre possède déjà ce rôle.","info","info");
+  if(reason.length<3)return toast("Indiquez un motif pour le changement de rôle.","warning","warning");
+  if(!await showConfirm(`Changer le rôle de ${target.pseudo} en ${authRoleLabel(role)} ?`,{title:"Changement de rôle",danger:role==="admin"||target.role==="admin",okLabel:"Appliquer"}))return;
+  try{
+    await authFetch(`/admin/users/${encodeURIComponent(target.id)}/role`,{method:"POST",body:JSON.stringify({role,reason})});
+    toast("Rôle mis à jour.","success","success");
+    await searchAdminTarget();
+    await loadAdminConsole();
+  }catch(error){toast(error.message||"Changement de rôle impossible.","error","error")}
 }
 
 function adminModerationUntil(){
