@@ -8378,20 +8378,30 @@ body[data-awaken="complete"] .pykur-img{
   background:rgba(37,99,235,.08)!important;
 }
 body[data-familiar="abra-kadabra"] .quick-projection{
-  padding:12px 16px!important;
+  grid-template-columns:minmax(0,1fr) minmax(108px,130px)!important;
+  padding:14px 16px!important;
+  min-height:auto!important;
+  overflow:hidden!important;
 }
 body[data-familiar="abra-kadabra"] .quick-projection-lines{
-  gap:4px;
+  gap:7px;
 }
 body[data-familiar="abra-kadabra"] .quick-projection-value{
-  font-size:17px!important;
+  font-size:18px!important;
+  line-height:1.18!important;
 }
 body[data-familiar="abra-kadabra"] .quick-projection-run{
-  min-height:20px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  max-width:none!important;
+  min-height:24px;
 }
 body[data-familiar="abra-kadabra"] .quick-projection-gain{
+  justify-self:end;
   font-size:11px;
-  padding:2px 7px;
+  padding:3px 7px;
 }
 .stats-fantasy-card{
   border-color:rgba(37,99,235,.28)!important;
@@ -11831,6 +11841,64 @@ body.no-anim .pykur-sparkle{
   background:rgba(255,255,255,.62)!important;
 }
 
+body[data-familiar="abra-kadabra"] .quick-projection{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(106px,126px)!important;
+  align-items:start!important;
+  min-height:150px!important;
+  padding:14px 16px!important;
+  gap:12px!important;
+  overflow:visible!important;
+}
+
+body[data-familiar="abra-kadabra"] .quick-projection-copy{
+  min-width:0!important;
+}
+
+body[data-familiar="abra-kadabra"] .quick-projection-value{
+  display:block!important;
+  min-height:auto!important;
+  font-size:17px!important;
+  line-height:1.18!important;
+  overflow:visible!important;
+}
+
+body[data-familiar="abra-kadabra"] .quick-projection-lines{
+  display:grid!important;
+  gap:7px!important;
+}
+
+body[data-familiar="abra-kadabra"] .quick-projection-run{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:8px!important;
+  max-width:none!important;
+  min-height:24px!important;
+}
+
+body[data-familiar="abra-kadabra"] .quick-projection-run > span:first-child{
+  min-width:0!important;
+  overflow-wrap:anywhere;
+}
+
+body[data-familiar="abra-kadabra"] .quick-projection-gain{
+  justify-self:end!important;
+  align-self:center!important;
+  font-size:11px!important;
+  padding:3px 7px!important;
+  white-space:nowrap!important;
+}
+
+body[data-familiar="abra-kadabra"] .quick-projection-hint{
+  margin-top:6px!important;
+}
+
+body[data-familiar="abra-kadabra"] .quick-projection #projectionButton{
+  min-width:106px!important;
+  width:100%!important;
+}
+
 .dashboard-bottom-actions{
   gap:10px!important;
   margin-top:0!important;
@@ -14324,7 +14392,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
               <div id="dofusReferenceRows"></div>
               <div class="option-row"><div><strong>Tester la détection</strong><small>Compare les références enregistrées avec l'image actuelle.</small></div><button class="btn btn-orange tooltip" id="testDofusDetection" data-tooltip="Affiche le meilleur score de correspondance.">Tester la détection</button></div>
               <div class="option-row"><div><strong>Raccourci clavier</strong><small>Active ou désactive la détection sans ouvrir les options. Suppr/Backspace le désactive pendant l'édition.</small></div><button class="btn btn-blue tooltip" id="editDofusShortcut" data-shortcut-edit="toggleDofusDetection" data-tooltip="Configurer le raccourci de détection Dofus.">Désactivé</button></div>
-              <label class="option-control"><span>Cooldown de détection</span><input id="dofusCooldownInput" type="number" min="10" max="300" step="5"></label>
+              <label class="option-control"><span>Cooldown de détection</span><input id="dofusCooldownInput" type="number" min="3" max="300" step="1"></label>
               <label class="option-control"><span>Fréquence d'analyse</span><select id="dofusScanIntervalSelect"><option value="125">125 ms</option><option value="250">250 ms</option><option value="500">500 ms</option><option value="1000">1000 ms</option><option value="1500">1500 ms</option><option value="2000">2000 ms</option><option value="3000">3000 ms</option></select><small>Une fréquence faible améliore la réactivité mais augmente légèrement l'utilisation CPU.</small></label>
               <div class="option-row muted"><div><strong>Statut</strong><small id="dofusDetectionDetail">Inactif</small></div><span class="option-status" id="dofusDetectionStatus">Inactif</span></div>
               <div class="option-row"><div><strong>Tutoriel</strong><small>Guide de configuration conseillé.</small></div><button class="btn btn-gray tooltip" id="openDofusTutorial" data-tooltip="Explique comment créer une référence fiable.">📖 Tutoriel</button></div>
@@ -14675,7 +14743,7 @@ const FAMILIARS={
   "abra-kadabra":{
     id:"abra-kadabra",
     label:"Abra Kadabra",
-    shortLabel:"Abra",
+    shortLabel:"Abra Kadabra",
     defaultProfileName:"Abra Kadabra principal",
     progressLabel:"Puissance",
     progressShort:"puissance",
@@ -14851,7 +14919,7 @@ const defaultData=()=>({
   hud:{windows:{},z:10050},
   achievements:{unlocked:{},removedUnlocked:{},secretCategoriesUnlocked:false,eggCollected:false,counters:{happiosHover:0}},
   gallery:{completedPykurs:[],eventsDiscovered:{},removedPykurs:{},removedEvents:{},currentCycleArchived:false,currentCycleCompletionSeen:false},
-  dofusDetection:{enabled:false,cooldownSeconds:45,scanIntervalMs:1000,status:"Inactif",refs:{morose:{imageKey:null,zone:null,threshold:82},tynril:{imageKey:null,zone:null,threshold:82}}},
+  dofusDetection:{enabled:false,cooldownSeconds:10,scanIntervalMs:1000,status:"Inactif",refs:{morose:{imageKey:null,zone:null,threshold:82},tynril:{imageKey:null,zone:null,threshold:82}}},
   createdAt:new Date().toISOString(),
   activity:[],
   undo:[]
@@ -22741,9 +22809,24 @@ function dofusSetStatus(status,detail=status){
   if(detailEl)detailEl.textContent=detail;
 }
 
+function dofusCooldownMinimum(){
+  return dofusSelectedFamiliarId()==="abra-kadabra" ? 3 : 10;
+}
+
+function dofusEffectiveCooldown(){
+  const min=dofusCooldownMinimum();
+  return Math.max(min,parseInt(data?.dofusDetection?.cooldownSeconds,10)||min);
+}
+
 function dofusRefreshOptions(){
   if(!data.dofusDetection)data.dofusDetection=dofusDefaultConfig();
   if(!dofusState.selectedFamiliar)dofusState.selectedFamiliar=activeFamiliarId();
+  let changed=false;
+  const minCooldown=dofusCooldownMinimum();
+  if(!data.dofusDetection.cooldownSeconds || Number(data.dofusDetection.cooldownSeconds)<minCooldown){
+    data.dofusDetection.cooldownSeconds=minCooldown;
+    changed=true;
+  }
   const select=$("#dofusFamiliarSelect");
   if(select){
     select.innerHTML=Object.entries(FAMILIARS).map(([id,familiar])=>`<option value="${id}">${escapeHtml(familiar.label)}</option>`).join("");
@@ -22758,7 +22841,10 @@ function dofusRefreshOptions(){
     rows.querySelectorAll("[data-dofus-config-farm]").forEach(btn=>btn.addEventListener("click",()=>dofusOpenConfig(btn.dataset.dofusConfigFarm)));
   }
   setToggleText("toggleDofusDetection",!!data.dofusDetection.enabled);
-  if($("#dofusCooldownInput"))$("#dofusCooldownInput").value=data.dofusDetection.cooldownSeconds||45;
+  if($("#dofusCooldownInput")){
+    $("#dofusCooldownInput").min=String(minCooldown);
+    $("#dofusCooldownInput").value=data.dofusDetection.cooldownSeconds||minCooldown;
+  }
   if($("#dofusScanIntervalSelect"))$("#dofusScanIntervalSelect").value=String(data.dofusDetection.scanIntervalMs||1000);
   if($("#editDofusShortcut")){
     const key=keybinds().toggleDofusDetection;
@@ -22771,6 +22857,7 @@ function dofusRefreshOptions(){
   else if(!hasStream)dofusSetStatus("Partage arrêté","Choisissez une fenêtre Dofus pour démarrer.");
   else if(Date.now()<dofusState.cooldownUntil)dofusSetStatus("Cooldown","Détection en pause pour éviter les doublons.");
   else dofusSetStatus("Détection active","Analyse périodique de la fenêtre partagée.");
+  if(changed)save();
 }
 
 async function dofusChooseWindow(){
@@ -23040,7 +23127,7 @@ async function dofusDetectionTick(){
   const best=scores[0];
   dofusState.lastScore=best;
   if(best.score>=best.threshold){
-    dofusState.cooldownUntil=Date.now()+((data.dofusDetection.cooldownSeconds||45)*1000);
+    dofusState.cooldownUntil=Date.now()+(dofusEffectiveCooldown()*1000);
     dofusAutoAddRun(best.farm);
   }else{
     dofusSetStatus("Détection active",`Meilleur score : ${Math.round(best.score*100)}%`);
@@ -23058,7 +23145,7 @@ function dofusAutoAddRun(farm){
   save();
   renderAll();
   toast(`Fin de donjon détectée : +1 ${familiarFarmLabel(farm)}`,"success","pp");
-  dofusSetStatus("Cooldown",`Cooldown ${data.dofusDetection.cooldownSeconds||45}s`);
+  dofusSetStatus("Cooldown",`Cooldown ${dofusEffectiveCooldown()}s`);
 }
 
 function pushUndo(){
@@ -25040,6 +25127,7 @@ function markAbraRoomReached(){
   if(!data.special)data.special={};
   if(data.special.salleAbrakneActive){
     data.special.salleAbrakneActive=false;
+    data.special.salleAbrakneSetupDone=false;
     data.special.salleAbrakneLastActivity=null;
     addActivity("Sortie de la salle Abrakne","system");
     save();
@@ -25049,8 +25137,10 @@ function markAbraRoomReached(){
   }
   const oldPower=currentPP();
   pushUndo();
+  let addedSetup=false;
   if(!data.special.salleAbrakneSetupDone){
     data.special.salleAbrakneSetupDone=true;
+    addedSetup=true;
     addMobBundleToZone(ABRA_SPECIAL_GAINS.salleAbrakneSetup);
   }
   data.special.salleAbrakneActive=true;
@@ -25062,7 +25152,7 @@ function markAbraRoomReached(){
   notifyPPProgress(oldPower,newPower);
   save();
   renderAll();
-  toast(data.special.salleAbrakneSetupDone && newPower===oldPower ? "Boucle Abrakne reprise." : "Salle Abrakne prête : les 4 premières salles sont ajoutées.","success","pp");
+  toast(addedSetup ? "Salle Abrakne prête : les 4 premières salles sont ajoutées." : "Boucle Abrakne reprise.","success","pp");
 }
 
 function expireAbraRoomIfInactive(){
@@ -25070,6 +25160,7 @@ function expireAbraRoomIfInactive(){
   const last=parseInt(data.special.salleAbrakneLastActivity,10)||0;
   if(last && Date.now()-last<3600000)return false;
   data.special.salleAbrakneActive=false;
+  data.special.salleAbrakneSetupDone=false;
   data.special.salleAbrakneLastActivity=null;
   addActivity("Boucle Abrakne terminée automatiquement après inactivité","system");
   save();
@@ -25293,7 +25384,7 @@ function renderSessionSummary(summary){
       </div>
       <div>
         <span>Rendement</span>
-        <strong>${formatRate(summary.ppHour,"PP/h")}</strong>
+        <strong>${formatRate(summary.ppHour,`${activeProgressShort()}/h`)}</strong>
       </div>
     </section>
     <section class="session-summary-grid">
@@ -25363,22 +25454,24 @@ function notifyPPProgress(oldPP,newPP){
   if(diff>0){
     triggerPykurReaction("energy");
     showPPFloat(diff);
-    toast(`Pykur gagne +${diff} PP · ${oldPct.toFixed(1)}% → ${newPct.toFixed(1)}%`,"pp-progress","pp");
+    toast(`${activeFamiliar().shortLabel} gagne ${formatProgressGain(diff)} · ${oldPct.toFixed(1)}% → ${newPct.toFixed(1)}%`,"pp-progress","pp");
   }else{
-    toast(`Pykur perd ${Math.abs(diff)} PP · ${oldPct.toFixed(1)}% → ${newPct.toFixed(1)}%`,"pp-loss","warning");
+    toast(`${activeFamiliar().shortLabel} perd ${Math.abs(diff)} ${activeProgressShort()} · ${oldPct.toFixed(1)}% → ${newPct.toFixed(1)}%`,"pp-loss","warning");
   }
 }
 
 function showPPFloat(amount=1){
   if(document.body.classList.contains("no-anim"))return;
-  const target=$("#prospection") || $(".pp-row");
+  const target=activeFamiliarId()==="abra-kadabra"
+    ? ($(".pykur-orb") || $("#progressPercent") || $("#prospection"))
+    : ($("#prospection") || $(".pp-row"));
   if(!target)return;
   const rect=target.getBoundingClientRect();
   const pop=document.createElement("div");
   pop.className="pp-float";
-  pop.textContent=`+${amount} PP`;
+  pop.textContent=formatProgressGain(amount);
   pop.style.left=`${rect.left+rect.width/2}px`;
-  pop.style.top=`${rect.top-30}px`;
+  pop.style.top=`${Math.max(18,rect.top+(activeFamiliarId()==="abra-kadabra"?rect.height*.16:-30))}px`;
   document.body.appendChild(pop);
   setTimeout(()=>pop.remove(),1900);
 }
@@ -25557,14 +25650,31 @@ function updatePykurImageByPP(pp){
 
 function renderFamiliarContext(){
   const familiar=activeFamiliar();
+  const unit=activeProgressShort();
   if(!dofusState.selectedFamiliar)dofusState.selectedFamiliar=activeFamiliarId();
   document.body.dataset.familiar=activeFamiliarId();
   document.documentElement.style.setProperty("--familiar-bg",`url("${familiar.background||"./assets/images/fond.png"}")`);
-  document.documentElement.style.setProperty("--familiar-bg-size",activeFamiliarId()==="abra-kadabra"?"contain":"cover");
+  document.documentElement.style.setProperty("--familiar-bg-size","cover");
   $$(".pp-summary-label").forEach(el=>el.textContent=familiar.progressLabel);
   $$(".pp-summary-goal").forEach(el=>el.textContent=`/ ${familiar.objectiveLabel}`);
   const ppIcon=$(".pp-summary-icon img");
   if(ppIcon)ppIcon.src=familiar.icon||"./assets/images/prospection.png";
+  const quickLabel=$(".quick-projection-label");
+  if(quickLabel)quickLabel.textContent=`Prochaine ${unit}`;
+  const sessionProgressLabel=$("#sessionPP")?.previousElementSibling;
+  if(sessionProgressLabel)sessionProgressLabel.textContent=unit;
+  const tooltipCopy={
+    sessionEnd:`Termine la session et affiche un résumé : durée, donjons, ${unit} gagnée et rendement.`,
+    plus:`Ajoute un parcours au suivi actif. Les monstres, la ${unit}, les statistiques et la session en cours sont mis à jour automatiquement.`,
+    minus:`Retire un parcours du suivi actif pour corriger une erreur. Les monstres et la ${unit} sont ajustés.`,
+    statsButton:`Ouvre le tableau de bord du profil : donjons du jour, séries, ${unit}, monstres et temps chrono.`,
+    activityButton:`Affiche les dernières actions enregistrées : donjons ajoutés, ${unit} gagnée, chrono, sauvegardes et modifications.`,
+    projectionButton:`Ouvre les prévisions : parcours restants pour la prochaine ${unit}, objectif 100%, temps estimé et rendement.`
+  };
+  Object.entries(tooltipCopy).forEach(([id,text])=>{
+    const el=$("#"+id);
+    if(el)el.dataset.tooltip=text;
+  });
   const progressCaption=$(".side .card:first-child small");
   if(progressCaption)progressCaption.textContent=`Progression du ${familiar.label}`;
   const farmToggle=$(".farm-toggle");
@@ -26383,7 +26493,7 @@ function renderProjection(){
     <div class="projection-view-panel ${projectionView==="simulator"?"active":""}" data-projection-panel="simulator">
       <section class="projection-card wide">
         <div class="projection-head"><h3>Simulateur de donjons</h3><span class="projection-badge">Simulateur</span></div>
-        <div class="projection-sub">Ces valeurs ne modifient pas votre Pykur, ne sauvegardent rien et ne débloquent aucun succès.</div>
+        <div class="projection-sub">Ces valeurs ne modifient pas votre ${escapeHtml(activeFamiliar().shortLabel)}, ne sauvegardent rien et ne débloquent aucun succès.</div>
         <div class="projection-sim-grid">
           ${farmKeys.map(farm=>`<div class="projection-sim-control">
             <span>${escapeHtml(familiarFarmLabel(farm))}</span>
@@ -26410,7 +26520,7 @@ function renderProjection(){
     <div class="projection-view-panel ${projectionView==="details"?"active":""}" data-projection-panel="details">
       <div class="projection-detail-intro">Les calculs ci-dessous utilisent vos temps moyens actuels sans modifier votre progression.</div>
       <section class="projection-card">
-        <div class="projection-head"><h3>Temps prochaine PP</h3><span class="projection-badge">Prochain palier</span></div>
+        <div class="projection-head"><h3>Temps prochaine ${escapeHtml(progressUnit)}</h3><span class="projection-badge">Prochain palier</span></div>
         <div class="projection-lines">
           ${farmProjection.map(item=>`<div class="projection-line"><span>${escapeHtml(familiarFarmLabel(item.farm))}</span><strong>${estimateTimeForRuns(item.farm,item.next)}</strong></div>`).join("")}
         </div>
@@ -27131,11 +27241,11 @@ function markTime(options={}){
     time:markedSeconds,
     totalTime:totalSeconds,
     date:new Date().toISOString(),
-    name:`${farm==="morose"?"Morose":"Tynril"} ${formatChrono(markedSeconds)}`,
+    name:`${familiarFarmLabel(farm)} ${formatChrono(markedSeconds)}`,
     mode:auto?"tryhard":"manual"
   });
 
-  addActivity(`${auto?"Run tryhard":"Temps marqué"} ${farm==="morose"?"Morose":"Tynril"} : ${formatChrono(markedSeconds)}`,"success");
+  addActivity(`${auto?"Run tryhard":"Temps marqué"} ${familiarFarmLabel(farm)} : ${formatChrono(markedSeconds)}`,"success");
 
   data.chrono.lastMarkSeconds=totalSeconds;
   const averageUpdated=data.settings.autoDungeonEstimate
@@ -27225,9 +27335,9 @@ async function editRuns(){
   syncTodayPPGain();
 
   if(ppDelta>0){
-    addActivity(`Pykur gagne +${ppDelta} PP (${oldPP} → ${newPP})`,"success");
+    addActivity(`${activeFamiliar().shortLabel} gagne ${formatProgressGain(ppDelta)} (${oldPP} → ${newPP})`,"success");
   }else if(ppDelta<0){
-    addActivity(`Pykur perd ${Math.abs(ppDelta)} PP (${oldPP} → ${newPP})`,"warning");
+    addActivity(`${activeFamiliar().shortLabel} perd ${Math.abs(ppDelta)} ${activeProgressShort()} (${oldPP} → ${newPP})`,"warning");
   }
 
   checkMilestones(oldPP,newPP);
@@ -27892,7 +28002,8 @@ if($("#dofusFamiliarSelect"))$("#dofusFamiliarSelect").onchange=e=>{
 if($("#testDofusDetection"))$("#testDofusDetection").onclick=dofusTestDetection;
 if($("#openDofusTutorial"))$("#openDofusTutorial").onclick=()=>openModal("dofusTutorialModal");
 if($("#dofusCooldownInput"))$("#dofusCooldownInput").onchange=e=>{
-  data.dofusDetection.cooldownSeconds=Math.max(10,Math.min(300,parseInt(e.target.value,10)||45));
+  const min=dofusCooldownMinimum();
+  data.dofusDetection.cooldownSeconds=Math.max(min,Math.min(300,parseInt(e.target.value,10)||min));
   e.target.value=data.dofusDetection.cooldownSeconds;
   save();
   dofusRefreshOptions();
