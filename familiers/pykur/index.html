@@ -11935,14 +11935,41 @@ body.night .dungeon-card .dungeon-mini{
 .admin-duration-fields{display:grid;grid-template-columns:84px 100px minmax(0,1fr);gap:8px;align-items:center}
 .admin-duration-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:stretch}
 .admin-duration-actions .btn{width:100%;min-width:0;white-space:normal;line-height:1.15}
+.admin-target-hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;margin-bottom:14px;padding:14px;border:1px solid rgba(119,79,28,.2);border-radius:14px;background:linear-gradient(135deg,rgba(255,251,238,.92),rgba(243,224,184,.68))}
+.admin-target-identity{display:flex;align-items:center;gap:13px;min-width:0}
+.admin-target-identity .avatar{width:54px;height:54px;flex:0 0 54px}
+.admin-target-identity h3{margin:0 0 4px;font-size:22px}
+.admin-status-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.admin-status-chip{display:inline-flex;align-items:center;min-height:22px;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:900;text-transform:uppercase;border:1px solid transparent}
+.admin-status-chip.ok{background:#dcfce7;color:#166534;border-color:#86efac}
+.admin-status-chip.info{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd}
+.admin-status-chip.warn{background:#fef3c7;color:#92400e;border-color:#facc15}
+.admin-status-chip.danger{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+.admin-target-section{margin:12px 0;padding:12px;border:1px solid rgba(119,79,28,.16);border-radius:12px;background:rgba(255,255,255,.42)}
+.admin-section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.admin-section-title h4{margin:0;font-size:16px}
+.admin-section-title span{color:#85633d;font-size:11px;font-weight:900;text-transform:uppercase}
+.admin-target-sections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+.admin-target-sections .admin-action-group{min-width:0}
+.admin-span-2{grid-column:1/-1}
+.admin-profile-tools{display:grid;gap:12px}
+.admin-avatar-editor{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center;padding:10px;border:1px solid rgba(119,79,28,.16);border-radius:12px;background:rgba(255,252,242,.55)}
+.admin-avatar-preview .avatar{width:68px;height:68px}
+.admin-avatar-fields{display:grid;gap:8px}
+.admin-avatar-fields input,.admin-restriction-grid+div input,.admin-action-group>input{width:100%;border:1px solid rgba(119,79,28,.3);border-radius:9px;background:#fffdf7;padding:10px 12px;font:inherit}
+.admin-restriction-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px;border:1px solid rgba(119,79,28,.16);border-radius:12px;background:rgba(255,252,242,.55)}
+.admin-restriction-grid label{display:flex;align-items:center;gap:7px;min-height:34px;padding:7px 9px;border:1px solid rgba(119,79,28,.12);border-radius:9px;background:rgba(255,255,255,.55);font-size:12px;font-weight:900;color:#4a3019}
+.admin-split-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.admin-split-actions h5{margin:0 0 8px;color:#6d4b27;font-size:12px;text-transform:uppercase}
+.admin-danger-strip{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(185,28,28,.18)}
 .admin-event-settings{display:grid;grid-template-columns:auto repeat(2,minmax(120px,180px)) auto auto;gap:10px;align-items:end;margin-bottom:14px;padding:14px;border:1px solid rgba(119,79,28,.2);border-radius:10px;background:rgba(255,253,247,.78)}
 .admin-event-settings label{font-size:11px;font-weight:900;color:#624321}.admin-event-settings label span{display:block;margin-bottom:5px}
 .admin-command-list{display:grid;gap:8px}.admin-command-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:10px 12px;border:1px solid rgba(119,79,28,.17);border-radius:8px;background:rgba(255,255,255,.6)}
 .admin-command-row small{display:block;color:#795834;margin-top:3px}.admin-command-status{align-self:center;padding:4px 8px;border-radius:999px;background:#e5e7eb;font-size:10px;font-weight:900}.admin-command-status.completed{background:#dcfce7;color:#166534}.admin-command-status.failed{background:#fee2e2;color:#991b1b}.admin-command-status.pending,.admin-command-status.delivered{background:#fef3c7;color:#92400e}
 .admin-command-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px}.admin-command-actions .btn{padding:5px 8px;font-size:10px}
 .admin-local-toolbar{margin-top:12px}
-@media(max-width:850px){.admin-console-shell{grid-template-columns:1fr}.admin-console-nav{flex-direction:row;overflow:auto;border-right:0;border-bottom:1px solid rgba(119,79,28,.2);padding:9px}.admin-console-nav button{white-space:nowrap}.admin-dashboard-metrics{grid-template-columns:repeat(2,1fr)}.admin-target-actions,.admin-server-grid,.admin-profile-list{grid-template-columns:1fr}.admin-event-settings{grid-template-columns:1fr 1fr}.admin-event-settings .btn{width:100%}.admin-duration-fields{grid-template-columns:1fr 1fr}.admin-duration-fields input:last-child{grid-column:1/-1}}
-@media(max-width:560px){.admin-dashboard-metrics,.admin-event-settings{grid-template-columns:1fr}.admin-console-content{padding:12px}.admin-duration-actions{grid-template-columns:1fr}}
+@media(max-width:850px){.admin-console-shell{grid-template-columns:1fr}.admin-console-nav{flex-direction:row;overflow:auto;border-right:0;border-bottom:1px solid rgba(119,79,28,.2);padding:9px}.admin-console-nav button{white-space:nowrap}.admin-dashboard-metrics{grid-template-columns:repeat(2,1fr)}.admin-target-actions,.admin-target-sections,.admin-server-grid,.admin-profile-list,.admin-split-actions{grid-template-columns:1fr}.admin-event-settings{grid-template-columns:1fr 1fr}.admin-event-settings .btn{width:100%}.admin-duration-fields{grid-template-columns:1fr 1fr}.admin-duration-fields input:last-child{grid-column:1/-1}.admin-restriction-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.admin-dashboard-metrics,.admin-event-settings,.admin-restriction-grid{grid-template-columns:1fr}.admin-console-content{padding:12px}.admin-duration-actions{grid-template-columns:1fr}.admin-target-hero,.admin-avatar-editor{grid-template-columns:1fr}.admin-target-identity{align-items:flex-start}}
 
 .auth-widget{
   gap:5px;
@@ -18664,6 +18691,17 @@ function adminConsoleSelectTab(tab){
 
 function adminTargetSelectedProfile(){return document.querySelector('input[name="adminTargetProfile"]:checked')?.value||""}
 
+function adminTargetStatusChips(user){
+  const chips=[];
+  if(user.isBanned)chips.push(`<span class="admin-status-chip danger">Banni${user.banUntil?` jusqu'au ${escapeHtml(adminConsoleDate(user.banUntil))}`:" definitif"}</span>`);
+  if(user.muteUntil)chips.push(`<span class="admin-status-chip warn">Mute jusqu'au ${escapeHtml(adminConsoleDate(user.muteUntil))}</span>`);
+  if(user.profileLocked)chips.push(`<span class="admin-status-chip warn">Profil verrouille</span>`);
+  if(user.avatarLocked)chips.push(`<span class="admin-status-chip warn">Avatar verrouille</span>`);
+  if(user.passwordResetRequired)chips.push(`<span class="admin-status-chip info">Mot de passe a changer</span>`);
+  if(!chips.length)chips.push(`<span class="admin-status-chip ok">Aucune restriction active</span>`);
+  return chips.join("");
+}
+
 function renderAdminTarget(payload){
   adminConsoleTarget=payload;
   const box=$("#adminTargetWorkspace");
@@ -18674,20 +18712,45 @@ function renderAdminTarget(payload){
   const achievements=payload.achievements||[];
   const galleryEvents=payload.galleryEvents||[];
   const galleryPykurs=payload.galleryPykurs||[];
-  const canReset=permissions.has("tracker.reset");
-  const canModerate=permissions.has("users.moderate");
+  const can=id=>permissions.has(id);
+  const canModerate=can("users.warn")||can("users.mute")||can("users.ban")||can("users.history.manage");
+  const canCommunicate=can("notifications.send");
+  const canTargetEvent=can("events.target");
+  const canAvatar=can("users.avatar.manage");
+  const canRestrict=can("users.restrict");
+  const canIdentity=can("users.rename");
+  const canSecurity=can("users.sessions.revoke")||can("users.password.reset");
+  const canTracker=can("tracker.reset")||can("achievements.manage")||can("gallery.manage")||can("profiles.manage");
+  const restrictions=user.socialRestrictions||{};
   box.className="";
   box.innerHTML=`
     <section class="admin-target-card">
-      <div class="admin-target-head"><div><h3>${escapeHtml(user.pseudo||"Utilisateur")}</h3><div class="admin-target-meta"><small>${escapeHtml(user.email||"")} · Cloud ${adminConsoleDate(payload.cloudUpdatedAt)}</small></div></div><span class="admin-permission-badge ${escapeHtml(user.role||"user")}">${authRoleLabel(user.role)}</span></div>
-      <div class="admin-profile-list">${profiles.length?profiles.map(profile=>`<label class="admin-profile-option"><input type="radio" name="adminTargetProfile" value="${adminEscapeAttr(profile.id)}" ${profile.active?"checked":""}><span><strong>${escapeHtml(profile.name)}</strong><small>${profile.pp} PP · M ${profile.morose} · T ${profile.tynril}${profile.active?" · actif":""}</small></span></label>`).join(""):`<div class="admin-console-empty">Aucune sauvegarde cloud exploitable.</div>`}</div>
-      <div class="admin-target-actions">
-        <article class="admin-action-group"><h4>Communication</h4><div class="admin-target-notification"><textarea id="adminTargetNotification" maxlength="500" placeholder="Message destiné au joueur, conservé s'il est hors ligne"></textarea><div class="admin-action-buttons"><button class="btn btn-blue" id="adminSendTargetNotification" type="button">Notification</button><button class="btn btn-orange" id="adminSendTargetPopup" type="button">Popup persistante</button><button class="btn btn-red" id="adminKickTarget" type="button">Kick avec message</button></div></div></article>
-        <article class="admin-action-group"><h4>Événement individuel</h4><div class="admin-target-event"><select id="adminTargetEvent">${LIVING_EVENT_DEFS.map(item=>`<option value="${item.id}">${escapeHtml(item.label)}</option>`).join("")}</select><button class="btn btn-orange" id="adminSendTargetEvent" type="button">Jouer</button></div><p class="options-note">Cosmétique, sans découverte ni récompense.</p></article>
-        ${canModerate?`<article class="admin-action-group"><h4>Modération temporelle</h4><p class="options-note">${user.isBanned?`Compte actuellement banni${user.banUntil?` jusqu'au ${escapeHtml(adminConsoleDate(user.banUntil))}`:" définitivement"}. `:""}${user.muteUntil?`Mute actif jusqu'au ${escapeHtml(adminConsoleDate(user.muteUntil))}.`:"Définissez une durée et un motif avant d'appliquer une sanction."}</p><div class="admin-duration-grid"><div class="admin-duration-fields"><input id="adminModerationDuration" type="number" min="1" max="525600" value="24" aria-label="Durée de la sanction"><select id="adminModerationUnit" aria-label="Unité de durée"><option value="minutes">minutes</option><option value="hours" selected>heures</option><option value="days">jours</option></select><input id="adminModerationReason" type="text" maxlength="300" placeholder="Motif affiché au joueur"></div><div class="admin-duration-actions"><button class="btn btn-orange" id="adminMuteTarget" type="button">Mute temporaire</button><button class="btn btn-red" id="adminBanTarget" type="button">Ban temporaire</button><button class="btn btn-red" id="adminBanPermanentTarget" type="button">Ban définitif</button>${user.muteUntil?`<button class="btn btn-gray" id="adminUnmuteTarget" type="button">Retirer le mute</button>`:""}${user.isBanned?`<button class="btn btn-blue" id="adminUnbanTarget" type="button">Débannir</button>`:""}</div></div></article>`:""}
-        ${canReset?`<article class="admin-action-group"><h4>Réparation</h4><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer la progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer les succès</button></div></article>
-        <article class="admin-action-group"><h4>Édition ciblée</h4><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer le profil sélectionné</button></div>${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer ce succès</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer l'événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un Pykur archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">Pykur #${item.number||"?"} · ${escapeHtml(item.profileName)} · ${item.pp} PP</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer le Pykur</button></div>`:`<p class="options-note">Aucun Pykur archivé.</p>`}</article>
-        <article class="admin-action-group danger"><h4>Données du compte</h4><div class="admin-action-buttons"><button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button><button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button><button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset Pykur</button><button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button></div></article>`:""}
+      <div class="admin-target-hero">
+        <div class="admin-target-identity">${avatarMarkup(user)}<div><h3>${escapeHtml(user.pseudo||"Utilisateur")}</h3><div class="admin-target-meta"><small>${escapeHtml(user.email||"")} · Cloud ${adminConsoleDate(payload.cloudUpdatedAt)}</small></div><div class="admin-status-row">${adminTargetStatusChips(user)}</div></div></div>
+        <span class="admin-permission-badge ${escapeHtml(user.role||"user")}">${authRoleLabel(user.role)}</span>
+      </div>
+      <div class="admin-target-section">
+        <div class="admin-section-title"><h4>Profils Pykur cloud</h4><span>${profiles.length} profil${profiles.length>1?"s":""}</span></div>
+        <div class="admin-profile-list">${profiles.length?profiles.map(profile=>`<label class="admin-profile-option"><input type="radio" name="adminTargetProfile" value="${adminEscapeAttr(profile.id)}" ${profile.active?"checked":""}><span><strong>${escapeHtml(profile.name)}</strong><small>${profile.pp} PP · Morose ${profile.morose} · Tynril ${profile.tynril}${profile.active?" · actif":""}</small></span></label>`).join(""):`<div class="admin-console-empty">Aucune sauvegarde cloud exploitable.</div>`}</div>
+      </div>
+      <div class="admin-target-sections">
+        ${canCommunicate?`<article class="admin-action-group admin-span-2"><div class="admin-section-title"><h4>Communication directe</h4><span>visible même hors ligne</span></div><div class="admin-target-notification"><textarea id="adminTargetNotification" maxlength="500" placeholder="Message destiné au joueur, conservé s'il est hors ligne"></textarea><div class="admin-action-buttons"><button class="btn btn-blue" id="adminSendTargetNotification" type="button">Notification</button><button class="btn btn-orange" id="adminSendTargetPopup" type="button">Popup persistante</button><button class="btn btn-red" id="adminKickTarget" type="button">Kick avec message</button></div></div></article>`:""}
+        ${canTargetEvent?`<article class="admin-action-group"><div class="admin-section-title"><h4>Événement individuel</h4><span>cosmétique</span></div><div class="admin-target-event"><select id="adminTargetEvent">${LIVING_EVENT_DEFS.map(item=>`<option value="${item.id}">${escapeHtml(item.label)}</option>`).join("")}</select><button class="btn btn-orange" id="adminSendTargetEvent" type="button">Jouer</button></div><p class="options-note">Ne compte pas comme découverte et ne donne aucune récompense.</p></article>`:""}
+        ${canModerate?`<article class="admin-action-group admin-span-2"><div class="admin-section-title"><h4>Sanctions</h4><span>motif obligatoire</span></div><p class="options-note">Appliquez une sanction mesurée, puis laissez une trace claire pour l'équipe et le joueur.</p><div class="admin-duration-grid"><div class="admin-duration-fields"><input id="adminModerationDuration" type="number" min="1" max="525600" value="24" aria-label="Durée de la sanction"><select id="adminModerationUnit" aria-label="Unité de durée"><option value="minutes">minutes</option><option value="hours" selected>heures</option><option value="days">jours</option></select><input id="adminModerationReason" type="text" maxlength="300" placeholder="Motif affiché au joueur"></div><div class="admin-duration-actions">${can("users.warn")?`<button class="btn btn-blue" id="adminWarnTarget" type="button">Avertir</button>`:""}${can("users.mute")?`<button class="btn btn-orange" id="adminMuteTarget" type="button">Mute temporaire</button>`:""}${can("users.ban")?`<button class="btn btn-red" id="adminBanTarget" type="button">Ban temporaire</button>`:""}${can("users.ban.permanent")?`<button class="btn btn-red" id="adminBanPermanentTarget" type="button">Ban définitif</button>`:""}${user.muteUntil&&can("users.mute")?`<button class="btn btn-gray" id="adminUnmuteTarget" type="button">Retirer le mute</button>`:""}${user.isBanned&&can("users.ban")?`<button class="btn btn-blue" id="adminUnbanTarget" type="button">Débannir</button>`:""}</div></div></article>`:""}
+        ${(canAvatar||canRestrict||canIdentity)?`<article class="admin-action-group admin-span-2"><div class="admin-section-title"><h4>Profil public et restrictions</h4><span>identité sociale</span></div><div class="admin-profile-tools">
+          ${canIdentity?`<div class="admin-target-event"><input id="adminTargetNewPseudo" type="text" maxlength="24" placeholder="Nouveau pseudo"><button class="btn btn-blue" id="adminRenameTargetUser" type="button">Renommer le membre</button></div>`:""}
+          ${canAvatar?`<div class="admin-avatar-editor"><div class="admin-avatar-preview">${avatarMarkup(user)}</div><div class="admin-avatar-fields"><input id="adminTargetAvatarUrl" type="url" maxlength="800" value="${adminEscapeAttr(user.avatarUrl||"")}" placeholder="Nouvelle URL d'avatar ou vide pour supprimer"><input id="adminTargetAvatarReason" type="text" maxlength="300" placeholder="Motif de modification avatar"><div class="admin-action-buttons"><button class="btn btn-blue" id="adminSaveTargetAvatar" type="button">Changer l'avatar</button><button class="btn btn-red" id="adminClearTargetAvatar" type="button">Supprimer l'avatar</button></div></div></div>`:""}
+          ${canRestrict?`<div class="admin-restriction-grid">
+            ${["chat","privateMessages","friendRequests","shares"].map(key=>`<label><input type="checkbox" data-admin-target-restriction="${key}" ${restrictions[key]?"checked":""}> ${key==="chat"?"Chat global":key==="privateMessages"?"Messages privés":key==="friendRequests"?"Demandes d'ami":"Partages automatiques"}</label>`).join("")}
+            <label><input type="checkbox" id="adminTargetProfileLocked" ${user.profileLocked?"checked":""}> Verrouiller le profil public</label>
+            <label><input type="checkbox" id="adminTargetAvatarLocked" ${user.avatarLocked?"checked":""}> Verrouiller l'avatar</label>
+          </div><div class="admin-target-event"><input id="adminTargetRestrictionReason" type="text" maxlength="300" placeholder="Motif des restrictions"><button class="btn btn-orange" id="adminSaveTargetRestrictions" type="button">Appliquer les restrictions</button></div>`:""}
+        </div></article>`:""}
+        ${canSecurity?`<article class="admin-action-group"><div class="admin-section-title"><h4>Sécurité</h4><span>sessions</span></div><input id="adminTargetSecurityReason" type="text" maxlength="300" placeholder="Motif sécurité"><div class="admin-action-buttons">${can("users.sessions.revoke")?`<button class="btn btn-red" id="adminRevokeTargetSessions" type="button">Révoquer sessions</button>`:""}${can("users.password.reset")?`<button class="btn btn-orange" id="adminForceTargetPassword" type="button">Forcer mot de passe</button>`:""}</div></article>`:""}
+        ${canTracker?`<article class="admin-action-group admin-span-2"><div class="admin-section-title"><h4>Données tracker</h4><span>actions destructrices</span></div><div class="admin-split-actions">
+          <div>${can("tracker.reset")?`<h5>Réparation</h5><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer la progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer les succès</button></div>`:""}${can("profiles.manage")?`<h5>Profils Pykur</h5><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer le profil sélectionné</button></div>`:""}</div>
+          <div>${can("achievements.manage")?`${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer ce succès</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}`:""}${can("gallery.manage")?`${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer l'événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un Pykur archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">Pykur #${item.number||"?"} · ${escapeHtml(item.profileName)} · ${item.pp} PP</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer le Pykur</button></div>`:`<p class="options-note">Aucun Pykur archivé.</p>`}`:""}</div>
+        </div><div class="admin-danger-strip">${can("gallery.manage")?`<button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button>`:""}${can("achievements.manage")?`<button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button>`:""}${can("tracker.reset")?`<button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset Pykur</button>`:""}${can("profiles.manage")?`<button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button>`:""}</div></article>`:""}
       </div>
       <h4>Commandes récentes</h4>${adminConsoleCommandRows(payload.commands||[])}
     </section>`;
@@ -18696,9 +18759,16 @@ function renderAdminTarget(payload){
   $("#adminKickTarget")?.addEventListener("click",()=>sendAdminTargetCommand("kick",{message:$("#adminTargetNotification")?.value||"Votre session a été interrompue par l'équipe de modération."},true));
   $("#adminSendTargetEvent")?.addEventListener("click",()=>sendAdminTargetCommand("living-event",{eventId:$("#adminTargetEvent")?.value},false));
   $("#adminRenameTargetProfile")?.addEventListener("click",()=>sendAdminTargetCommand("rename-profile",{profileId:adminTargetSelectedProfile(),name:$("#adminTargetProfileName")?.value||""},true));
+  $("#adminRenameTargetUser")?.addEventListener("click",()=>renameAdminTargetUser());
+  $("#adminSaveTargetAvatar")?.addEventListener("click",()=>adminUpdateTargetAvatar(false));
+  $("#adminClearTargetAvatar")?.addEventListener("click",()=>adminUpdateTargetAvatar(true));
+  $("#adminSaveTargetRestrictions")?.addEventListener("click",()=>saveAdminTargetRestrictions());
+  $("#adminRevokeTargetSessions")?.addEventListener("click",()=>adminSecurityTarget("sessions/revoke"));
+  $("#adminForceTargetPassword")?.addEventListener("click",()=>adminSecurityTarget("password-reset"));
   $("#adminRemoveTargetAchievement")?.addEventListener("click",()=>sendAdminTargetCommand("remove-achievement",{achievementId:$("#adminTargetAchievement")?.value||""},true));
   $("#adminRemoveTargetGalleryEvent")?.addEventListener("click",()=>sendAdminTargetCommand("remove-gallery-event",{eventId:$("#adminTargetGalleryEvent")?.value||""},true));
   $("#adminRemoveTargetGalleryPykur")?.addEventListener("click",()=>sendAdminTargetCommand("remove-gallery-pykur",{pykurId:$("#adminTargetGalleryPykur")?.value||""},true));
+  $("#adminWarnTarget")?.addEventListener("click",()=>adminModerateTarget("warn"));
   $("#adminMuteTarget")?.addEventListener("click",()=>adminModerateTarget("mute"));
   $("#adminBanTarget")?.addEventListener("click",()=>adminModerateTarget("ban"));
   $("#adminBanPermanentTarget")?.addEventListener("click",()=>adminModerateTarget("ban",true));
@@ -18721,15 +18791,80 @@ async function adminModerateTarget(action,permanent=false){
   const target=adminConsoleTarget?.user;
   if(!target)return;
   const reason=String($("#adminModerationReason")?.value||"").trim();
-  const label=action==="mute"?"mute":(permanent?"ban définitif":"ban temporaire");
+  if(reason.length<3)return toast("Indiquez un motif de modération.","warning","warning");
+  const label=action==="warn"?"avertissement":action==="mute"?"mute":(permanent?"ban définitif":"ban temporaire");
   if(!await showConfirm(`Appliquer un ${label} à ${target.pseudo} ?`,{title:"Action de modération",danger:action==="ban",okLabel:"Confirmer"}))return;
   try{
     const body={reason};
-    if(!permanent)body.until=adminModerationUntil();
+    if(action!=="warn"&&!permanent)body.until=adminModerationUntil();
     await authFetch(`/moderation/users/${encodeURIComponent(target.id)}/${action}`,{method:"POST",body:JSON.stringify(body)});
     toast(`${label} appliqué.`,"success","success");
     await searchAdminTarget();await loadAdminConsole();
   }catch(error){toast(error.message||"Action de modération impossible.","error","error")}
+}
+
+async function renameAdminTargetUser(){
+  const target=adminConsoleTarget?.user;
+  if(!target)return;
+  const pseudo=String($("#adminTargetNewPseudo")?.value||"").trim();
+  const reason=String($("#adminModerationReason")?.value||$("#adminTargetRestrictionReason")?.value||"").trim();
+  if(!pseudo)return toast("Indiquez un nouveau pseudo.","warning","warning");
+  if(reason.length<3)return toast("Indiquez un motif pour le changement de pseudo.","warning","warning");
+  if(!await showConfirm(`Renommer ${target.pseudo} en ${pseudo} ?`,{title:"Modification du pseudo",danger:true,okLabel:"Renommer"}))return;
+  try{
+    await authFetch(`/moderation/users/${encodeURIComponent(target.id)}/pseudo`,{method:"PUT",body:JSON.stringify({pseudo,reason})});
+    toast("Pseudo modifié.","success","success");
+    const input=$("#adminTargetPseudo");if(input)input.value=pseudo;
+    await searchAdminTarget();await loadAdminConsole();
+  }catch(error){toast(error.message||"Modification du pseudo impossible.","error","error")}
+}
+
+async function adminUpdateTargetAvatar(clear=false){
+  const target=adminConsoleTarget?.user;
+  if(!target)return;
+  const reason=String($("#adminTargetAvatarReason")?.value||$("#adminModerationReason")?.value||"").trim();
+  if(reason.length<3)return toast("Indiquez un motif pour modifier l'avatar.","warning","warning");
+  const avatarUrl=clear?"":String($("#adminTargetAvatarUrl")?.value||"").trim();
+  if(!clear&&!avatarUrl)return toast("Indiquez une URL d'avatar ou utilisez Supprimer l'avatar.","warning","warning");
+  if(!await showConfirm(clear?`Supprimer l'avatar de ${target.pseudo} ?`:`Changer l'avatar de ${target.pseudo} ?`,{title:"Gestion de l'avatar",danger:clear,okLabel:clear?"Supprimer":"Changer"}))return;
+  try{
+    await authFetch(`/moderation/users/${encodeURIComponent(target.id)}/avatar`,{method:"PUT",body:JSON.stringify({avatarUrl,reason})});
+    toast(clear?"Avatar supprimé.":"Avatar modifié.","success","success");
+    await searchAdminTarget();await loadAdminConsole();
+  }catch(error){toast(error.message||"Modification de l'avatar impossible.","error","error")}
+}
+
+async function saveAdminTargetRestrictions(){
+  const target=adminConsoleTarget?.user;
+  if(!target)return;
+  const reason=String($("#adminTargetRestrictionReason")?.value||$("#adminModerationReason")?.value||"").trim();
+  if(reason.length<3)return toast("Indiquez une raison pour modifier les restrictions.","warning","warning");
+  const restrictions={};
+  document.querySelectorAll("[data-admin-target-restriction]").forEach(input=>{restrictions[input.dataset.adminTargetRestriction]=!!input.checked});
+  try{
+    await authFetch(`/moderation/users/${encodeURIComponent(target.id)}/restrictions`,{method:"PUT",body:JSON.stringify({
+      restrictions,
+      profileLocked:!!$("#adminTargetProfileLocked")?.checked,
+      avatarLocked:!!$("#adminTargetAvatarLocked")?.checked,
+      reason
+    })});
+    toast("Restrictions mises à jour.","success","success");
+    await searchAdminTarget();await loadAdminConsole();
+  }catch(error){toast(error.message||"Restrictions impossibles à appliquer.","error","error")}
+}
+
+async function adminSecurityTarget(path){
+  const target=adminConsoleTarget?.user;
+  if(!target)return;
+  const reason=String($("#adminTargetSecurityReason")?.value||$("#adminModerationReason")?.value||"").trim();
+  if(reason.length<3)return toast("Indiquez un motif de sécurité.","warning","warning");
+  const isPassword=path==="password-reset";
+  if(!await showConfirm(isPassword?`Forcer ${target.pseudo} à choisir un nouveau mot de passe ?`:`Révoquer toutes les sessions de ${target.pseudo} ?`,{title:isPassword?"Mot de passe forcé":"Sessions",danger:true,okLabel:"Confirmer"}))return;
+  try{
+    await authFetch(`/moderation/users/${encodeURIComponent(target.id)}/${path}`,{method:"POST",body:JSON.stringify({reason})});
+    toast(isPassword?"Réinitialisation forcée.":"Sessions révoquées.","success","success");
+    await searchAdminTarget();await loadAdminConsole();
+  }catch(error){toast(error.message||"Action de sécurité impossible.","error","error")}
 }
 
 async function adminLiftModeration(action){

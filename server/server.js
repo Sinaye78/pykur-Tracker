@@ -1046,10 +1046,12 @@ const ADMIN_PERMISSION_CATALOG = Object.freeze([
   { id: "users.warn", group: "Utilisateurs", label: "Avertir", description: "Envoyer un avertissement visible par le membre." },
   { id: "users.mute", group: "Utilisateurs", label: "Mute", description: "Restreindre temporairement la messagerie d'un membre." },
   { id: "users.ban", group: "Utilisateurs", label: "Bannir", description: "Bannir, debannir ou deconnecter un membre." },
+  { id: "users.ban.permanent", group: "Utilisateurs", label: "Ban definitif", description: "Appliquer un bannissement sans date de fin. Reserve aux droits avances." },
   { id: "users.history.manage", group: "Utilisateurs", label: "Corriger l'historique", description: "Retirer les sanctions recentes affichees, sans effacer l'audit." },
   { id: "users.notes", group: "Utilisateurs", label: "Notes internes", description: "Conserver une note visible uniquement par l'equipe." },
   { id: "users.restrict", group: "Utilisateurs", label: "Restreindre les fonctions sociales", description: "Bloquer separement chat, messages, amis, partages, avatar ou profil public." },
   { id: "users.rename", group: "Utilisateurs", label: "Modifier un pseudo", description: "Renommer un membre avec historique obligatoire." },
+  { id: "users.avatar.manage", group: "Utilisateurs", label: "Gerer les avatars", description: "Changer ou supprimer la photo de profil d'un membre avec audit." },
   { id: "users.sessions.revoke", group: "Securite", label: "Revoquer les sessions", description: "Deconnecter le membre de tous ses appareils." },
   { id: "users.password.reset", group: "Securite", label: "Forcer un nouveau mot de passe", description: "Envoyer un lien de recuperation et bloquer la connexion actuelle." },
   { id: "users.delete", group: "Utilisateurs", label: "Supprimer un compte", description: "Suppression definitive d'un compte. Reserve aux administrateurs." },
@@ -3013,6 +3015,32 @@ app.put("/api/moderation/users/:id/restrictions", requireAuth, requireRole("mode
   res.json({ user: moderationUserView(getUserById(target.id), req.user) });
 });
 
+app.put("/api/moderation/users/:id/avatar", requireAuth, requireRole("moderator"), requirePermission("users.avatar.manage"), (req, res) => {
+  const target = getUserById(req.params.id);
+  const reason = requiredModerationReason(req.body.reason);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Modification non autorisee." });
+  if (!reason) return res.status(400).json({ error: "Une raison est obligatoire." });
+  const avatarUrl = cleanAvatarUrl(req.body.avatarUrl);
+  db.prepare("UPDATE users SET avatar_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(avatarUrl || null, target.id);
+  auditLog({
+    actorId: req.user.id,
+    targetId: target.id,
+    action: "user.avatar.update",
+    entityType: "user",
+    entityId: target.id,
+    details: { cleared: !avatarUrl, reason },
+    req
+  });
+  logCommunity({
+    userId: req.user.id,
+    type: "moderation_avatar",
+    body: avatarUrl ? "Avatar modifie par moderation." : "Avatar supprime par moderation.",
+    meta: { targetId: target.id, reason }
+  });
+  res.json({ user: moderationUserView(getUserById(target.id), req.user) });
+});
+
 app.post("/api/moderation/users/:id/sessions/revoke", requireAuth, requireRole("moderator"), requirePermission("users.sessions.revoke"), (req, res) => {
   const target = getUserById(req.params.id);
   const reason = requiredModerationReason(req.body.reason);
@@ -3088,14 +3116,19 @@ app.post("/api/moderation/users/:id/ban", requireAuth, requireRole("moderator"),
   const target = getUserById(req.params.id);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (ROLE_ORDER[target.role] >= ROLE_ORDER[req.user.role]) return res.status(403).json({ error: "Vous ne pouvez pas sanctionner ce rôle." });
+  const reason = requiredModerationReason(req.body.reason);
+  if (!reason) return res.status(400).json({ error: "Une raison est obligatoire." });
   const untilDate = req.body.until ? new Date(req.body.until) : null;
   if (untilDate && Number.isNaN(untilDate.getTime())) return res.status(400).json({ error: "Date de fin de ban invalide." });
   const until = untilDate ? untilDate.toISOString() : null;
+  if (!until && !hasPermission(req.user, "users.ban.permanent")) {
+    return res.status(403).json({ error: "Permission insuffisante pour un ban definitif." });
+  }
   db.prepare("UPDATE users SET is_banned = 1, ban_until = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(until, target.id);
-  moderationLog({ targetId: target.id, actorId: req.user.id, type: until ? "timeban" : "ban", reason: req.body.reason, expiresAt: until, req });
+  moderationLog({ targetId: target.id, actorId: req.user.id, type: until ? "timeban" : "ban", reason, expiresAt: until, req });
   queueForcedDisconnect(req.user, target, until
-    ? `Votre compte est banni jusqu'au ${until}. ${String(req.body.reason || "")}`.trim()
-    : `Votre compte a été banni. ${String(req.body.reason || "")}`.trim());
+    ? `Votre compte est banni jusqu'au ${until}. ${reason}`.trim()
+    : `Votre compte a été banni. ${reason}`.trim());
   res.json({ user: publicUser(getUserById(target.id)) });
 });
 
@@ -3111,12 +3144,14 @@ app.post("/api/moderation/users/:id/unban", requireAuth, requireRole("moderator"
 app.post("/api/moderation/users/:id/mute", requireAuth, requireRole("moderator"), requirePermission("users.mute"), (req, res) => {
   const target = getUserById(req.params.id);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  const reason = requiredModerationReason(req.body.reason);
+  if (!reason) return res.status(400).json({ error: "Une raison est obligatoire." });
   const untilDate = req.body.until ? new Date(req.body.until) : null;
   if (!untilDate || Number.isNaN(untilDate.getTime())) return res.status(400).json({ error: "Date de fin de mute invalide." });
   const until = untilDate.toISOString();
   if (ROLE_ORDER[target.role] >= ROLE_ORDER[req.user.role]) return res.status(403).json({ error: "Vous ne pouvez pas mute ce rôle." });
   db.prepare("UPDATE users SET mute_until = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(until, target.id);
-  moderationLog({ targetId: target.id, actorId: req.user.id, type: "mute", reason: req.body.reason, expiresAt: until, req });
+  moderationLog({ targetId: target.id, actorId: req.user.id, type: "mute", reason, expiresAt: until, req });
   res.json({ user: publicUser(getUserById(target.id)) });
 });
 
@@ -3124,8 +3159,9 @@ app.post("/api/moderation/users/:id/warn", requireAuth, requireRole("moderator")
   const target = getUserById(req.params.id);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Vous ne pouvez pas avertir ce membre." });
-  const reason = String(req.body.reason || "").trim().slice(0, 300);
-  db.prepare("INSERT INTO moderation_warnings(target_user_id, actor_user_id, reason) VALUES(?,?,?)").run(target.id, req.user.id, reason || "Avertissement modération");
+  const reason = requiredModerationReason(req.body.reason);
+  if (!reason) return res.status(400).json({ error: "Une raison est obligatoire." });
+  db.prepare("INSERT INTO moderation_warnings(target_user_id, actor_user_id, reason) VALUES(?,?,?)").run(target.id, req.user.id, reason);
   auditLog({ actorId: req.user.id, targetId: target.id, action: "moderation.warn", entityType: "user", entityId: target.id, details: { reason: reason || "" }, req });
   logCommunity({ userId: req.user.id, type: "moderation_warn", body: "Avertissement envoye.", meta: { targetId: target.id, reason: reason || "" } });
   res.json({ ok: true });
