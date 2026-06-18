@@ -6766,22 +6766,36 @@ body[data-fx="premium"] .milestone-flash{box-shadow:0 0 0 9999px rgba(212,167,60
   opacity:.86;
 }
 
+.familiar-choice-search{
+  width:100%;
+  margin:2px 0 14px;
+  padding:12px 14px;
+  border:1px solid rgba(126,91,43,.30);
+  border-radius:12px;
+  background:rgba(255,252,242,.88);
+  color:#2b1608;
+  font-weight:850;
+}
 .familiar-choice-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:12px;
-  margin:4px 0 12px;
+  grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
+  gap:14px;
+  margin:4px 0 6px;
 }
 .familiar-choice-card{
+  position:relative;
   display:grid;
-  grid-template-columns:auto 1fr;
-  gap:10px;
-  align-items:flex-start;
-  padding:14px;
+  grid-template-columns:92px minmax(0,1fr);
+  gap:14px;
+  align-items:start;
+  min-height:210px;
+  padding:15px;
   border:1px solid rgba(171,132,73,.36);
-  border-radius:14px;
-  background:linear-gradient(135deg,rgba(255,251,235,.94),rgba(247,232,190,.78));
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.72);
+  border-radius:16px;
+  background:
+    radial-gradient(circle at 12% 0,rgba(250,204,21,.18),transparent 34%),
+    linear-gradient(135deg,rgba(255,251,235,.96),rgba(247,232,190,.80));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72),0 10px 24px rgba(83,52,15,.08);
   cursor:pointer;
   transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
 }
@@ -6792,19 +6806,68 @@ body[data-fx="premium"] .milestone-flash{box-shadow:0 0 0 9999px rgba(212,167,60
   box-shadow:0 10px 22px rgba(83,52,15,.13),inset 0 1px 0 rgba(255,255,255,.86);
 }
 .familiar-choice-card input{
-  margin-top:4px;
+  position:absolute;
+  left:12px;
+  top:12px;
   accent-color:#d89b17;
+}
+.familiar-choice-portrait{
+  display:grid;
+  gap:8px;
+  justify-items:center;
+  padding-top:22px;
+}
+.familiar-choice-portrait img:first-child{
+  width:86px;
+  height:86px;
+  object-fit:contain;
+  filter:drop-shadow(0 10px 13px rgba(67,38,11,.20));
+}
+.familiar-choice-bonus{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  padding:5px 9px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#fff4b8,#facc15);
+  border:1px solid rgba(184,122,24,.30);
+  color:#3b2408;
+  font-size:11px;
+  font-weight:950;
+}
+.familiar-choice-bonus img{
+  width:18px;
+  height:18px;
+  object-fit:contain;
 }
 .familiar-choice-card strong{
   display:block;
   color:#2b1608;
-  font-size:16px;
+  font-size:19px;
 }
 .familiar-choice-card small{
   display:block;
   margin-top:5px;
   color:#694b28;
   line-height:1.35;
+}
+.familiar-choice-meta{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+  margin-top:10px;
+}
+.familiar-choice-meta span{
+  display:block;
+  padding:7px 9px;
+  border:1px solid rgba(126,91,43,.18);
+  border-radius:10px;
+  background:rgba(255,255,255,.40);
+  color:#5a3a1b;
+  font-size:12px;
+  font-weight:900;
+  line-height:1.25;
 }
 .familiar-choice-card em{
   display:inline-flex;
@@ -6817,6 +6880,15 @@ body[data-fx="premium"] .milestone-flash{box-shadow:0 0 0 9999px rgba(212,167,60
   font-style:normal;
   font-weight:900;
   text-transform:uppercase;
+}
+.familiar-choice-empty{
+  grid-column:1/-1;
+  padding:18px;
+  border:1px dashed rgba(126,91,43,.30);
+  border-radius:14px;
+  text-align:center;
+  color:#6b7280;
+  font-weight:900;
 }
 
 body.help-active{
@@ -11707,6 +11779,18 @@ body.no-anim .pykur-sparkle{
 .farm-choice{
   min-height:38px!important;
   border-radius:8px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:7px!important;
+  overflow:hidden;
+}
+
+.farm-choice img{
+  width:26px;
+  height:26px;
+  object-fit:contain;
+  filter:drop-shadow(0 3px 5px rgba(58,32,10,.18));
 }
 
 .farm-command-head #plus{
@@ -11769,6 +11853,24 @@ body.no-anim .pykur-sparkle{
   overflow:hidden;
 }
 
+.dungeon-card::after{
+  content:"";
+  position:absolute;
+  right:12px;
+  top:10px;
+  width:118px;
+  height:118px;
+  background:var(--dungeon-art,none) center/contain no-repeat;
+  opacity:.095;
+  pointer-events:none;
+  filter:drop-shadow(0 8px 12px rgba(61,37,13,.14));
+}
+
+.dungeon-card > *{
+  position:relative;
+  z-index:1;
+}
+
 .dungeon-card h3{
   display:flex;
   align-items:center;
@@ -11804,6 +11906,28 @@ body.no-anim .pykur-sparkle{
 
 .dungeon-card.active-farm{
   border-width:2px!important;
+}
+
+.dungeon-donjonAbraknyde{
+  border-color:rgba(132,83,36,.32)!important;
+  background:
+    radial-gradient(circle at 8% 0,rgba(132,83,36,.20),transparent 34%),
+    radial-gradient(circle at 94% 100%,rgba(34,197,94,.10),transparent 40%),
+    linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,.08))!important;
+}
+.dungeon-cheneMou{
+  border-color:rgba(22,128,58,.32)!important;
+  background:
+    radial-gradient(circle at 88% 0,rgba(22,128,58,.18),transparent 36%),
+    radial-gradient(circle at 0 100%,rgba(250,204,21,.10),transparent 40%),
+    linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,.08))!important;
+}
+.dungeon-salleAbrakne{
+  border-color:rgba(202,138,4,.38)!important;
+  background:
+    radial-gradient(circle at 8% 0,rgba(250,204,21,.18),transparent 34%),
+    radial-gradient(circle at 92% 100%,rgba(14,165,233,.10),transparent 38%),
+    linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,.08))!important;
 }
 
 .pp-summary-card{
@@ -14734,6 +14858,7 @@ const FAMILIARS={
     objectiveMax:PP_MAX,
     objectiveLabel:"90 PP",
     icon:"./assets/images/prospection.png",
+    logo:"./assets/images/logo.png",
     image:"./assets/images/pykur.png",
     auraImage:"./assets/images/aurapykur.png",
     sleepingImage:"./assets/images/evenement/25. Pykur endormi/pykurz.png",
@@ -14741,9 +14866,12 @@ const FAMILIARS={
     status:"complete",
     statusLabel:"Tracker complet",
     description:"Suivi complet de progression, donjons, PP, chrono, galerie, succès et détection Dofus.",
+    bonusAmount:90,
+    difficultyLabel:"Difficulté estimée : moyenne",
+    farmMethods:["Donjon Morose","Donjon Tynril"],
     dungeons:[
-      {key:"morose",label:"Morose",fullLabel:"Donjon Morose"},
-      {key:"tynril",label:"Tynril",fullLabel:"Donjon Tynril"}
+      {key:"morose",label:"Morose",fullLabel:"Donjon Morose",asset:"./assets/images/dj actif/morose.png"},
+      {key:"tynril",label:"Tynril",fullLabel:"Donjon Tynril",asset:"./assets/images/dj actif/tynril.png"}
     ]
   },
   "abra-kadabra":{
@@ -14756,6 +14884,7 @@ const FAMILIARS={
     objectiveMax:ABRA_OBJECTIVE_MAX,
     objectiveLabel:"55 puissance",
     icon:"../abra-kadabra/assets/images/puissance.png",
+    logo:"../abra-kadabra/assets/images/abra-kadabra.png",
     image:"../abra-kadabra/assets/images/abra-kadabra.png",
     auraImage:"../abra-kadabra/assets/images/abra-kadabra-aura.png",
     sleepingImage:"../abra-kadabra/assets/images/abraz.png",
@@ -14763,6 +14892,9 @@ const FAMILIARS={
     status:"active",
     statusLabel:"Disponible",
     description:"Suivi de puissance sur Donjon Abraknyde, Donjon Chêne Mou et boucle de la salle Abrakne.",
+    bonusAmount:55,
+    difficultyLabel:"Difficulté estimée : rapide à moyenne",
+    farmMethods:["Donjon Abraknyde","Donjon Chêne Mou","Boucle salle Abrakne"],
     dungeons:[
       {key:"donjonAbraknyde",label:"Abraknyde",fullLabel:"Donjon Abraknyde",asset:"../abra-kadabra/assets/images/donjons/donjon abraknyde.png"},
       {key:"cheneMou",label:"Chêne Mou",fullLabel:"Donjon Chêne Mou",asset:"../abra-kadabra/assets/images/donjons/donjon chêne mou.png"},
@@ -25804,7 +25936,7 @@ function renderFamiliarContext(){
   if(progressCaption)progressCaption.textContent=`Progression du ${familiar.label}`;
   const farmToggle=$(".farm-toggle");
   if(farmToggle){
-    farmToggle.innerHTML=familiar.dungeons.map(dungeon=>`<button class="farm-choice tooltip" type="button" data-farm-choice="${dungeon.key}" data-tooltip="Sélectionne ${escapeHtml(dungeon.label)} pour que + Run ajoute ce parcours et ses monstres associés.">${escapeHtml(dungeon.label)}</button>`).join("");
+    farmToggle.innerHTML=familiar.dungeons.map(dungeon=>`<button class="farm-choice tooltip" type="button" data-farm-choice="${dungeon.key}" data-tooltip="Sélectionne ${escapeHtml(dungeon.label)} pour que + Run ajoute ce parcours et ses monstres associés.">${dungeon.asset?`<img src="${assetPath(dungeon.asset)}" alt="">`:""}<span>${escapeHtml(dungeon.label)}</span></button>`).join("");
     farmToggle.querySelectorAll("[data-farm-choice]").forEach(btn=>btn.addEventListener("click",()=>{
       data.ui.farm=btn.dataset.farmChoice;
       data.ui.tab=btn.dataset.farmChoice;
@@ -25820,7 +25952,8 @@ function renderFamiliarContext(){
   if(dungeonSummary){
     dungeonSummary.innerHTML=familiar.dungeons.map(dungeon=>{
       const id=farmDomId(dungeon.key);
-      return `<div class="card dungeon-card dungeon-${dungeon.key}" data-dungeon-card="${dungeon.key}">
+      const art=dungeon.asset ? ` style="--dungeon-art:url('${assetPath(dungeon.asset).replace(/'/g,"%27")}')"` : "";
+      return `<div class="card dungeon-card dungeon-${dungeon.key}" data-dungeon-card="${dungeon.key}"${art}>
         <h3>${escapeHtml(dungeon.fullLabel)}</h3>
         ${dungeon.special==="salleAbrakne"?`<button class="btn ${data.special?.salleAbrakneActive?"btn-red":"btn-orange"} abra-room-button" type="button" id="abraRoomSetup" data-tooltip="${data.special?.salleAbrakneActive?"Termine la boucle Abrakne active.":"Ajoute les monstres des 4 premières salles avant la boucle Abrakne."}">${data.special?.salleAbrakneActive?"Sortir de la salle Abrakne":"Arrivé à la salle Abrakne"}</button>`:""}
         <div class="dungeon-mini">
@@ -26028,21 +26161,32 @@ function renderChronoEstimate(){
 
 async function chooseFamiliarForProfile(defaultId="pykur"){
   let selected=normalizeFamiliarId(defaultId);
-  const cards=Object.values(FAMILIARS).map(familiar=>`
-    <label class="familiar-choice-card ${familiar.id===selected?"selected":""}">
+  const cards=Object.values(FAMILIARS).map(familiar=>{
+    const search=[familiar.label,familiar.progressLabel,familiar.progressShort,familiar.description,...(familiar.farmMethods||[]),familiar.difficultyLabel].join(" ").toLowerCase();
+    return `
+    <label class="familiar-choice-card ${familiar.id===selected?"selected":""}" data-familiar-card data-search="${escapeHtml(search)}">
       <input type="radio" name="newProfileFamiliar" value="${familiar.id}" ${familiar.id===selected?"checked":""}>
-      <span>
+      <span class="familiar-choice-portrait">
+        <img src="${assetPath(familiar.logo||familiar.image)}" alt="">
+        <span class="familiar-choice-bonus"><img src="${assetPath(familiar.icon)}" alt=""> ${familiar.bonusAmount||familiar.objectiveMax} ${escapeHtml(familiar.progressShort)}</span>
+      </span>
+      <span class="familiar-choice-content">
         <strong>${escapeHtml(familiar.label)}</strong>
         <small>${escapeHtml(familiar.description)}</small>
+        <span class="familiar-choice-meta">
+          <span>Bonus : ${familiar.bonusAmount||familiar.objectiveMax} ${escapeHtml(familiar.progressShort)}</span>
+          <span>Farm : ${escapeHtml((familiar.farmMethods||familiar.dungeons.map(d=>d.fullLabel)).join(" · "))}</span>
+          <span>${escapeHtml(familiar.difficultyLabel||"Difficulté estimée : standard")}</span>
+        </span>
         <em>${escapeHtml(familiar.statusLabel)}</em>
       </span>
     </label>
-  `).join("");
+  `}).join("");
   const ok=await showConfirm("",{
     title:"Choisir un familier",
     subtitle:"Sélectionnez le familier à suivre pour ce profil.",
     okLabel:"Continuer",
-    html:`<div class="familiar-choice-grid">${cards}</div><p class="options-note">Les événements vivants et les easter eggs restent communs. Les succès et la détection Dofus s'adapteront au familier actif.</p>`,
+    html:`<input class="familiar-choice-search" id="familiarChoiceSearch" type="search" placeholder="Rechercher un familier..."><div class="familiar-choice-grid" id="familiarChoiceGrid">${cards}<div class="familiar-choice-empty hidden" id="familiarChoiceEmpty">Aucun familier trouvé.</div></div>`,
     onRender:({msg})=>{
       const update=()=>{
         msg.querySelectorAll(".familiar-choice-card").forEach(card=>{
@@ -26051,7 +26195,21 @@ async function chooseFamiliarForProfile(defaultId="pykur"){
         selected=msg.querySelector("input[name='newProfileFamiliar']:checked")?.value || "pykur";
       };
       msg.querySelectorAll("input[name='newProfileFamiliar']").forEach(input=>input.addEventListener("change",update));
+      const searchInput=msg.querySelector("#familiarChoiceSearch");
+      const empty=msg.querySelector("#familiarChoiceEmpty");
+      const filterCards=()=>{
+        const query=(searchInput?.value||"").trim().toLowerCase();
+        let visible=0;
+        msg.querySelectorAll("[data-familiar-card]").forEach(card=>{
+          const match=!query || (card.dataset.search||"").includes(query);
+          card.classList.toggle("hidden",!match);
+          if(match)visible++;
+        });
+        if(empty)empty.classList.toggle("hidden",visible>0);
+      };
+      searchInput?.addEventListener("input",filterCards);
       update();
+      filterCards();
     }
   });
   return ok ? normalizeFamiliarId(selected) : null;
