@@ -2507,11 +2507,17 @@ app.get("/api/admin/users/:pseudo/control", requireAuth, requireRole("moderator"
       if (item) galleryEvents.set(id, { id, count: Number(item.count) || 1 });
     });
     (Array.isArray(source?.completedPykurs) ? source.completedPykurs : []).forEach((item) => {
+      const familiarId = String(item?.familiarId || "pykur");
+      const familiarLabel = String(item?.familiarLabel || (familiarId === "abra-kadabra" ? "Abra Kadabra" : "Pykur"));
+      const progressLabel = String(item?.progressLabel || (familiarId === "abra-kadabra" ? "puissance" : "PP"));
       if (item?.id) galleryPykurs.set(String(item.id), {
         id: String(item.id),
         number: Number(item.number) || 0,
+        familiarId,
+        familiarLabel,
         profileName: String(item.profileName || "Profil"),
         pp: Number(item.pp) || 0,
+        progressLabel,
         finishedAt: item.finishedAt || null
       });
     });

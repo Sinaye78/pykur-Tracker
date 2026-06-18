@@ -10534,6 +10534,10 @@ body.no-anim .pykur-sparkle{
 .gallery-empty{grid-column:1/-1;padding:18px;border:1px dashed rgba(139,111,71,.42);border-radius:14px;text-align:center;font-weight:900;color:var(--muted)}
 .gallery-card .btn{width:100%;margin-top:8px}
 .gallery-tools{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.gallery-familiar-filters{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.gallery-familiar-filter{border:1px solid rgba(119,79,28,.30);border-radius:999px;background:rgba(255,252,242,.72);color:#5b3b18;font-weight:950;padding:7px 12px;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+.gallery-familiar-filter:hover{transform:translateY(-1px);box-shadow:0 8px 16px rgba(80,48,12,.10)}
+.gallery-familiar-filter.active{background:linear-gradient(180deg,#fff3b0,#facc15);border-color:rgba(184,122,24,.42);color:#3b2408;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 18px rgba(184,122,24,.18)}
 .gallery-card-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
 .gallery-card-actions .btn{width:100%;margin-top:0}
 .gallery-global-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
@@ -14181,7 +14185,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
 <!-- GALERIE -->
 <div class="modal-bg" id="galleryModal">
   <div class="modal gallery-modal">
-    <div class="modal-head"><div><h2><img class="modal-title-icon" src="./assets/icone/galerie.png" alt=""><span>Galerie</span></h2><p>Retrouvez vos anciens Pykurs et votre collection d'événements.</p></div><button class="btn btn-red modal-close" data-close="galleryModal">X</button></div>
+    <div class="modal-head"><div><h2><img class="modal-title-icon" src="./assets/icone/galerie.png" alt=""><span>Galerie</span></h2><p>Retrouvez vos familiers terminés et votre collection d'événements.</p></div><button class="btn btn-red modal-close" data-close="galleryModal">X</button></div>
     <div class="modal-body">
       <nav class="gallery-tabs" role="tablist" aria-label="Sections de la galerie">
         <button class="gallery-tab active" type="button" role="tab" aria-selected="true" data-gallery-tab="archives">Archives</button>
@@ -14190,11 +14194,12 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
       </nav>
       <div class="gallery-view" id="galleryMemoryView" data-gallery-panel="archives">
         <section class="gallery-section">
-          <div class="gallery-section-head"><h3>Historique global</h3><span id="galleryGlobalBadge">0 Pykur</span></div>
+          <div class="gallery-section-head"><h3>Historique global</h3><span id="galleryGlobalBadge">0 familier</span></div>
           <div class="gallery-global-grid" id="galleryGlobalStats"></div>
         </section>
         <section class="gallery-section">
-          <div class="gallery-section-head"><h3>Pykurs terminés</h3><span id="galleryPykurCount">0</span></div>
+          <div class="gallery-section-head"><h3>Familiers terminés</h3><span id="galleryPykurCount">0</span></div>
+          <div class="gallery-familiar-filters" id="galleryFamiliarFilters" aria-label="Filtrer les familiers terminés"></div>
           <div class="gallery-grid" id="completedPykurGallery"></div>
         </section>
       </div>
@@ -14218,7 +14223,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
           <div class="gallery-section-head"><h3>Paramètres de la galerie</h3><span>Mémoire</span></div>
           <label class="gallery-shared-toggle gallery-setting-card"><input id="gallerySharedToggle" type="checkbox"><span><strong>Galerie partagée entre tous les profils</strong><small>Tous vos profils consultent les mêmes archives et découvertes.</small></span></label>
           <div class="gallery-setting-card gallery-setting-danger">
-            <div><strong>Réinitialiser la galerie</strong><small>Supprime les Pykurs archivés et les événements découverts après confirmation.</small></div>
+            <div><strong>Réinitialiser la galerie</strong><small>Supprime les familiers archivés et les événements découverts après confirmation.</small></div>
             <button class="btn btn-red" id="resetGallery" type="button">Reset galerie</button>
           </div>
           <div class="gallery-setting-future"><strong>Futures options</strong><span>Les prochains réglages de collection seront regroupés ici sans alourdir vos archives.</span></div>
@@ -14231,7 +14236,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
   <div class="modal completion-modal">
     <div class="modal-head">
       <div>
-        <h2>🎉 Pykur terminé !</h2>
+        <h2><span id="completionModalTitle">Familier terminé !</span></h2>
         <p class="completion-subtitle">Une nouvelle aventure s'achève.</p>
       </div>
       <button class="btn btn-red modal-close" data-close="pykurCompletionModal">X</button>
@@ -14240,7 +14245,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
       <div class="completion-shell">
         <section class="completion-hero">
           <div class="completion-pykur-wrap" id="completionPykurStage">
-            <img class="completion-pykur" id="completionPykurImage" src="./assets/images/aurapykur.png" alt="Pykur terminé">
+            <img class="completion-pykur" id="completionPykurImage" src="./assets/images/aurapykur.png" alt="Familier terminé">
           </div>
           <div class="completion-title-label">Titre obtenu</div>
           <div class="completion-title-badge"><span aria-hidden="true">🏆</span><span id="completionTitle">LE PREMIER ÉVEIL</span></div>
@@ -14430,7 +14435,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
             <div class="options-panel-head"><h3>Liens entre profils</h3><p>Choisissez quelles parties du tracker restent communes à tous les profils.</p></div>
             <div class="options-action-list">
               <div class="option-row"><div><strong>Options et raccourcis partagés</strong><small>Applique les réglages d'interface, sons, accessibilité, événements et raccourcis à tous les profils.</small></div><button class="btn btn-blue tooltip" id="toggleSharedOptions" data-tooltip="Lie les réglages d'interface, sons, accessibilité, événements et raccourcis entre tous les profils."></button></div>
-              <div class="option-row"><div><strong>Galerie partagée</strong><small>Utilise la même galerie de Pykurs terminés et d'événements découverts pour tous les profils.</small></div><button class="btn btn-blue tooltip" id="toggleSharedGalleryOption" data-tooltip="Lie ou sépare la galerie entre tous les profils."></button></div>
+              <div class="option-row"><div><strong>Galerie partagée</strong><small>Utilise la même galerie de familiers terminés et d'événements découverts pour tous les profils.</small></div><button class="btn btn-blue tooltip" id="toggleSharedGalleryOption" data-tooltip="Lie ou sépare la galerie entre tous les profils."></button></div>
               <div class="option-row"><div><strong>Succès partagés</strong><small>Utilise la même progression de succès pour tous les profils.</small></div><button class="btn btn-blue tooltip" id="toggleSharedAchievementsOption" data-tooltip="Lie ou sépare les succès entre tous les profils."></button></div>
             </div>
             <div class="options-note">Ces options ne changent pas les donjons du profil : elles ne concernent que les réglages, la galerie et les succès.</div>
@@ -14844,7 +14849,7 @@ const SHORTCUT_ACTIONS=[
   {id:"openOptions",label:"Ouvrir options",description:"Ouvre le centre de reglages.",target:"#optionsButton"},
   {id:"openProjection",label:"Ouvrir projections",description:"Ouvre les estimations de progression.",target:"#projectionButton"},
   {id:"openMonsters",label:"Ouvrir bestiaire",description:"Ouvre le suivi des monstres.",target:"#monsterLauncher"},
-  {id:"openGallery",label:"Ouvrir la galerie",description:"Ouvre la mémoire des Pykurs terminés et des événements découverts.",target:"#galleryButton"},
+  {id:"openGallery",label:"Ouvrir la galerie",description:"Ouvre la mémoire des familiers terminés et des événements découverts.",target:"#galleryButton"},
   {id:"toggleSound",label:"Activer/desactiver son",description:"Coupe ou reactive tous les sons.",target:"#soundToggle,#toggleSound"},
   {id:"toggleNight",label:"Mode nuit",description:"Active ou desactive le mode nuit.",target:"#toggleNight"},
   {id:"toggleDofusDetection",label:"Détection Dofus",description:"Active ou désactive la détection automatique Dofus.",target:"#editDofusShortcut"},
@@ -15122,11 +15127,11 @@ const ACCOUNT_PRIVACY_OPTIONS=[
   {group:"Visibilité",key:"showSecondaryProfiles",label:"Afficher mes profils secondaires",description:"Permet aux autres membres de consulter vos autres profils Pykur."},
   {group:"Visibilité",key:"hidePykurProfileNames",label:"Masquer les noms de profils Pykur",description:"Remplace les noms de profils par des intitulés neutres dans les vues publiques."},
   {group:"Visibilité",key:"hideDetailedStats",label:"Masquer les statistiques détaillées",description:"Affiche seulement les grandes lignes de progression."},
-  {group:"Visibilité",key:"hideGallery",label:"Masquer la galerie publique",description:"Ne partage pas vos anciens Pykurs sur le profil public."},
+  {group:"Visibilité",key:"hideGallery",label:"Masquer la galerie publique",description:"Ne partage pas vos anciens familiers sur le profil public."},
   {group:"Succès",key:"hideSecretAchievements",label:"Masquer les succès secrets",description:"Évite de révéler les succès et easter eggs cachés."},
   {group:"Succès",key:"hideNormalAchievements",label:"Masquer les succès normaux",description:"Cache aussi les succès classiques sur le profil public."},
   {group:"Partages automatiques",key:"shareAchievements",label:"Partager mes succès dans le chat",description:"Annonce automatiquement les succès débloqués dans la chatbox."},
-  {group:"Partages automatiques",key:"shareGalleryMoments",label:"Partager mes Pykurs terminés",description:"Annonce automatiquement les Pykurs archivés dans la chatbox."},
+  {group:"Partages automatiques",key:"shareGalleryMoments",label:"Partager mes familiers terminés",description:"Annonce automatiquement les familiers archivés dans la chatbox."},
   {group:"Messagerie",key:"allowPrivateMessages",label:"Autoriser les messages privés",description:"Permet aux amis de vous envoyer des messages privés."}
 ];
 
@@ -15533,7 +15538,7 @@ function renderCommunityProfile(profile){
       <div class="community-section-heading"><div><small>Mémoire du joueur</small><h4>Collection publique</h4></div></div>
       <div class="community-profile-summary-grid">
         ${profile?.gallery
-          ? `<div class="community-profile-summary-item"><small>Pykurs terminés</small>${profile.gallery.completedPykurs || 0}</div>
+          ? `<div class="community-profile-summary-item"><small>Familiers terminés</small>${profile.gallery.completedPykurs || 0}</div>
              <div class="community-profile-summary-item"><small>Événements découverts</small>${profile.gallery.eventsDiscovered || 0}</div>`
           : `<div class="community-profile-summary-item"><small>Galerie</small>Masquée</div>`}
         <div class="community-profile-summary-item"><small>Succès visibles</small>${achievements.length}</div>
@@ -17253,11 +17258,11 @@ async function shareCommunityMilestone(type,payload={}){
   if(!authState.user)return;
   const prefs=accountPreferences();
   if(type==="achievement" && prefs.shareAchievements===false)return;
-  if(type==="pykur" && prefs.shareGalleryMoments===false)return;
+  if((type==="pykur" || type==="familiar") && prefs.shareGalleryMoments===false)return;
   const title=payload.title ? String(payload.title) : "";
   const body=type==="achievement"
     ? `${authState.user.pseudo} a débloqué le succès ${title}.`
-    : `${authState.user.pseudo} a terminé un Pykur${payload.title?` : ${payload.title}`:""}.`;
+    : `${authState.user.pseudo} a terminé ${payload.familiarLabel?`un ${payload.familiarLabel}`:"un familier"}${payload.title?` : ${payload.title}`:""}.`;
   try{
     await authFetch("/social/chat",{method:"POST",body:JSON.stringify({type,body,meta:payload})});
   }catch{
@@ -19505,6 +19510,11 @@ function adminConsoleEventLabel(id){return LIVING_EVENT_DEFS.find(item=>item.id=
 function adminConsoleDate(value){return value?new Date(value).toLocaleString("fr-FR"):"-"}
 function adminCommandStatusLabel(status){return ({pending:"En attente",delivered:"Transmise",completed:"Terminée",failed:"Échec",cancelled:"Annulée"})[status]||status}
 function adminCommandTypeLabel(type){return ({notification:"Notification",["popup-message"]:"Popup persistante",kick:"Déconnexion forcée",livingEvent:"Événement",["living-event"]:"Événement ciblé",["reset-gallery"]:"Reset galerie",["reset-achievements"]:"Reset succès",["reset-profile"]:"Reset profil",["reset-pykur"]:"Reset Pykur",["delete-profile"]:"Suppression profil",["rename-profile"]:"Renommage profil",["remove-achievement"]:"Retrait succès",["remove-gallery-event"]:"Retrait événement",["remove-gallery-pykur"]:"Retrait Pykur archivé",["recalculate-achievements"]:"Recalcul succès",["repair-progression"]:"Réparation progression"})[type]||type}
+function adminGalleryArchiveLabel(item){
+  const familiarLabel=item?.familiarLabel || (item?.familiarId==="abra-kadabra"?"Abra Kadabra":"Pykur");
+  const progressLabel=item?.progressLabel || (item?.familiarId==="abra-kadabra"?"puissance":"PP");
+  return `${familiarLabel} #${item?.number||"?"} · ${item?.profileName||"Profil"} · ${item?.pp||0} ${progressLabel}`;
+}
 
 function adminConsoleCommandRows(items=[],options={}){
   const filtered=items.filter(item=>{
@@ -19697,7 +19707,7 @@ function renderAdminTarget(payload){
         ${canSecurity?`<article class="admin-action-group"><div class="admin-section-title"><h4>Sécurité</h4><span>sessions</span></div><input id="adminTargetSecurityReason" type="text" maxlength="300" placeholder="Motif sécurité"><div class="admin-action-buttons">${can("users.sessions.revoke")?`<button class="btn btn-red" id="adminRevokeTargetSessions" type="button">Révoquer sessions</button>`:""}${can("users.password.reset")?`<button class="btn btn-orange" id="adminForceTargetPassword" type="button">Forcer mot de passe</button>`:""}</div></article>`:""}
         ${canTracker?`<article class="admin-action-group admin-span-2"><div class="admin-section-title"><h4>Données tracker</h4><span>actions destructrices</span></div><div class="admin-split-actions">
           <div>${can("tracker.reset")?`<h5>Réparation</h5><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer la progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer les succès</button></div>`:""}${can("profiles.manage")?`<h5>Profils familiers</h5><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer le profil sélectionné</button></div>`:""}</div>
-          <div>${can("achievements.manage")?`${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer ce succès</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}`:""}${can("gallery.manage")?`${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer l'événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un Pykur archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">Pykur #${item.number||"?"} · ${escapeHtml(item.profileName)} · ${item.pp} PP</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer le Pykur</button></div>`:`<p class="options-note">Aucun Pykur archivé.</p>`}`:""}</div>
+          <div>${can("achievements.manage")?`${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer ce succès</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}`:""}${can("gallery.manage")?`${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer l'événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un familier archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminGalleryArchiveLabel(item))}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer le familier</button></div>`:`<p class="options-note">Aucun familier archivé.</p>`}`:""}</div>
         </div><div class="admin-danger-strip">${can("gallery.manage")?`<button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button>`:""}${can("achievements.manage")?`<button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button>`:""}${can("tracker.reset")?`<button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset Pykur</button>`:""}${can("profiles.manage")?`<button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button>`:""}</div></article>`:""}
       </div>
       <h4>Commandes récentes</h4>${adminConsoleCommandRows(payload.commands||[])}
@@ -19787,7 +19797,7 @@ function renderAdminTarget(payload){
             <div class="admin-mini-stats">
               <div><small>Succès</small><strong>${achievements.length}</strong></div>
               <div><small>Événements</small><strong>${galleryEvents.length}</strong></div>
-              <div><small>Pykurs archivés</small><strong>${galleryPykurs.length}</strong></div>
+              <div><small>Familiers archivés</small><strong>${galleryPykurs.length}</strong></div>
             </div>
           </article>
           <article class="admin-action-group">
@@ -19810,7 +19820,7 @@ function renderAdminTarget(payload){
             ${canSecurity?`<article class="admin-control-card"><div class="admin-card-eyebrow">Sécurité</div><h4>Sessions et mot de passe</h4><input id="adminTargetSecurityReason" type="text" maxlength="300" placeholder="Motif sécurité"><div class="admin-action-buttons">${can("users.sessions.revoke")?`<button class="btn btn-red" id="adminRevokeTargetSessions" type="button">Révoquer sessions</button>`:""}${can("users.password.reset")?`<button class="btn btn-orange" id="adminForceTargetPassword" type="button">Forcer mot de passe</button>`:""}</div></article>`:""}
           </div>
 
-          ${canTracker?`<article class="admin-control-card admin-control-card-wide"><div class="admin-section-title"><h4>Données tracker</h4><span>réparation et suppressions ciblées</span></div><div class="admin-data-tools">${can("tracker.reset")?`<section><h5>Réparer</h5><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer succès</button></div></section>`:""}${can("profiles.manage")?`<section><h5>Profils</h5><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer profil</button></div></section>`:""}${can("achievements.manage")?`<section><h5>Succès</h5>${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}</section>`:""}${can("gallery.manage")?`<section><h5>Galerie</h5>${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un Pykur archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">Pykur #${item.number||"?"} · ${escapeHtml(item.profileName)} · ${item.pp} PP</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer Pykur</button></div>`:`<p class="options-note">Aucun Pykur archivé.</p>`}</section>`:""}</div><div class="admin-danger-strip">${can("gallery.manage")?`<button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button>`:""}${can("achievements.manage")?`<button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button>`:""}${can("tracker.reset")?`<button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset Pykur</button>`:""}${can("profiles.manage")?`<button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button>`:""}</div></article>`:""}
+          ${canTracker?`<article class="admin-control-card admin-control-card-wide"><div class="admin-section-title"><h4>Données tracker</h4><span>réparation et suppressions ciblées</span></div><div class="admin-data-tools">${can("tracker.reset")?`<section><h5>Réparer</h5><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer succès</button></div></section>`:""}${can("profiles.manage")?`<section><h5>Profils</h5><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer profil</button></div></section>`:""}${can("achievements.manage")?`<section><h5>Succès</h5>${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}</section>`:""}${can("gallery.manage")?`<section><h5>Galerie</h5>${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un familier archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminGalleryArchiveLabel(item))}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer familier</button></div>`:`<p class="options-note">Aucun familier archivé.</p>`}</section>`:""}</div><div class="admin-danger-strip">${can("gallery.manage")?`<button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button>`:""}${can("achievements.manage")?`<button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button>`:""}${can("tracker.reset")?`<button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset Pykur</button>`:""}${can("profiles.manage")?`<button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button>`:""}</div></article>`:""}
 
           <article class="admin-control-card admin-control-card-wide"><div class="admin-section-title"><h4>Commandes récentes</h4><span>file serveur</span></div>${adminConsoleCommandRows(payload.commands||[])}</article>
         </div>
@@ -20017,7 +20027,7 @@ function renderAdminTarget(payload){
         ${can("tracker.reset")?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Réparation</span><strong>Recalculs sûrs</strong></div><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer la progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer les succès</button></div></article>`:""}
         ${can("profiles.manage")?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Profil sélectionné</span><strong>Renommage</strong></div><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer</button></div></article>`:""}
         ${can("achievements.manage")?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Succès</span><strong>Retrait ciblé</strong></div>${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer ce succès</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}</article>`:""}
-        ${can("gallery.manage")?`<article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Galerie</span><strong>Retraits individuels</strong></div><div class="admin-clean-inline-tools">${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer l'événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un Pykur archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">Pykur #${item.number||"?"} · ${escapeHtml(item.profileName)} · ${item.pp} PP</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer le Pykur</button></div>`:`<p class="options-note">Aucun Pykur archivé.</p>`}</div></article>`:""}
+        ${can("gallery.manage")?`<article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Galerie</span><strong>Retraits individuels</strong></div><div class="admin-clean-inline-tools">${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer l'événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un familier archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminGalleryArchiveLabel(item))}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer le familier</button></div>`:`<p class="options-note">Aucun familier archivé.</p>`}</div></article>`:""}
       </section>`,
     moderation:canModerate?`
       <section class="admin-clean-section-grid">
@@ -22424,7 +22434,7 @@ function normalizeGallery(gallery){
   const base=defaultData().gallery;
   const normalized=Object.assign({},base,gallery||{});
   normalized.completedPykurs=Array.isArray(normalized.completedPykurs)?normalized.completedPykurs:[];
-  normalized.completedPykurs=normalized.completedPykurs.map(item=>item&&typeof item==="object"?{...item,image:assetPath(item.image)}:item);
+  normalized.completedPykurs=normalized.completedPykurs.map((item,index)=>item&&typeof item==="object"?normalizeGalleryArchive({...item,image:assetPath(item.image)},index):item);
   normalized.eventsDiscovered=Object.assign({},normalized.eventsDiscovered||{});
   normalized.removedPykurs=Object.assign({},normalized.removedPykurs||{});
   normalized.removedEvents=Object.assign({},normalized.removedEvents||{});
@@ -23228,10 +23238,18 @@ function markGalleryEventDiscovered(id){
 }
 
 function galleryMethod(){
-  const m=data.runs?.morose||0,t=data.runs?.tynril||0;
-  if(m>0 && t>0)return "Mixte";
-  if(t>0)return "Tynril";
-  return "Morose";
+  const farmKeys=activeFarmKeys();
+  const activeRuns=farmKeys.map(farm=>({farm,value:data.runs?.[farm]||0}));
+  const used=activeRuns.filter(item=>item.value>0);
+  if(activeFamiliarId()==="pykur"){
+    const m=data.runs?.morose||0,t=data.runs?.tynril||0;
+    if(m>0 && t>0)return "Mixte";
+    if(t>0)return "Tynril";
+    return "Morose";
+  }
+  if(used.length>1)return "Mixte";
+  if(used.length===1)return familiarFarmLabel(used[0].farm);
+  return activeFamiliar().progressLabel || activeFamiliar().label;
 }
 
 function completedPykurStats(){
@@ -23242,6 +23260,7 @@ function completedPykurStats(){
   const finishedAt=new Date().toISOString();
   const startedAt=data.createdAt||finishedAt;
   const durationSeconds=Math.max(0,Math.floor((new Date(finishedAt)-new Date(startedAt))/1000));
+  const runDetails=activeFarmKeys().map(farm=>({key:farm,label:familiarFarmLabel(farm),value:data.runs?.[farm]||0}));
   const morose=data.runs?.morose||0;
   const tynril=data.runs?.tynril||0;
   const method=galleryMethod();
@@ -23255,6 +23274,7 @@ function completedPykurStats(){
     createdAt:startedAt,
     finishedAt,
     durationSeconds,
+    runDetails,
     morose,
     tynril,
     pp,
@@ -23265,6 +23285,66 @@ function completedPykurStats(){
     image:getPykurImageSrc(pp),
     title:completedPykurTitle({durationSeconds,morose,tynril,totalChrono,bestRun:best,avgRun:avg,method})
   };
+}
+
+function galleryArchiveFamiliarId(item){
+  return normalizeFamiliarId(item?.familiarId || "pykur");
+}
+
+function galleryArchiveFamiliar(item){
+  return FAMILIARS[galleryArchiveFamiliarId(item)] || FAMILIARS.pykur;
+}
+
+function normalizeGalleryArchive(item,index=0){
+  if(!item || typeof item!=="object")return item;
+  const familiarId=galleryArchiveFamiliarId(item);
+  const familiar=FAMILIARS[familiarId] || FAMILIARS.pykur;
+  const progressLabel=item.progressLabel || familiar.progressShort || "PP";
+  const objectiveMax=item.objectiveMax || familiar.objectiveMax || PP_MAX;
+  const runLabel=key=>familiar.dungeons.find(dungeon=>dungeon.key===key)?.label || key;
+  const runDetails=Array.isArray(item.runDetails) && item.runDetails.length
+    ? item.runDetails.map(run=>({key:run.key,label:run.label||runLabel(run.key),value:parseInt(run.value,10)||0}))
+    : familiar.dungeons.map(dungeon=>({key:dungeon.key,label:dungeon.label,value:parseInt(item[dungeon.key],10)||0}));
+  return {
+    ...item,
+    number:item.number || index+1,
+    familiarId,
+    familiarLabel:item.familiarLabel || familiar.label,
+    progressLabel,
+    objectiveMax,
+    pp:parseInt(item.pp,10)||0,
+    runDetails
+  };
+}
+
+function galleryArchiveRunTotal(item,key){
+  const found=(item.runDetails||[]).find(run=>run.key===key);
+  if(found)return parseInt(found.value,10)||0;
+  return parseInt(item?.[key],10)||0;
+}
+
+function galleryArchiveMethod(item){
+  if(item.method)return item.method;
+  const runs=(item.runDetails||[]).filter(run=>(parseInt(run.value,10)||0)>0);
+  if(item.familiarId==="pykur"){
+    if((item.morose||0)>0 && (item.tynril||0)>0)return "Mixte";
+    if((item.tynril||0)>0)return "Tynril";
+    return "Morose";
+  }
+  if(runs.length>1)return "Mixte";
+  return runs[0]?.label || item.progressLabel || "Progression";
+}
+
+function galleryArchiveFilter(){
+  return data?.ui?.galleryFamiliarFilter || "all";
+}
+
+function setGalleryArchiveFilter(value){
+  const allowed=["all",...Object.keys(FAMILIARS)];
+  data.ui=data.ui||{};
+  data.ui.galleryFamiliarFilter=allowed.includes(value)?value:"all";
+  save();
+  renderGallery();
 }
 
 function completedPykurTitle(stats){
@@ -23323,20 +23403,27 @@ function isCompletionLocked(){
 
 function renderCompletionModal(){
   const stats=completedPykurStats();
+  const familiar=FAMILIARS[stats.familiarId] || activeFamiliar();
+  const progressLabel=stats.progressLabel || familiar.progressShort || "PP";
+  const heading=$("#completionModalTitle");
+  if(heading)heading.textContent=`${familiar.label} terminé !`;
   const img=$("#completionPykurImage");
-  if(img)img.src=assetPath(stats.image)||"./assets/images/aurapykur.png";
+  if(img){
+    img.src=assetPath(stats.image)||assetPath(familiar.image)||"./assets/images/aurapykur.png";
+    img.alt=`${familiar.label} terminé`;
+  }
   const title=$("#completionTitle");
   if(title)title.textContent=stats.title.toUpperCase();
   const box=$("#completionStats");
   if(box){
+    const runCards=(stats.runDetails||[]).map(run=>({label:run.label,value:parseInt(run.value,10)||0}));
     box.innerHTML=[
       {label:"Créé le",value:formatDateShort(stats.createdAt)},
       {label:"Terminé le",value:formatDateShort(stats.finishedAt)},
       {label:"Temps réel écoulé",value:formatLongDuration(stats.durationSeconds)},
-      {label:"Morose",value:stats.morose},
-      {label:"Tynril",value:stats.tynril},
+      ...runCards,
       {label:"Temps total farm",value:stats.totalChrono?formatDuration(stats.totalChrono):"-"},
-      {label:"PP finale",value:`${stats.pp} PP`,featured:true},
+      {label:`${progressLabel} finale`,value:`${stats.pp} ${progressLabel}`,featured:true},
       {label:"Meilleur run",value:stats.bestRun?formatDuration(stats.bestRun):"-"},
       {label:"Run moyen",value:stats.avgRun?formatDuration(stats.avgRun):"-"},
       {label:"Méthode dominante",value:`<span class="gallery-badge method-pill ${methodClass(stats.method)}">${stats.method}</span>`,html:true}
@@ -23393,7 +23480,7 @@ async function archiveAndRestartPykur(){
   renderAll();
   renderGallery();
   toast(archived?`${activeFamiliar().shortLabel} #${archived.number} archivé. Nouvelle aventure lancée.`:"Nouvelle aventure lancée.","success","unlock");
-  if(archived)shareCommunityMilestone("pykur",{number:archived.number,title:archived.title,pp:archived.pp,method:archived.method,createdAt:archived.createdAt,finishedAt:archived.finishedAt});
+  if(archived)shareCommunityMilestone("familiar",{number:archived.number,title:archived.title,pp:archived.pp,progressLabel:archived.progressLabel,familiarId:archived.familiarId,familiarLabel:archived.familiarLabel,method:archived.method,createdAt:archived.createdAt,finishedAt:archived.finishedAt});
 }
 
 function maybeArchiveCompletedPykur(){
@@ -23402,14 +23489,14 @@ function maybeArchiveCompletedPykur(){
   const stats=completedPykurStats();
   const count=(gallery.completedPykurs||[]).length+1;
   gallery.completedPykurs.push({
-    id:`pykur_${Date.now()}`,
+    id:`${activeFamiliarId()}_${Date.now()}`,
     number:count,
     ...stats
   });
   syncActiveGallery(gallery);
   data.gallery.currentCycleArchived=true;
   data.gallery.currentCycleCompletionSeen=true;
-  addActivity(`Pykur #${count} archivé dans la galerie`,"success");
+  addActivity(`${activeFamiliar().label} #${count} archivé dans la galerie`,"success");
   return gallery.completedPykurs[gallery.completedPykurs.length-1];
 }
 
@@ -23419,49 +23506,65 @@ function renderGallery(){
   const events=$("#discoveredEventsGallery");
   if(!completed || !events)return;
   const gallery=activeGallery();
-  const pykurs=gallery.completedPykurs||[];
+  const archives=(gallery.completedPykurs||[]).map((item,index)=>normalizeGalleryArchive(item,index)).filter(Boolean);
+  const filter=galleryArchiveFilter();
+  const filteredArchives=filter==="all" ? archives : archives.filter(item=>galleryArchiveFamiliarId(item)===filter);
   const discovered=gallery.eventsDiscovered||{};
   const eventIds=galleryEventIds();
   const found=eventIds.filter(id=>discovered[id]).length;
   const sharedToggle=$("#gallerySharedToggle");
   if(sharedToggle)sharedToggle.checked=store?.galleryShared!==false;
   const globalStats=$("#galleryGlobalStats");
-  const firstFinished=pykurs.map(item=>item.finishedAt).filter(Boolean).sort((a,b)=>new Date(a)-new Date(b))[0];
-  const lastFinished=pykurs.map(item=>item.finishedAt).filter(Boolean).sort((a,b)=>new Date(b)-new Date(a))[0];
-  const moroseTotal=pykurs.reduce((sum,item)=>sum+(parseInt(item.morose,10)||0),0);
-  const tynrilTotal=pykurs.reduce((sum,item)=>sum+(parseInt(item.tynril,10)||0),0);
-  const chronoTotal=pykurs.reduce((sum,item)=>sum+(parseInt(item.totalChrono,10)||0),0);
-  if($("#galleryGlobalBadge"))$("#galleryGlobalBadge").textContent=pykurs.length+" Pykur"+(pykurs.length>1?"s":"");
+  const firstFinished=archives.map(item=>item.finishedAt).filter(Boolean).sort((a,b)=>new Date(a)-new Date(b))[0];
+  const lastFinished=archives.map(item=>item.finishedAt).filter(Boolean).sort((a,b)=>new Date(b)-new Date(a))[0];
+  const chronoTotal=archives.reduce((sum,item)=>sum+(parseInt(item.totalChrono,10)||0),0);
+  const pykurCount=archives.filter(item=>galleryArchiveFamiliarId(item)==="pykur").length;
+  const abraCount=archives.filter(item=>galleryArchiveFamiliarId(item)==="abra-kadabra").length;
+  if($("#galleryGlobalBadge"))$("#galleryGlobalBadge").textContent=archives.length+" familier"+(archives.length>1?"s":"");
   if(globalStats){
     globalStats.innerHTML=[
-      {label:"Pykurs terminés",value:pykurs.length,important:true},
-      {label:"Morose total",value:moroseTotal,important:true},
-      {label:"Tynril total",value:tynrilTotal,important:true},
+      {label:"Familiers terminés",value:archives.length,important:true},
+      {label:"Pykurs",value:pykurCount,important:true},
+      {label:"Abra Kadabra",value:abraCount,important:true},
       {label:"Temps total farm",value:chronoTotal?formatDuration(chronoTotal):"-"},
       {label:"Événements découverts",value:found+" / "+eventIds.length,important:true},
-      {label:"Premier Pykur terminé",value:firstFinished?formatDateShort(firstFinished):"-"},
-      {label:"Dernier Pykur terminé",value:lastFinished?formatDateShort(lastFinished):"-"}
+      {label:"Premier familier terminé",value:firstFinished?formatDateShort(firstFinished):"-"},
+      {label:"Dernier familier terminé",value:lastFinished?formatDateShort(lastFinished):"-"}
     ].map(item=>'<article class="gallery-global-card'+(item.important?" important":"")+'"><span>'+item.label+'</span><strong>'+item.value+'</strong></article>').join("");
   }
-  $("#galleryPykurCount").textContent=pykurs.length;
-  completed.innerHTML=pykurs.length?pykurs.map(item=>{
+  const filterBox=$("#galleryFamiliarFilters");
+  if(filterBox){
+    const options=[
+      {id:"all",label:"Tous",count:archives.length},
+      {id:"pykur",label:"Pykur",count:pykurCount},
+      {id:"abra-kadabra",label:"Abra Kadabra",count:abraCount}
+    ];
+    filterBox.innerHTML=options.map(option=>`<button class="gallery-familiar-filter ${filter===option.id?"active":""}" type="button" data-gallery-familiar-filter="${option.id}">${option.label} <span>${option.count}</span></button>`).join("");
+  }
+  $("#galleryPykurCount").textContent=filter==="all" ? archives.length : `${filteredArchives.length} / ${archives.length}`;
+  completed.innerHTML=filteredArchives.length?filteredArchives.map(item=>{
+    const familiar=galleryArchiveFamiliar(item);
     const chrono=item.totalChrono?formatDuration(item.totalChrono):"-";
     const best=item.bestRun?formatDuration(item.bestRun):"-";
     const avg=item.avgRun?formatDuration(item.avgRun):"-";
-    const method=item.method||"Mixte";
+    const method=galleryArchiveMethod(item);
     const title=item.title||"Aventure terminee";
+    const progressLabel=item.progressLabel||familiar.progressShort||"PP";
+    const progressValue=parseInt(item.pp,10)||0;
+    const runStats=(item.runDetails||[]).slice(0,4).map(run=>'<span>'+escapeHtml(run.label)+' <strong>'+(parseInt(run.value,10)||0)+'</strong></span>').join("");
+    const archiveLabel=familiar.label+" #"+(item.number||"?");
+    const image=assetPath(item.image)||assetPath(familiar.image)||"./assets/images/aurapykur.png";
     return '<article class="gallery-card gallery-pykur-card">'
-      + '<img src="'+(assetPath(item.image)||"./assets/images/aurapykur.png")+'" alt="">'
-      + '<div><h4 class="gallery-pykur-title">Pykur #'+(item.number||"?")+'</h4>'
+      + '<img src="'+image+'" alt="">'
+      + '<div><h4 class="gallery-pykur-title">'+escapeHtml(archiveLabel)+'</h4>'
       + '<p class="gallery-title-badge"><strong>'+titleEmoji(title)+' '+title+'</strong></p>'
       + '<p><strong>'+(item.profileName||"Profil")+'</strong></p>'
       + '<p>Créé le '+formatDateShort(item.createdAt)+'</p>'
       + '<p>Terminé le '+formatDateShort(item.finishedAt)+'</p></div>'
       + '<div class="gallery-pykur-stats">'
       + '<span>Durée <strong>'+formatLongDuration(item.durationSeconds||0)+'</strong></span>'
-      + '<span>Morose <strong>'+(item.morose||0)+'</strong></span>'
-      + '<span>Tynril <strong>'+(item.tynril||0)+'</strong></span>'
-      + '<span class="gallery-stat-pp">'+(item.progressLabel||"PP")+' finale <strong>'+(item.pp||PP_MAX)+' '+(item.progressLabel||"PP")+'</strong></span>'
+      + runStats
+      + '<span class="gallery-stat-pp">'+escapeHtml(progressLabel)+' finale <strong>'+progressValue+' '+escapeHtml(progressLabel)+'</strong></span>'
       + '<span>Farm <strong>'+chrono+'</strong></span>'
       + '<span>Best <strong>'+best+'</strong></span>'
       + '<span>Moyenne <strong>'+avg+'</strong></span>'
@@ -23469,7 +23572,7 @@ function renderGallery(){
       + '<span class="gallery-badge '+methodClass(method)+'">'+method+'</span>'
       + '<button class="btn btn-red" type="button" data-gallery-delete-pykur="'+item.id+'">Supprimer</button>'
       + '</article>';
-  }).join(""):'<div class="gallery-empty empty-state-card"><strong>Aucun Pykur archivé</strong><span>Les Pykurs terminés apparaîtront ici après leur archivage.</span></div>';
+  }).join(""):'<div class="gallery-empty empty-state-card"><strong>Aucun familier archivé</strong><span>Les familiers terminés apparaîtront ici après leur archivage.</span></div>';
   const progress=$("#galleryEventProgress");
   if(progress)progress.style.width=eventIds.length?Math.round(found/eventIds.length*100)+"%":"0%";
   $("#galleryEventCount").textContent=found+" / "+eventIds.length+" d\u00e9couverts";
@@ -23509,10 +23612,10 @@ async function resetGallery(){
   const before=clone(activeGallery());
   if(!await showConfirm("",{
     title:"Réinitialiser la galerie",
-    subtitle:"Tous les Pykurs archivés et événements découverts seront supprimés.",
+    subtitle:"Tous les familiers archivés et événements découverts seront supprimés.",
     danger:true,
     okLabel:"Réinitialiser",
-    html:`<p>Tous les Pykurs archivés et événements découverts seront supprimés.</p><p><strong>Cette action est irréversible.</strong></p>`
+    html:`<p>Tous les familiers archivés et événements découverts seront supprimés.</p><p><strong>Cette action est irréversible.</strong></p>`
   }))return;
   const gallery=clone(defaultData().gallery);
   gallery.removedPykurs=Object.assign({},before.removedPykurs||{});
@@ -23533,7 +23636,7 @@ async function resetGallery(){
 }
 
 async function deleteGalleryPykur(id){
-  if(!id || !await showConfirm("Supprimer ce Pykur de la galerie ?",{title:"Supprimer Pykur",danger:true,okLabel:"Supprimer"}))return;
+  if(!id || !await showConfirm("Supprimer ce familier de la galerie ?",{title:"Supprimer le familier",danger:true,okLabel:"Supprimer"}))return;
   const gallery=activeGallery();
   gallery.completedPykurs=(gallery.completedPykurs||[]).filter(item=>item.id!==id).map((item,index)=>({...item,number:index+1}));
   gallery.removedPykurs=Object.assign({},gallery.removedPykurs||{},{[id]:new Date().toISOString()});
@@ -24245,7 +24348,7 @@ const modernHelpSteps=[
   {
     icon:"📖",
     title:"Bienvenue sur Pykur Tracker",
-    html:`<p><strong>Pykur Tracker</strong> est un outil de suivi conçu pour accompagner votre progression autour du Pykur.</p><div class="help-card-grid"><div class="help-card"><strong>Progression</strong><span>Suivez vos donjons Morose, vos donjons Tynril, votre prospection et vos objectifs.</span></div><div class="help-card"><strong>Analyse</strong><span>Consultez vos statistiques, votre historique et vos projections.</span></div><div class="help-card"><strong>Souvenirs</strong><span>Retrouvez vos Pykurs terminés et votre collection dans la galerie.</span></div></div>`
+    html:`<p><strong>Familier Tracker</strong> est un outil de suivi conçu pour accompagner votre progression autour de vos familiers.</p><div class="help-card-grid"><div class="help-card"><strong>Progression</strong><span>Suivez vos donjons, vos gains de caractéristique et vos objectifs.</span></div><div class="help-card"><strong>Analyse</strong><span>Consultez vos statistiques, votre historique et vos projections.</span></div><div class="help-card"><strong>Souvenirs</strong><span>Retrouvez vos familiers terminés et votre collection dans la galerie.</span></div></div>`
   },
   {
     icon:"⚡",
@@ -24300,7 +24403,7 @@ const modernHelpSteps=[
   {
     icon:"🖼️",
     title:"Conserver vos aventures",
-    html:`<p>La galerie archive automatiquement les Pykurs terminés.</p><p>Vous pouvez consulter les anciennes progressions, les titres obtenus, les statistiques finales et les événements découverts. La galerie constitue la mémoire du tracker.</p>`
+    html:`<p>La galerie archive automatiquement les familiers terminés.</p><p>Vous pouvez consulter les anciennes progressions, les titres obtenus, les statistiques finales et les événements découverts. La galerie constitue la mémoire du tracker.</p>`
   },
   {
     icon:"🌙",
@@ -24322,7 +24425,7 @@ const modernHelpSteps=[
 const helpFinalStep={
   icon:"🌟",
   title:"Bonne aventure",
-  html:`<p>Votre Pykur est désormais prêt à évoluer.</p><p>Nous vous souhaitons un excellent farm, de nombreux gains de prospection et beaucoup de Pykurs terminés.</p>`
+  html:`<p>Votre familier est désormais prêt à évoluer.</p><p>Nous vous souhaitons un excellent farm, de nombreux gains et beaucoup de familiers terminés.</p>`
 };
 
 function activeHelpSteps(){
@@ -27965,6 +28068,11 @@ document.addEventListener("click",e=>{
   const replay=e.target.closest("[data-gallery-replay]");
   if(replay){
     replayGalleryEvent(replay.dataset.galleryReplay);
+  }
+  const familiarFilter=e.target.closest("[data-gallery-familiar-filter]");
+  if(familiarFilter){
+    setGalleryArchiveFilter(familiarFilter.dataset.galleryFamiliarFilter);
+    return;
   }
   const deletePykur=e.target.closest("[data-gallery-delete-pykur]");
   if(deletePykur){
