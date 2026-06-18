@@ -13328,6 +13328,35 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
 }
 #livingEventAdmin .admin-clean-profile-option span{display:grid;gap:2px;min-width:0}
 #livingEventAdmin .admin-clean-profile-option small{color:#6b7280;font-size:11px;font-weight:800}
+#livingEventAdmin .admin-profile-familiar-card{align-items:flex-start}
+#livingEventAdmin .admin-profile-main{display:grid;gap:4px;line-height:1.25}
+#livingEventAdmin .admin-profile-main b{color:#8a5417}
+#livingEventAdmin .admin-profile-runs{color:#4b5563!important}
+#livingEventAdmin .admin-profile-focus-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+#livingEventAdmin .admin-profile-focus-grid div{
+  padding:10px 12px;
+  border:1px solid rgba(107,70,25,.14);
+  border-radius:10px;
+  background:linear-gradient(135deg,rgba(255,255,255,.82),rgba(255,246,215,.62));
+}
+#livingEventAdmin .admin-profile-focus-grid .wide{grid-column:1/-1}
+#livingEventAdmin .admin-profile-focus-grid span{
+  display:block;
+  margin-bottom:3px;
+  color:#8a6337;
+  font-size:10px;
+  font-weight:1000;
+  text-transform:uppercase;
+}
+#livingEventAdmin .admin-profile-focus-grid strong{
+  display:block;
+  color:#2f1d0f;
+  font-size:14px;
+}
 #livingEventAdmin .admin-mini-stats.clean{display:grid;grid-template-columns:1fr;gap:8px}
 #livingEventAdmin .admin-member-tabs{
   display:grid;
@@ -15606,22 +15635,77 @@ function avatarMarkup(user,className="chat-avatar"){
 function cloudProfileProgressValue(profile){
   return Number(profile?.progressValue ?? profile?.pp ?? 0) || 0;
 }
+function cloudProfileFamiliarId(profile){
+  const direct=normalizeFamiliarId(profile?.familiarId);
+  if(direct!=="pykur" || profile?.familiarId==="pykur")return direct;
+  const haystack=[
+    profile?.familiarLabel,
+    profile?.name,
+    profile?.progressLabel,
+    profile?.progressShort,
+    ...(Array.isArray(profile?.runDetails)?profile.runDetails.map(item=>item?.label):[])
+  ].filter(Boolean).join(" ").toLowerCase();
+  if(haystack.includes("abra") || haystack.includes("puissance") || haystack.includes("chêne") || haystack.includes("chene"))return "abra-kadabra";
+  return "pykur";
+}
+function cloudProfileFamiliar(profile){
+  return FAMILIARS[cloudProfileFamiliarId(profile)] || FAMILIARS.pykur;
+}
 function cloudProfileProgressLabel(profile){
-  return profile?.progressLabel || "PP";
+  return profile?.progressLabel || cloudProfileFamiliar(profile).progressShort || "PP";
 }
 function cloudProfileObjectiveMax(profile){
-  return Number(profile?.objectiveMax || (cloudProfileProgressLabel(profile)==="PP" ? PP_MAX : ABRA_OBJECTIVE_MAX)) || PP_MAX;
+  return Number(profile?.objectiveMax || cloudProfileFamiliar(profile).objectiveMax || PP_MAX) || PP_MAX;
+}
+function cloudProfileRunValue(profile,key){
+  if(profile?.runs && Object.prototype.hasOwnProperty.call(profile.runs,key))return Number(profile.runs[key])||0;
+  if(Object.prototype.hasOwnProperty.call(profile||{},key))return Number(profile[key])||0;
+  return 0;
+}
+function cloudProfileRunsEntries(profile){
+  const details=Array.isArray(profile?.runDetails) ? profile.runDetails : [];
+  const visible=details.filter(item=>item && item.label).map(item=>({label:String(item.label),value:Number(item.value)||0}));
+  if(visible.length)return visible;
+  const familiar=cloudProfileFamiliar(profile);
+  return (familiar.dungeons||[]).map(dungeon=>({
+    label:dungeon.label,
+    value:cloudProfileRunValue(profile,dungeon.key)
+  }));
 }
 function cloudProfileRunsText(profile){
-  const details=Array.isArray(profile?.runDetails) ? profile.runDetails : [];
-  const visible=details.filter(item=>item && item.label);
-  if(visible.length)return visible.map(item=>`${escapeHtml(item.label)} ${Number(item.value)||0}`).join(" · ");
-  return `Morose ${Number(profile?.morose)||0} · Tynril ${Number(profile?.tynril)||0}`;
+  return cloudProfileRunsEntries(profile).map(item=>`${escapeHtml(item.label)} ${item.value}`).join(" · ");
 }
 function cloudProfileSummaryText(profile){
   const value=cloudProfileProgressValue(profile);
   const label=cloudProfileProgressLabel(profile);
-  return `${value} ${escapeHtml(label)} · ${cloudProfileRunsText(profile)}${profile?.active?" · actif":""}`;
+  const max=cloudProfileObjectiveMax(profile);
+  return `${value} / ${max} ${escapeHtml(label)} · ${cloudProfileRunsText(profile)}${profile?.active?" · actif":""}`;
+}
+function cloudProfileAdminOption(profile,selected=false){
+  const familiar=cloudProfileFamiliar(profile);
+  const value=cloudProfileProgressValue(profile);
+  const max=cloudProfileObjectiveMax(profile);
+  const label=cloudProfileProgressLabel(profile);
+  return `<label class="admin-clean-profile-option admin-profile-familiar-card">
+    <input type="radio" name="adminTargetProfile" value="${adminEscapeAttr(profile.id)}" ${selected?"checked":""}>
+    <span class="admin-profile-main">
+      <strong>${escapeHtml(profile.name)}</strong>
+      <small><b>${escapeHtml(familiar.label)}</b> · ${value} / ${max} ${escapeHtml(label)}${profile.active?" · actif":""}</small>
+      <small class="admin-profile-runs">${cloudProfileRunsText(profile)}</small>
+    </span>
+  </label>`;
+}
+function cloudProfileAdminFocus(profile){
+  if(!profile)return `<div class="admin-console-empty">Aucun profil sélectionné.</div>`;
+  const familiar=cloudProfileFamiliar(profile);
+  const value=cloudProfileProgressValue(profile);
+  const max=cloudProfileObjectiveMax(profile);
+  const label=cloudProfileProgressLabel(profile);
+  return `<div class="admin-profile-focus-grid">
+    <div><span>Familier ciblé</span><strong>${escapeHtml(familiar.label)}</strong></div>
+    <div><span>Progression</span><strong>${value} / ${max} ${escapeHtml(label)}</strong></div>
+    <div class="wide"><span>Méthodes</span><strong>${cloudProfileRunsText(profile)}</strong></div>
+  </div>`;
 }
 
 async function copyTextToClipboard(text){
@@ -19680,7 +19764,7 @@ function adminConsoleHas(permission){return !!adminConsolePayload?.permissions?.
 function adminConsoleEventLabel(id){return LIVING_EVENT_DEFS.find(item=>item.id===id)?.label||id||"Aucun"}
 function adminConsoleDate(value){return value?new Date(value).toLocaleString("fr-FR"):"-"}
 function adminCommandStatusLabel(status){return ({pending:"En attente",delivered:"Transmise",completed:"Terminée",failed:"Échec",cancelled:"Annulée"})[status]||status}
-function adminCommandTypeLabel(type){return ({notification:"Notification",["popup-message"]:"Popup persistante",kick:"Déconnexion forcée",livingEvent:"Événement",["living-event"]:"Événement ciblé",["reset-gallery"]:"Reset galerie",["reset-achievements"]:"Reset succès",["reset-profile"]:"Reset profil",["reset-pykur"]:"Reset Pykur",["delete-profile"]:"Suppression profil",["rename-profile"]:"Renommage profil",["remove-achievement"]:"Retrait succès",["remove-gallery-event"]:"Retrait événement",["remove-gallery-pykur"]:"Retrait Pykur archivé",["recalculate-achievements"]:"Recalcul succès",["repair-progression"]:"Réparation progression"})[type]||type}
+function adminCommandTypeLabel(type){return ({notification:"Notification",["popup-message"]:"Popup persistante",kick:"Déconnexion forcée",livingEvent:"Événement",["living-event"]:"Événement ciblé",["reset-gallery"]:"Reset galerie",["reset-achievements"]:"Reset succès",["reset-profile"]:"Reset profil",["reset-pykur"]:"Reset familier",["delete-profile"]:"Suppression profil",["rename-profile"]:"Renommage profil",["remove-achievement"]:"Retrait succès",["remove-gallery-event"]:"Retrait événement",["remove-gallery-pykur"]:"Retrait familier archivé",["recalculate-achievements"]:"Recalcul succès",["repair-progression"]:"Réparation progression"})[type]||type}
 function adminGalleryArchiveLabel(item){
   const familiarLabel=item?.familiarLabel || (item?.familiarId==="abra-kadabra"?"Abra Kadabra":"Pykur");
   const progressLabel=item?.progressLabel || (item?.familiarId==="abra-kadabra"?"puissance":"PP");
@@ -19879,7 +19963,7 @@ function renderAdminTarget(payload){
         ${canTracker?`<article class="admin-action-group admin-span-2"><div class="admin-section-title"><h4>Données tracker</h4><span>actions destructrices</span></div><div class="admin-split-actions">
           <div>${can("tracker.reset")?`<h5>Réparation</h5><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer la progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer les succès</button></div>`:""}${can("profiles.manage")?`<h5>Profils familiers</h5><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer le profil sélectionné</button></div>`:""}</div>
           <div>${can("achievements.manage")?`${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer ce succès</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}`:""}${can("gallery.manage")?`${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer l'événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un familier archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminGalleryArchiveLabel(item))}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer le familier</button></div>`:`<p class="options-note">Aucun familier archivé.</p>`}`:""}</div>
-        </div><div class="admin-danger-strip">${can("gallery.manage")?`<button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button>`:""}${can("achievements.manage")?`<button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button>`:""}${can("tracker.reset")?`<button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset Pykur</button>`:""}${can("profiles.manage")?`<button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button>`:""}</div></article>`:""}
+        </div><div class="admin-danger-strip">${can("gallery.manage")?`<button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button>`:""}${can("achievements.manage")?`<button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button>`:""}${can("tracker.reset")?`<button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset familier</button>`:""}${can("profiles.manage")?`<button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button>`:""}</div></article>`:""}
       </div>
       <h4>Commandes récentes</h4>${adminConsoleCommandRows(payload.commands||[])}
     </section>`;
@@ -19991,7 +20075,7 @@ function renderAdminTarget(payload){
             ${canSecurity?`<article class="admin-control-card"><div class="admin-card-eyebrow">Sécurité</div><h4>Sessions et mot de passe</h4><input id="adminTargetSecurityReason" type="text" maxlength="300" placeholder="Motif sécurité"><div class="admin-action-buttons">${can("users.sessions.revoke")?`<button class="btn btn-red" id="adminRevokeTargetSessions" type="button">Révoquer sessions</button>`:""}${can("users.password.reset")?`<button class="btn btn-orange" id="adminForceTargetPassword" type="button">Forcer mot de passe</button>`:""}</div></article>`:""}
           </div>
 
-          ${canTracker?`<article class="admin-control-card admin-control-card-wide"><div class="admin-section-title"><h4>Données tracker</h4><span>réparation et suppressions ciblées</span></div><div class="admin-data-tools">${can("tracker.reset")?`<section><h5>Réparer</h5><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer succès</button></div></section>`:""}${can("profiles.manage")?`<section><h5>Profils</h5><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer profil</button></div></section>`:""}${can("achievements.manage")?`<section><h5>Succès</h5>${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}</section>`:""}${can("gallery.manage")?`<section><h5>Galerie</h5>${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un familier archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminGalleryArchiveLabel(item))}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer familier</button></div>`:`<p class="options-note">Aucun familier archivé.</p>`}</section>`:""}</div><div class="admin-danger-strip">${can("gallery.manage")?`<button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button>`:""}${can("achievements.manage")?`<button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button>`:""}${can("tracker.reset")?`<button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset Pykur</button>`:""}${can("profiles.manage")?`<button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button>`:""}</div></article>`:""}
+          ${canTracker?`<article class="admin-control-card admin-control-card-wide"><div class="admin-section-title"><h4>Données tracker</h4><span>réparation et suppressions ciblées</span></div><div class="admin-data-tools">${can("tracker.reset")?`<section><h5>Réparer</h5><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer succès</button></div></section>`:""}${can("profiles.manage")?`<section><h5>Profils</h5><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer profil</button></div></section>`:""}${can("achievements.manage")?`<section><h5>Succès</h5>${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}</section>`:""}${can("gallery.manage")?`<section><h5>Galerie</h5>${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un familier archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminGalleryArchiveLabel(item))}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer familier</button></div>`:`<p class="options-note">Aucun familier archivé.</p>`}</section>`:""}</div><div class="admin-danger-strip">${can("gallery.manage")?`<button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button>`:""}${can("achievements.manage")?`<button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button>`:""}${can("tracker.reset")?`<button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset familier</button>`:""}${can("profiles.manage")?`<button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button>`:""}</div></article>`:""}
 
           <article class="admin-control-card admin-control-card-wide"><div class="admin-section-title"><h4>Commandes récentes</h4><span>file serveur</span></div>${adminConsoleCommandRows(payload.commands||[])}</article>
         </div>
@@ -20171,11 +20255,13 @@ function renderAdminTarget(payload){
   const canRoles=can("roles.manage");
   const restrictions=user.socialRestrictions||{};
   const activeProfile=profiles.find(profile=>profile.active)||profiles[0]||null;
+  const selectedProfileId=adminTargetSelectedProfile();
+  const selectedProfile=profiles.find(profile=>String(profile.id)===String(selectedProfileId))||activeProfile;
   const roleOptions=["user","moderator","admin"].map(role=>`<option value="${role}" ${user.role===role?"selected":""}>${escapeHtml(authRoleLabel(role))}</option>`).join("");
   const tabIds=["summary","tracker","moderation","identity","security","danger"];
   if(!tabIds.includes(adminTargetPanelTab))adminTargetPanelTab="summary";
   const recentHistory=history.slice(0,6).map(item=>`<article class="admin-clean-timeline-row"><strong>${escapeHtml(adminCommandTypeLabel(item.type)||item.type||"Action")}</strong><small>${adminConsoleDate(item.createdAt)}${item.actor?.pseudo?` · par ${escapeHtml(item.actor.pseudo)}`:""}${item.reason?` · ${escapeHtml(item.reason)}`:""}</small></article>`).join("");
-  const profileCards=profiles.length?profiles.map(profile=>`<label class="admin-clean-profile-option"><input type="radio" name="adminTargetProfile" value="${adminEscapeAttr(profile.id)}" ${profile.active?"checked":""}><span><strong>${escapeHtml(profile.name)}</strong><small>${escapeHtml(profile.familiarLabel||"Pykur")} · ${cloudProfileSummaryText(profile)}</small></span></label>`).join(""):`<div class="admin-console-empty">Aucune sauvegarde cloud exploitable.</div>`;
+  const profileCards=profiles.length?profiles.map(profile=>cloudProfileAdminOption(profile,String(profile.id)===String(selectedProfile?.id))).join(""):`<div class="admin-console-empty">Aucune sauvegarde cloud exploitable.</div>`;
   const tabButtons=[
     ["summary","Vue d'ensemble","Contact et commandes"],
     ["tracker","Tracker","Profils, galerie, succès"],
@@ -20194,6 +20280,7 @@ function renderAdminTarget(payload){
       </section>`,
     tracker:`
       <section class="admin-clean-section-grid">
+        <article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Cible actuelle</span><strong>${escapeHtml(selectedProfile?.name||"Aucun profil")}</strong></div>${cloudProfileAdminFocus(selectedProfile)}</article>
         <article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Profils familiers</span><strong>Sélectionnez la cible</strong></div><div class="admin-clean-profile-list">${profileCards}</div></article>
         ${can("tracker.reset")?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Réparation</span><strong>Recalculs sûrs</strong></div><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer la progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer les succès</button></div></article>`:""}
         ${can("profiles.manage")?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Profil sélectionné</span><strong>Renommage</strong></div><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer</button></div></article>`:""}
@@ -20218,7 +20305,7 @@ function renderAdminTarget(payload){
       </section>`,
     danger:canTracker?`
       <section class="admin-clean-section-grid">
-        <article class="admin-clean-card admin-clean-card-wide admin-clean-danger"><div class="admin-clean-card-head"><span>Zone critique</span><strong>Réinitialisations et suppressions</strong></div><p>Ces actions peuvent retirer des données visibles du joueur. Elles demandent une confirmation et sont journalisées côté serveur.</p><div class="admin-danger-strip clean">${can("gallery.manage")?`<button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button>`:""}${can("achievements.manage")?`<button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button>`:""}${can("tracker.reset")?`<button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset Pykur</button>`:""}${can("profiles.manage")?`<button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button>`:""}</div></article>
+        <article class="admin-clean-card admin-clean-card-wide admin-clean-danger"><div class="admin-clean-card-head"><span>Zone critique</span><strong>Réinitialisations et suppressions</strong></div><p>Les actions de profil ciblent le familier sélectionné ci-dessous. Elles demandent une confirmation et sont journalisées côté serveur.</p>${cloudProfileAdminFocus(selectedProfile)}<div class="admin-danger-strip clean">${can("gallery.manage")?`<button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button>`:""}${can("achievements.manage")?`<button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button>`:""}${can("tracker.reset")?`<button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset familier</button>`:""}${can("profiles.manage")?`<button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button>`:""}</div></article>
       </section>`:`<div class="admin-console-empty">Aucune action critique disponible pour votre rôle.</div>`
   };
   box.className="";
@@ -20246,6 +20333,7 @@ function renderAdminTarget(payload){
     adminTargetPanelTab=button.dataset.adminMemberTab||"summary";
     renderAdminTarget(payload);
   }));
+  box.querySelectorAll('input[name="adminTargetProfile"]').forEach(input=>input.addEventListener("change",()=>renderAdminTarget(payload)));
   $("#adminChangeTargetRole")?.addEventListener("click",adminChangeTargetRole);
   $("#adminSendTargetNotification")?.addEventListener("click",()=>sendAdminTargetCommand("notification",{message:$("#adminTargetNotification")?.value||""},false));
   $("#adminSendTargetPopup")?.addEventListener("click",()=>sendAdminTargetCommand("popup-message",{message:$("#adminTargetNotification")?.value||""},false));
@@ -20276,7 +20364,11 @@ function renderAdminTarget(payload){
 async function sendAdminTargetCommand(type,payload={},danger=false){
   const target=adminConsoleTarget?.user;
   if(!target)return;
-  if(danger && !await showConfirm(`Confirmer l'action « ${type} » sur ${target.pseudo} ?`,{title:"Action administrative",danger:true,okLabel:"Confirmer"}))return;
+  if(danger){
+    const targetedProfile=(adminConsoleTarget?.profiles||[]).find(profile=>String(profile.id)===String(payload.profileId));
+    const profileDetail=targetedProfile?`\n\nProfil ciblé : ${targetedProfile.name}\nFamilier : ${cloudProfileFamiliar(targetedProfile).label}\nProgression : ${cloudProfileProgressValue(targetedProfile)} / ${cloudProfileObjectiveMax(targetedProfile)} ${cloudProfileProgressLabel(targetedProfile)}\nMéthodes : ${cloudProfileRunsEntries(targetedProfile).map(item=>`${item.label} ${item.value}`).join(" · ")}`:"";
+    if(!await showConfirm(`Confirmer l'action « ${adminCommandTypeLabel(type)} » sur ${target.pseudo} ?${profileDetail}`,{title:"Action administrative",danger:true,okLabel:"Confirmer"}))return;
+  }
   try{
     await authFetch(`/admin/users/${encodeURIComponent(target.id)}/commands`,{method:"POST",body:JSON.stringify({type,payload})});
     toast("Commande enregistrée et transmise au joueur.","success","success");
