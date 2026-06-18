@@ -588,6 +588,41 @@ const PUBLIC_MOBS = {
   tynrilDeconcerte: 3,
   tynrilConsterne: 3
 };
+const PUBLIC_ABRA_MOBS = {
+  cheneMou: 1,
+  abraknydeAncestral: 10,
+  abraknydeSombre: 20,
+  abrakneSombre: 20,
+  abraknyde: 50,
+  abraknydeVenerable: 50,
+  abrakne: 50,
+  tronknyde: 150
+};
+const PUBLIC_FAMILIARS = {
+  pykur: {
+    label: "Pykur",
+    defaultProfileLabel: "Profil Pykur",
+    progressShort: "PP",
+    objectiveMax: 90,
+    thresholds: PUBLIC_MOBS,
+    runs: [
+      { key: "morose", label: "Morose" },
+      { key: "tynril", label: "Tynril" }
+    ]
+  },
+  "abra-kadabra": {
+    label: "Abra Kadabra",
+    defaultProfileLabel: "Profil Abra Kadabra",
+    progressShort: "puissance",
+    objectiveMax: 55,
+    thresholds: PUBLIC_ABRA_MOBS,
+    runs: [
+      { key: "donjonAbraknyde", label: "Abraknyde" },
+      { key: "cheneMou", label: "Chêne Mou" },
+      { key: "salleAbrakne", label: "Salle Abrakne" }
+    ]
+  }
+};
 const PUBLIC_SECRET_ACHIEVEMENT_IDS = new Set([
   "egg_charlie",
   "egg_toom",
@@ -607,37 +642,60 @@ const PUBLIC_SECRET_ACHIEVEMENT_IDS = new Set([
 ]);
 const PP_MAX = 90;
 
-function publicPpFromMobs(mobs) {
-  let pp = 0;
-  Object.entries(PUBLIC_MOBS).forEach(([id, need]) => {
-    pp += Math.floor((Number(mobs?.[id]) || 0) / need);
-  });
-  return Math.min(PP_MAX, Math.max(0, pp));
+function publicFamiliarMeta(familiarId) {
+  return PUBLIC_FAMILIARS[familiarId] || PUBLIC_FAMILIARS.pykur;
 }
 
-function publicTotalMobs(mobs) {
+function publicProfileFamiliarId(profileData) {
+  return PUBLIC_FAMILIARS[profileData?.familiarId] ? profileData.familiarId : "pykur";
+}
+
+function publicProgressFromMobs(mobs, meta = PUBLIC_FAMILIARS.pykur) {
+  let pp = 0;
+  Object.entries(meta.thresholds || PUBLIC_MOBS).forEach(([id, need]) => {
+    pp += Math.floor((Number(mobs?.[id]) || 0) / need);
+  });
+  return Math.min(meta.objectiveMax || PP_MAX, Math.max(0, pp));
+}
+
+function publicPpFromMobs(mobs) {
+  return publicProgressFromMobs(mobs, PUBLIC_FAMILIARS.pykur);
+}
+
+function publicTotalMobs(mobs, meta = PUBLIC_FAMILIARS.pykur) {
   const total = {};
-  Object.keys(PUBLIC_MOBS).forEach((id) => {
-    total[id] = (Number(mobs?.morose?.[id]) || 0) + (Number(mobs?.tynril?.[id]) || 0) + (Number(mobs?.zone?.[id]) || 0);
+  Object.keys(meta.thresholds || PUBLIC_MOBS).forEach((id) => {
+    total[id] = Object.values(mobs || {}).reduce((sum, source) => sum + (Number(source?.[id]) || 0), 0);
   });
   return total;
 }
 
 function publicProfileSummary(entry, index, activeId, preferences) {
   const profileData = entry?.data || {};
-  const totalMobs = publicTotalMobs(profileData.mobs || {});
-  const pp = publicPpFromMobs(totalMobs);
-  const morose = Number(profileData.runs?.morose) || 0;
-  const tynril = Number(profileData.runs?.tynril) || 0;
-  const safeName = preferences.hidePykurProfileNames ? `Profil Pykur #${index + 1}` : String(entry?.name || `Profil Pykur #${index + 1}`);
+  const familiarId = publicProfileFamiliarId(profileData);
+  const familiar = publicFamiliarMeta(familiarId);
+  const totalMobs = publicTotalMobs(profileData.mobs || {}, familiar);
+  const progressValue = publicProgressFromMobs(totalMobs, familiar);
+  const runSummary = Object.fromEntries(familiar.runs.map((run) => [run.key, Number(profileData.runs?.[run.key]) || 0]));
+  const safeName = preferences.hidePykurProfileNames ? `${familiar.defaultProfileLabel} #${index + 1}` : String(entry?.name || `${familiar.defaultProfileLabel} #${index + 1}`);
   const profile = {
     id: entry?.id,
     name: safeName,
+    familiarId,
+    familiarLabel: familiar.label,
+    progressLabel: familiar.progressShort,
+    objectiveMax: familiar.objectiveMax,
     isMain: entry?.id === activeId,
     createdAt: profileData.createdAt || null,
-    pp,
-    progress: Math.min(100, Math.round((pp / PP_MAX) * 10000) / 100),
-    runs: { morose, tynril }
+    pp: progressValue,
+    progressValue,
+    progress: Math.min(100, Math.round((progressValue / (familiar.objectiveMax || PP_MAX)) * 10000) / 100),
+    runs: runSummary,
+    runDetails: familiar.runs.map((run) => ({
+      key: run.key,
+      label: run.label,
+      value: runSummary[run.key] || 0
+    }))
   };
   if (!preferences.hideDetailedStats) {
     profile.stats = {
@@ -671,7 +729,7 @@ function buildCommunityProfile(user, savePayload, options = {}) {
       },
       profiles: [],
       gallery: null,
-      achievements: { hiddenSecrets: true, unlocked: [] }
+      achievements: { hiddenSecrets: true, eggCollected: false, secretCategoriesUnlocked: false, unlocked: [] }
     };
   }
   const store = savePayload?.store || {};
@@ -721,6 +779,8 @@ function buildCommunityProfile(user, savePayload, options = {}) {
     },
     achievements: {
       hiddenSecrets: !!preferences.hideSecretAchievements,
+      eggCollected: !!achievementSource?.eggCollected,
+      secretCategoriesUnlocked: !!achievementSource?.secretCategoriesUnlocked,
       unlocked: unlockedAchievements
     }
   };
@@ -1292,14 +1352,48 @@ const CLOUD_PP_NEEDS = Object.freeze({
   tynrilDeconcerte: 3, tynrilConsterne: 3
 });
 
-function cloudProfilePP(profileData) {
+function cloudProfileProgress(profileData) {
+  const familiarId = publicProfileFamiliarId(profileData || {});
+  const familiar = publicFamiliarMeta(familiarId);
   const totals = {};
-  for (const source of ["morose", "tynril", "zone"]) {
-    for (const [id, value] of Object.entries(profileData?.mobs?.[source] || {})) {
+  for (const source of Object.values(profileData?.mobs || {})) {
+    for (const [id, value] of Object.entries(source || {})) {
       totals[id] = (totals[id] || 0) + Math.max(0, Number(value) || 0);
     }
   }
-  return Object.entries(CLOUD_PP_NEEDS).reduce((sum, [id, need]) => sum + Math.floor((totals[id] || 0) / need), 0);
+  const value = Object.entries(familiar.thresholds || CLOUD_PP_NEEDS).reduce((sum, [id, need]) => sum + Math.floor((totals[id] || 0) / need), 0);
+  return Math.min(familiar.objectiveMax || PP_MAX, Math.max(0, value));
+}
+
+function cloudProfilePP(profileData) {
+  return cloudProfileProgress(Object.assign({}, profileData, { familiarId: "pykur" }));
+}
+
+function cloudProfileAdminSummary(id, profile, activeId) {
+  const profileData = profile?.data || {};
+  const familiarId = publicProfileFamiliarId(profileData);
+  const familiar = publicFamiliarMeta(familiarId);
+  const progressValue = cloudProfileProgress(profileData);
+  const runs = familiar.runs.map((run) => ({
+    key: run.key,
+    label: run.label,
+    value: Number(profileData.runs?.[run.key] || 0)
+  }));
+  return {
+    id,
+    name: String(profile?.name || "Profil sans nom").slice(0, 80),
+    familiarId,
+    familiarLabel: familiar.label,
+    pp: progressValue,
+    progressValue,
+    progressLabel: familiar.progressShort,
+    objectiveMax: familiar.objectiveMax,
+    runs: Object.fromEntries(runs.map((run) => [run.key, run.value])),
+    runDetails: runs,
+    morose: Number(profileData.runs?.morose || 0),
+    tynril: Number(profileData.runs?.tynril || 0),
+    active: id === activeId
+  };
 }
 
 function friendshipPair(idA, idB) {
@@ -1642,7 +1736,7 @@ async function sendEmailVerificationEmail(user, link) {
 }
 
 app.get("/api/health", (req, res) => {
-  res.json({ ok: true, service: "pykur-tracker", version: "1.5.0" });
+  res.json({ ok: true, service: "pykur-tracker", version: "1.6.0" });
 });
 
 app.get("/api/events/living", (req, res) => {
@@ -2401,14 +2495,7 @@ app.get("/api/admin/users/:pseudo/control", requireAuth, requireRole("moderator"
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
   const save = db.prepare("SELECT payload,updated_at FROM cloud_saves WHERE user_id = ?").get(target.id);
   const payload = safeParseJson(save?.payload, null);
-  const profiles = Object.entries(payload?.store?.profiles || {}).map(([id, profile]) => ({
-    id,
-    name: String(profile?.name || "Profil sans nom").slice(0, 80),
-    pp: cloudProfilePP(profile?.data),
-    morose: Number(profile?.data?.runs?.morose || 0),
-    tynril: Number(profile?.data?.runs?.tynril || 0),
-    active: id === payload?.store?.active
-  }));
+  const profiles = Object.entries(payload?.store?.profiles || {}).map(([id, profile]) => cloudProfileAdminSummary(id, profile, payload?.store?.active));
   const achievementIds = new Set();
   const galleryEvents = new Map();
   const galleryPykurs = new Map();

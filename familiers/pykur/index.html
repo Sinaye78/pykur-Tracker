@@ -13738,7 +13738,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
       <div class="dashboard-bottom-actions version-actions quick-projection-spacer">
         <button class="btn btn-orange tooltip" id="monsterLauncher" data-tooltip="Ouvre la fenêtre des monstres tués.">Monstres</button>
         <div class="version-panel" aria-label="Version actuelle du tracker">
-          <strong>Version 1.5</strong>
+          <strong>Version 1.6</strong>
           <button class="btn btn-gray tooltip" id="changelogButton" type="button" data-tooltip="Affiche les changements de la version actuelle.">Changelog</button>
         </div>
       </div>
@@ -14161,6 +14161,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
         <label class="changelog-version-picker" for="changelogVersionSelect">
           <span>Version affichée</span>
           <select id="changelogVersionSelect" aria-label="Choisir une version du changelog">
+            <option value="1.6">Version 1.6 · 18 juin 2026</option>
             <option value="1.5">Version 1.5 · 12 juin 2026</option>
             <option value="1.4">Version 1.4 · 04 juin 2026</option>
             <option value="1.3">Version 1.3 · 03 juin 2026</option>
@@ -14797,8 +14798,8 @@ function farmAverageKey(farm){
 function farmDefaultAverage(farm){
   if(farm==="morose")return 125;
   if(farm==="tynril")return 600;
-  if(farm==="donjonAbraknyde")return 240;
-  if(farm==="cheneMou")return 360;
+  if(farm==="donjonAbraknyde")return 900;
+  if(farm==="cheneMou")return 1800;
   if(farm==="salleAbrakne")return 10;
   return 120;
 }
@@ -15426,6 +15427,27 @@ function avatarMarkup(user,className="chat-avatar"){
   return `<span class="${className}"${avatarStyle(user?.avatarUrl)}></span>`;
 }
 
+function cloudProfileProgressValue(profile){
+  return Number(profile?.progressValue ?? profile?.pp ?? 0) || 0;
+}
+function cloudProfileProgressLabel(profile){
+  return profile?.progressLabel || "PP";
+}
+function cloudProfileObjectiveMax(profile){
+  return Number(profile?.objectiveMax || (cloudProfileProgressLabel(profile)==="PP" ? PP_MAX : ABRA_OBJECTIVE_MAX)) || PP_MAX;
+}
+function cloudProfileRunsText(profile){
+  const details=Array.isArray(profile?.runDetails) ? profile.runDetails : [];
+  const visible=details.filter(item=>item && item.label);
+  if(visible.length)return visible.map(item=>`${escapeHtml(item.label)} ${Number(item.value)||0}`).join(" · ");
+  return `Morose ${Number(profile?.morose)||0} · Tynril ${Number(profile?.tynril)||0}`;
+}
+function cloudProfileSummaryText(profile){
+  const value=cloudProfileProgressValue(profile);
+  const label=cloudProfileProgressLabel(profile);
+  return `${value} ${escapeHtml(label)} · ${cloudProfileRunsText(profile)}${profile?.active?" · actif":""}`;
+}
+
 async function copyTextToClipboard(text){
   if(navigator.clipboard?.writeText){
     await navigator.clipboard.writeText(text);
@@ -15462,8 +15484,9 @@ function renderCommunityProfile(profile){
           </div>
           <p>${profile?.isPrivate?"Profil privé · ":""}Compte créé le ${profile?.createdAt?formatDateShort(profile.createdAt):"date inconnue"}</p>
           <div class="community-profile-meta">
-            <span>${profiles.length} profil${profiles.length>1?"s":""} Pykur visible${profiles.length>1?"s":""}</span>
+            <span>${profiles.length} profil${profiles.length>1?"s":""} familier visible${profiles.length>1?"s":""}</span>
             <span>${achievements.length} succès visible${achievements.length>1?"s":""}</span>
+            ${profile?.achievements?.eggCollected?`<span>Œuf secret récupéré</span>`:""}
           </div>
         </div>
         <span class="community-role-badge role-${escapeHtml(profile?.role||"user")}">${authRoleLabel(profile?.role)}</span>
@@ -15492,18 +15515,17 @@ function renderCommunityProfile(profile){
       <button type="button" data-community-tab="achievements">Succès <span>${achievements.length}</span></button>
     </nav>
     <div class="community-profile-tab-panel is-active" data-community-panel="progression">
-      <section class="community-section-heading"><div><small>Parcours Pykur</small><h4>Progression visible</h4></div><span>${profiles.length} profil${profiles.length>1?"s":""}</span></section>
+      <section class="community-section-heading"><div><small>Parcours familier</small><h4>Progression visible</h4></div><span>${profiles.length} profil${profiles.length>1?"s":""}</span></section>
       <section class="community-profile-grid">
       ${profiles.length ? profiles.map(item=>`
           <article class="community-profile-card">
             <h4>${escapeHtml(item.name)}${item.isMain?" · Principal":""}</h4>
-            <p><strong>${item.pp || 0} / 90 PP</strong></p>
+            <p><strong>${cloudProfileProgressValue(item)} / ${cloudProfileObjectiveMax(item)} ${escapeHtml(cloudProfileProgressLabel(item))}</strong></p>
           <div class="progress-bar"><span class="community-profile-progress-fill" style="width:${Math.max(0,Math.min(100,item.progress||0))}%"></span></div>
-          <p>Morose : ${item.runs?.morose || 0}</p>
-          <p>Tynril : ${item.runs?.tynril || 0}</p>
+          ${(Array.isArray(item.runDetails)&&item.runDetails.length?item.runDetails:[{label:"Morose",value:item.runs?.morose||0},{label:"Tynril",value:item.runs?.tynril||0}]).map(run=>`<p>${escapeHtml(run.label)} : ${Number(run.value)||0}</p>`).join("")}
           ${item.stats?`<p>Temps chrono : ${item.stats.chronoTotalSeconds?formatDuration(item.stats.chronoTotalSeconds):"—"}</p>`:""}
         </article>
-      `).join("") : `<div class="community-profile-empty">Aucun profil Pykur visible publiquement.</div>`}
+      `).join("") : `<div class="community-profile-empty">Aucun profil familier visible publiquement.</div>`}
       </section>
     </div>
     <div class="community-profile-tab-panel" data-community-panel="collection">
@@ -17564,7 +17586,7 @@ function cloudPayload(){
   store.lastCloudPreparedAt=new Date().toISOString();
   return {
     app:"pykur-tracker",
-    version:"1.5.0",
+    version:"1.6.0",
     savedAt:new Date().toISOString(),
     store:clone(store)
   };
@@ -19202,12 +19224,12 @@ const LIVING_EVENT_DEFS=[
   {id:"fragment",label:"Fragment perdu",message:"Un fragment de prospection semble avoir été abandonné.",duration:45000,sound:"pp",interactive:true,run:livingFragment},
   {id:"chest",label:"Coffre abandonné",message:"Un vieux coffre est apparu.",duration:60000,sound:"unlock",interactive:true,run:livingChest},
   {id:"bottle",label:"Bouteille à la mer",message:"Une étrange bouteille s'est échouée.",duration:60000,sound:"click",interactive:true,run:livingBottle},
-  {id:"resonance",label:"Résonance du Pykur",message:"Le Pykur réagit étrangement.",duration:8000,sound:"pp",run:livingResonance},
+  {id:"resonance",label:"Résonance du familier",message:"Le familier réagit étrangement.",duration:8000,sound:"pp",run:livingResonance},
   {id:"unstableAura",label:"Aura instable",message:"Une énergie inhabituelle se manifeste.",duration:15000,sound:"unlock",run:livingAura},
   {id:"shootingStar",label:"Étoile filante",message:"Un éclat traverse le ciel.",duration:3000,sound:"unlock",run:livingStar},
   {id:"sleepy",label:"Familier endormi",message:"Le familier semble fatigué.",duration:15000,sound:"reset",run:livingSleepy},
   {id:"comet",label:"Comète",message:"Un présage traverse le ciel.",duration:4000,sound:"unlock",legendary:true,run:livingComet},
-  {id:"awakening",label:"Éveil spontané",message:"Le Pykur libère une énergie ancienne.",duration:8000,sound:"unlock",legendary:true,run:livingAwakening},
+  {id:"awakening",label:"Éveil spontané",message:"Le familier libère une énergie ancienne.",duration:8000,sound:"unlock",legendary:true,run:livingAwakening},
   {id:"fakeBug",label:"Faux bug",message:"Erreur 404 : Motivation introuvable.",duration:2000,sound:"error",legendary:true,run:livingFakeBug}
 ];
 
@@ -19656,8 +19678,8 @@ function renderAdminTarget(payload){
         <span class="admin-permission-badge ${escapeHtml(user.role||"user")}">${authRoleLabel(user.role)}</span>
       </div>
       <div class="admin-target-section">
-        <div class="admin-section-title"><h4>Profils Pykur cloud</h4><span>${profiles.length} profil${profiles.length>1?"s":""}</span></div>
-        <div class="admin-profile-list">${profiles.length?profiles.map(profile=>`<label class="admin-profile-option"><input type="radio" name="adminTargetProfile" value="${adminEscapeAttr(profile.id)}" ${profile.active?"checked":""}><span><strong>${escapeHtml(profile.name)}</strong><small>${profile.pp} PP · Morose ${profile.morose} · Tynril ${profile.tynril}${profile.active?" · actif":""}</small></span></label>`).join(""):`<div class="admin-console-empty">Aucune sauvegarde cloud exploitable.</div>`}</div>
+        <div class="admin-section-title"><h4>Profils familiers cloud</h4><span>${profiles.length} profil${profiles.length>1?"s":""}</span></div>
+        <div class="admin-profile-list">${profiles.length?profiles.map(profile=>`<label class="admin-profile-option"><input type="radio" name="adminTargetProfile" value="${adminEscapeAttr(profile.id)}" ${profile.active?"checked":""}><span><strong>${escapeHtml(profile.name)}</strong><small>${escapeHtml(profile.familiarLabel||"Pykur")} · ${cloudProfileSummaryText(profile)}</small></span></label>`).join(""):`<div class="admin-console-empty">Aucune sauvegarde cloud exploitable.</div>`}</div>
       </div>
       <div class="admin-target-sections">
         ${canCommunicate?`<article class="admin-action-group admin-span-2"><div class="admin-section-title"><h4>Communication directe</h4><span>visible même hors ligne</span></div><div class="admin-target-notification"><textarea id="adminTargetNotification" maxlength="500" placeholder="Message destiné au joueur, conservé s'il est hors ligne"></textarea><div class="admin-action-buttons"><button class="btn btn-blue" id="adminSendTargetNotification" type="button">Notification</button><button class="btn btn-orange" id="adminSendTargetPopup" type="button">Popup persistante</button><button class="btn btn-red" id="adminKickTarget" type="button">Kick avec message</button></div></div></article>`:""}
@@ -19674,7 +19696,7 @@ function renderAdminTarget(payload){
         </div></article>`:""}
         ${canSecurity?`<article class="admin-action-group"><div class="admin-section-title"><h4>Sécurité</h4><span>sessions</span></div><input id="adminTargetSecurityReason" type="text" maxlength="300" placeholder="Motif sécurité"><div class="admin-action-buttons">${can("users.sessions.revoke")?`<button class="btn btn-red" id="adminRevokeTargetSessions" type="button">Révoquer sessions</button>`:""}${can("users.password.reset")?`<button class="btn btn-orange" id="adminForceTargetPassword" type="button">Forcer mot de passe</button>`:""}</div></article>`:""}
         ${canTracker?`<article class="admin-action-group admin-span-2"><div class="admin-section-title"><h4>Données tracker</h4><span>actions destructrices</span></div><div class="admin-split-actions">
-          <div>${can("tracker.reset")?`<h5>Réparation</h5><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer la progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer les succès</button></div>`:""}${can("profiles.manage")?`<h5>Profils Pykur</h5><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer le profil sélectionné</button></div>`:""}</div>
+          <div>${can("tracker.reset")?`<h5>Réparation</h5><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer la progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer les succès</button></div>`:""}${can("profiles.manage")?`<h5>Profils familiers</h5><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer le profil sélectionné</button></div>`:""}</div>
           <div>${can("achievements.manage")?`${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer ce succès</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}`:""}${can("gallery.manage")?`${galleryEvents.length?`<div class="admin-target-event"><select id="adminTargetGalleryEvent"><option value="">Choisir un événement découvert</option>${galleryEvents.map(item=>`<option value="${adminEscapeAttr(item.id)}">${escapeHtml(adminConsoleEventLabel(item.id))} · vu ${item.count} fois</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryEvent" type="button">Retirer l'événement</button></div>`:`<p class="options-note">Aucun événement découvert.</p>`}${galleryPykurs.length?`<div class="admin-target-event"><select id="adminTargetGalleryPykur"><option value="">Choisir un Pykur archivé</option>${galleryPykurs.map(item=>`<option value="${adminEscapeAttr(item.id)}">Pykur #${item.number||"?"} · ${escapeHtml(item.profileName)} · ${item.pp} PP</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetGalleryPykur" type="button">Retirer le Pykur</button></div>`:`<p class="options-note">Aucun Pykur archivé.</p>`}`:""}</div>
         </div><div class="admin-danger-strip">${can("gallery.manage")?`<button class="btn btn-red" data-admin-target-command="reset-gallery">Reset galerie</button>`:""}${can("achievements.manage")?`<button class="btn btn-red" data-admin-target-command="reset-achievements">Reset succès</button>`:""}${can("tracker.reset")?`<button class="btn btn-red" data-admin-target-command="reset-profile" data-needs-profile="1">Reset profil</button><button class="btn btn-red" data-admin-target-command="reset-pykur" data-needs-profile="1">Reset Pykur</button>`:""}${can("profiles.manage")?`<button class="btn btn-red" data-admin-target-command="delete-profile" data-needs-profile="1">Supprimer profil</button>`:""}</div></article>`:""}
       </div>
@@ -19729,7 +19751,7 @@ function renderAdminTarget(payload){
   const canRoles=can("roles.manage");
   const restrictions=user.socialRestrictions||{};
   const activeProfile=profiles.find(profile=>profile.active)||profiles[0]||null;
-  const profileSummary=activeProfile?`${activeProfile.pp} PP · M ${activeProfile.morose} · T ${activeProfile.tynril}${activeProfile.active?" · actif":""}`:"Aucune sauvegarde cloud";
+  const profileSummary=activeProfile?cloudProfileSummaryText(activeProfile):"Aucune sauvegarde cloud";
   const roleOptions=["user","moderator","admin"].map(role=>`<option value="${role}" ${user.role===role?"selected":""}>${escapeHtml(authRoleLabel(role))}</option>`).join("");
   const recentHistory=history.slice(0,5).map(item=>`<div class="admin-timeline-row"><strong>${escapeHtml(adminCommandTypeLabel(item.type)||item.type||"Action")}</strong><small>${adminConsoleDate(item.createdAt)}${item.actor?.pseudo?` · ${escapeHtml(item.actor.pseudo)}`:""}${item.reason?` · ${escapeHtml(item.reason)}`:""}</small></div>`).join("");
   box.className="";
@@ -19758,7 +19780,7 @@ function renderAdminTarget(payload){
         <aside class="admin-member-side">
           <article class="admin-action-group">
             <div class="admin-section-title"><h4>Profils cloud</h4><span>${profiles.length} profil${profiles.length>1?"s":""}</span></div>
-            <div class="admin-profile-list compact">${profiles.length?profiles.map(profile=>`<label class="admin-profile-option"><input type="radio" name="adminTargetProfile" value="${adminEscapeAttr(profile.id)}" ${profile.active?"checked":""}><span><strong>${escapeHtml(profile.name)}</strong><small>${profile.pp} PP · Morose ${profile.morose} · Tynril ${profile.tynril}${profile.active?" · actif":""}</small></span></label>`).join(""):`<div class="admin-console-empty">Aucune sauvegarde cloud exploitable.</div>`}</div>
+            <div class="admin-profile-list compact">${profiles.length?profiles.map(profile=>`<label class="admin-profile-option"><input type="radio" name="adminTargetProfile" value="${adminEscapeAttr(profile.id)}" ${profile.active?"checked":""}><span><strong>${escapeHtml(profile.name)}</strong><small>${escapeHtml(profile.familiarLabel||"Pykur")} · ${cloudProfileSummaryText(profile)}</small></span></label>`).join(""):`<div class="admin-console-empty">Aucune sauvegarde cloud exploitable.</div>`}</div>
           </article>
           <article class="admin-action-group">
             <div class="admin-section-title"><h4>Résumé</h4><span>lecture rapide</span></div>
@@ -19972,7 +19994,7 @@ function renderAdminTarget(payload){
   const tabIds=["summary","tracker","moderation","identity","security","danger"];
   if(!tabIds.includes(adminTargetPanelTab))adminTargetPanelTab="summary";
   const recentHistory=history.slice(0,6).map(item=>`<article class="admin-clean-timeline-row"><strong>${escapeHtml(adminCommandTypeLabel(item.type)||item.type||"Action")}</strong><small>${adminConsoleDate(item.createdAt)}${item.actor?.pseudo?` · par ${escapeHtml(item.actor.pseudo)}`:""}${item.reason?` · ${escapeHtml(item.reason)}`:""}</small></article>`).join("");
-  const profileCards=profiles.length?profiles.map(profile=>`<label class="admin-clean-profile-option"><input type="radio" name="adminTargetProfile" value="${adminEscapeAttr(profile.id)}" ${profile.active?"checked":""}><span><strong>${escapeHtml(profile.name)}</strong><small>${profile.pp} PP · Morose ${profile.morose} · Tynril ${profile.tynril}${profile.active?" · actif":""}</small></span></label>`).join(""):`<div class="admin-console-empty">Aucune sauvegarde cloud exploitable.</div>`;
+  const profileCards=profiles.length?profiles.map(profile=>`<label class="admin-clean-profile-option"><input type="radio" name="adminTargetProfile" value="${adminEscapeAttr(profile.id)}" ${profile.active?"checked":""}><span><strong>${escapeHtml(profile.name)}</strong><small>${escapeHtml(profile.familiarLabel||"Pykur")} · ${cloudProfileSummaryText(profile)}</small></span></label>`).join(""):`<div class="admin-console-empty">Aucune sauvegarde cloud exploitable.</div>`;
   const tabButtons=[
     ["summary","Vue d'ensemble","Contact et commandes"],
     ["tracker","Tracker","Profils, galerie, succès"],
@@ -19991,7 +20013,7 @@ function renderAdminTarget(payload){
       </section>`,
     tracker:`
       <section class="admin-clean-section-grid">
-        <article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Profils Pykur</span><strong>Sélectionnez la cible</strong></div><div class="admin-clean-profile-list">${profileCards}</div></article>
+        <article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Profils familiers</span><strong>Sélectionnez la cible</strong></div><div class="admin-clean-profile-list">${profileCards}</div></article>
         ${can("tracker.reset")?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Réparation</span><strong>Recalculs sûrs</strong></div><div class="admin-action-buttons"><button class="btn btn-orange" data-admin-target-command="repair-progression">Réparer la progression</button><button class="btn btn-orange" data-admin-target-command="recalculate-achievements">Recalculer les succès</button></div></article>`:""}
         ${can("profiles.manage")?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Profil sélectionné</span><strong>Renommage</strong></div><div class="admin-target-event"><input id="adminTargetProfileName" type="text" maxlength="80" placeholder="Nouveau nom du profil"><button class="btn btn-blue" id="adminRenameTargetProfile" type="button">Renommer</button></div></article>`:""}
         ${can("achievements.manage")?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Succès</span><strong>Retrait ciblé</strong></div>${achievements.length?`<div class="admin-target-event"><select id="adminTargetAchievement"><option value="">Choisir un succès débloqué</option>${achievements.map(id=>`<option value="${adminEscapeAttr(id)}">${escapeHtml(ACHIEVEMENTS[id]?.name||id)}</option>`).join("")}</select><button class="btn btn-red" id="adminRemoveTargetAchievement" type="button">Retirer ce succès</button></div>`:`<p class="options-note">Aucun succès débloqué.</p>`}</article>`:""}
@@ -20026,7 +20048,7 @@ function renderAdminTarget(payload){
           ${avatarMarkup(user)}
           <div><div class="admin-clean-title"><h3>${escapeHtml(user.pseudo||"Utilisateur")}</h3><span class="admin-role-pill ${escapeHtml(user.role||"user")}">${escapeHtml(authRoleLabel(user.role))}</span></div><p>${escapeHtml(user.email||"Email masqué")} · Cloud ${adminConsoleDate(payload.cloudUpdatedAt)}</p><div class="admin-status-row">${adminTargetStatusChips(user)}</div></div>
         </div>
-        <div class="admin-clean-snapshot"><span>Profil actif</span><strong>${escapeHtml(activeProfile?.name||"Aucun profil")}</strong><small>${activeProfile?`${activeProfile.pp} PP · Morose ${activeProfile.morose} · Tynril ${activeProfile.tynril}`:"Aucune donnée cloud"}</small></div>
+        <div class="admin-clean-snapshot"><span>Profil actif</span><strong>${escapeHtml(activeProfile?.name||"Aucun profil")}</strong><small>${activeProfile?`${escapeHtml(activeProfile.familiarLabel||"Pykur")} · ${cloudProfileSummaryText(activeProfile)}`:"Aucune donnée cloud"}</small></div>
       </header>
       <div class="admin-clean-body">
         <aside class="admin-clean-sidebar">
@@ -20498,7 +20520,7 @@ function livingBottle(){
   const messages=[
     "Brako affirme avoir vu un Minotot voler.",
     "Raj prétend qu'il aurait gagné sans l'intervention de Brako.",
-    "Le Pykur refuse de commenter cette découverte.",
+    "Le familier refuse de commenter cette découverte.",
     "Selon cette note, il suffirait de 3 Tynril pour atteindre 90 PP."
   ];
   const el=livingInteractive("◌",{color:"#93c5fd",size:"82px"});
@@ -20604,7 +20626,7 @@ function livingResonance(){
 
   const secondary=[
     "Une énergie ancienne semble traverser le Pykur.",
-    "Le Pykur semble particulièrement concentré.",
+    "Le familier semble particulièrement concentré.",
     "Une étrange vibration parcourt le tracker."
   ];
   if(!livingState.soundTimers)livingState.soundTimers=[];
@@ -20985,7 +21007,7 @@ const PASSIVE_AMBIENCE_EVENTS=[
   {id:"leafShadows",label:"Ombres de feuilles",type:"visual",duration:12000,run:passiveLeafShadows},
   {id:"glint",label:"Reflet doux",type:"visual",duration:5200,run:passiveGlint},
   {id:"microWind",label:"Micro souffle de vent",type:"visual",duration:6200,run:passiveMicroWind},
-  {id:"pykurLife",label:"Vie du Pykur",type:"visual",duration:5600,run:passivePykurLife,variants:[
+  {id:"pykurLife",label:"Vie du familier",type:"visual",duration:5600,run:passivePykurLife,variants:[
     {id:"curious",label:"Pykur ?"},
     {id:"thinking",label:"Pykur ..."},
     {id:"surprise",label:"Pykur !"},
@@ -21025,12 +21047,12 @@ LIVING_EVENT_DEFS.splice(0,LIVING_EVENT_DEFS.length,
   {id:"fragment",label:"Fragment perdu",message:"Un fragment de prospection semble avoir été abandonné.",duration:120000,sound:null,interactive:true,run:livingFragment},
   {id:"chest",label:"Coffre abandonné",message:"Un vieux coffre est apparu.",duration:120000,sound:null,interactive:true,run:livingChest},
   {id:"bottle",label:"Bouteille à la mer",message:"Une étrange bouteille s'est échouée.",duration:120000,sound:null,interactive:true,run:livingBottle},
-  {id:"resonance",label:"Résonance du Pykur",message:"Le Pykur réagit étrangement.",endMessage:"Le calme revient autour du Pykur.",duration:38000,sound:null,run:livingResonance},
-  {id:"unstableAura",label:"Aura instable",message:"Une énergie inhabituelle se manifeste.",endMessage:"L'énergie du Pykur se stabilise.",duration:15000,sound:null,run:livingAura},
+  {id:"resonance",label:"Résonance du familier",message:"Le familier réagit étrangement.",endMessage:"Le calme revient autour du familier.",duration:38000,sound:null,run:livingResonance},
+  {id:"unstableAura",label:"Aura instable",message:"Une énergie inhabituelle se manifeste.",endMessage:"L'énergie du familier se stabilise.",duration:15000,sound:null,run:livingAura},
   {id:"shootingStar",label:"Étoile filante",message:"Un éclat traverse le ciel.",endMessage:"L'éclat disparaît à l'horizon.",duration:5400,sound:LIVE_ASSETS.starSound,run:livingStar},
   {id:"sleepy",label:"Familier endormi",message:"Le familier semble fatigué.",endMessage:"Le familier se réveille doucement.",duration:17000,sound:LIVE_ASSETS.yawnSound,run:livingSleepy},
   {id:"comet",label:"Comète",message:"Un présage traverse le ciel.",duration:4000,sound:LIVE_ASSETS.starSound,legendary:true,run:livingComet},
-  {id:"awakening",label:"Éveil spontané",message:"Le Pykur libère une énergie ancienne.",duration:8000,sound:LIVE_ASSETS.energySound,legendary:true,run:livingAwakening},
+  {id:"awakening",label:"Éveil spontané",message:"Le familier libère une énergie ancienne.",duration:8000,sound:LIVE_ASSETS.energySound,legendary:true,run:livingAwakening},
   {id:"fakeBug",label:"Faux bug",message:"Erreur 404 : Motivation introuvable.",duration:2000,sound:"error",legendary:true,run:livingFakeBug}
 );
 
@@ -21707,7 +21729,7 @@ function livingFragment(){
     const orb=livingPykurRect();
     livingSound("pp");
     triggerPykurReaction("energy");
-    livingToast("Le Pykur a déjà trop mangé, impossible pour lui de prendre un prospection.","info",null);
+    livingToast("Le familier a déjà trop mangé, impossible pour lui de prendre de la progression.","info",null);
     el.style.setProperty("--target-x",`${orb.left+orb.width*.45}px`);
     el.style.setProperty("--target-y",`${orb.top+orb.height*.42}px`);
     el.classList.add("live-fragment-fly");
@@ -21766,7 +21788,7 @@ function livingBottle(){
   const messages=[
     "Brako affirme avoir vu un Minotot voler.",
     "Raj prétend qu’il aurait gagné sans l’intervention de Brako.",
-    "Le Pykur refuse de commenter cette découverte.",
+    "Le familier refuse de commenter cette découverte.",
     "Selon cette note, il suffirait de 3 Tynril pour atteindre 90 PP.",
     "Happios surveille cette bouteille depuis trois jours.",
     "Toom réclame toujours sa NRG 500.",
@@ -21907,7 +21929,7 @@ function livingResonance(){
 
   const secondary=[
     "Une énergie ancienne semble traverser le Pykur.",
-    "Le Pykur semble particulièrement concentré.",
+    "Le familier semble particulièrement concentré.",
     "Une étrange vibration parcourt le tracker."
   ];
   if(!livingState.soundTimers)livingState.soundTimers=[];
@@ -22047,7 +22069,7 @@ function livingStar(){
     if(livingState.current!=="shootingStar")return;
     $(".pykur-orb")?.classList.add("live-star-wish");
     $("#pykurImg")?.classList.add("live-star-wish");
-    livingToast("Le Pykur fait un vœu.","info",null);
+    livingToast("Le familier fait un vœu.","info",null);
   },1500));
   livingState.soundTimers.push(setTimeout(()=>{
     $(".pykur-orb")?.classList.remove("live-star-wish");
@@ -27700,6 +27722,20 @@ $("#optionsButton").onclick=openOptionsShortcut;
 $("#activityButton").onclick=()=>{unlockAchievement("open_history");if($("#activitySearch"))$("#activitySearch").value=""; activityFilter="all"; $$("[data-activity-filter]").forEach(b=>b.classList.toggle("active",b.dataset.activityFilter==="all")); renderActivity();openModal("activityModal")};
 if($("#monsterLauncher"))$("#monsterLauncher").onclick=()=>{unlockAchievement("open_monsters");renderMonsterTable();openModal("monstersModal")};
 const CHANGELOG_ENTRIES={
+  "1.6":{
+    title:"Version 1.6",
+    date:"18 juin 2026",
+    summary:"Version multi-familiers : Abra Kadabra rejoint le tracker avec une progression Puissance, des profils cloud adaptés et un socle plus générique.",
+    items:[
+      ["Abra Kadabra","Ajout du familier Abra Kadabra avec ses parcours Abraknyde, Chêne Mou et Salle Abrakne."],
+      ["Progression Puissance","Les gains, badges, projections et notifications s'adaptent maintenant à la Puissance au lieu de la PP."],
+      ["Salle Abrakne","Gestion spéciale de l'arrivée en salle, de la sortie et de l'arrêt automatique après inactivité."],
+      ["Détection Dofus multi-familiers","Les configurations de détection s'adaptent au familier et aux donjons concernés."],
+      ["Profils et modération","Les profils cloud, profils publics et outils de modération affichent les données du bon familier."],
+      ["Événements généralisés","Les événements qui parlaient du Pykur parlent désormais du familier actif."],
+      ["Changelog et version","Passage officiel du tracker en version 1.6."]
+    ]
+  },
   "1.5":{
     title:"Version 1.5",
     date:"12 juin 2026",
@@ -27757,8 +27793,8 @@ const CHANGELOG_ENTRIES={
   }
 };
 
-function renderChangelog(version="1.5"){
-  const entry=CHANGELOG_ENTRIES[version]||CHANGELOG_ENTRIES["1.5"];
+function renderChangelog(version="1.6"){
+  const entry=CHANGELOG_ENTRIES[version]||CHANGELOG_ENTRIES["1.6"];
   const box=$("#changelogContent");
   if(!box)return;
   const selector=$("#changelogVersionSelect");
@@ -27777,7 +27813,7 @@ function renderChangelog(version="1.5"){
   `;
 }
 
-if($("#changelogButton"))$("#changelogButton").onclick=()=>{renderChangelog("1.5");openModal("changelogModal")};
+if($("#changelogButton"))$("#changelogButton").onclick=()=>{renderChangelog("1.6");openModal("changelogModal")};
 if($("#achievementsButton"))$("#achievementsButton").onclick=()=>{renderAchievements();openModal("achievementsModal")};
 if($("#galleryButton"))$("#galleryButton").onclick=()=>{renderGallery();showGalleryTab("archives");openModal("galleryModal")};
 if($("#resetGallery"))$("#resetGallery").onclick=resetGallery;
