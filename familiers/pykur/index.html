@@ -13769,7 +13769,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
       <img class="top-tool-icon" src="./assets/bouton/succes.png" alt="" aria-hidden="true">
       <span class="top-tool-label">Succès</span>
     </button>
-    <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="galleryButton" data-tooltip-title="Galerie" data-tooltip="Revoir vos Pykurs et événements découverts." type="button" aria-label="Ouvrir la galerie">
+    <button class="btn tooltip top-tool-btn top-tool-icon-btn" id="galleryButton" data-tooltip-title="Galerie" data-tooltip="Revoir vos familiers terminés et événements découverts." type="button" aria-label="Ouvrir la galerie">
       <img class="top-tool-icon" src="./assets/bouton/galerie.png" alt="" aria-hidden="true">
       <span class="top-tool-label">Galerie</span>
     </button>
@@ -13812,7 +13812,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
         <div class="session-actions unified-actions">
           <button class="btn btn-green tooltip" id="chronoStart" data-tooltip="Démarre la session de farm et le chrono du donjon en cours.">Démarrer</button>
           <button class="btn btn-gray tooltip" id="chronoPause" data-tooltip="Met en pause la session et le donjon en cours sans modifier la progression.">Pause</button>
-          <button class="btn btn-blue tooltip" id="sessionEnd" data-tooltip="Termine la session et affiche un résumé : durée, donjons, PP gagnée et rendement.">Terminer</button>
+          <button class="btn btn-blue tooltip" id="sessionEnd" data-tooltip="Termine la session et affiche un résumé : durée, donjons, progression gagnée et rendement.">Terminer</button>
           <button class="btn btn-red tooltip" id="chronoReset" data-tooltip="Remet le chrono de session et le donjon en cours à zéro. La progression n'est pas supprimée.">Reset</button>
           <button class="btn btn-orange tooltip" id="markTime" data-tooltip="Enregistre le temps du donjon en cours pour le donjon actif.">Marquer run</button>
           <button class="btn btn-gray tooltip" id="chronoOptionsShortcut" type="button" data-tooltip="Ouvre directement les options Chrono.">⚙</button>
@@ -13837,7 +13837,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
       <section class="card hero">
         <div class="farm-command-head">
           <div class="run-command-grid" role="group" aria-label="Actions du donjon actif">
-            <button class="btn btn-green big-btn tooltip" id="plus" data-tooltip="Ajoute un donjon au suivi actif. Les monstres, la PP, les statistiques et la session en cours sont mis à jour automatiquement.">+ Run</button>
+            <button class="btn btn-green big-btn tooltip" id="plus" data-tooltip="Ajoute un donjon au suivi actif. Les monstres, la progression, les statistiques et la session en cours sont mis à jour automatiquement.">+ Run</button>
             <button class="btn btn-red big-btn tooltip" id="minus" data-tooltip="Retire un donjon du suivi actif si vous avez cliqué trop vite. Les monstres associés sont corrigés aussi.">-</button>
           </div>
           <div class="farm-select-wrap">
@@ -13860,8 +13860,8 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
         <div class="actions action-groups">
           <div class="action-group">
             <div class="action-group-title">Suivi</div>
-            <button class="btn btn-blue tooltip" id="statsButton" data-tooltip="Ouvre le tableau de bord du profil : donjons du jour, séries, PP, monstres et temps chrono.">Stats</button>
-            <button class="btn btn-blue tooltip" id="activityButton" data-tooltip="Affiche les dernières actions enregistrées : donjons ajoutés, PP gagnée, chrono, sauvegardes et modifications.">Historique</button>
+            <button class="btn btn-blue tooltip" id="statsButton" data-tooltip="Ouvre le tableau de bord du profil : donjons du jour, séries, progression, monstres et temps chrono.">Stats</button>
+            <button class="btn btn-blue tooltip" id="activityButton" data-tooltip="Affiche les dernières actions enregistrées : donjons ajoutés, progression gagnée, chrono, sauvegardes et modifications.">Historique</button>
           </div>
           <div class="action-group">
             <div class="action-group-title">Données</div>
@@ -13927,7 +13927,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
           <div class="quick-projection-value" id="nextPPSummary">Chargement...</div>
           <div class="quick-projection-hint">Estimation basée sur vos compteurs actuels.</div>
         </div>
-        <button class="btn btn-blue tooltip" id="projectionButton" data-tooltip="Ouvre les prévisions : donjons restants pour la prochaine PP, objectif 100%, temps estimé et rendement.">Projection</button>
+        <button class="btn btn-blue tooltip" id="projectionButton" data-tooltip="Ouvre les prévisions : donjons restants pour le prochain gain, objectif 100%, temps estimé et rendement.">Projection</button>
       </section>
       <div class="dashboard-bottom-actions version-actions quick-projection-spacer">
         <button class="btn btn-orange tooltip" id="monsterLauncher" data-tooltip="Ouvre la fenêtre des monstres tués.">Monstres</button>
@@ -14032,7 +14032,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
         </div>
         <div class="auth-cloud-note" id="authHelp">
           <strong>Compte cloud optionnel</strong>
-          <span>Synchronisez votre Pykur entre vos appareils. Le mode local reste disponible sans compte.</span>
+          <span>Synchronisez vos familiers entre vos appareils. Le mode local reste disponible sans compte.</span>
         </div>
         <div class="auth-error" id="authError"></div>
         <label class="auth-field" id="authPseudoField">
@@ -14841,7 +14841,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
 <div class="modal-bg" id="projectionModal">
   <div class="modal projection-modal">
     <div class="modal-head">
-      <div><h2><img class="modal-title-icon" src="./assets/icone/projection.png" alt=""><span>Projection du Pykur</span></h2><p>Estimez les prochains paliers et le temps restant.</p></div>
+      <div><h2><img class="modal-title-icon" src="./assets/icone/projection.png" alt=""><span>Projection du familier</span></h2><p>Estimez les prochains paliers et le temps restant.</p></div>
       <button class="btn btn-red modal-close" data-close="projectionModal">✕</button>
     </div>
     <div class="modal-body">
@@ -14877,7 +14877,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
 <!-- MONSTERS -->
 <div class="modal-bg" id="monstersModal">
   <div class="modal monster-modal">
-    <div class="modal-head"><div><h2><img class="modal-title-icon" src="./assets/icone/monstretue.png" alt=""><span>Monstres tués</span></h2><p>Contrôlez les monstres comptés pour chaque source de PP.</p></div><button class="btn btn-red modal-close" data-close="monstersModal">✕</button></div>
+    <div class="modal-head"><div><h2><img class="modal-title-icon" src="./assets/icone/monstretue.png" alt=""><span>Monstres tués</span></h2><p>Contrôlez les monstres comptés pour chaque source de progression.</p></div><button class="btn btn-red modal-close" data-close="monstersModal">✕</button></div>
     <div class="modal-body">
       <div class="monster-tabs">
         <button class="btn btn-blue tooltip active" data-tab="morose" data-tooltip="Affiche les monstres tués en Donjon Morose.">Morose</button>
@@ -17035,15 +17035,15 @@ async function executeAdminCommand(command){
     }else if(command.type==="reset-profile" || command.type==="reset-pykur"){
       adminResetProfileCommand(payload.profileId);
       ensureData();save();renderProfiles();renderAll();
-      toast("Un profil Pykur a été réinitialisé par un administrateur.","warning","warning");
+      toast("Un profil familier a été réinitialisé par un administrateur.","warning","warning");
     }else if(command.type==="delete-profile"){
       adminDeleteProfileCommand(payload.profileId);
       ensureData();save();renderProfiles();renderAll();
-      toast("Un profil Pykur a été supprimé par un administrateur.","warning","warning");
+      toast("Un profil familier a été supprimé par un administrateur.","warning","warning");
     }else if(command.type==="rename-profile"){
       adminRenameProfileCommand(payload.profileId,payload.name);
       save();renderProfiles();renderAll();
-      toast("Un profil Pykur a été renommé par un administrateur.","info","click");
+      toast("Un profil familier a été renommé par un administrateur.","info","click");
     }else if(command.type==="remove-achievement"){
       adminRemoveAchievementCommand(payload.achievementId);
       save();renderAchievements();renderHiddenSecretEgg();
@@ -17055,7 +17055,7 @@ async function executeAdminCommand(command){
     }else if(command.type==="remove-gallery-pykur"){
       adminRemoveGalleryPykurCommand(payload.pykurId);
       save();renderGallery();
-      toast("Un Pykur archivé a été retiré de votre galerie.","warning","warning");
+      toast("Un familier archivé a été retiré de votre galerie.","warning","warning");
     }else if(command.type==="recalculate-achievements"){
       recalculateAchievements({silent:true});
       message="Succès recalculés.";
@@ -18287,11 +18287,11 @@ let lastSaveError=false;
 function dialogMeta(title,type,danger){
   const raw=String(title||"").toLowerCase();
   if(raw==="renommer le profil")return {iconAsset:"renomerprofile.png",subtitle:"Choisissez un nouveau nom lisible et facile à retrouver."};
-  if(raw==="créer un profil")return {iconAsset:"creerprofile.png",subtitle:"Créez une nouvelle aventure de Pykur."};
+  if(raw==="créer un profil")return {iconAsset:"creerprofile.png",subtitle:"Créez une nouvelle aventure de familier."};
   if(raw==="supprimer le profil")return {iconAsset:"supprimerprofile.png",subtitle:"Cette action peut modifier ou supprimer des données du profil actif."};
   if(raw==="modifier le donjon")return {iconAsset:"modifierdonjon.png",subtitle:"Ajustez cette valeur manuellement, sans modifier le reste du tracker."};
   if(raw.includes("renommer"))return {icon:"✏️",subtitle:"Choisissez un nouveau nom lisible et facile à retrouver."};
-  if(raw.includes("créer"))return {icon:"✨",subtitle:"Créez une nouvelle aventure de Pykur."};
+  if(raw.includes("créer"))return {icon:"✨",subtitle:"Créez une nouvelle aventure de familier."};
   if(raw.includes("modifier") || raw.includes("temps moyen"))return {icon:"🏰",subtitle:"Ajustez cette valeur manuellement, sans modifier le reste du tracker."};
   if(raw.includes("reset") || raw.includes("remettre") || raw.includes("vider") || raw.includes("supprimer") || danger)return {icon:"⚠️",subtitle:"Cette action peut modifier ou supprimer des données du profil actif."};
   if(raw.includes("import"))return {icon:"📥",subtitle:"Vérifiez la sauvegarde avant de remplacer les données locales."};
@@ -20898,7 +20898,7 @@ function livingResonance(){
   };
 
   const secondary=[
-    "Une énergie ancienne semble traverser le Pykur.",
+    "Une énergie ancienne semble traverser le familier.",
     "Le familier semble particulièrement concentré.",
     "Une étrange vibration parcourt le tracker."
   ];
@@ -22201,7 +22201,7 @@ function livingResonance(){
   };
 
   const secondary=[
-    "Une énergie ancienne semble traverser le Pykur.",
+    "Une énergie ancienne semble traverser le familier.",
     "Le familier semble particulièrement concentré.",
     "Une étrange vibration parcourt le tracker."
   ];
@@ -23906,7 +23906,7 @@ async function deleteGalleryPykur(id){
   syncActiveGallery(gallery);
   save();
   renderGallery();
-  toast("Pykur supprime de la galerie.","info","click");
+  toast("Familier supprimé de la galerie.","info","click");
 }
 
 function setSharedGallery(enabled){
@@ -24511,8 +24511,8 @@ function setupSmartTooltips(){
 const helpSteps=[
   {
     selector:".progress-title",
-    title:"Progression du Pykur",
-    text:"Cette zone montre votre progression globale vers l’objectif de 90 PP. Quand vous gagnez de la PP, la barre et le pourcentage se mettent à jour."
+    title:"Progression du familier",
+    text:"Cette zone montre votre progression globale vers l'objectif du familier actif. Quand vous gagnez de la progression, la barre et le pourcentage se mettent à jour."
   },
   {
     selector:".chrono-card",
@@ -24522,7 +24522,7 @@ const helpSteps=[
   {
     selector:".session-card",
     title:"Session de farm",
-    text:"La session mesure toute votre séance de jeu : durée totale, nombre de donjons et PP gagnée. Elle accompagne le chrono du donjon en cours."
+    text:"La session mesure toute votre séance de jeu : durée totale, nombre de donjons et progression gagnée. Elle accompagne le chrono du donjon en cours."
   },
   {
     selector:".farm-toggle",
@@ -24532,7 +24532,7 @@ const helpSteps=[
   {
     selector:".run-command-grid",
     title:"Ajouter ou retirer une run",
-    text:"+ Run ajoute un donjon et met automatiquement à jour les monstres, la PP, les statistiques et la session. Le bouton - corrige un clic de trop."
+    text:"+ Run ajoute un donjon et met automatiquement à jour les monstres, la progression, les statistiques et la session. Le bouton - corrige un clic de trop."
   },
   {
     selector:".action-groups",
@@ -24547,12 +24547,12 @@ const helpSteps=[
   {
     selector:".quick-projection",
     title:"Projection rapide",
-    text:"Cette carte estime combien de donjons il faut pour gagner la prochaine PP. Le bouton Projection ouvre les prévisions complètes."
+    text:"Cette carte estime combien de donjons il faut pour obtenir le prochain gain de progression. Le bouton Projection ouvre les prévisions complètes."
   },
   {
     selector:"#monsterLauncher",
     title:"Monstres",
-    text:"Ouvre le détail des monstres tués par source. C’est cette base qui sert au calcul de la PP."
+    text:"Ouvre le détail des monstres tués par source. C'est cette base qui sert au calcul de la progression."
   }
 ];
 
@@ -24567,11 +24567,11 @@ const legacyGuideHelpSteps=[
   },
   {
     title:"Progression et PP",
-    html:`<p>La progression indique votre avancement vers l'objectif de <strong>90 PP</strong>. Les donjons ajoutent les monstres associés, puis les PP sont recalculées automatiquement.</p><p>À 100%, le Pykur est considéré terminé : l'ajout de donjons est bloqué pour éviter de fausser la sauvegarde. Vous pouvez retirer un donjon si vous devez corriger et repasser sous 100%.</p>`
+    html:`<p>La progression indique votre avancement vers l'objectif du familier actif. Les donjons ajoutent les monstres associés, puis les gains sont recalculés automatiquement.</p><p>À 100%, le familier est considéré terminé : l'ajout de donjons est bloqué pour éviter de fausser la sauvegarde. Vous pouvez retirer un donjon si vous devez corriger et repasser sous 100%.</p>`
   },
   {
-    title:"Donjons Morose et Tynril",
-    html:`<p><strong>Morose</strong> et <strong>Tynril</strong> ont chacun leurs compteurs, monstres, statistiques et estimations. Le donjon actif contrôle ce que font + Run, -, le chrono et les projections rapides.</p><ul><li>Morose suit la limite définie par le tracker.</li><li>Tynril va de <strong>0 à 48 donjons</strong>, jamais au-delà.</li><li>Chaque ajout ou retrait synchronise progression, PP, historique, stats et sauvegarde.</li></ul>`
+    title:"Donjons actifs",
+    html:`<p>Chaque familier possède ses propres donjons, compteurs, monstres, statistiques et estimations. Le donjon actif contrôle ce que font + Run, -, le chrono et les projections rapides.</p><p>Chaque ajout ou retrait synchronise progression, historique, statistiques et sauvegarde.</p>`
   },
   {
     title:"Chronometre",
@@ -24583,15 +24583,15 @@ const legacyGuideHelpSteps=[
   },
   {
     title:"Projections",
-    html:`<p>Les projections vous aident à anticiper : prochaine PP, objectif 100%, temps estimé et rendement. Ce sont des prévisions basées sur vos compteurs et vos temps moyens, pas une modification de vos données.</p>`
+    html:`<p>Les projections vous aident à anticiper : prochain gain, objectif 100%, temps estimé et rendement. Ce sont des prévisions basées sur vos compteurs et vos temps moyens, pas une modification de vos données.</p>`
   },
   {
     title:"Historique et statistiques",
-    html:`<p>L'historique conserve les événements importants : donjons ajoutés ou retirés, PP gagnées, chrono, imports, resets et modifications. Les statistiques regroupent les tendances du profil : donjons, sessions, monstres et temps.</p><p>Utilisez les filtres de l'historique pour retrouver rapidement un type d'action.</p>`
+    html:`<p>L'historique conserve les événements importants : donjons ajoutés ou retirés, gains obtenus, chrono, imports, resets et modifications. Les statistiques regroupent les tendances du profil : donjons, sessions, monstres et temps.</p><p>Utilisez les filtres de l'historique pour retrouver rapidement un type d'action.</p>`
   },
   {
     title:"Monstres",
-    html:`<p>Le panneau Monstres montre les valeurs et les quantités par source : Morose, Tynril, zone et total. Il sert à comprendre d'où viennent vos PP et à corriger manuellement les compteurs si nécessaire.</p>`
+    html:`<p>Le panneau Monstres montre les valeurs et les quantités par source : donjons, zone et total. Il sert à comprendre d'où viennent vos gains et à corriger manuellement les compteurs si nécessaire.</p>`
   },
   {
     title:"Options et confort",
@@ -24626,7 +24626,7 @@ const modernHelpSteps=[
   {
     icon:"➕",
     title:"Ajouter un donjon terminé",
-    html:`<p>Le bouton <strong>+ Run</strong> permet d'ajouter un donjon terminé.</p><p>Après chaque donjon, la progression, les statistiques, l'historique, les projections et les réactions du Pykur sont mis à jour automatiquement.</p><div class="help-card"><strong>Exemple</strong><span>Vous terminez un Morose, vous cliquez sur <strong>+ Run</strong>, puis le tracker s'occupe du reste.</span></div>`
+    html:`<p>Le bouton <strong>+ Run</strong> permet d'ajouter un donjon terminé.</p><p>Après chaque donjon, la progression, les statistiques, l'historique, les projections et les réactions du familier sont mis à jour automatiquement.</p><div class="help-card"><strong>Exemple</strong><span>Vous terminez le donjon actif, vous cliquez sur <strong>+ Run</strong>, puis le tracker s'occupe du reste.</span></div>`
   },
   {
     icon:"➖",
@@ -24641,7 +24641,7 @@ const modernHelpSteps=[
   {
     icon:"🔮",
     title:"Suivre votre progression",
-    html:`<p>La prospection représente l'objectif principal du tracker.</p><p>Les projections permettent d'estimer le nombre de donjons restants, le temps restant et la progression future. Elles vous aident à planifier votre farm.</p>`
+    html:`<p>La progression représente l'objectif principal du tracker.</p><p>Les projections permettent d'estimer le nombre de donjons restants, le temps restant et la progression future. Elles vous aident à planifier votre farm.</p>`
   },
   {
     icon:"✨",
@@ -24651,7 +24651,7 @@ const modernHelpSteps=[
   {
     icon:"👥",
     title:"Gérer plusieurs progressions",
-    html:`<p>Les profils permettent de suivre plusieurs Pykurs indépendants.</p><div class="help-card-grid"><div class="help-card"><strong>Création</strong><span>Commencez une nouvelle progression.</span></div><div class="help-card"><strong>Renommage</strong><span>Identifiez clairement chaque profil.</span></div><div class="help-card"><strong>Sauvegarde individuelle</strong><span>Chaque profil conserve ses propres données.</span></div></div>`
+    html:`<p>Les profils permettent de suivre plusieurs familiers indépendants.</p><div class="help-card-grid"><div class="help-card"><strong>Création</strong><span>Commencez une nouvelle progression.</span></div><div class="help-card"><strong>Renommage</strong><span>Identifiez clairement chaque profil.</span></div><div class="help-card"><strong>Sauvegarde individuelle</strong><span>Chaque profil conserve ses propres données.</span></div></div>`
   },
   {
     icon:"📊",
@@ -24697,12 +24697,12 @@ function activeHelpSteps(){
 
 function applyHelpfulTooltips(){
   const copy={
-    helpButton:"Ouvre le guide complet : objectif, premiers pas, donjons, chrono, PP, projections, profils et sauvegardes.",
+    helpButton:"Ouvre le guide complet : objectif, premiers pas, donjons, chrono, progression, projections, profils et sauvegardes.",
     optionsButton:"Personnalise l'interface, les notifications, le chrono, l'accessibilité et les sauvegardes.",
     soundToggle:"Active ou coupe tous les sons du tracker : notifications, chrono, milestones et futurs sons.",
     chronoStart:"Démarre la session de farm et le chrono du donjon en cours.",
-    chronoPause:"Met en pause la session et le donjon en cours sans modifier vos donjons, PP ou statistiques.",
-    chronoReset:"Remet la session et le donjon en cours à zéro. Les donjons, PP et temps déjà enregistrés restent conservés.",
+    chronoPause:"Met en pause la session et le donjon en cours sans modifier vos donjons, progression ou statistiques.",
+    chronoReset:"Remet la session et le donjon en cours à zéro. Les donjons, progression et temps déjà enregistrés restent conservés.",
     markTime:"Enregistre le temps du donjon en cours. Sert aux temps moyens et aux estimations chrono.",
     chronoOptionsShortcut:"Ouvre directement Options > Chrono.",
     openRunTimes:"Affiche les temps enregistrés par donjon pour comparer et corriger vos chronos.",
@@ -24710,14 +24710,14 @@ function applyHelpfulTooltips(){
     createProfile:"Crée un profil vide avec ses propres donjons, monstres, chrono, historique et sauvegarde.",
     renameProfile:"Renomme le profil actuel sans modifier ses données.",
     deleteProfile:"Supprime le profil actuel après confirmation. Action sensible si vous n'avez pas exporté.",
-    plus:"Ajoute un donjon au suivi actif et met à jour monstres, PP, progression, statistiques et historique.",
-    minus:"Retire un donjon du suivi actif pour corriger une erreur. Les monstres et PP sont ajustés.",
+    plus:"Ajoute un donjon au suivi actif et met à jour monstres, progression, statistiques et historique.",
+    minus:"Retire un donjon du suivi actif pour corriger une erreur. Les monstres et la progression sont ajustés.",
     statsButton:"Ouvre les statistiques du profil : progression, donjons, sessions, monstres et temps chrono.",
-    activityButton:"Ouvre l'historique des actions : donjons, PP, chrono, imports, resets et modifications.",
+    activityButton:"Ouvre l'historique des actions : donjons, progression, chrono, imports, resets et modifications.",
     editRuns:"Corrige manuellement le nombre de donjons du suivi actif si vous reprenez un suivi déjà commencé.",
     undoButton:"Annule la dernière modification de donjons ou de monstres quand c'est possible.",
     resetButton:"Remet le profil actuel à zéro après confirmation. Les options sont conservées.",
-    projectionButton:"Ouvre les prévisions : prochaine PP, objectif 100%, temps estimé et rendement.",
+    projectionButton:"Ouvre les prévisions : prochain gain, objectif 100%, temps estimé et rendement.",
     monsterLauncher:"Consulte les monstres, leurs valeurs et les gains par donjon.",
     toggleNight:"Active ou desactive le mode nuit pour reduire la luminosite.",
     toggleAnim:"Active ou coupe les transitions et effets visuels legers.",
@@ -25566,7 +25566,7 @@ function resetMilestonesIfNeeded(){
 }
 
 function addRun(delta){
-  if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du Pykur.","warning","warning");
+  if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du familier.","warning","warning");
   const selectedFarm=data.ui.farm;
   expireAbraRoomIfInactive();
   if(delta>0 && activeFamiliarId()==="abra-kadabra" && selectedFarm==="salleAbrakne" && !data.special?.salleAbrakneActive){
@@ -26388,7 +26388,7 @@ function renderProfiles(){
 }
 
 async function createProfile(){
-  if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du Pykur.","warning","warning");
+  if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du familier.","warning","warning");
   const familiarId=await chooseFamiliarForProfile("pykur");
   if(!familiarId)return;
   const familiar=FAMILIARS[familiarId]||FAMILIARS.pykur;
@@ -26415,7 +26415,7 @@ async function renameProfile(){
 }
 
 async function deleteProfile(){
-  if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du Pykur.","warning","warning");
+  if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du familier.","warning","warning");
   if(Object.keys(store.profiles).length<=1){toast("Impossible de supprimer le dernier profil","error");return}
   const beforeStore=clone(store);
   const beforeActive=activeProfile;
@@ -26982,19 +26982,41 @@ function renderStats(){
   const avgPerDay=calcAveragePerActiveDay();
   const bestDay=calcBestDay();
 
-  const totalRuns=(data.runs.morose||0)+(data.runs.tynril||0);
-  const morosePct=totalRuns?Math.round((data.runs.morose/totalRuns)*100):0;
-  const tynrilPct=totalRuns?100-morosePct:0;
-
+  const farmKeys=activeFarmKeys();
+  const progressUnit=activeProgressShort();
+  const totalRuns=farmKeys.reduce((sum,farm)=>sum+(data.runs[farm]||0),0);
+  const farmRunParts=farmKeys.map(farm=>{
+    const value=data.runs[farm]||0;
+    return {
+      farm,
+      label:familiarFarmLabel(farm),
+      fullLabel:familiarFarmLabel(farm,"full"),
+      value,
+      pct:totalRuns?percentPart(value,totalRuns):0,
+      color:farm==="tynril"||farm==="cheneMou"?"stats-purple":farm==="salleAbrakne"?"stats-blue":"stats-orange"
+    };
+  });
   const ppSource=ppContributionBySource();
-  const morosePPPct=percentPart(ppSource.morose,ppSource.total);
-  const tynrilPPPct=percentPart(ppSource.tynril,ppSource.total);
-  const zonePPPct=ppSource.total ? Math.max(0,100-morosePPPct-tynrilPPPct) : 0;
+  const progressParts=[
+    ...farmKeys.map(farm=>({
+      farm,
+      label:familiarFarmLabel(farm),
+      value:ppSource[farm]||0,
+      pct:percentPart(ppSource[farm]||0,ppSource.total),
+      color:farm==="tynril"||farm==="cheneMou"?"tynril":farm==="salleAbrakne"?"zone":"morose",
+      valueColor:farm==="tynril"||farm==="cheneMou"?"stats-purple":farm==="salleAbrakne"?"stats-blue":"stats-orange"
+    })),
+    {farm:"zone",label:"Zone / manuel",value:ppSource.zone||0,pct:percentPart(ppSource.zone||0,ppSource.total),color:"zone",valueColor:"stats-green"}
+  ];
 
   const totalMonsters=Object.values(totalMobs()).reduce((a,b)=>a+b,0);
   const marks=data.chrono.marks||[];
-  const moroseMarks=marks.filter(m=>m.farm==="morose");
-  const tynrilMarks=marks.filter(m=>m.farm==="tynril");
+  const markParts=farmKeys.map(farm=>({
+    farm,
+    label:familiarFarmLabel(farm),
+    marks:marks.filter(m=>m.farm===farm),
+    color:farm==="tynril"||farm==="cheneMou"?"stats-purple":farm==="salleAbrakne"?"stats-blue":"stats-orange"
+  }));
 
   const bestTime=list=>{
     const valid=list.map(m=>m.time||0).filter(Boolean);
@@ -27014,7 +27036,7 @@ function renderStats(){
     : "—";
 
   const bestDaySub=bestDay
-    ? `${bestDay.date.split("-").reverse().join("/")} · M ${bestDay.day.morose||0} / T ${bestDay.day.tynril||0}`
+    ? `${bestDay.date.split("-").reverse().join("/")} · ${farmKeys.map(farm=>`${familiarFarmLabel(farm)} ${bestDay.day[farm]||0}`).join(" / ")}`
     : "Aucune journée active";
 
   content.innerHTML=`
@@ -27026,18 +27048,14 @@ function renderStats(){
       </div>
       <div class="stats-fantasy-body">
         <div class="stats-kpi-grid">
+          ${farmRunParts.map(part=>`
           <div class="stats-kpi">
-            <div class="stats-kpi-label">Morose aujourd’hui</div>
-            <div class="stats-kpi-value stats-orange">${todayStats.morose||0}</div>
+            <div class="stats-kpi-label">${escapeHtml(part.label)} aujourd’hui</div>
+            <div class="stats-kpi-value ${part.color}">${todayStats[part.farm]||0}</div>
             <div class="stats-kpi-sub">donjons enregistrés</div>
-          </div>
+          </div>`).join("")}
           <div class="stats-kpi">
-            <div class="stats-kpi-label">Tynril aujourd’hui</div>
-            <div class="stats-kpi-value stats-purple">${todayStats.tynril||0}</div>
-            <div class="stats-kpi-sub">donjons enregistrés</div>
-          </div>
-          <div class="stats-kpi">
-            <div class="stats-kpi-label">PP gagnée aujourd’hui</div>
+            <div class="stats-kpi-label">${escapeHtml(progressUnit)} gagnée aujourd’hui</div>
             <div class="stats-kpi-value stats-green">+${todayStats.pp||0}</div>
             <div class="stats-kpi-sub">via actions du jour</div>
           </div>
@@ -27084,24 +27102,20 @@ function renderStats(){
     </div>
 
     <div class="stats-view-panel ${statsView==="dungeons"?"active":""}" data-stats-panel="dungeons">
-    <div class="stats-section-intro">Comparez le volume de donjons et leur contribution réelle à votre prospection.</div>
+    <div class="stats-section-intro">Comparez le volume de donjons et leur contribution réelle à votre ${activeFamiliar().progressLabel.toLowerCase()}.</div>
     <section class="stats-fantasy-card wide">
       <div class="stats-fantasy-head">
-        <h3>Répartition des donjons</h3>
+        <h3>Répartition des parcours</h3>
         <div class="stats-fantasy-badge">${totalRuns} au total</div>
       </div>
       <div class="stats-fantasy-body">
         <div class="stats-kpi-grid">
+          ${farmRunParts.map(part=>`
           <div class="stats-kpi">
-            <div class="stats-kpi-label">Morose</div>
-            <div class="stats-kpi-value stats-orange">${data.runs.morose||0}</div>
-            <div class="stats-kpi-sub">${morosePct}% des donjons</div>
-          </div>
-          <div class="stats-kpi">
-            <div class="stats-kpi-label">Tynril</div>
-            <div class="stats-kpi-value stats-purple">${data.runs.tynril||0}</div>
-            <div class="stats-kpi-sub">${tynrilPct}% des donjons</div>
-          </div>
+            <div class="stats-kpi-label">${escapeHtml(part.label)}</div>
+            <div class="stats-kpi-value ${part.color}">${part.value}</div>
+            <div class="stats-kpi-sub">${part.pct}% des donjons</div>
+          </div>`).join("")}
           <div class="stats-kpi">
             <div class="stats-kpi-label">Total</div>
             <div class="stats-kpi-value stats-blue">${totalRuns}</div>
@@ -27109,39 +27123,27 @@ function renderStats(){
           </div>
         </div>
         <div class="stats-mini-bar">
-          <span style="width:${morosePct}%"></span>
-          <span style="width:${tynrilPct}%"></span>
+          ${farmRunParts.map(part=>`<span style="width:${part.pct}%"></span>`).join("")}
         </div>
       </div>
     </section>
 
     <section class="stats-fantasy-card wide">
       <div class="stats-fantasy-head">
-        <h3>⚖️ Contribution PP</h3>
-        <div class="stats-fantasy-badge">${ppSource.total} PP brute${ppSource.total>1?"s":""}</div>
+        <h3>Contribution ${escapeHtml(progressUnit)}</h3>
+        <div class="stats-fantasy-badge">${ppSource.total} ${escapeHtml(progressUnit)} brute${ppSource.total>1?"s":""}</div>
       </div>
       <div class="stats-fantasy-body">
         <div class="stats-kpi-grid">
+          ${progressParts.map(part=>`
           <div class="stats-kpi">
-            <div class="stats-kpi-label">Morose</div>
-            <div class="stats-kpi-value stats-orange">${morosePPPct}%</div>
-            <div class="stats-kpi-sub">${ppSource.morose} PP générée${ppSource.morose>1?"s":""}</div>
-          </div>
-          <div class="stats-kpi">
-            <div class="stats-kpi-label">Tynril</div>
-            <div class="stats-kpi-value stats-purple">${tynrilPPPct}%</div>
-            <div class="stats-kpi-sub">${ppSource.tynril} PP générée${ppSource.tynril>1?"s":""}</div>
-          </div>
-          <div class="stats-kpi">
-            <div class="stats-kpi-label">Zone / manuel</div>
-            <div class="stats-kpi-value stats-green">${zonePPPct}%</div>
-            <div class="stats-kpi-sub">${ppSource.zone} PP générée${ppSource.zone>1?"s":""}</div>
-          </div>
+            <div class="stats-kpi-label">${escapeHtml(part.label)}</div>
+            <div class="stats-kpi-value ${part.valueColor}">${part.pct}%</div>
+            <div class="stats-kpi-sub">${part.value} ${escapeHtml(progressUnit)} générée${part.value>1?"s":""}</div>
+          </div>`).join("")}
         </div>
         <div class="stats-mini-bar pp-contribution-bar">
-          <span class="morose" style="width:${morosePPPct}%"></span>
-          <span class="tynril" style="width:${tynrilPPPct}%"></span>
-          <span class="zone" style="width:${zonePPPct}%"></span>
+          ${progressParts.map(part=>`<span class="${part.color}" style="width:${part.pct}%"></span>`).join("")}
         </div>
       </div>
     </section>
@@ -27156,20 +27158,16 @@ function renderStats(){
       </div>
       <div class="stats-fantasy-body">
         <div class="stats-kpi-grid">
+          ${markParts.map(part=>`
           <div class="stats-kpi">
-            <div class="stats-kpi-label">Meilleur Morose</div>
-            <div class="stats-kpi-value stats-orange">${bestTime(moroseMarks)}</div>
-            <div class="stats-kpi-sub">Moyenne réelle : ${avgReal(moroseMarks)}</div>
-          </div>
-          <div class="stats-kpi">
-            <div class="stats-kpi-label">Meilleur Tynril</div>
-            <div class="stats-kpi-value stats-purple">${bestTime(tynrilMarks)}</div>
-            <div class="stats-kpi-sub">Moyenne réelle : ${avgReal(tynrilMarks)}</div>
-          </div>
+            <div class="stats-kpi-label">Meilleur ${escapeHtml(part.label)}</div>
+            <div class="stats-kpi-value ${part.color}">${bestTime(part.marks)}</div>
+            <div class="stats-kpi-sub">Moyenne réelle : ${avgReal(part.marks)}</div>
+          </div>`).join("")}
           <div class="stats-kpi">
             <div class="stats-kpi-label">Donjons chronométrés</div>
             <div class="stats-kpi-value stats-blue">${marks.length}</div>
-            <div class="stats-kpi-sub">Morose ${moroseMarks.length} · Tynril ${tynrilMarks.length}</div>
+            <div class="stats-kpi-sub">${markParts.map(part=>`${escapeHtml(part.label)} ${part.marks.length}`).join(" · ")}</div>
           </div>
         </div>
       </div>
@@ -27699,7 +27697,7 @@ function buildMobEditor(){
 }
 
 function saveMobEditor(){
-  if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du Pykur.","warning","warning");
+  if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du familier.","warning","warning");
   const oldPP=currentPP();
   pushUndo();
   $$("#mobEditList input").forEach(input=>{
@@ -27725,7 +27723,7 @@ function saveMobEditor(){
 }
 
 async function editRuns(){
-  if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du Pykur.","warning","warning");
+  if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du familier.","warning","warning");
   const farm=data.ui.farm;
   const label=familiarFarmLabel(farm);
   const val=await showPrompt(`Nombre de donjons ${label} :`, {title:"Modifier le donjon",defaultValue:String(data.runs[farm]),okLabel:"Modifier"});
@@ -27774,7 +27772,7 @@ function undo(){
 }
 
 async function resetAll(){
-  if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du Pykur.","warning","warning");
+  if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du familier.","warning","warning");
   const before=clone(data);
   if(!await showConfirm("",{
     title:"Réinitialiser le profil",
