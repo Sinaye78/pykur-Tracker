@@ -6817,7 +6817,7 @@ body[data-fx="premium"] .milestone-flash{box-shadow:0 0 0 9999px rgba(212,167,60
   justify-items:center;
   padding-top:22px;
 }
-.familiar-choice-portrait img:first-child{
+.familiar-choice-art{
   width:86px;
   height:86px;
   object-fit:contain;
@@ -6840,6 +6840,7 @@ body[data-fx="premium"] .milestone-flash{box-shadow:0 0 0 9999px rgba(212,167,60
   width:18px;
   height:18px;
   object-fit:contain;
+  flex:0 0 auto;
 }
 .familiar-choice-card strong{
   display:block;
@@ -6852,6 +6853,12 @@ body[data-fx="premium"] .milestone-flash{box-shadow:0 0 0 9999px rgba(212,167,60
   color:#694b28;
   line-height:1.35;
 }
+.familiar-choice-stars{
+  color:#d97706;
+  font-size:14px;
+  letter-spacing:1px;
+  white-space:nowrap;
+}
 .familiar-choice-meta{
   display:grid;
   grid-template-columns:1fr;
@@ -6859,7 +6866,10 @@ body[data-fx="premium"] .milestone-flash{box-shadow:0 0 0 9999px rgba(212,167,60
   margin-top:10px;
 }
 .familiar-choice-meta span{
-  display:block;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
   padding:7px 9px;
   border:1px solid rgba(126,91,43,.18);
   border-radius:10px;
@@ -6870,16 +6880,7 @@ body[data-fx="premium"] .milestone-flash{box-shadow:0 0 0 9999px rgba(212,167,60
   line-height:1.25;
 }
 .familiar-choice-card em{
-  display:inline-flex;
-  margin-top:10px;
-  padding:4px 9px;
-  border-radius:999px;
-  background:rgba(37,99,235,.10);
-  color:#2563eb;
-  font-size:11px;
-  font-style:normal;
-  font-weight:900;
-  text-transform:uppercase;
+  display:none;
 }
 .familiar-choice-empty{
   grid-column:1/-1;
@@ -14858,16 +14859,17 @@ const FAMILIARS={
     objectiveMax:PP_MAX,
     objectiveLabel:"90 PP",
     icon:"./assets/images/prospection.png",
-    logo:"./assets/images/logo.png",
+    logo:"./assets/images/pykur.png",
     image:"./assets/images/pykur.png",
     auraImage:"./assets/images/aurapykur.png",
     sleepingImage:"./assets/images/evenement/25. Pykur endormi/pykurz.png",
     background:"./assets/images/fond.png",
     status:"complete",
-    statusLabel:"Tracker complet",
-    description:"Suivi complet de progression, donjons, PP, chrono, galerie, succès et détection Dofus.",
+    statusLabel:"",
+    description:"Suivi de prospection sur Donjon Morose et Donjon Tynril.",
     bonusAmount:90,
-    difficultyLabel:"Difficulté estimée : moyenne",
+    difficultyLabel:"Moyen",
+    difficultyStars:2,
     farmMethods:["Donjon Morose","Donjon Tynril"],
     dungeons:[
       {key:"morose",label:"Morose",fullLabel:"Donjon Morose",asset:"./assets/images/dj actif/morose.png"},
@@ -14890,10 +14892,11 @@ const FAMILIARS={
     sleepingImage:"../abra-kadabra/assets/images/abraz.png",
     background:"../abra-kadabra/assets/images/fond.png",
     status:"active",
-    statusLabel:"Disponible",
+    statusLabel:"",
     description:"Suivi de puissance sur Donjon Abraknyde, Donjon Chêne Mou et boucle de la salle Abrakne.",
     bonusAmount:55,
-    difficultyLabel:"Difficulté estimée : rapide à moyenne",
+    difficultyLabel:"Facile",
+    difficultyStars:1,
     farmMethods:["Donjon Abraknyde","Donjon Chêne Mou","Boucle salle Abrakne"],
     dungeons:[
       {key:"donjonAbraknyde",label:"Abraknyde",fullLabel:"Donjon Abraknyde",asset:"../abra-kadabra/assets/images/donjons/donjon abraknyde.png"},
@@ -26163,22 +26166,21 @@ async function chooseFamiliarForProfile(defaultId="pykur"){
   let selected=normalizeFamiliarId(defaultId);
   const cards=Object.values(FAMILIARS).map(familiar=>{
     const search=[familiar.label,familiar.progressLabel,familiar.progressShort,familiar.description,...(familiar.farmMethods||[]),familiar.difficultyLabel].join(" ").toLowerCase();
+    const stars="★".repeat(Math.max(1,Math.min(3,Number(familiar.difficultyStars)||1)));
     return `
     <label class="familiar-choice-card ${familiar.id===selected?"selected":""}" data-familiar-card data-search="${escapeHtml(search)}">
       <input type="radio" name="newProfileFamiliar" value="${familiar.id}" ${familiar.id===selected?"checked":""}>
       <span class="familiar-choice-portrait">
-        <img src="${assetPath(familiar.logo||familiar.image)}" alt="">
+        <img class="familiar-choice-art" src="${assetPath(familiar.logo||familiar.image)}" alt="">
         <span class="familiar-choice-bonus"><img src="${assetPath(familiar.icon)}" alt=""> ${familiar.bonusAmount||familiar.objectiveMax} ${escapeHtml(familiar.progressShort)}</span>
       </span>
       <span class="familiar-choice-content">
         <strong>${escapeHtml(familiar.label)}</strong>
         <small>${escapeHtml(familiar.description)}</small>
         <span class="familiar-choice-meta">
-          <span>Bonus : ${familiar.bonusAmount||familiar.objectiveMax} ${escapeHtml(familiar.progressShort)}</span>
           <span>Farm : ${escapeHtml((familiar.farmMethods||familiar.dungeons.map(d=>d.fullLabel)).join(" · "))}</span>
-          <span>${escapeHtml(familiar.difficultyLabel||"Difficulté estimée : standard")}</span>
+          <span>Difficulté : ${escapeHtml((familiar.difficultyLabel||"Facile").toLowerCase())}<b class="familiar-choice-stars" aria-label="${stars.length} étoiles">${stars}</b></span>
         </span>
-        <em>${escapeHtml(familiar.statusLabel)}</em>
       </span>
     </label>
   `}).join("");
