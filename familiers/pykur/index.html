@@ -22916,8 +22916,11 @@ function ensureData(){
 }
 
 function makeStore(){
-  const id="p_"+Date.now();
-  return {active:id,needsFamiliarChoice:true,galleryShared:true,sharedGallery:defaultData().gallery,optionsShared:false,sharedSettings:defaultData().settings,achievementsShared:false,sharedAchievements:defaultData().achievements,deletedProfiles:{},profiles:{[id]:{name:FAMILIARS.pykur.defaultProfileName,data:defaultDataForFamiliar("pykur")}}};
+  return {active:null,needsFamiliarChoice:true,galleryShared:true,sharedGallery:defaultData().gallery,optionsShared:false,sharedSettings:defaultData().settings,achievementsShared:false,sharedAchievements:defaultData().achievements,deletedProfiles:{},profiles:{}};
+}
+
+function hasActiveProfile(){
+  return !!(store?.profiles && activeProfile && store.profiles[activeProfile]);
 }
 
 function normalizeSettings(settings){
@@ -23087,6 +23090,7 @@ function load(){
   try{
     store=JSON.parse(localStorage.getItem("pykur_clean_v1"))||makeStore();
   }catch(e){store=makeStore()}
+  if(!store.profiles)store.profiles={};
   store.deletedProfiles=Object.assign({},store.deletedProfiles||{});
   Object.keys(store.deletedProfiles).forEach(profileId=>{
     if(store.profiles)delete store.profiles[profileId];
@@ -23098,8 +23102,9 @@ function load(){
   ensureStoreGallery();
   ensureStoreOptionsSharing();
   ensureStoreAchievementSharing();
+  if(!store.active || !store.profiles[store.active])store.active=Object.keys(store.profiles)[0]||null;
   activeProfile=store.active;
-  data=Object.assign(defaultData(), store.profiles[activeProfile]?.data||{});
+  data=activeProfile ? Object.assign(defaultData(), store.profiles[activeProfile]?.data||{}) : defaultDataForFamiliar("pykur");
   refreshFamiliarRuntime();
   data.runs=Object.assign(Object.fromEntries(activeFarmKeys().map(key=>[key,0])),data.runs||{});
   data.mobs=Object.assign({zone:{}},data.mobs||{});
@@ -23150,6 +23155,14 @@ function save(){
     syncSharedSettingsFromData();
     syncSharedAchievementsFromData();
     store.active=activeProfile;
+    if(!hasActiveProfile()){
+      store.active=null;
+      store.updatedAt=new Date().toISOString();
+      store.lastSavedAt=store.updatedAt;
+      localStorage.setItem("pykur_clean_v1",JSON.stringify(store));
+      markSaveStatus(true);
+      return;
+    }
     const savedData=clone(data);
     if(store.optionsShared)savedData.settings=clone(store.sharedSettings);
     if(store.achievementsShared)savedData.achievements=clone(store.sharedAchievements);
@@ -24965,7 +24978,101 @@ const helpFinalStep={
 };
 
 function activeHelpSteps(){
-  return modernHelpSteps;
+  return buildModernHelpSteps();
+}
+
+function buildModernHelpSteps(){
+  const familiar=activeFamiliar();
+  const dungeons=familiar.dungeons||[];
+  const dungeonNames=dungeons.map(dungeon=>dungeon.fullLabel||dungeon.label).join(", ");
+  const firstDungeon=dungeons[0]?.fullLabel || dungeons[0]?.label || "le donjon actif";
+  const unit=familiar.progressShort || "progression";
+  const progressLabel=familiar.progressLabel || "Progression";
+  const farmMethods=(familiar.farmMethods||dungeons.map(dungeon=>dungeon.fullLabel||dungeon.label)).join(" · ");
+  const specialDungeon=dungeons.find(dungeon=>dungeon.special==="salleAbrakne");
+  const dungeonCopy=dungeons.length>1
+    ? `Ce profil peut suivre plusieurs méthodes : <strong>${escapeHtml(dungeonNames)}</strong>. Le choix actif détermine le compteur utilisé, le chrono, les projections et les monstres ajoutés.`
+    : `Ce profil suit principalement <strong>${escapeHtml(firstDungeon)}</strong>. Le choix actif reste affiché pour garder le même fonctionnement entre tous les familiers.`;
+  const specialCopy=specialDungeon
+    ? `<div class="help-card"><strong>${escapeHtml(specialDungeon.fullLabel)}</strong><span>Pour la boucle spéciale, cliquez sur <strong>Arrivé à la salle Abrakne</strong> après les premières salles. Ensuite, <strong>+ Run</strong> ajoute les boucles Abrakne jusqu'à ce que vous sortiez de la salle.</span></div>`
+    : "";
+  return [
+    {
+      icon:"📖",
+      title:"Bienvenue sur Familier Tracker",
+      html:`<p><strong>Familier Tracker</strong> accompagne votre progression autour du profil actif : <strong>${escapeHtml(familiar.label)}</strong>.</p><div class="help-card-grid"><div class="help-card"><strong>${escapeHtml(progressLabel)}</strong><span>Suivez vos gains de ${escapeHtml(unit)}, votre objectif et vos méthodes de farm.</span></div><div class="help-card"><strong>Donjons</strong><span>${escapeHtml(farmMethods)}</span></div><div class="help-card"><strong>Souvenirs</strong><span>Conservez vos familiers terminés, vos statistiques et votre collection.</span></div></div>`
+    },
+    {
+      icon:"⚡",
+      title:"Utilisation rapide",
+      html:`<p>Le fonctionnement reste simple, quel que soit le familier.</p><ol><li>Choisissez le donjon ou la méthode active.</li><li>Lancez votre session de farm si vous utilisez le chrono.</li><li>Effectuez votre combat ou votre donjon.</li><li>Cliquez sur <strong>+ Run</strong> après validation.</li><li>Le tracker met à jour les monstres, la ${escapeHtml(progressLabel.toLowerCase())}, les projections et la sauvegarde.</li></ol><div class="help-flow"><span>${escapeHtml(firstDungeon)}</span><em>↓</em><span>+ Run</span><em>↓</em><span>${escapeHtml(progressLabel)} automatique</span></div>`
+    },
+    {
+      icon:"🏰",
+      title:"Choisir le donjon actif",
+      html:`<p>${dungeonCopy}</p>${specialCopy}<div class="help-card-grid">${dungeons.map(dungeon=>`<div class="help-card"><strong>${escapeHtml(dungeon.label)}</strong><span>${escapeHtml(dungeon.fullLabel||dungeon.label)}</span></div>`).join("")}</div>`
+    },
+    {
+      icon:"➕",
+      title:"Ajouter une progression",
+      html:`<p>Le bouton <strong>+ Run</strong> ajoute la méthode active et met à jour les monstres associés.</p><p>Si une progression est gagnée, le badge <strong>${escapeHtml(formatProgressGain(1))}</strong> apparaît près de votre familier et les statistiques sont recalculées.</p>`
+    },
+    {
+      icon:"➖",
+      title:"Corriger une erreur",
+      html:`<p>Le bouton <strong>- Run</strong> retire la dernière saisie de la méthode active.</p><p>Utilisez-le pour corriger un clic de trop. Les monstres, la ${escapeHtml(progressLabel.toLowerCase())}, les statistiques et l'historique sont recalculés.</p>`
+    },
+    {
+      icon:"⏱️",
+      title:"Chronomètre et session",
+      html:`<p>Le chronomètre mesure le combat ou le donjon en cours. La session mesure votre séance complète de farm.</p><p>Ces temps restent facultatifs, mais ils améliorent les estimations et les moyennes.</p>`
+    },
+    {
+      icon:"🔮",
+      title:"Projections",
+      html:`<p>La projection estime le prochain gain de ${escapeHtml(unit)}, l'objectif final et le temps restant selon vos compteurs actuels.</p><p>Le simulateur de donjons ne modifie pas vos données : il sert uniquement à tester des scénarios.</p>`
+    },
+    {
+      icon:"✨",
+      title:"Votre familier",
+      html:`<p>${escapeHtml(familiar.label)} réagit à vos actions et affiche sa progression vers <strong>${escapeHtml(familiar.objectiveLabel)}</strong>.</p><p>Les événements vivants, les animations et les ambiances restent visuels et ne bloquent pas l'utilisation du tracker.</p>`
+    },
+    {
+      icon:"👥",
+      title:"Profils",
+      html:`<p>Chaque profil possède son familier, son nom, ses donjons, ses monstres, son chrono, ses statistiques et son historique.</p><p>Quand vous créez un nouveau profil, choisissez d'abord le familier puis donnez un nom clair à votre progression.</p>`
+    },
+    {
+      icon:"📊",
+      title:"Statistiques et monstres",
+      html:`<p>Les statistiques résument vos runs, vos temps et vos performances.</p><p>Le panneau Monstres détaille les paliers de ${escapeHtml(unit)} et les monstres restants avant le prochain gain.</p>`
+    },
+    {
+      icon:"🏆",
+      title:"Succès",
+      html:`<p>Les succès récompensent votre progression et votre utilisation du tracker.</p><p>Certains succès sont communs, tandis que les succès propres à chaque familier seront adaptés à son objectif.</p>`
+    },
+    {
+      icon:"🖼️",
+      title:"Galerie",
+      html:`<p>La galerie devient la mémoire de vos familiers terminés.</p><p>Elle affiche les anciens profils, leurs titres, leurs statistiques finales et les événements découverts.</p>`
+    },
+    {
+      icon:"🌙",
+      title:"Événements et ambiance",
+      html:`<p>Les événements vivants peuvent apparaître autour du familier actif. Les ambiances passives restent discrètes et décoratives.</p><p>Ces systèmes sont séparés de votre progression et ne modifient pas vos données.</p>`
+    },
+    {
+      icon:"🧭",
+      title:"Détection Dofus",
+      html:`<p>La détection Dofus peut ajouter automatiquement une progression après reconnaissance d'une fenêtre partagée.</p><p>Dans les options, choisissez le familier et le donjon à configurer. Par défaut, le sélecteur suit le familier du profil actif.</p>`
+    },
+    {
+      icon:"💾",
+      title:"Sauvegarde",
+      html:`<p>Les membres synchronisent automatiquement leur progression avec le cloud.</p><p>En mode invité, les données restent locales au navigateur. Elles peuvent être perdues si le cache est supprimé.</p>`
+    }
+  ];
 }
 
 function applyHelpfulTooltips(){
@@ -25101,7 +25208,7 @@ function renderHelpStep(){
     $("#helpText").innerHTML=step.html || `<p>${step.text || ""}</p>`;
     $("#helpProgressFill").style.width=progress+"%";
     $("#helpProgressText").textContent=isFinal ? "Progression complète" : `Étape ${helpIndex+1} sur ${steps.length}`;
-    $("#helpNoAuto").checked=!!data.settings.helpAutoDisabled;
+    $("#helpNoAuto").checked=true;
     $("#helpPrev").style.visibility=helpIndex===0?"hidden":"visible";
     $("#helpNext").textContent=isFinal?"Commencer l'aventure":"Suivant";
     $("#helpBackdrop").classList.add("show");
@@ -25118,6 +25225,9 @@ function startHelp(){
 
 function closeHelp(){
   if(data?.ui){
+    if(data.settings && $("#helpNoAuto")){
+      data.settings.helpAutoDisabled=!!$("#helpNoAuto").checked;
+    }
     data.ui.helpSeen=true;
     save();
   }
@@ -26123,16 +26233,14 @@ function notifyPPProgress(oldPP,newPP){
 
 function showPPFloat(amount=1){
   if(document.body.classList.contains("no-anim"))return;
-  const target=activeFamiliarId()==="abra-kadabra"
-    ? ($(".pykur-orb") || $("#progressPercent") || $("#prospection"))
-    : ($("#prospection") || $(".pp-row"));
+  const target=$("#progressPercent") || $(".pykur-orb") || $("#prospection") || $(".pp-row");
   if(!target)return;
   const rect=target.getBoundingClientRect();
   const pop=document.createElement("div");
   pop.className="pp-float";
   pop.textContent=formatProgressGain(amount);
   pop.style.left=`${rect.left+rect.width/2}px`;
-  pop.style.top=`${Math.max(18,rect.top+(activeFamiliarId()==="abra-kadabra"?rect.height*.16:-30))}px`;
+  pop.style.top=`${Math.max(18,rect.top-36)}px`;
   document.body.appendChild(pop);
   setTimeout(()=>pop.remove(),1900);
 }
@@ -26622,6 +26730,10 @@ async function chooseFamiliarForProfile(defaultId="pykur"){
 async function maybePromptInitialFamiliarChoice(){
   if(!store?.needsFamiliarChoice)return;
   const ids=Object.keys(store.profiles||{});
+  if(ids.length===0){
+    await createProfileFromChoice({initial:true});
+    return;
+  }
   if(ids.length!==1)return;
   const profile=store.profiles[ids[0]];
   if(!profile?.data)return;
@@ -26634,8 +26746,12 @@ async function maybePromptInitialFamiliarChoice(){
   const familiarId=await chooseFamiliarForProfile(profile.data.familiarId||"pykur");
   if(!familiarId)return;
   const familiar=FAMILIARS[familiarId]||FAMILIARS.pykur;
-  profile.data.familiarId=familiar.id;
-  if(profile.name===FAMILIARS.pykur.defaultProfileName)profile.name=familiar.defaultProfileName;
+  const name=((await showPrompt("Nom du profil :",{title:"Créer un profil",defaultValue:familiar.defaultProfileName,okLabel:"Créer"}))||"").trim();
+  if(!name)return;
+  profile.name=name;
+  profile.data=defaultDataForFamiliar(familiar.id);
+  profile.data.settings.helpAutoDisabled=true;
+  profile.data.ui.helpSeen=false;
   activeProfile=ids[0];
   store.active=activeProfile;
   data=clone(profile.data);
@@ -26645,11 +26761,21 @@ async function maybePromptInitialFamiliarChoice(){
   renderProfiles();
   renderAll();
   toast(`${familiar.label} sélectionné pour ce profil.`,"success","click");
+  setTimeout(()=>startHelp(),220);
 }
 
 function renderProfiles(){
   const select=$("#profileSelect");
   select.innerHTML="";
+  const ids=Object.keys(store.profiles||{});
+  if(!ids.length){
+    const opt=document.createElement("option");
+    opt.value="";
+    opt.textContent="Aucun profil";
+    select.appendChild(opt);
+    select.value="";
+    return;
+  }
   for(const id in store.profiles){
     const profile=store.profiles[id];
     const familiar=FAMILIARS[normalizeFamiliarId(profile?.data?.familiarId)]||FAMILIARS.pykur;
@@ -26663,14 +26789,22 @@ function renderProfiles(){
 
 async function createProfile(){
   if(isCompletionLocked())return toast("Termine d'abord l'écran de fin du familier.","warning","warning");
+  await createProfileFromChoice({initial:false});
+}
+
+async function createProfileFromChoice({initial=false}={}){
   const familiarId=await chooseFamiliarForProfile("pykur");
   if(!familiarId)return;
   const familiar=FAMILIARS[familiarId]||FAMILIARS.pykur;
   const name=((await showPrompt("Nom du profil :",{title:"Créer un profil",defaultValue:familiar.defaultProfileName,okLabel:"Créer"}))||"").trim();
   if(!name)return;
-  save();
+  if(hasActiveProfile())save();
   const id="p_"+Date.now();
   store.profiles[id]={name,data:defaultDataForFamiliar(familiarId)};
+  if(initial){
+    store.profiles[id].data.settings.helpAutoDisabled=true;
+    store.profiles[id].data.ui.helpSeen=false;
+  }
   store.needsFamiliarChoice=false;
   activeProfile=id;store.active=id;data=clone(store.profiles[id].data);
   applySharedSettingsToData();
@@ -26678,6 +26812,7 @@ async function createProfile(){
   syncGlobalSoundSetting();
   ensureData();syncChronoTimerForProfile();save();renderProfiles();renderAll();
   toast(`Profil ${familiar.label} créé`,"success");
+  if(initial)setTimeout(()=>startHelp(),220);
 }
 
 async function renameProfile(){
@@ -26733,6 +26868,7 @@ async function deleteProfile(){
 }
 
 function switchProfile(id){
+  if(!store.profiles?.[id])return;
   save();
   activeProfile=id;
   data=clone(store.profiles[activeProfile].data);
