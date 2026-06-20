@@ -598,6 +598,42 @@ const PUBLIC_ABRA_MOBS = {
   abrakne: 50,
   tronknyde: 150
 };
+const PUBLIC_DRAGOUNE_MOBS = {
+  crocabulia: 1,
+  aerotrugoburMalveillant: 5,
+  aqualikrosImpitoyable: 5,
+  aerohouctorGuerrier: 5,
+  aquabralakGuerrier: 5,
+  terrakoubiakGuerrier: 10,
+  ignelicroburGuerrier: 10,
+  terraburkalPerfide: 10,
+  ignerkocroposAffame: 10,
+  dragossNoir: 15,
+  dragossBlanc: 15,
+  dragossSaphir: 15,
+  dragossDoreEveille: 15,
+  dragossNoirEveille: 15,
+  dragossBlancEveille: 15,
+  dragossSaphirEveille: 15,
+  dragossDore: 15,
+  dragoeufVolant: 15,
+  dragoeufGuerrier: 15,
+  dragueuse: 15,
+  dragoeufDoreImmature: 50,
+  dragoeufNoirImmature: 50,
+  dragoeufBlancImmature: 50,
+  dragoeufSaphirImmature: 50,
+  dragoeufDore: 50,
+  dragoeufNoir: 50,
+  dragoeufBlanc: 50,
+  dragoeufSaphir: 50,
+  dragoeufDoreEveille: 50,
+  dragoeufNoirEveille: 50,
+  dragoeufBlancEveille: 50,
+  dragoeufSaphirEveille: 50,
+  coquilleSoignante: 100,
+  coquilleExplosive: 100
+};
 const PUBLIC_FAMILIARS = {
   pykur: {
     label: "Pykur",
@@ -620,6 +656,16 @@ const PUBLIC_FAMILIARS = {
       { key: "donjonAbraknyde", label: "Abraknyde" },
       { key: "cheneMou", label: "Chêne Mou" },
       { key: "salleAbrakne", label: "Salle Abrakne" }
+    ]
+  },
+  "dragoune-noir": {
+    label: "Dragoune Noir",
+    defaultProfileLabel: "Profil Dragoune Noir",
+    progressShort: "sagesse",
+    objectiveMax: 55,
+    thresholds: PUBLIC_DRAGOUNE_MOBS,
+    runs: [
+      { key: "sanctuaireDragoeufs", label: "Sanctuaire" }
     ]
   }
 };
@@ -2508,8 +2554,9 @@ app.get("/api/admin/users/:pseudo/control", requireAuth, requireRole("moderator"
     });
     (Array.isArray(source?.completedPykurs) ? source.completedPykurs : []).forEach((item) => {
       const familiarId = String(item?.familiarId || "pykur");
-      const familiarLabel = String(item?.familiarLabel || (familiarId === "abra-kadabra" ? "Abra Kadabra" : "Pykur"));
-      const progressLabel = String(item?.progressLabel || (familiarId === "abra-kadabra" ? "puissance" : "PP"));
+      const familiar = publicFamiliarMeta(familiarId);
+      const familiarLabel = String(item?.familiarLabel || familiar.label || "Pykur");
+      const progressLabel = String(item?.progressLabel || familiar.progressShort || "PP");
       if (item?.id) galleryPykurs.set(String(item.id), {
         id: String(item.id),
         number: Number(item.number) || 0,

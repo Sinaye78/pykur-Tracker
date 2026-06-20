@@ -14911,8 +14911,10 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
 <script>
 const PP_MAX=90;
 const ABRA_OBJECTIVE_MAX=55;
+const DRAGOUNE_OBJECTIVE_MAX=55;
 const PYKUR_RUN_LIMITS={morose:640,tynril:48};
 const ABRA_RUN_LIMITS={donjonAbraknyde:9999,cheneMou:9999,salleAbrakne:9999};
+const DRAGOUNE_RUN_LIMITS={sanctuaireDragoeufs:9999};
 const FAMILIARS={
   pykur:{
     id:"pykur",
@@ -14968,6 +14970,32 @@ const FAMILIARS={
       {key:"cheneMou",label:"Chêne Mou",fullLabel:"Donjon Chêne Mou",asset:"../abra-kadabra/assets/images/donjons/donjon chêne mou.png"},
       {key:"salleAbrakne",label:"Salle Abrakne",fullLabel:"Salle Abrakne",asset:"../abra-kadabra/assets/images/donjons/salle abrakne.png",special:"salleAbrakne"}
     ]
+  },
+  "dragoune-noir":{
+    id:"dragoune-noir",
+    label:"Dragoune Noir",
+    shortLabel:"Dragoune Noir",
+    defaultProfileName:"Dragoune Noir principale",
+    progressLabel:"Sagesse",
+    progressShort:"sagesse",
+    objectiveMax:DRAGOUNE_OBJECTIVE_MAX,
+    objectiveLabel:"55 sagesse",
+    icon:"../dragoune-noir/assets/images/sagesse.png",
+    logo:"../dragoune-noir/assets/images/dragoune-noir.png",
+    image:"../dragoune-noir/assets/images/dragoune-noir.png",
+    auraImage:"../dragoune-noir/assets/images/dragoune-noir-aura.png",
+    sleepingImage:"../dragoune-noir/assets/images/dragounenoirz.png",
+    background:"../dragoune-noir/assets/images/fond/fond.png",
+    status:"active",
+    statusLabel:"",
+    description:"Suivi de sagesse sur le Sanctuaire des Dragoeufs.",
+    bonusAmount:55,
+    difficultyLabel:"Moyen",
+    difficultyStars:2,
+    farmMethods:["Sanctuaire des Dragoeufs"],
+    dungeons:[
+      {key:"sanctuaireDragoeufs",label:"Sanctuaire",fullLabel:"Sanctuaire des Dragoeufs",asset:"../dragoune-noir/assets/images/donjon/crocabulia.png"}
+    ]
   }
 };
 function normalizeFamiliarId(id){
@@ -15006,6 +15034,7 @@ function farmDefaultAverage(farm){
   if(farm==="donjonAbraknyde")return 900;
   if(farm==="cheneMou")return 1800;
   if(farm==="salleAbrakne")return 10;
+  if(farm==="sanctuaireDragoeufs")return 1800;
   return 120;
 }
 function formatProgressValue(value=currentPP()){
@@ -15080,6 +15109,43 @@ const ABRA_MOBS={
   tronknyde:{name:"Tronknyde",imgPath:"../abra-kadabra/assets/images/monstre/tronknyde.png",ppNeed:150,cat:["donjonAbraknyde","cheneMou","zone"]}
 };
 
+const DRAGOUNE_MOBS={
+  crocabulia:{name:"Crocabulia",imgPath:"../dragoune-noir/assets/images/monstre/crocabulia.png",ppNeed:1,cat:["sanctuaireDragoeufs"]},
+  aerotrugoburMalveillant:{name:"Aerotrugobur le Malveillant",imgPath:"../dragoune-noir/assets/images/monstre/aerotrugobur-le-malveillant.png",ppNeed:5,cat:["zone"]},
+  aqualikrosImpitoyable:{name:"Aqualikros l'Impitoyable",imgPath:"../dragoune-noir/assets/images/monstre/aqualikros-l-impitoyable.png",ppNeed:5,cat:["zone"]},
+  aerohouctorGuerrier:{name:"Aerohouctor le Guerrier",imgPath:"../dragoune-noir/assets/images/monstre/aerohouctor-le-guerrier.png",ppNeed:5,cat:["zone"]},
+  aquabralakGuerrier:{name:"Aquabralak le Guerrier",imgPath:"../dragoune-noir/assets/images/monstre/aquabralak-le-guerrier.png",ppNeed:5,cat:["zone"]},
+  terrakoubiakGuerrier:{name:"Terrakoubiak le Guerrier",imgPath:"../dragoune-noir/assets/images/monstre/terrakoubiak-le-Guerrier.png",ppNeed:10,cat:["zone"]},
+  ignelicroburGuerrier:{name:"Ignelicrobur le Guerrier",imgPath:"../dragoune-noir/assets/images/monstre/ignelicrobur le-guerrier.png",ppNeed:10,cat:["zone"]},
+  terraburkalPerfide:{name:"Terraburkal le Perfide",imgPath:"../dragoune-noir/assets/images/monstre/terraburkal-le-perfide.png",ppNeed:10,cat:["zone"]},
+  ignerkocroposAffame:{name:"Ignerkocropos l'Affamé",imgPath:"../dragoune-noir/assets/images/monstre/ignerkocropos-l-affame.png",ppNeed:10,cat:["zone"]},
+  dragossNoir:{name:"Dragoss Noir",imgPath:"../dragoune-noir/assets/images/monstre/dragoss-noir.png",ppNeed:15,cat:["sanctuaireDragoeufs","zone"]},
+  dragossBlanc:{name:"Dragoss Blanc",imgPath:"../dragoune-noir/assets/images/monstre/dragoss-blanc.png",ppNeed:15,cat:["sanctuaireDragoeufs","zone"]},
+  dragossSaphir:{name:"Dragoss de Saphir",imgPath:"../dragoune-noir/assets/images/monstre/dragoss-de-saphir.png",ppNeed:15,cat:["sanctuaireDragoeufs","zone"]},
+  dragossDoreEveille:{name:"Dragoss Doré Eveillé",imgPath:"../dragoune-noir/assets/images/monstre/dragoss-dore-eveille.png",ppNeed:15,cat:["sanctuaireDragoeufs","zone"]},
+  dragossNoirEveille:{name:"Dragoss Noir Eveillé",imgPath:"../dragoune-noir/assets/images/monstre/dragoss-noir-eveille.png",ppNeed:15,cat:["sanctuaireDragoeufs","zone"]},
+  dragossBlancEveille:{name:"Dragoss Blanc Eveillé",imgPath:"../dragoune-noir/assets/images/monstre/dragoss-blanc-eveille.png",ppNeed:15,cat:["sanctuaireDragoeufs","zone"]},
+  dragossSaphirEveille:{name:"Dragoss de Saphir Eveillé",imgPath:"../dragoune-noir/assets/images/monstre/dragoss-de-saphir-eveille.png",ppNeed:15,cat:["sanctuaireDragoeufs","zone"]},
+  dragossDore:{name:"Dragoss Doré",imgPath:"../dragoune-noir/assets/images/monstre/dragoss-dore.png",ppNeed:15,cat:["sanctuaireDragoeufs","zone"]},
+  dragoeufVolant:{name:"Dragoeuf Volant",imgPath:"../dragoune-noir/assets/images/monstre/dragoeuf-volant.png",ppNeed:15,cat:["sanctuaireDragoeufs","zone"]},
+  dragoeufGuerrier:{name:"Dragoeuf Guerrier",imgPath:"../dragoune-noir/assets/images/monstre/dragoeuf-guerrier.png",ppNeed:15,cat:["sanctuaireDragoeufs","zone"]},
+  dragueuse:{name:"Dragueuse",imgPath:"../dragoune-noir/assets/images/monstre/dragueuse.png",ppNeed:15,cat:["sanctuaireDragoeufs","zone"]},
+  dragoeufDoreImmature:{name:"DragOeuf Doré immature",imgPath:"../dragoune-noir/assets/images/monstre/dragoeuf-dore-immature.png",ppNeed:50,cat:["zone"]},
+  dragoeufNoirImmature:{name:"DragOeuf Noir immature",imgPath:"../dragoune-noir/assets/images/monstre/dragoeuf-noir-immature.png",ppNeed:50,cat:["zone"]},
+  dragoeufBlancImmature:{name:"DragOeuf Blanc immature",imgPath:"../dragoune-noir/assets/images/monstre/dragoeuf-blanc-immature.png",ppNeed:50,cat:["zone"]},
+  dragoeufSaphirImmature:{name:"DragOeuf de Saphir immature",imgPath:"../dragoune-noir/assets/images/monstre/dragoeuf-de-saphir-immature.png",ppNeed:50,cat:["zone"]},
+  dragoeufDore:{name:"DragOeuf Doré",imgPath:"../dragoune-noir/assets/images/monstre/dragoeuf-dore.png",ppNeed:50,cat:["zone"]},
+  dragoeufNoir:{name:"DragOeuf Noir",imgPath:"../dragoune-noir/assets/images/monstre/dragoeuf-noir.png",ppNeed:50,cat:["zone"]},
+  dragoeufBlanc:{name:"DragOeuf Blanc",imgPath:"../dragoune-noir/assets/images/monstre/dragoeuf-blanc.png",ppNeed:50,cat:["zone"]},
+  dragoeufSaphir:{name:"DragOeuf de Saphir",imgPath:"../dragoune-noir/assets/images/monstre/dragoeuf-de-saphir.png",ppNeed:50,cat:["zone"]},
+  dragoeufDoreEveille:{name:"DragOeuf Doré Eveillé",imgPath:"../dragoune-noir/assets/images/monstre/dragoeuf-dore-eveille.png",ppNeed:50,cat:["zone"]},
+  dragoeufNoirEveille:{name:"DragOeuf Noir Eveillé",imgPath:"../dragoune-noir/assets/images/monstre/dragoeuf-noir-eveille.png",ppNeed:50,cat:["zone"]},
+  dragoeufBlancEveille:{name:"DragOeuf Blanc Eveillé",imgPath:"../dragoune-noir/assets/images/monstre/dragoeuf-blanc-eveille.png",ppNeed:50,cat:["zone"]},
+  dragoeufSaphirEveille:{name:"DragOeuf de Saphir Eveillé",imgPath:"../dragoune-noir/assets/images/monstre/dragoeuf-de-saphir-eveille.png",ppNeed:50,cat:["zone"]},
+  coquilleSoignante:{name:"Coquille Soignante",imgPath:"../dragoune-noir/assets/images/monstre/coquille-soignante.png",ppNeed:100,cat:["zone"]},
+  coquilleExplosive:{name:"Coquille Explosive",imgPath:"../dragoune-noir/assets/images/monstre/coquille-explosive.png",ppNeed:100,cat:["zone"]}
+};
+
 const PYKUR_GAINS={
   morose:{chiendent:1,nerbe:1,fecorce:1,abrakleur:1,bitouf:1,floribonde:2},
   tynril:{tynrilConsterne:1,tynrilDeconcerte:1,tynrilPerfide:1,tynrilAhuri:1,fecorce:2,abrakleur:3,brouture:3,chiendent:5,nerbe:6,floribonde:6,bitouf:10}
@@ -15089,11 +15155,28 @@ const ABRA_GAINS={
   cheneMou:{cheneMou:1,abraknyde:4,tronknyde:3,abraknydeVenerable:1,abraknydeSombre:13,abrakne:1,abrakneSombre:14},
   salleAbrakne:{abrakne:1}
 };
+const DRAGOUNE_GAINS={
+  sanctuaireDragoeufs:{
+    crocabulia:1,
+    dragossBlanc:5,
+    dragossDore:5,
+    dragossNoir:5,
+    dragossSaphir:5,
+    dragueuse:7,
+    dragoeufGuerrier:5,
+    dragoeufVolant:8,
+    dragossBlancEveille:5,
+    dragossDoreEveille:5,
+    dragossNoirEveille:5,
+    dragossSaphirEveille:5
+  }
+};
 const ABRA_SPECIAL_GAINS={
   salleAbrakneSetup:{abraknyde:4,tronknyde:3,abraknydeVenerable:1,abrakne:1}
 };
 const PYKUR_ZONE_IDS=["abrakleur","bitouf","brouture","chiendent","fecorce","floribonde","nerbe"];
 const ABRA_ZONE_IDS=["abraknyde","tronknyde","abraknydeVenerable","abrakne"];
+const DRAGOUNE_ZONE_IDS=Object.keys(DRAGOUNE_MOBS).filter(id=>DRAGOUNE_MOBS[id].cat.includes("zone"));
 let RUN_LIMITS=PYKUR_RUN_LIMITS;
 let mobs=PYKUR_MOBS;
 let gains=PYKUR_GAINS;
@@ -15101,10 +15184,24 @@ let zoneIds=PYKUR_ZONE_IDS;
 
 function refreshFamiliarRuntime(){
   const familiarId=activeFamiliarId();
-  RUN_LIMITS=familiarId==="abra-kadabra" ? ABRA_RUN_LIMITS : PYKUR_RUN_LIMITS;
-  mobs=familiarId==="abra-kadabra" ? ABRA_MOBS : PYKUR_MOBS;
-  gains=familiarId==="abra-kadabra" ? ABRA_GAINS : PYKUR_GAINS;
-  zoneIds=familiarId==="abra-kadabra" ? ABRA_ZONE_IDS : PYKUR_ZONE_IDS;
+  if(familiarId==="abra-kadabra"){
+    RUN_LIMITS=ABRA_RUN_LIMITS;
+    mobs=ABRA_MOBS;
+    gains=ABRA_GAINS;
+    zoneIds=ABRA_ZONE_IDS;
+    return;
+  }
+  if(familiarId==="dragoune-noir"){
+    RUN_LIMITS=DRAGOUNE_RUN_LIMITS;
+    mobs=DRAGOUNE_MOBS;
+    gains=DRAGOUNE_GAINS;
+    zoneIds=DRAGOUNE_ZONE_IDS;
+    return;
+  }
+  RUN_LIMITS=PYKUR_RUN_LIMITS;
+  mobs=PYKUR_MOBS;
+  gains=PYKUR_GAINS;
+  zoneIds=PYKUR_ZONE_IDS;
 }
 
 const defaultData=()=>({
@@ -15153,6 +15250,9 @@ function defaultDataForFamiliar(familiarId="pykur"){
     next.stats.avgCheneMou=360;
     next.stats.avgSalleAbrakne=10;
     next.special={salleAbrakneSetupDone:false,salleAbrakneActive:false,salleAbrakneLastActivity:null};
+  }
+  if(normalized==="dragoune-noir"){
+    next.stats.avgSanctuaireDragoeufs=1800;
   }
   return next;
 }
@@ -22652,6 +22752,10 @@ function ensureData(){
   data.settings.keybinds=Object.assign(defaultKeybinds(),data.settings.keybinds||{});
   if(data.settings.shortcutsEnabled===undefined)data.settings.shortcutsEnabled=true;
   data.ui=Object.assign(defaultData().ui,data.ui||{});
+  farmKeys.forEach(farm=>{
+    const key=farmAverageKey(farm);
+    if(data.stats[key]===undefined)data.stats[key]=farmDefaultAverage(farm);
+  });
   if(!farmKeys.includes(data.ui.farm))data.ui.farm=defaultFarm;
   if(![...farmKeys,"zone","all"].includes(data.ui.tab))data.ui.tab=defaultFarm;
   if(data.ui.capyMode===undefined)data.ui.capyMode=false;
