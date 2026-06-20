@@ -10525,6 +10525,80 @@ body.no-anim .pykur-sparkle{
 .dofus-config-side{display:grid;gap:10px}
 .dofus-config-readout{border:1px solid rgba(119,79,28,.28);border-radius:12px;padding:10px;background:rgba(255,255,255,.36);font-weight:850;color:#4b3217}
 .dofus-config-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dofus-familiar-card{
+  display:grid;
+  grid-template-columns:62px minmax(0,1fr) auto;
+  gap:12px;
+  align-items:center;
+  padding:12px;
+  border:1px solid rgba(119,79,28,.26);
+  border-radius:14px;
+  background:linear-gradient(135deg,rgba(255,248,224,.86),rgba(235,247,255,.48));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 8px 18px rgba(73,48,18,.08);
+}
+.dofus-familiar-card img{
+  width:58px;
+  height:58px;
+  object-fit:contain;
+  filter:drop-shadow(0 8px 12px rgba(60,38,12,.18));
+}
+.dofus-familiar-card strong{
+  display:block;
+  color:#2f1f10;
+  font-size:16px;
+}
+.dofus-familiar-card small{
+  display:block;
+  margin-top:2px;
+  color:#694a24;
+  font-weight:800;
+}
+.dofus-familiar-meta{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-top:7px;
+}
+.dofus-familiar-pill{
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  padding:0 9px;
+  border-radius:999px;
+  background:rgba(255,255,255,.66);
+  border:1px solid rgba(119,79,28,.2);
+  color:#4b3217;
+  font-size:12px;
+  font-weight:950;
+}
+.dofus-familiar-card .btn{
+  min-height:34px;
+  white-space:nowrap;
+}
+.dofus-reference-list{display:grid;gap:10px}
+.dynamic-dofus-ref-row{
+  border:1px solid rgba(119,79,28,.24);
+  border-radius:13px;
+  background:linear-gradient(180deg,rgba(255,252,242,.72),rgba(242,223,184,.44));
+}
+.dynamic-dofus-ref-row.is-single{
+  border-color:rgba(37,99,235,.24);
+  background:linear-gradient(135deg,rgba(239,246,255,.76),rgba(255,252,242,.72));
+}
+.dofus-ref-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dofus-ref-status{
+  display:inline-flex;
+  align-items:center;
+  min-height:22px;
+  padding:0 8px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:950;
+}
+.dofus-ref-status.ready{background:#dcfce7;color:#166534}
+.dofus-ref-status.missing{background:#fff7ed;color:#9a3412}
+.dofus-ref-summary{color:#72522c!important}
 .modal-bg.stacked-modal{z-index:10120}
 .dofus-tutorial{display:grid;gap:14px;line-height:1.55}
 .dofus-tutorial h3{margin:0}
@@ -10556,7 +10630,7 @@ body.no-anim .pykur-sparkle{
 .dofus-status-active{color:#15803d!important}
 .dofus-status-wait{color:#b7791f!important}
 .dofus-status-stop{color:#b42318!important}
-@media(max-width:820px){.dofus-config-grid{grid-template-columns:1fr}.dofus-config-actions{grid-template-columns:1fr}}
+@media(max-width:820px){.dofus-config-grid{grid-template-columns:1fr}.dofus-config-actions{grid-template-columns:1fr}.dofus-familiar-card{grid-template-columns:52px minmax(0,1fr)}.dofus-familiar-card>.btn{grid-column:1/-1;width:100%}}
 @media(max-width:820px){.admin-achievement-list{grid-template-columns:1fr}.admin-achievement-row{grid-template-columns:minmax(0,1fr) auto}.admin-achievement-row .btn:last-child{grid-column:2}}
 @media(max-width:760px){
   .monster-quick-stats{grid-template-columns:1fr 1fr}
@@ -14642,7 +14716,8 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
               <div class="option-row"><div><strong>Activer la détection automatique</strong><small>Analyse périodiquement la fenêtre Dofus partagée.</small></div><button class="btn btn-blue tooltip" id="toggleDofusDetection" data-tooltip="Active ou désactive la détection automatique."></button></div>
               <div class="option-row"><div><strong>Fenêtre Dofus</strong><small>Choisissez volontairement la fenêtre ou l'écran Dofus à analyser.</small></div><button class="btn btn-green tooltip" id="chooseDofusWindow" data-tooltip="Ouvre le partage de fenêtre du navigateur.">Choisir la fenêtre Dofus</button></div>
               <label class="option-control"><span>Familier configuré</span><select id="dofusFamiliarSelect"></select><small>Par défaut, ce choix suit le familier du profil actif.</small></label>
-              <div id="dofusReferenceRows"></div>
+              <div id="dofusFamiliarSummary"></div>
+              <div id="dofusReferenceRows" class="dofus-reference-list"></div>
               <div class="option-row"><div><strong>Tester la détection</strong><small>Compare les références enregistrées avec l'image actuelle.</small></div><button class="btn btn-orange tooltip" id="testDofusDetection" data-tooltip="Affiche le meilleur score de correspondance.">Tester la détection</button></div>
               <div class="option-row"><div><strong>Raccourci clavier</strong><small>Active ou désactive la détection sans ouvrir les options. Suppr/Backspace le désactive pendant l'édition.</small></div><button class="btn btn-blue tooltip" id="editDofusShortcut" data-shortcut-edit="toggleDofusDetection" data-tooltip="Configurer le raccourci de détection Dofus.">Désactivé</button></div>
               <label class="option-control"><span>Cooldown de détection</span><input id="dofusCooldownInput" type="number" min="3" max="300" step="1"></label>
@@ -14994,10 +15069,11 @@ const FAMILIARS={
     bonusAmount:90,
     difficultyLabel:"Moyen",
     difficultyStars:2,
+    dofusCooldownMin:10,
     farmMethods:["Donjon Morose","Donjon Tynril"],
     dungeons:[
-      {key:"morose",label:"Morose",fullLabel:"Donjon Morose",asset:"./assets/images/dj actif/morose.png"},
-      {key:"tynril",label:"Tynril",fullLabel:"Donjon Tynril",asset:"./assets/images/dj actif/tynril.png"}
+      {key:"morose",label:"Morose",fullLabel:"Donjon Morose",asset:"./assets/images/dj actif/morose.png",defaultAverage:125},
+      {key:"tynril",label:"Tynril",fullLabel:"Donjon Tynril",asset:"./assets/images/dj actif/tynril.png",defaultAverage:600}
     ]
   },
   "abra-kadabra":{
@@ -15021,11 +15097,13 @@ const FAMILIARS={
     bonusAmount:55,
     difficultyLabel:"Facile",
     difficultyStars:1,
+    dofusCooldownMin:3,
+    specialDefaults:{salleAbrakneSetupDone:false,salleAbrakneActive:false,salleAbrakneLastActivity:null},
     farmMethods:["Donjon Abraknyde","Donjon Chêne Mou","Boucle salle Abrakne"],
     dungeons:[
-      {key:"donjonAbraknyde",label:"Abraknyde",fullLabel:"Donjon Abraknyde",asset:"../abra-kadabra/assets/images/donjons/donjon abraknyde.png"},
-      {key:"cheneMou",label:"Chêne Mou",fullLabel:"Donjon Chêne Mou",asset:"../abra-kadabra/assets/images/donjons/donjon chêne mou.png"},
-      {key:"salleAbrakne",label:"Salle Abrakne",fullLabel:"Salle Abrakne",asset:"../abra-kadabra/assets/images/donjons/salle abrakne.png",special:"salleAbrakne"}
+      {key:"donjonAbraknyde",label:"Abraknyde",fullLabel:"Donjon Abraknyde",asset:"../abra-kadabra/assets/images/donjons/donjon abraknyde.png",defaultAverage:900},
+      {key:"cheneMou",label:"Chêne Mou",fullLabel:"Donjon Chêne Mou",asset:"../abra-kadabra/assets/images/donjons/donjon chêne mou.png",defaultAverage:1800},
+      {key:"salleAbrakne",label:"Salle Abrakne",fullLabel:"Salle Abrakne",asset:"../abra-kadabra/assets/images/donjons/salle abrakne.png",special:"salleAbrakne",defaultAverage:10}
     ]
   },
   "dragoune-noir":{
@@ -15049,9 +15127,10 @@ const FAMILIARS={
     bonusAmount:55,
     difficultyLabel:"Moyen",
     difficultyStars:2,
+    dofusCooldownMin:10,
     farmMethods:["Sanctuaire des Dragoeufs"],
     dungeons:[
-      {key:"sanctuaireDragoeufs",label:"Sanctuaire",fullLabel:"Sanctuaire des Dragoeufs",asset:"../dragoune-noir/assets/images/donjon/crocabulia.png"}
+      {key:"sanctuaireDragoeufs",label:"Sanctuaire",fullLabel:"Sanctuaire des Dragoeufs",asset:"../dragoune-noir/assets/images/donjon/crocabulia.png",defaultAverage:1800}
     ]
   }
 };
@@ -15086,12 +15165,10 @@ function farmAverageKey(farm){
   return farm==="morose" ? "avgMorose" : farm==="tynril" ? "avgTynril" : "avg"+farmDomId(farm);
 }
 function farmDefaultAverage(farm){
-  if(farm==="morose")return 125;
-  if(farm==="tynril")return 600;
-  if(farm==="donjonAbraknyde")return 900;
-  if(farm==="cheneMou")return 1800;
-  if(farm==="salleAbrakne")return 10;
-  if(farm==="sanctuaireDragoeufs")return 1800;
+  for(const familiar of Object.values(FAMILIARS)){
+    const dungeon=familiar.dungeons.find(entry=>entry.key===farm);
+    if(dungeon?.defaultAverage)return dungeon.defaultAverage;
+  }
   return 120;
 }
 function formatProgressValue(value=currentPP()){
@@ -15234,31 +15311,26 @@ const ABRA_SPECIAL_GAINS={
 const PYKUR_ZONE_IDS=["abrakleur","bitouf","brouture","chiendent","fecorce","floribonde","nerbe"];
 const ABRA_ZONE_IDS=["abraknyde","tronknyde","abraknydeVenerable","abrakne"];
 const DRAGOUNE_ZONE_IDS=Object.keys(DRAGOUNE_MOBS).filter(id=>DRAGOUNE_MOBS[id].cat.includes("zone"));
+const FAMILIAR_RUNTIME={
+  pykur:{runLimits:PYKUR_RUN_LIMITS,mobs:PYKUR_MOBS,gains:PYKUR_GAINS,zoneIds:PYKUR_ZONE_IDS},
+  "abra-kadabra":{runLimits:ABRA_RUN_LIMITS,mobs:ABRA_MOBS,gains:ABRA_GAINS,zoneIds:ABRA_ZONE_IDS,specialGains:ABRA_SPECIAL_GAINS},
+  "dragoune-noir":{runLimits:DRAGOUNE_RUN_LIMITS,mobs:DRAGOUNE_MOBS,gains:DRAGOUNE_GAINS,zoneIds:DRAGOUNE_ZONE_IDS}
+};
 let RUN_LIMITS=PYKUR_RUN_LIMITS;
 let mobs=PYKUR_MOBS;
 let gains=PYKUR_GAINS;
 let zoneIds=PYKUR_ZONE_IDS;
 
+function familiarRuntime(familiarId=activeFamiliarId()){
+  return FAMILIAR_RUNTIME[normalizeFamiliarId(familiarId)] || FAMILIAR_RUNTIME.pykur;
+}
+
 function refreshFamiliarRuntime(){
-  const familiarId=activeFamiliarId();
-  if(familiarId==="abra-kadabra"){
-    RUN_LIMITS=ABRA_RUN_LIMITS;
-    mobs=ABRA_MOBS;
-    gains=ABRA_GAINS;
-    zoneIds=ABRA_ZONE_IDS;
-    return;
-  }
-  if(familiarId==="dragoune-noir"){
-    RUN_LIMITS=DRAGOUNE_RUN_LIMITS;
-    mobs=DRAGOUNE_MOBS;
-    gains=DRAGOUNE_GAINS;
-    zoneIds=DRAGOUNE_ZONE_IDS;
-    return;
-  }
-  RUN_LIMITS=PYKUR_RUN_LIMITS;
-  mobs=PYKUR_MOBS;
-  gains=PYKUR_GAINS;
-  zoneIds=PYKUR_ZONE_IDS;
+  const runtime=familiarRuntime();
+  RUN_LIMITS=runtime.runLimits;
+  mobs=runtime.mobs;
+  gains=runtime.gains;
+  zoneIds=runtime.zoneIds;
 }
 
 const defaultData=()=>({
@@ -15298,19 +15370,12 @@ function defaultDataForFamiliar(familiarId="pykur"){
     next.runs[dungeon.key]=0;
     next.mobs[dungeon.key]={};
     next.session.runs[dungeon.key]=0;
+    next.stats[farmAverageKey(dungeon.key)]=farmDefaultAverage(dungeon.key);
     next.dofusDetection.refs[dungeon.key]={imageKey:null,zone:null,threshold:82};
   });
   next.ui.farm=familiar.dungeons[0]?.key||"morose";
   next.ui.tab=next.ui.farm;
-  if(normalized==="abra-kadabra"){
-    next.stats.avgDonjonAbraknyde=240;
-    next.stats.avgCheneMou=360;
-    next.stats.avgSalleAbrakne=10;
-    next.special={salleAbrakneSetupDone:false,salleAbrakneActive:false,salleAbrakneLastActivity:null};
-  }
-  if(normalized==="dragoune-noir"){
-    next.stats.avgSanctuaireDragoeufs=1800;
-  }
+  if(familiar.specialDefaults)next.special=clone(familiar.specialDefaults);
   return next;
 }
 
@@ -15481,8 +15546,8 @@ function socialActionButton({asset,title,description,className="btn-blue",attrib
 
 const ACCOUNT_PRIVACY_OPTIONS=[
   {group:"Visibilité",key:"publicProfile",label:"Profil public",description:"Autoriser l'affichage d'une page profil communautaire."},
-  {group:"Visibilité",key:"showSecondaryProfiles",label:"Afficher mes profils secondaires",description:"Permet aux autres membres de consulter vos autres profils Pykur."},
-  {group:"Visibilité",key:"hidePykurProfileNames",label:"Masquer les noms de profils Pykur",description:"Remplace les noms de profils par des intitulés neutres dans les vues publiques."},
+  {group:"Visibilité",key:"showSecondaryProfiles",label:"Afficher mes profils secondaires",description:"Permet aux autres membres de consulter vos autres profils familiers."},
+  {group:"Visibilité",key:"hidePykurProfileNames",label:"Masquer les noms de profils familiers",description:"Remplace les noms de profils par des intitulés neutres dans les vues publiques."},
   {group:"Visibilité",key:"hideDetailedStats",label:"Masquer les statistiques détaillées",description:"Affiche seulement les grandes lignes de progression."},
   {group:"Visibilité",key:"hideGallery",label:"Masquer la galerie publique",description:"Ne partage pas vos anciens familiers sur le profil public."},
   {group:"Succès",key:"hideSecretAchievements",label:"Masquer les succès secrets",description:"Évite de révéler les succès et easter eggs cachés."},
@@ -16364,10 +16429,10 @@ function securitySettingsPanel(settings={}){
           </select>
         </label>
         <label class="auth-field">Cooldown succès (s)<input id="securityAchievementCooldown" type="number" min="0" max="3600" value="${Number(settings.achievementCooldownSeconds)||0}"></label>
-        <label class="auth-field">Cooldown Pykur (s)<input id="securityPykurCooldown" type="number" min="0" max="604800" value="${Number(settings.pykurCooldownSeconds)||0}"></label>
+        <label class="auth-field">Cooldown familier (s)<input id="securityPykurCooldown" type="number" min="0" max="604800" value="${Number(settings.pykurCooldownSeconds)||0}"></label>
         <label class="auth-field">Succès / heure<input id="securityAchievementHour" type="number" min="1" max="100" value="${Number(settings.maxAchievementSharesPerHour)||8}"></label>
-        <label class="auth-field">Pykurs / jour<input id="securityPykurDay" type="number" min="1" max="20" value="${Number(settings.maxPykurSharesPerDay)||2}"></label>
-        <label class="auth-field">Âge mini Pykur (h)<input id="securityPykurAge" type="number" min="0" max="720" value="${Number(settings.minPykurAgeHours)||0}"></label>
+        <label class="auth-field">Familiers / jour<input id="securityPykurDay" type="number" min="1" max="20" value="${Number(settings.maxPykurSharesPerDay)||2}"></label>
+        <label class="auth-field">Âge mini familier (h)<input id="securityPykurAge" type="number" min="0" max="720" value="${Number(settings.minPykurAgeHours)||0}"></label>
         <label class="privacy-toggle"><input type="checkbox" id="securityAutoShare" ${settings.autoShareEnabled!==false?"checked":""}><span>Partages automatiques autorisés<small>Coupe les annonces publiques si désactivé.</small></span></label>
         <button class="btn btn-orange" id="saveSecuritySettings" type="button">Enregistrer la sécurité</button>
       </div>
@@ -18083,7 +18148,7 @@ function summaryDetail(summary){
     `${summary.profileCount} profil${summary.profileCount>1?"s":""}`,
     `Morose ${summary.morose}`,
     `Tynril ${summary.tynril}`,
-    `${summary.completed} Pykur${summary.completed>1?"s":""} archivé${summary.completed>1?"s":""}`,
+    `${summary.completed} familier${summary.completed>1?"s":""} archivé${summary.completed>1?"s":""}`,
     `${summary.events} événement${summary.events>1?"s":""}`
   ];
   return `${pieces.join(" · ")} · ${formatCloudDateTime(summary.updatedAt)}`;
@@ -23273,7 +23338,7 @@ function dofusSetStatus(status,detail=status){
 }
 
 function dofusCooldownMinimum(){
-  return dofusSelectedFamiliarId()==="abra-kadabra" ? 3 : 10;
+  return parseInt(dofusSelectedFamiliar().dofusCooldownMin,10)||10;
 }
 
 function dofusEffectiveCooldown(){
@@ -23283,7 +23348,8 @@ function dofusEffectiveCooldown(){
 
 function dofusRefreshOptions(){
   if(!data.dofusDetection)data.dofusDetection=dofusDefaultConfig();
-  if(!dofusState.selectedFamiliar)dofusState.selectedFamiliar=activeFamiliarId();
+  if(!dofusState.selectedFamiliar || !FAMILIARS[dofusState.selectedFamiliar])dofusState.selectedFamiliar=activeFamiliarId();
+  if(!data.dofusDetection.refs)data.dofusDetection.refs={};
   let changed=false;
   const minCooldown=dofusCooldownMinimum();
   if(!data.dofusDetection.cooldownSeconds || Number(data.dofusDetection.cooldownSeconds)<minCooldown){
@@ -23295,11 +23361,50 @@ function dofusRefreshOptions(){
     select.innerHTML=Object.entries(FAMILIARS).map(([id,familiar])=>`<option value="${id}">${escapeHtml(familiar.label)}</option>`).join("");
     select.value=dofusSelectedFamiliarId();
   }
+  const selectedFamiliar=dofusSelectedFamiliar();
+  const selectedId=dofusSelectedFamiliarId();
+  const summary=$("#dofusFamiliarSummary");
+  if(summary){
+    const followsActive=selectedId===activeFamiliarId();
+    const dungeonCount=selectedFamiliar.dungeons.length;
+    summary.innerHTML=`<div class="dofus-familiar-card">
+      <img src="${assetPath(selectedFamiliar.logo||selectedFamiliar.image)}" alt="">
+      <div>
+        <strong>${escapeHtml(selectedFamiliar.label)}</strong>
+        <small>${dungeonCount===1?"1 donjon à configurer":`${dungeonCount} donjons à configurer`} · cooldown minimum ${minCooldown}s</small>
+        <div class="dofus-familiar-meta">
+          <span class="dofus-familiar-pill">${escapeHtml(selectedFamiliar.objectiveLabel)}</span>
+          <span class="dofus-familiar-pill">${followsActive?"Profil actif":"Configuration manuelle"}</span>
+        </div>
+      </div>
+      ${followsActive?"":`<button class="btn btn-gray tooltip" type="button" data-dofus-use-active="1" data-tooltip="Revient au familier du profil actuellement sélectionné.">Revenir au profil actif</button>`}
+    </div>`;
+    summary.querySelector("[data-dofus-use-active]")?.addEventListener("click",()=>{
+      dofusState.selectedFamiliar=activeFamiliarId();
+      dofusRefreshOptions();
+    });
+  }
+  dofusFarmKeys().forEach(farm=>{
+    if(!data.dofusDetection.refs[farm]){
+      data.dofusDetection.refs[farm]={imageKey:null,zone:null,threshold:82};
+      changed=true;
+    }
+  });
   const rows=$("#dofusReferenceRows");
   if(rows){
-    rows.innerHTML=dofusSelectedFamiliar().dungeons.map(dungeon=>{
-      const label=dungeon.label;
-      return `<div class="option-row dynamic-dofus-ref-row"><div><strong>Référence ${escapeHtml(label)}</strong><small>Capture ou importe la zone stable pour ${escapeHtml(label)}.</small></div><button class="btn btn-blue tooltip" type="button" data-dofus-config-farm="${dungeon.key}" data-tooltip="Configure la référence personnalisée ${escapeHtml(label)}.">Configurer ${escapeHtml(label)}</button></div>`;
+    const isSingle=selectedFamiliar.dungeons.length===1;
+    rows.innerHTML=selectedFamiliar.dungeons.map(dungeon=>{
+      const label=dungeon.fullLabel||dungeon.label;
+      const ref=data.dofusDetection.refs[dungeon.key]||{};
+      const ready=!!(ref.imageKey && ref.zone);
+      const threshold=parseInt(ref.threshold,10)||82;
+      return `<div class="option-row dynamic-dofus-ref-row ${isSingle?"is-single":""}">
+        <div>
+          <div class="dofus-ref-title"><strong>${escapeHtml(label)}</strong><span class="dofus-ref-status ${ready?"ready":"missing"}">${ready?"Référence prête":"À configurer"}</span></div>
+          <small class="dofus-ref-summary">${ready?`Zone enregistrée · seuil ${threshold}%`:`Capturez une petite zone stable du dialogue ou de l'écran de fin.`}</small>
+        </div>
+        <button class="btn btn-blue tooltip" type="button" data-dofus-config-farm="${dungeon.key}" data-tooltip="Configure la référence personnalisée ${escapeHtml(label)}.">Configurer</button>
+      </div>`;
     }).join("");
     rows.querySelectorAll("[data-dofus-config-farm]").forEach(btn=>btn.addEventListener("click",()=>dofusOpenConfig(btn.dataset.dofusConfigFarm)));
   }
@@ -28121,7 +28226,7 @@ function importSaveFile(file){
           subtitle:"Cette opération remplacera les données actuellement chargées.",
           danger:true,
           okLabel:"Importer quand même",
-          html:`<p>Cette opération remplacera les données actuellement chargées.</p><p>Il est fortement recommandé d'exporter une sauvegarde avant de continuer.</p><p>Les données remplacées ne pourront pas être récupérées automatiquement.</p><p><strong>Contenu détecté :</strong></p><ul><li>${summary.profileCount} profil${summary.profileCount>1?"s":""}</li><li>${summary.pykurCount} Pykur${summary.pykurCount>1?"s":""} archivé${summary.pykurCount>1?"s":""}</li><li>${summary.achievementCount} succès</li><li>${summary.eventCount} événement${summary.eventCount>1?"s":""} découvert${summary.eventCount>1?"s":""}</li></ul>`,
+          html:`<p>Cette opération remplacera les données actuellement chargées.</p><p>Il est fortement recommandé d'exporter une sauvegarde avant de continuer.</p><p>Les données remplacées ne pourront pas être récupérées automatiquement.</p><p><strong>Contenu détecté :</strong></p><ul><li>${summary.profileCount} profil${summary.profileCount>1?"s":""}</li><li>${summary.pykurCount} familier${summary.pykurCount>1?"s":""} archivé${summary.pykurCount>1?"s":""}</li><li>${summary.achievementCount} succès</li><li>${summary.eventCount} événement${summary.eventCount>1?"s":""} découvert${summary.eventCount>1?"s":""}</li></ul>`,
           extraHtml:`<button class="btn btn-orange dialog-inline-action" id="exportBeforeImport" type="button">Exporter une sauvegarde avant import</button><label class="dialog-check"><input id="importSafetyBackup" type="checkbox" checked> Créer une sauvegarde de sécurité avant l'import</label>`,
           onRender:()=>$("#exportBeforeImport")?.addEventListener("click",e=>{
             e.preventDefault();
@@ -28301,7 +28406,7 @@ const CHANGELOG_ENTRIES={
     items:[
       ["Hébergement officiel","Mise en ligne sur VPS, domaine familier-tracker.fr et connexion HTTPS."],
       ["Comptes et cloud","Inscription, validation par email, récupération de mot de passe et sauvegarde cloud automatique."],
-      ["Profils communautaires","Recherche de membres, profils publics, confidentialité, avatars et consultation des profils Pykur autorisés."],
+      ["Profils communautaires","Recherche de membres, profils publics, confidentialité, avatars et consultation des profils familiers autorisés."],
       ["Espace social","Amis, messages privés, chat global, mentions, notifications et présence en ligne."],
       ["Partages communautaires","Publication contrôlée des succès et des Pykurs terminés dans le chat."],
       ["Modération complète","Signalements, avertissements, mutes, bans, journaux et centre de contrôle avec permissions."],

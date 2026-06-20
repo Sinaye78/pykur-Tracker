@@ -1013,7 +1013,7 @@ function shareLimitError(userId, type, meta = {}) {
     const createdAt = meta?.createdAt || meta?.created || meta?.startDate || meta?.cycleStart || "";
     const createdTime = createdAt ? new Date(createdAt).getTime() : 0;
     if (createdTime && Date.now() - createdTime < Number(settings.minPykurAgeHours) * 60 * 60 * 1000) {
-      return "Pykur termine trop rapidement pour etre partage publiquement.";
+      return "Familier termine trop rapidement pour etre partage publiquement.";
     }
   }
   const marker = meta?.id || meta?.number || meta?.title || "";
@@ -1174,7 +1174,7 @@ const ADMIN_PERMISSION_CATALOG = Object.freeze([
   { id: "tracker.reset", group: "Donnees", label: "Reparer ou reset le tracker", description: "Intervenir sur les donnees de progression." },
   { id: "achievements.manage", group: "Donnees", label: "Gerer les succes", description: "Ajouter, retirer ou recalculer des succes." },
   { id: "gallery.manage", group: "Donnees", label: "Gerer la galerie", description: "Modifier les archives et evenements decouverts." },
-  { id: "profiles.manage", group: "Donnees", label: "Gerer les profils Pykur", description: "Renommer ou supprimer des profils Pykur." },
+  { id: "profiles.manage", group: "Donnees", label: "Gerer les profils familiers", description: "Renommer ou supprimer des profils familiers." },
   { id: "roles.manage", group: "Administration", label: "Gerer les roles", description: "Promouvoir ou retrograder les moderateurs." },
   { id: "permissions.manage", group: "Administration", label: "Gerer les permissions", description: "Personnaliser les droits detailles des moderateurs." },
   { id: "security.configure", group: "Administration", label: "Configurer la securite", description: "Modifier les regles anti-abus du serveur." }
@@ -1347,12 +1347,14 @@ function applyCloudAdminMutation(targetId, type, commandPayload = {}) {
     });
   } else if (type === "reset-profile" || type === "reset-pykur") {
     const profile = store.profiles?.[profileId];
-    if (!profile?.data) throw new Error("Profil Pykur introuvable.");
+    if (!profile?.data) throw new Error("Profil familier introuvable.");
     const data = profile.data;
-    data.runs = { morose: 0, tynril: 0 };
-    data.mobs = { morose: {}, tynril: {}, zone: {} };
+    const familiar = publicFamiliarMeta(publicProfileFamiliarId(data));
+    const runKeys = (familiar.runs || PUBLIC_FAMILIARS.pykur.runs).map((run) => run.key);
+    data.runs = Object.fromEntries(runKeys.map((key) => [key, 0]));
+    data.mobs = Object.assign({ zone: {} }, Object.fromEntries(runKeys.map((key) => [key, {}])));
     data.chrono = { seconds: 0, running: false, startedAt: null, lastMarkSeconds: 0, marks: [] };
-    data.session = { active: false, startedAt: null, sessionStartedAt: null, totalSeconds: 0, runs: { morose: 0, tynril: 0 }, ppStart: 0, ppGain: 0, lastSummary: null };
+    data.session = { active: false, startedAt: null, sessionStartedAt: null, totalSeconds: 0, runs: Object.fromEntries(runKeys.map((key) => [key, 0])), ppStart: 0, ppGain: 0, lastSummary: null };
     data.activity = [];
     data.undo = [];
     data.createdAt = new Date().toISOString();
@@ -1377,10 +1379,10 @@ function applyCloudAdminMutation(targetId, type, commandPayload = {}) {
       source.removedPykurs = Object.assign({}, source.removedPykurs || {}, { [pykurId]: new Date().toISOString() });
     });
   } else if (type === "rename-profile") {
-    if (!store.profiles?.[profileId]) throw new Error("Profil Pykur introuvable.");
+    if (!store.profiles?.[profileId]) throw new Error("Profil familier introuvable.");
     store.profiles[profileId].name = String(commandPayload.name || "").trim().slice(0, 80) || store.profiles[profileId].name;
   } else if (type === "delete-profile") {
-    if (!store.profiles?.[profileId]) throw new Error("Profil Pykur introuvable.");
+    if (!store.profiles?.[profileId]) throw new Error("Profil familier introuvable.");
     if (Object.keys(store.profiles).length <= 1) throw new Error("Le dernier profil ne peut pas être supprimé.");
     store.deletedProfiles = Object.assign({}, store.deletedProfiles || {}, { [profileId]: new Date().toISOString() });
     delete store.profiles[profileId];
@@ -2646,7 +2648,7 @@ app.post("/api/admin/users/:id/commands", requireAuth, requireRole("moderator"),
   }
   if (type === "remove-achievement" && !String(payload.achievementId || "")) return res.status(400).json({ error: "Succès cible requis." });
   if (type === "remove-gallery-event" && !String(payload.eventId || "")) return res.status(400).json({ error: "Événement cible requis." });
-  if (type === "remove-gallery-pykur" && !String(payload.pykurId || "")) return res.status(400).json({ error: "Pykur archivé cible requis." });
+  if (type === "remove-gallery-pykur" && !String(payload.pykurId || "")) return res.status(400).json({ error: "Familier archive cible requis." });
   if (["reset-gallery", "reset-achievements", "reset-profile", "reset-pykur", "delete-profile", "rename-profile", "remove-achievement", "remove-gallery-event", "remove-gallery-pykur"].includes(type)) {
     try {
       applyCloudAdminMutation(target.id, type, payload);
