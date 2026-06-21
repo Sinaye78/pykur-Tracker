@@ -634,6 +634,22 @@ const PUBLIC_DRAGOUNE_MOBS = {
   coquilleSoignante: 100,
   coquilleExplosive: 100
 };
+const PUBLIC_TOFOUDRE_MOBS = {
+  sphincterCell: 5,
+  ratNoir: 25,
+  ratBlanc: 25,
+  ratCroc: 150,
+  ratBajoie: 150,
+  ratBasher: 150,
+  ratKlure: 150,
+  ratBatteur: 150,
+  ratDeMarais: 150,
+  ratHyoactif: 200,
+  chamanEgoutant: 250,
+  ratEgoutant: 300,
+  ratEgoutantMalade: 300,
+  miliratEgoutantMalade: 400
+};
 const PUBLIC_FAMILIARS = {
   pykur: {
     label: "Pykur",
@@ -666,6 +682,18 @@ const PUBLIC_FAMILIARS = {
     thresholds: PUBLIC_DRAGOUNE_MOBS,
     runs: [
       { key: "sanctuaireDragoeufs", label: "Sanctuaire" }
+    ]
+  },
+  tofoudre: {
+    label: "Tofoudre",
+    defaultProfileLabel: "Profil Tofoudre",
+    progressShort: "dommages",
+    objectiveMax: 11,
+    thresholds: PUBLIC_TOFOUDRE_MOBS,
+    runs: [
+      { key: "ratsAmakna", label: "Rats Amakna" },
+      { key: "ratsBrakmar", label: "Rats Brakmar" },
+      { key: "ratsBonta", label: "Rats Bonta" }
     ]
   }
 };

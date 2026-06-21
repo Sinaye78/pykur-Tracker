@@ -8482,19 +8482,23 @@ body[data-awaken="complete"] .pykur-img{
 .quick-projection #projectionButton:hover{
   background:rgba(37,99,235,.08)!important;
 }
+.quick-projection.quick-projection-multi,
 body[data-familiar="abra-kadabra"] .quick-projection{
   grid-template-columns:minmax(0,1fr) minmax(108px,130px)!important;
   padding:14px 16px!important;
   min-height:auto!important;
   overflow:hidden!important;
 }
+.quick-projection.quick-projection-multi .quick-projection-lines,
 body[data-familiar="abra-kadabra"] .quick-projection-lines{
   gap:7px;
 }
+.quick-projection.quick-projection-multi .quick-projection-value,
 body[data-familiar="abra-kadabra"] .quick-projection-value{
   font-size:18px!important;
   line-height:1.18!important;
 }
+.quick-projection.quick-projection-multi .quick-projection-run,
 body[data-familiar="abra-kadabra"] .quick-projection-run{
   display:grid;
   grid-template-columns:minmax(0,1fr) auto;
@@ -8503,6 +8507,7 @@ body[data-familiar="abra-kadabra"] .quick-projection-run{
   max-width:none!important;
   min-height:24px;
 }
+.quick-projection.quick-projection-multi .quick-projection-gain,
 body[data-familiar="abra-kadabra"] .quick-projection-gain{
   justify-self:end;
   font-size:11px;
@@ -12137,20 +12142,23 @@ body.no-anim .pykur-sparkle{
   background:rgba(255,255,255,.62)!important;
 }
 
+.quick-projection.quick-projection-multi,
 body[data-familiar="abra-kadabra"] .quick-projection{
   display:grid!important;
   grid-template-columns:minmax(0,1fr) minmax(106px,126px)!important;
   align-items:start!important;
-  min-height:150px!important;
+  min-height:160px!important;
   padding:14px 16px!important;
   gap:12px!important;
   overflow:visible!important;
 }
 
+.quick-projection.quick-projection-multi .quick-projection-copy,
 body[data-familiar="abra-kadabra"] .quick-projection-copy{
   min-width:0!important;
 }
 
+.quick-projection.quick-projection-multi .quick-projection-value,
 body[data-familiar="abra-kadabra"] .quick-projection-value{
   display:block!important;
   min-height:auto!important;
@@ -12159,11 +12167,13 @@ body[data-familiar="abra-kadabra"] .quick-projection-value{
   overflow:visible!important;
 }
 
+.quick-projection.quick-projection-multi .quick-projection-lines,
 body[data-familiar="abra-kadabra"] .quick-projection-lines{
   display:grid!important;
   gap:7px!important;
 }
 
+.quick-projection.quick-projection-multi .quick-projection-run,
 body[data-familiar="abra-kadabra"] .quick-projection-run{
   display:grid!important;
   grid-template-columns:minmax(0,1fr) auto!important;
@@ -12173,11 +12183,13 @@ body[data-familiar="abra-kadabra"] .quick-projection-run{
   min-height:24px!important;
 }
 
+.quick-projection.quick-projection-multi .quick-projection-run > span:first-child,
 body[data-familiar="abra-kadabra"] .quick-projection-run > span:first-child{
   min-width:0!important;
   overflow-wrap:anywhere;
 }
 
+.quick-projection.quick-projection-multi .quick-projection-gain,
 body[data-familiar="abra-kadabra"] .quick-projection-gain{
   justify-self:end!important;
   align-self:center!important;
@@ -12186,10 +12198,12 @@ body[data-familiar="abra-kadabra"] .quick-projection-gain{
   white-space:nowrap!important;
 }
 
+.quick-projection.quick-projection-multi .quick-projection-hint,
 body[data-familiar="abra-kadabra"] .quick-projection-hint{
   margin-top:6px!important;
 }
 
+.quick-projection.quick-projection-multi #projectionButton,
 body[data-familiar="abra-kadabra"] .quick-projection #projectionButton{
   min-width:106px!important;
   width:100%!important;
@@ -15044,9 +15058,11 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
 const PP_MAX=90;
 const ABRA_OBJECTIVE_MAX=55;
 const DRAGOUNE_OBJECTIVE_MAX=55;
+const TOFOUDRE_OBJECTIVE_MAX=11;
 const PYKUR_RUN_LIMITS={morose:640,tynril:48};
 const ABRA_RUN_LIMITS={donjonAbraknyde:9999,cheneMou:9999,salleAbrakne:9999};
 const DRAGOUNE_RUN_LIMITS={sanctuaireDragoeufs:9999};
+const TOFOUDRE_RUN_LIMITS={ratsAmakna:9999,ratsBrakmar:9999,ratsBonta:9999};
 const FAMILIARS={
   pykur:{
     id:"pykur",
@@ -15131,6 +15147,35 @@ const FAMILIARS={
     farmMethods:["Sanctuaire des Dragoeufs"],
     dungeons:[
       {key:"sanctuaireDragoeufs",label:"Sanctuaire",fullLabel:"Sanctuaire des Dragoeufs",asset:"../dragoune-noir/assets/images/donjon/crocabulia.png",defaultAverage:1800}
+    ]
+  },
+  tofoudre:{
+    id:"tofoudre",
+    label:"Tofoudre",
+    shortLabel:"Tofoudre",
+    defaultProfileName:"Tofoudre principal",
+    progressLabel:"Dommages",
+    progressShort:"dommages",
+    objectiveMax:TOFOUDRE_OBJECTIVE_MAX,
+    objectiveLabel:"11 dommages",
+    icon:"../tofoudre/assets/images/dommage.png",
+    logo:"../tofoudre/assets/images/tofoudre.png",
+    image:"../tofoudre/assets/images/tofoudre.png",
+    auraImage:"../tofoudre/assets/images/tofoudre-aura.png",
+    sleepingImage:"../tofoudre/assets/images/tofoudrez.png",
+    background:"../tofoudre/assets/images/fond/fond.png",
+    status:"active",
+    statusLabel:"",
+    description:"Suivi de dommages sur les donjons des Rats d'Amakna, de Brâkmar et de Bonta.",
+    bonusAmount:11,
+    difficultyLabel:"Moyen",
+    difficultyStars:2,
+    dofusCooldownMin:10,
+    farmMethods:["Donjon des Rats du Château d'Amakna","Donjon des Rats de Brâkmar","Donjon des Rats de Bonta"],
+    dungeons:[
+      {key:"ratsAmakna",label:"Rats Amakna",fullLabel:"Donjon des Rats du Château d'Amakna",asset:"../tofoudre/assets/images/donjon/donjon-des-rats-du-chateau-d-amakna.png",defaultAverage:1500},
+      {key:"ratsBrakmar",label:"Rats Brâkmar",fullLabel:"Donjon des Rats de Brâkmar",asset:"../tofoudre/assets/images/donjon/donjon-des-rats-de-brakmar.png",defaultAverage:1200},
+      {key:"ratsBonta",label:"Rats Bonta",fullLabel:"Donjon des Rats de Bonta",asset:"../tofoudre/assets/images/donjon/donjon-des-rats-de-bonta.png",defaultAverage:1200}
     ]
   }
 };
@@ -15280,6 +15325,23 @@ const DRAGOUNE_MOBS={
   coquilleExplosive:{name:"Coquille Explosive",imgPath:"../dragoune-noir/assets/images/monstre/coquille-explosive.png",ppNeed:100,cat:["zone"]}
 };
 
+const TOFOUDRE_MOBS={
+  sphincterCell:{name:"Sphincter Cell",imgPath:"../tofoudre/assets/images/monstre/sphincter-cell.png",ppNeed:5,cat:["ratsAmakna"]},
+  ratNoir:{name:"Rat Noir",imgPath:"../tofoudre/assets/images/monstre/rat-noir.png",ppNeed:25,cat:["ratsAmakna","ratsBrakmar"]},
+  ratBlanc:{name:"Rat Blanc",imgPath:"../tofoudre/assets/images/monstre/rat-blanc.png",ppNeed:25,cat:["ratsAmakna","ratsBonta"]},
+  ratCroc:{name:"Rat Croc",imgPath:"../tofoudre/assets/images/monstre/rat-croc.png",ppNeed:150,cat:["ratsAmakna","ratsBonta"]},
+  ratBajoie:{name:"Rat Bajoie",imgPath:"../tofoudre/assets/images/monstre/rat-bajoie.png",ppNeed:150,cat:["ratsAmakna","ratsBonta"]},
+  ratBasher:{name:"Rat Basher",imgPath:"../tofoudre/assets/images/monstre/rat-basher.png",ppNeed:150,cat:["ratsAmakna","ratsBonta"]},
+  ratKlure:{name:"Rat Klure",imgPath:"../tofoudre/assets/images/monstre/rat-klure.png",ppNeed:150,cat:["ratsAmakna","ratsBrakmar"]},
+  ratBatteur:{name:"Rat Batteur",imgPath:"../tofoudre/assets/images/monstre/rat-batteur.png",ppNeed:150,cat:["ratsAmakna","ratsBrakmar"]},
+  ratDeMarais:{name:"Rat de Marais",imgPath:"../tofoudre/assets/images/monstre/rat-de-marais.png",ppNeed:150,cat:["ratsAmakna","ratsBrakmar"]},
+  ratHyoactif:{name:"Rat d'Hyoactif",imgPath:"../tofoudre/assets/images/monstre/rat-d-hyoactif.png",ppNeed:200,cat:["zone"]},
+  chamanEgoutant:{name:"Chaman d'Egoutant",imgPath:"../tofoudre/assets/images/monstre/chaman-d-egoutant.png",ppNeed:250,cat:["ratsAmakna","ratsBrakmar","ratsBonta"]},
+  ratEgoutant:{name:"Rat d'Egoutant",imgPath:"../tofoudre/assets/images/monstre/rat-d-egoutant.png",ppNeed:300,cat:["ratsAmakna","ratsBrakmar","ratsBonta"]},
+  ratEgoutantMalade:{name:"Rat d'Egoutant malade",imgPath:"../tofoudre/assets/images/monstre/rat-d-egoutant-malade.png",ppNeed:300,cat:["zone"]},
+  miliratEgoutantMalade:{name:"Milirat d'Egoutant malade",imgPath:"../tofoudre/assets/images/monstre/milirat-d-egoutant-malade.png",ppNeed:400,cat:["zone"]}
+};
+
 const PYKUR_GAINS={
   morose:{chiendent:1,nerbe:1,fecorce:1,abrakleur:1,bitouf:1,floribonde:2},
   tynril:{tynrilConsterne:1,tynrilDeconcerte:1,tynrilPerfide:1,tynrilAhuri:1,fecorce:2,abrakleur:3,brouture:3,chiendent:5,nerbe:6,floribonde:6,bitouf:10}
@@ -15305,16 +15367,49 @@ const DRAGOUNE_GAINS={
     dragossSaphirEveille:5
   }
 };
+const TOFOUDRE_GAINS={
+  ratsAmakna:{
+    sphincterCell:1,
+    ratBlanc:1,
+    ratNoir:1,
+    ratCroc:4,
+    ratEgoutant:5,
+    ratBatteur:6,
+    ratBajoie:7,
+    chamanEgoutant:10,
+    ratDeMarais:7,
+    ratKlure:10,
+    ratBasher:11
+  },
+  ratsBrakmar:{
+    ratNoir:1,
+    ratBatteur:9,
+    ratKlure:7,
+    chamanEgoutant:13,
+    ratDeMarais:16,
+    ratEgoutant:17
+  },
+  ratsBonta:{
+    ratBlanc:1,
+    ratBajoie:9,
+    ratBasher:7,
+    chamanEgoutant:13,
+    ratCroc:16,
+    ratEgoutant:17
+  }
+};
 const ABRA_SPECIAL_GAINS={
   salleAbrakneSetup:{abraknyde:4,tronknyde:3,abraknydeVenerable:1,abrakne:1}
 };
 const PYKUR_ZONE_IDS=["abrakleur","bitouf","brouture","chiendent","fecorce","floribonde","nerbe"];
 const ABRA_ZONE_IDS=["abraknyde","tronknyde","abraknydeVenerable","abrakne"];
 const DRAGOUNE_ZONE_IDS=Object.keys(DRAGOUNE_MOBS).filter(id=>DRAGOUNE_MOBS[id].cat.includes("zone"));
+const TOFOUDRE_ZONE_IDS=Object.keys(TOFOUDRE_MOBS).filter(id=>TOFOUDRE_MOBS[id].cat.includes("zone"));
 const FAMILIAR_RUNTIME={
   pykur:{runLimits:PYKUR_RUN_LIMITS,mobs:PYKUR_MOBS,gains:PYKUR_GAINS,zoneIds:PYKUR_ZONE_IDS},
   "abra-kadabra":{runLimits:ABRA_RUN_LIMITS,mobs:ABRA_MOBS,gains:ABRA_GAINS,zoneIds:ABRA_ZONE_IDS,specialGains:ABRA_SPECIAL_GAINS},
-  "dragoune-noir":{runLimits:DRAGOUNE_RUN_LIMITS,mobs:DRAGOUNE_MOBS,gains:DRAGOUNE_GAINS,zoneIds:DRAGOUNE_ZONE_IDS}
+  "dragoune-noir":{runLimits:DRAGOUNE_RUN_LIMITS,mobs:DRAGOUNE_MOBS,gains:DRAGOUNE_GAINS,zoneIds:DRAGOUNE_ZONE_IDS},
+  tofoudre:{runLimits:TOFOUDRE_RUN_LIMITS,mobs:TOFOUDRE_MOBS,gains:TOFOUDRE_GAINS,zoneIds:TOFOUDRE_ZONE_IDS}
 };
 let RUN_LIMITS=PYKUR_RUN_LIMITS;
 let mobs=PYKUR_MOBS;
@@ -26561,6 +26656,8 @@ function updateFarmUI(){
 function updateQuickProjection(){
   const target=$("#nextPPSummary");
   if(!target)return;
+  const quickCard=target.closest(".quick-projection");
+  quickCard?.classList.toggle("quick-projection-multi",activeFarmKeys().length>=3);
   const pp=currentPP();
   const max=activeProgressMax();
   if(pp>=max){
