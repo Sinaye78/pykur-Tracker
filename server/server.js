@@ -650,6 +650,27 @@ const PUBLIC_TOFOUDRE_MOBS = {
   ratEgoutantMalade: 300,
   miliratEgoutantMalade: 400
 };
+const PUBLIC_CROUM_MOBS = {
+  silfRasboul: 1,
+  mufafah: 40,
+  craqueboulePoli: 40,
+  kido: 50,
+  kilibriss: 50,
+  bitoufPlaines: 50,
+  craqueleurPoli: 60
+};
+function publicCroumFamiliar(label, progressShort) {
+  return {
+    label,
+    defaultProfileLabel: `Profil ${label}`,
+    progressShort,
+    objectiveMax: 90,
+    thresholds: PUBLIC_CROUM_MOBS,
+    runs: [
+      { key: "gouletRasboul", label: "Rasboul" }
+    ]
+  };
+}
 const PUBLIC_FAMILIARS = {
   pykur: {
     label: "Pykur",
@@ -695,7 +716,11 @@ const PUBLIC_FAMILIARS = {
       { key: "ratsBrakmar", label: "Rats Brakmar" },
       { key: "ratsBonta", label: "Rats Bonta" }
     ]
-  }
+  },
+  "croum-aqueux": publicCroumFamiliar("Croum Aqueux", "chance"),
+  "croum-volatile": publicCroumFamiliar("Croum Volatile", "agilité"),
+  "croum-igne": publicCroumFamiliar("Croum Igné", "intelligence"),
+  "croum-vegetal": publicCroumFamiliar("Croum Végétal", "force")
 };
 const PUBLIC_SECRET_ACHIEVEMENT_IDS = new Set([
   "egg_charlie",

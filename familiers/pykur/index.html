@@ -6781,6 +6781,31 @@ body[data-fx="premium"] .milestone-flash{box-shadow:0 0 0 9999px rgba(212,167,60
   color:#2b1608;
   font-weight:850;
 }
+.familiar-choice-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:0 0 12px;
+  color:#694b28;
+  font-size:12px;
+  font-weight:950;
+}
+.familiar-choice-pages{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+}
+.familiar-choice-pages .btn{
+  min-height:34px;
+  padding:7px 12px;
+}
+.familiar-choice-page-label{
+  min-width:78px;
+  text-align:center;
+  color:#5a3a1b;
+}
 .familiar-choice-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
@@ -15059,10 +15084,42 @@ const PP_MAX=90;
 const ABRA_OBJECTIVE_MAX=55;
 const DRAGOUNE_OBJECTIVE_MAX=55;
 const TOFOUDRE_OBJECTIVE_MAX=11;
+const CROUM_OBJECTIVE_MAX=90;
 const PYKUR_RUN_LIMITS={morose:640,tynril:48};
 const ABRA_RUN_LIMITS={donjonAbraknyde:9999,cheneMou:9999,salleAbrakne:9999};
 const DRAGOUNE_RUN_LIMITS={sanctuaireDragoeufs:9999};
 const TOFOUDRE_RUN_LIMITS={ratsAmakna:9999,ratsBrakmar:9999,ratsBonta:9999};
+const CROUM_RUN_LIMITS={gouletRasboul:9999};
+function createCroumFamiliar({id,label,defaultProfileName,progressLabel,progressShort,icon,basePath,difficultyStars=2}){
+  const progressIntro=["agilité","intelligence"].includes(progressShort) ? `d'${progressShort}` : `de ${progressShort}`;
+  return {
+    id,
+    label,
+    shortLabel:label,
+    defaultProfileName,
+    progressLabel,
+    progressShort,
+    objectiveMax:CROUM_OBJECTIVE_MAX,
+    objectiveLabel:`90 ${progressShort}`,
+    icon:`../croum oto/${basePath}/${icon}.png`,
+    logo:`../croum oto/${basePath}/${basePath}.png`,
+    image:`../croum oto/${basePath}/${basePath}.png`,
+    auraImage:`../croum oto/${basePath}/${basePath}-aura.png`,
+    sleepingImage:`../croum oto/${basePath}/${basePath}-z.png`,
+    background:"../croum oto/fond/fond.png",
+    status:"active",
+    statusLabel:"",
+    description:`Suivi ${progressIntro} sur le Goulet du Rasboul.`,
+    bonusAmount:90,
+    difficultyLabel:difficultyStars===1 ? "Facile" : difficultyStars===2 ? "Moyen" : "Dur",
+    difficultyStars,
+    dofusCooldownMin:10,
+    farmMethods:["Goulet du Rasboul"],
+    dungeons:[
+      {key:"gouletRasboul",label:"Rasboul",fullLabel:"Goulet du Rasboul",asset:"../croum oto/donjon/goulet-du-rasboul.png",defaultAverage:1500}
+    ]
+  };
+}
 const FAMILIARS={
   pykur:{
     id:"pykur",
@@ -15177,7 +15234,47 @@ const FAMILIARS={
       {key:"ratsBrakmar",label:"Rats Brâkmar",fullLabel:"Donjon des Rats de Brâkmar",asset:"../tofoudre/assets/images/donjon/donjon-des-rats-de-brakmar.png",defaultAverage:1200},
       {key:"ratsBonta",label:"Rats Bonta",fullLabel:"Donjon des Rats de Bonta",asset:"../tofoudre/assets/images/donjon/donjon-des-rats-de-bonta.png",defaultAverage:1200}
     ]
-  }
+  },
+  "croum-aqueux":createCroumFamiliar({
+    id:"croum-aqueux",
+    label:"Croum Aqueux",
+    defaultProfileName:"Croum Aqueux principal",
+    progressLabel:"Chance",
+    progressShort:"chance",
+    icon:"chance",
+    basePath:"croum-aqueux",
+    difficultyStars:2
+  }),
+  "croum-volatile":createCroumFamiliar({
+    id:"croum-volatile",
+    label:"Croum Volatile",
+    defaultProfileName:"Croum Volatile principal",
+    progressLabel:"Agilité",
+    progressShort:"agilité",
+    icon:"agilite",
+    basePath:"croum-volatile",
+    difficultyStars:2
+  }),
+  "croum-igne":createCroumFamiliar({
+    id:"croum-igne",
+    label:"Croum Igné",
+    defaultProfileName:"Croum Igné principal",
+    progressLabel:"Intelligence",
+    progressShort:"intelligence",
+    icon:"intelligence",
+    basePath:"croum-igne",
+    difficultyStars:2
+  }),
+  "croum-vegetal":createCroumFamiliar({
+    id:"croum-vegetal",
+    label:"Croum Végétal",
+    defaultProfileName:"Croum Végétal principal",
+    progressLabel:"Force",
+    progressShort:"force",
+    icon:"force",
+    basePath:"croum-vegetal",
+    difficultyStars:2
+  })
 };
 function normalizeFamiliarId(id){
   return FAMILIARS[id] ? id : "pykur";
@@ -15342,6 +15439,16 @@ const TOFOUDRE_MOBS={
   miliratEgoutantMalade:{name:"Milirat d'Egoutant malade",imgPath:"../tofoudre/assets/images/monstre/milirat-d-egoutant-malade.png",ppNeed:400,cat:["zone"]}
 };
 
+const CROUM_MOBS={
+  silfRasboul:{name:"Silf le Rasboul Majeur",imgPath:"../croum oto/monstre/rasboul.png",ppNeed:1,cat:["gouletRasboul"]},
+  mufafah:{name:"Mufafah",imgPath:"../croum oto/monstre/mufafah.png",ppNeed:40,cat:["gouletRasboul"]},
+  craqueboulePoli:{name:"Craqueboule Poli",imgPath:"../croum oto/monstre/craqueboule-poli.png",ppNeed:40,cat:["gouletRasboul"]},
+  kido:{name:"Kido",imgPath:"../croum oto/monstre/kido.png",ppNeed:50,cat:["gouletRasboul"]},
+  kilibriss:{name:"Kilibriss",imgPath:"../croum oto/monstre/kilibriss.png",ppNeed:50,cat:["gouletRasboul"]},
+  bitoufPlaines:{name:"Bitouf des Plaines",imgPath:"../croum oto/monstre/bitouf-des-plaines.png",ppNeed:50,cat:["gouletRasboul"]},
+  craqueleurPoli:{name:"Craqueleur Poli",imgPath:"../croum oto/monstre/craqueleur-poli.png",ppNeed:60,cat:["gouletRasboul"]}
+};
+
 const PYKUR_GAINS={
   morose:{chiendent:1,nerbe:1,fecorce:1,abrakleur:1,bitouf:1,floribonde:2},
   tynril:{tynrilConsterne:1,tynrilDeconcerte:1,tynrilPerfide:1,tynrilAhuri:1,fecorce:2,abrakleur:3,brouture:3,chiendent:5,nerbe:6,floribonde:6,bitouf:10}
@@ -15398,6 +15505,17 @@ const TOFOUDRE_GAINS={
     ratEgoutant:17
   }
 };
+const CROUM_GAINS={
+  gouletRasboul:{
+    silfRasboul:1,
+    craqueboulePoli:1,
+    craqueleurPoli:6,
+    mufafah:5,
+    kido:7,
+    bitoufPlaines:11,
+    kilibriss:11
+  }
+};
 const ABRA_SPECIAL_GAINS={
   salleAbrakneSetup:{abraknyde:4,tronknyde:3,abraknydeVenerable:1,abrakne:1}
 };
@@ -15405,11 +15523,17 @@ const PYKUR_ZONE_IDS=["abrakleur","bitouf","brouture","chiendent","fecorce","flo
 const ABRA_ZONE_IDS=["abraknyde","tronknyde","abraknydeVenerable","abrakne"];
 const DRAGOUNE_ZONE_IDS=Object.keys(DRAGOUNE_MOBS).filter(id=>DRAGOUNE_MOBS[id].cat.includes("zone"));
 const TOFOUDRE_ZONE_IDS=Object.keys(TOFOUDRE_MOBS).filter(id=>TOFOUDRE_MOBS[id].cat.includes("zone"));
+const CROUM_ZONE_IDS=[];
+const CROUM_RUNTIME={runLimits:CROUM_RUN_LIMITS,mobs:CROUM_MOBS,gains:CROUM_GAINS,zoneIds:CROUM_ZONE_IDS};
 const FAMILIAR_RUNTIME={
   pykur:{runLimits:PYKUR_RUN_LIMITS,mobs:PYKUR_MOBS,gains:PYKUR_GAINS,zoneIds:PYKUR_ZONE_IDS},
   "abra-kadabra":{runLimits:ABRA_RUN_LIMITS,mobs:ABRA_MOBS,gains:ABRA_GAINS,zoneIds:ABRA_ZONE_IDS,specialGains:ABRA_SPECIAL_GAINS},
   "dragoune-noir":{runLimits:DRAGOUNE_RUN_LIMITS,mobs:DRAGOUNE_MOBS,gains:DRAGOUNE_GAINS,zoneIds:DRAGOUNE_ZONE_IDS},
-  tofoudre:{runLimits:TOFOUDRE_RUN_LIMITS,mobs:TOFOUDRE_MOBS,gains:TOFOUDRE_GAINS,zoneIds:TOFOUDRE_ZONE_IDS}
+  tofoudre:{runLimits:TOFOUDRE_RUN_LIMITS,mobs:TOFOUDRE_MOBS,gains:TOFOUDRE_GAINS,zoneIds:TOFOUDRE_ZONE_IDS},
+  "croum-aqueux":CROUM_RUNTIME,
+  "croum-volatile":CROUM_RUNTIME,
+  "croum-igne":CROUM_RUNTIME,
+  "croum-vegetal":CROUM_RUNTIME
 };
 let RUN_LIMITS=PYKUR_RUN_LIMITS;
 let mobs=PYKUR_MOBS;
@@ -26770,11 +26894,11 @@ function renderChronoEstimate(){
 
 async function chooseFamiliarForProfile(defaultId="pykur"){
   let selected=normalizeFamiliarId(defaultId);
-  const cards=Object.values(FAMILIARS).map(familiar=>{
+  const cards=Object.values(FAMILIARS).map((familiar,index)=>{
     const search=[familiar.label,familiar.progressLabel,familiar.progressShort,familiar.description,...(familiar.farmMethods||[]),familiar.difficultyLabel].join(" ").toLowerCase();
     const stars="★".repeat(Math.max(1,Math.min(3,Number(familiar.difficultyStars)||1)));
     return `
-    <label class="familiar-choice-card ${familiar.id===selected?"selected":""}" data-familiar-card data-search="${escapeHtml(search)}">
+    <label class="familiar-choice-card ${familiar.id===selected?"selected":""}" data-familiar-card data-card-index="${index}" data-search="${escapeHtml(search)}">
       <input type="radio" name="newProfileFamiliar" value="${familiar.id}" ${familiar.id===selected?"checked":""}>
       <span class="familiar-choice-portrait">
         <img class="familiar-choice-art" src="${assetPath(familiar.logo||familiar.image)}" alt="">
@@ -26795,8 +26919,10 @@ async function chooseFamiliarForProfile(defaultId="pykur"){
     subtitle:"Sélectionnez le familier à suivre pour ce profil.",
     okLabel:"Continuer",
     dialogClass:"familiar-choice-dialog",
-    html:`<input class="familiar-choice-search" id="familiarChoiceSearch" type="search" placeholder="Rechercher un familier..."><div class="familiar-choice-grid" id="familiarChoiceGrid">${cards}<div class="familiar-choice-empty hidden" id="familiarChoiceEmpty">Aucun familier trouvé.</div></div>`,
+    html:`<input class="familiar-choice-search" id="familiarChoiceSearch" type="search" placeholder="Rechercher un familier..."><div class="familiar-choice-toolbar"><span id="familiarChoiceCount"></span><span class="familiar-choice-pages"><button class="btn btn-gray" id="familiarChoicePrev" type="button">Précédent</button><span class="familiar-choice-page-label" id="familiarChoicePageLabel"></span><button class="btn btn-gray" id="familiarChoiceNext" type="button">Suivant</button></span></div><div class="familiar-choice-grid" id="familiarChoiceGrid">${cards}<div class="familiar-choice-empty hidden" id="familiarChoiceEmpty">Aucun familier trouvé.</div></div>`,
     onRender:({msg})=>{
+      const perPage=4;
+      let page=0;
       const update=()=>{
         msg.querySelectorAll(".familiar-choice-card").forEach(card=>{
           card.classList.toggle("selected",card.querySelector("input")?.checked);
@@ -26806,17 +26932,34 @@ async function chooseFamiliarForProfile(defaultId="pykur"){
       msg.querySelectorAll("input[name='newProfileFamiliar']").forEach(input=>input.addEventListener("change",update));
       const searchInput=msg.querySelector("#familiarChoiceSearch");
       const empty=msg.querySelector("#familiarChoiceEmpty");
+      const countEl=msg.querySelector("#familiarChoiceCount");
+      const pageLabel=msg.querySelector("#familiarChoicePageLabel");
+      const prevBtn=msg.querySelector("#familiarChoicePrev");
+      const nextBtn=msg.querySelector("#familiarChoiceNext");
       const filterCards=()=>{
         const query=(searchInput?.value||"").trim().toLowerCase();
-        let visible=0;
+        const matched=[];
         msg.querySelectorAll("[data-familiar-card]").forEach(card=>{
           const match=!query || (card.dataset.search||"").includes(query);
-          card.classList.toggle("hidden",!match);
-          if(match)visible++;
+          if(match)matched.push(card);
         });
-        if(empty)empty.classList.toggle("hidden",visible>0);
+        const totalPages=Math.max(1,Math.ceil(matched.length/perPage));
+        page=Math.min(page,totalPages-1);
+        const start=page*perPage;
+        const end=start+perPage;
+        msg.querySelectorAll("[data-familiar-card]").forEach(card=>card.classList.add("hidden"));
+        matched.forEach((card,index)=>{
+          card.classList.toggle("hidden",index<start || index>=end);
+        });
+        if(empty)empty.classList.toggle("hidden",matched.length>0);
+        if(countEl)countEl.textContent=matched.length ? `${matched.length} familier${matched.length>1?"s":""} disponible${matched.length>1?"s":""}` : "Aucun résultat";
+        if(pageLabel)pageLabel.textContent=`Page ${matched.length ? page+1 : 0}/${matched.length ? totalPages : 0}`;
+        if(prevBtn)prevBtn.disabled=page<=0 || matched.length<=perPage;
+        if(nextBtn)nextBtn.disabled=page>=totalPages-1 || matched.length<=perPage;
       };
-      searchInput?.addEventListener("input",filterCards);
+      searchInput?.addEventListener("input",()=>{page=0;filterCards();});
+      prevBtn?.addEventListener("click",()=>{page=Math.max(0,page-1);filterCards();});
+      nextBtn?.addEventListener("click",()=>{page+=1;filterCards();});
       update();
       filterCards();
     }
