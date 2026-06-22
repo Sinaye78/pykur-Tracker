@@ -20606,6 +20606,9 @@ function renderAdminTarget(payload){
   $("#adminSaveTargetRestrictions")?.addEventListener("click",()=>saveAdminTargetRestrictions());
   $("#adminRevokeTargetSessions")?.addEventListener("click",()=>adminSecurityTarget("sessions/revoke"));
   $("#adminForceTargetPassword")?.addEventListener("click",()=>adminSecurityTarget("password-reset"));
+  $("#adminBanTargetIp")?.addEventListener("click",()=>adminTechnicalBanTarget("ip"));
+  $("#adminBanTargetBrowser")?.addEventListener("click",()=>adminTechnicalBanTarget("browser"));
+  $("#adminShowTechnicalBans")?.addEventListener("click",loadAdminTechnicalBans);
   $("#adminRemoveTargetAchievement")?.addEventListener("click",()=>sendAdminTargetCommand("remove-achievement",{achievementId:$("#adminTargetAchievement")?.value||""},true));
   $("#adminRemoveTargetGalleryEvent")?.addEventListener("click",()=>sendAdminTargetCommand("remove-gallery-event",{eventId:$("#adminTargetGalleryEvent")?.value||""},true));
   $("#adminRemoveTargetGalleryPykur")?.addEventListener("click",()=>sendAdminTargetCommand("remove-gallery-pykur",{pykurId:$("#adminTargetGalleryPykur")?.value||""},true));
