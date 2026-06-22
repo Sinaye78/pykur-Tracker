@@ -50,6 +50,8 @@ ensureColumn("users", "social_restrictions", "TEXT NOT NULL DEFAULT '{}'");
 ensureColumn("users", "profile_locked", "INTEGER NOT NULL DEFAULT 0");
 ensureColumn("users", "avatar_locked", "INTEGER NOT NULL DEFAULT 0");
 ensureColumn("users", "staff_note", "TEXT");
+ensureColumn("users", "last_ip_address", "TEXT");
+ensureColumn("users", "last_browser_id", "TEXT");
 db.prepare("UPDATE users SET email_verified_at = COALESCE(email_verified_at, created_at) WHERE email_verified_at IS NULL AND last_login_at IS NOT NULL").run();
 
 function ensureCaseInsensitiveUserIndexes() {
@@ -274,6 +276,26 @@ db.exec(`
     FOREIGN KEY(actor_user_id) REFERENCES users(id) ON DELETE RESTRICT
   );
   CREATE INDEX IF NOT EXISTS idx_user_pseudo_history_user ON user_pseudo_history(user_id, created_at);
+  CREATE TABLE IF NOT EXISTS blocked_ip_addresses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ip_address TEXT NOT NULL UNIQUE,
+    reason TEXT,
+    actor_user_id INTEGER,
+    target_user_id INTEGER,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(actor_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY(target_user_id) REFERENCES users(id) ON DELETE SET NULL
+  );
+  CREATE TABLE IF NOT EXISTS blocked_browsers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    browser_id TEXT NOT NULL UNIQUE,
+    reason TEXT,
+    actor_user_id INTEGER,
+    target_user_id INTEGER,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(actor_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY(target_user_id) REFERENCES users(id) ON DELETE SET NULL
+  );
 `);
 ensureColumn("private_messages", "edited_at", "TEXT");
 ensureColumn("private_messages", "deleted_at", "TEXT");
@@ -525,6 +547,49 @@ function parseSocialRestrictions(value) {
 function socialRestrictionError(user, key, label) {
   if (!parseSocialRestrictions(user?.social_restrictions)[key]) return null;
   return { error: `${label} temporairement restreint par l'équipe de modération.`, code: "SOCIAL_RESTRICTED" };
+}
+
+function normalizeIpAddress(value) {
+  return String(value || "").trim().replace(/^::ffff:/, "").slice(0, 80);
+}
+
+function requestIp(req) {
+  const forwarded = String(req.headers["x-forwarded-for"] || "").split(",")[0];
+  return normalizeIpAddress(forwarded || req.ip || req.socket?.remoteAddress || "");
+}
+
+function normalizeBrowserId(value) {
+  const text = String(value || "").trim();
+  return /^[a-zA-Z0-9._:-]{12,120}$/.test(text) ? text.slice(0, 120) : "";
+}
+
+function requestBrowserId(req) {
+  return normalizeBrowserId(req.headers["x-browser-id"]);
+}
+
+function securityLoginBlock(req) {
+  const ip = requestIp(req);
+  const browserId = requestBrowserId(req);
+  if (ip) {
+    const row = db.prepare("SELECT reason FROM blocked_ip_addresses WHERE ip_address = ?").get(ip);
+    if (row) return { blocked: true, type: "ip", reason: row.reason || "" };
+  }
+  if (browserId) {
+    const row = db.prepare("SELECT reason FROM blocked_browsers WHERE browser_id = ?").get(browserId);
+    if (row) return { blocked: true, type: "browser", reason: row.reason || "" };
+  }
+  return { blocked: false, ip, browserId };
+}
+
+function updateUserSecurityFootprint(userId, req) {
+  const ip = requestIp(req);
+  const browserId = requestBrowserId(req);
+  db.prepare(`
+    UPDATE users
+    SET last_ip_address = COALESCE(?, last_ip_address),
+        last_browser_id = COALESCE(?, last_browser_id)
+    WHERE id = ?
+  `).run(ip || null, browserId || null, userId);
 }
 
 function publicUser(user) {
@@ -1161,6 +1226,15 @@ function authenticateRequest(req, res, next, { allowBanned = false } = {}) {
     if (user.is_banned && !allowBanned) {
       return res.status(403).json({ error: user.ban_until ? `Compte banni jusqu'au ${user.ban_until}.` : "Compte banni." });
     }
+    if (!allowBanned) {
+      const block = securityLoginBlock(req);
+      if (block.blocked) {
+        return res.status(403).json({
+          error: block.type === "ip" ? "Connexion refusee depuis cette adresse IP." : "Connexion refusee depuis ce navigateur.",
+          code: "SECURITY_BLOCKED"
+        });
+      }
+    }
     req.user = user;
     next();
   } catch {
@@ -1211,6 +1285,10 @@ const ADMIN_PERMISSION_CATALOG = Object.freeze([
   { id: "users.restrict", group: "Utilisateurs", label: "Restreindre les fonctions sociales", description: "Bloquer separement chat, messages, amis, partages, avatar ou profil public." },
   { id: "users.rename", group: "Utilisateurs", label: "Modifier un pseudo", description: "Renommer un membre avec historique obligatoire." },
   { id: "users.avatar.manage", group: "Utilisateurs", label: "Gerer les avatars", description: "Changer ou supprimer la photo de profil d'un membre avec audit." },
+  { id: "users.ip.view", group: "Securite", label: "Voir les IP", description: "Afficher la derniere IP connue d'un membre." },
+  { id: "users.ip.ban", group: "Securite", label: "Bannir une IP", description: "Bloquer la connexion depuis une adresse IP." },
+  { id: "users.browser.ban", group: "Securite", label: "Bannir un navigateur", description: "Bloquer la connexion depuis le navigateur signale." },
+  { id: "users.security_bans.view", group: "Securite", label: "Voir les bans techniques", description: "Consulter les IP et navigateurs bannis." },
   { id: "users.sessions.revoke", group: "Securite", label: "Revoquer les sessions", description: "Deconnecter le membre de tous ses appareils." },
   { id: "users.password.reset", group: "Securite", label: "Forcer un nouveau mot de passe", description: "Envoyer un lien de recuperation et bloquer la connexion actuelle." },
   { id: "users.delete", group: "Utilisateurs", label: "Supprimer un compte", description: "Suppression definitive d'un compte. Reserve aux administrateurs." },
@@ -1237,7 +1315,7 @@ const ALL_ADMIN_PERMISSIONS = ADMIN_PERMISSION_CATALOG.map((permission) => permi
 const ADMIN_PERMISSION_MATRIX = Object.freeze({
   moderator: [
     "console.view", "users.view", "users.warn", "users.mute", "users.ban", "users.history.manage",
-    "users.notes", "users.restrict",
+    "users.notes", "users.restrict", "users.ip.view",
     "reports.view", "reports.assign", "reports.resolve", "logs.view",
     "notifications.send", "events.target", "chat.configure", "chat.clear"
   ],
@@ -1636,6 +1714,10 @@ function moderationUserView(user, actor) {
   base.avatarLocked = !!user.avatar_locked;
   base.passwordResetRequired = !!user.password_reset_required;
   base.staffNote = hasPermission(actor, "users.notes") ? String(user.staff_note || "") : "";
+  if (hasPermission(actor, "users.ip.view")) {
+    base.lastIpAddress = user.last_ip_address || "";
+    base.lastBrowserId = user.last_browser_id || "";
+  }
   return base;
 }
 
@@ -1846,6 +1928,10 @@ app.get("/api/events/living", (req, res) => {
 });
 
 app.post("/api/auth/register", registrationLimiter, asyncRoute(async (req, res) => {
+  const block = securityLoginBlock(req);
+  if (block.blocked) {
+    return res.status(403).json({ error: block.type === "ip" ? "Connexion refusee depuis cette adresse IP." : "Connexion refusee depuis ce navigateur.", code: "SECURITY_BLOCKED" });
+  }
   const pseudo = cleanPseudo(req.body.pseudo);
   const email = String(req.body.email || "").trim().toLowerCase();
   const password = String(req.body.password || "");
@@ -1909,12 +1995,17 @@ app.post("/api/auth/verify-email/confirm", passwordResetLimiter, (req, res) => {
     db.prepare("UPDATE email_verification_tokens SET used_at = CURRENT_TIMESTAMP WHERE id = ?").run(row.id);
   });
   transaction();
+  updateUserSecurityFootprint(row.user_id, req);
   const user = getUserById(row.user_id);
   announceFirstLogin(user);
   res.json({ token: signUser(user), user: publicUser(user) });
 });
 
 app.post("/api/auth/login", loginLimiter, asyncRoute(async (req, res) => {
+  const block = securityLoginBlock(req);
+  if (block.blocked) {
+    return res.status(403).json({ error: block.type === "ip" ? "Connexion refusee depuis cette adresse IP." : "Connexion refusee depuis ce navigateur.", code: "SECURITY_BLOCKED" });
+  }
   purgeExpiredClosedAccounts();
   const identifier = String(req.body.identifier || "").trim();
   const password = String(req.body.password || "");
@@ -1942,6 +2033,7 @@ app.post("/api/auth/login", loginLimiter, asyncRoute(async (req, res) => {
     return res.status(403).json({ error: "La securite de ce compte exige un nouveau mot de passe. Utilisez Mot de passe oublie." });
   }
   db.prepare("UPDATE users SET last_login_at = CURRENT_TIMESTAMP, presence_seen_at = CURRENT_TIMESTAMP, deletion_requested_at = NULL WHERE id = ?").run(user.id);
+  updateUserSecurityFootprint(user.id, req);
   const refreshed = getUserById(user.id);
   announceFirstLogin(refreshed);
   logCommunity({ userId: refreshed.id, type: "login", body: "Connexion au compte." });
@@ -1988,12 +2080,14 @@ app.post("/api/auth/password-reset/confirm", passwordResetLimiter, asyncRoute(as
     db.prepare("UPDATE password_reset_tokens SET used_at = CURRENT_TIMESTAMP WHERE id = ?").run(row.id);
   });
   transaction();
+  updateUserSecurityFootprint(row.user_id, req);
   const user = getUserById(row.user_id);
   res.json({ token: signUser(user), user: publicUser(user) });
 }));
 
 app.get("/api/auth/me", requireAuth, (req, res) => {
   db.prepare("UPDATE users SET presence_seen_at = CURRENT_TIMESTAMP, deletion_requested_at = NULL WHERE id = ?").run(req.user.id);
+  updateUserSecurityFootprint(req.user.id, req);
   const user = getUserById(req.user.id);
   res.json({ user: publicUser(user), muted: !!user.mute_until, muteUntil: user.mute_until });
 });
@@ -3369,6 +3463,98 @@ app.post("/api/moderation/users/:id/unmute", requireAuth, requireRole("moderator
   db.prepare("UPDATE users SET mute_until = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(target.id);
   moderationLog({ targetId: target.id, actorId: req.user.id, type: "unmute", reason: req.body.reason, req });
   res.json({ user: publicUser(getUserById(target.id)) });
+});
+
+app.get("/api/moderation/security-bans", requireAuth, requireRole("moderator"), requirePermission("users.security_bans.view"), (req, res) => {
+  const ips = db.prepare(`
+    SELECT b.*, actor.pseudo AS actor_pseudo, target.pseudo AS target_pseudo
+    FROM blocked_ip_addresses b
+    LEFT JOIN users actor ON actor.id = b.actor_user_id
+    LEFT JOIN users target ON target.id = b.target_user_id
+    ORDER BY b.created_at DESC
+    LIMIT 200
+  `).all().map((row) => ({
+    id: row.id,
+    ipAddress: row.ip_address,
+    reason: row.reason || "",
+    createdAt: row.created_at,
+    actorPseudo: row.actor_pseudo || "Equipe",
+    targetPseudo: row.target_pseudo || ""
+  }));
+  const browsers = db.prepare(`
+    SELECT b.*, actor.pseudo AS actor_pseudo, target.pseudo AS target_pseudo
+    FROM blocked_browsers b
+    LEFT JOIN users actor ON actor.id = b.actor_user_id
+    LEFT JOIN users target ON target.id = b.target_user_id
+    ORDER BY b.created_at DESC
+    LIMIT 200
+  `).all().map((row) => ({
+    id: row.id,
+    browserId: row.browser_id,
+    reason: row.reason || "",
+    createdAt: row.created_at,
+    actorPseudo: row.actor_pseudo || "Equipe",
+    targetPseudo: row.target_pseudo || ""
+  }));
+  res.json({ ips, browsers });
+});
+
+app.post("/api/moderation/users/:id/ip-ban", requireAuth, requireRole("moderator"), requirePermission("users.ip.ban"), (req, res) => {
+  const target = getUserById(req.params.id);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Vous ne pouvez pas modÃ©rer ce rÃ´le." });
+  const ip = normalizeIpAddress(req.body.ipAddress || target.last_ip_address);
+  if (!ip) return res.status(400).json({ error: "Aucune IP connue pour ce membre." });
+  const reason = String(req.body.reason || "").trim().slice(0, 300);
+  db.prepare(`
+    INSERT INTO blocked_ip_addresses(ip_address, reason, actor_user_id, target_user_id)
+    VALUES(?, ?, ?, ?)
+    ON CONFLICT(ip_address) DO UPDATE SET
+      reason = excluded.reason,
+      actor_user_id = excluded.actor_user_id,
+      target_user_id = excluded.target_user_id,
+      created_at = CURRENT_TIMESTAMP
+  `).run(ip, reason || null, req.user.id, target.id);
+  auditLog({ actorId: req.user.id, targetId: target.id, action: "security.ip.ban", entityType: "ip", entityId: ip, details: { reason }, req });
+  res.json({ ok: true, ipAddress: ip });
+});
+
+app.post("/api/moderation/users/:id/browser-ban", requireAuth, requireRole("moderator"), requirePermission("users.browser.ban"), (req, res) => {
+  const target = getUserById(req.params.id);
+  if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
+  if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Vous ne pouvez pas modÃ©rer ce rÃ´le." });
+  const browserId = normalizeBrowserId(req.body.browserId || target.last_browser_id);
+  if (!browserId) return res.status(400).json({ error: "Aucun navigateur connu pour ce membre." });
+  const reason = String(req.body.reason || "").trim().slice(0, 300);
+  db.prepare(`
+    INSERT INTO blocked_browsers(browser_id, reason, actor_user_id, target_user_id)
+    VALUES(?, ?, ?, ?)
+    ON CONFLICT(browser_id) DO UPDATE SET
+      reason = excluded.reason,
+      actor_user_id = excluded.actor_user_id,
+      target_user_id = excluded.target_user_id,
+      created_at = CURRENT_TIMESTAMP
+  `).run(browserId, reason || null, req.user.id, target.id);
+  auditLog({ actorId: req.user.id, targetId: target.id, action: "security.browser.ban", entityType: "browser", entityId: browserId, details: { reason }, req });
+  res.json({ ok: true, browserId });
+});
+
+app.delete("/api/moderation/security-bans/:kind/:id", requireAuth, requireRole("moderator"), requirePermission("users.security_bans.view"), (req, res) => {
+  const kind = String(req.params.kind || "");
+  const id = Number(req.params.id);
+  if (!id || !["ip", "browser"].includes(kind)) return res.status(400).json({ error: "Ban technique invalide." });
+  if (kind === "ip") {
+    const row = db.prepare("SELECT * FROM blocked_ip_addresses WHERE id = ?").get(id);
+    if (!row) return res.status(404).json({ error: "IP bannie introuvable." });
+    db.prepare("DELETE FROM blocked_ip_addresses WHERE id = ?").run(id);
+    auditLog({ actorId: req.user.id, action: "security.ip.unban", entityType: "ip", entityId: row.ip_address, details: {}, req });
+  } else {
+    const row = db.prepare("SELECT * FROM blocked_browsers WHERE id = ?").get(id);
+    if (!row) return res.status(404).json({ error: "Navigateur banni introuvable." });
+    db.prepare("DELETE FROM blocked_browsers WHERE id = ?").run(id);
+    auditLog({ actorId: req.user.id, action: "security.browser.unban", entityType: "browser", entityId: row.browser_id, details: {}, req });
+  }
+  res.json({ ok: true });
 });
 
 app.post("/api/admin/users/:id/role", requireAuth, requireRole("admin"), requirePermission("roles.manage"), (req, res) => {

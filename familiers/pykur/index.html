@@ -5155,6 +5155,25 @@ body.no-anim .app.milestone-flash{
   font-weight:850;
 }
 
+.community-profile-card-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:8px;
+}
+
+.community-profile-card-head h4{
+  margin:0 0 4px;
+}
+
+.community-profile-familiar-img{
+  width:58px;
+  height:58px;
+  flex:0 0 58px;
+  object-fit:contain;
+  filter:drop-shadow(0 7px 10px rgba(72,43,15,.18));
+}
+
 .community-profile-card .progress-bar{
   margin:10px 0 6px;
   height:12px!important;
@@ -15626,8 +15645,9 @@ function assetPath(src){
 }
 const AUTH_API_BASE=localStorage.getItem("pykur_api_base")||(location.hostname==="127.0.0.1"||location.hostname==="localhost"?"http://127.0.0.1:3000/api":"/api");
 const AUTH_TOKEN_KEY="pykur_auth_token";
+const BROWSER_ID_KEY="familier_tracker_browser_id";
 let authMode="login";
-let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null,refreshTimer:null};
+let authState={token:localStorage.getItem(AUTH_TOKEN_KEY)||"",user:null,apiOnline:null,refreshTimer:null,lastSnapshotAt:0,snapshotRefreshing:false};
 const socialState={friends:0,incoming:0,outgoing:0,loaded:false,seenIncoming:[]};
 const messageState={activePseudo:null,conversations:[],unread:0,timer:null,lastNotifiedId:Math.max(0,parseInt(localStorage.getItem("pykur_messages_notified_id"),10)||0),threadRequest:0};
 const chatState={messages:[],online:[],ignored:[],settings:{locked:0,slowModeSeconds:0},lastPingSeenAt:localStorage.getItem("pykur_chat_ping_seen_at")||"",mentionUnread:Math.max(0,parseInt(localStorage.getItem("pykur_chat_mention_unread"),10)||0),timer:null,pingTimer:null,hideShares:false,hideText:false,refreshing:false};
@@ -15693,6 +15713,15 @@ function apiDelay(ms){
   return new Promise(resolve=>setTimeout(resolve,ms));
 }
 
+function browserSecurityId(){
+  let value=localStorage.getItem(BROWSER_ID_KEY)||"";
+  if(!/^[a-zA-Z0-9._:-]{12,120}$/.test(value)){
+    value=globalThis.crypto?.randomUUID?.()||`browser-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    localStorage.setItem(BROWSER_ID_KEY,value);
+  }
+  return value;
+}
+
 async function authFetch(path,options={}){
   const method=String(options.method||"GET").toUpperCase();
   const requestKey=method==="GET" ? `${method}:${path}` : "";
@@ -15705,6 +15734,7 @@ async function authFetch(path,options={}){
       const timeoutId=setTimeout(()=>controller.abort(),12000);
       const requestId=globalThis.crypto?.randomUUID?.()||`web-${Date.now()}-${Math.random().toString(16).slice(2)}`;
       const headers=Object.assign({"Content-Type":"application/json","X-Request-Id":requestId},options.headers||{});
+      headers["X-Browser-Id"]=browserSecurityId();
       if(authState.token)headers.Authorization=`Bearer ${authState.token}`;
       try{
         const response=await fetch(AUTH_API_BASE+path,{...options,method,headers,signal:controller.signal});
@@ -16218,15 +16248,22 @@ function renderCommunityProfile(profile){
     <div class="community-profile-tab-panel is-active" data-community-panel="progression">
       <section class="community-section-heading"><div><small>Parcours familier</small><h4>Progression visible</h4></div><span>${profiles.length} profil${profiles.length>1?"s":""}</span></section>
       <section class="community-profile-grid">
-      ${profiles.length ? profiles.map(item=>`
+      ${profiles.length ? profiles.map(item=>{
+        const familiar=cloudProfileFamiliar(item);
+        return `
           <article class="community-profile-card">
-            <h4>${escapeHtml(item.name)}${item.isMain?" · Principal":""}</h4>
-            <p><strong>${cloudProfileProgressValue(item)} / ${cloudProfileObjectiveMax(item)} ${escapeHtml(cloudProfileProgressLabel(item))}</strong></p>
+            <div class="community-profile-card-head">
+              <img class="community-profile-familiar-img" src="${assetPath(familiar.logo||familiar.image)}" alt="">
+              <div>
+                <h4>${escapeHtml(item.name)}${item.isMain?" · Principal":""}</h4>
+                <p><strong>${cloudProfileProgressValue(item)} / ${cloudProfileObjectiveMax(item)} ${escapeHtml(cloudProfileProgressLabel(item))}</strong></p>
+              </div>
+            </div>
           <div class="progress-bar"><span class="community-profile-progress-fill" style="width:${Math.max(0,Math.min(100,item.progress||0))}%"></span></div>
           ${(Array.isArray(item.runDetails)&&item.runDetails.length?item.runDetails:[{label:"Morose",value:item.runs?.morose||0},{label:"Tynril",value:item.runs?.tynril||0}]).map(run=>`<p>${escapeHtml(run.label)} : ${Number(run.value)||0}</p>`).join("")}
           ${item.stats?`<p>Temps chrono : ${item.stats.chronoTotalSeconds?formatDuration(item.stats.chronoTotalSeconds):"—"}</p>`:""}
         </article>
-      `).join("") : `<div class="community-profile-empty">Aucun profil familier visible publiquement.</div>`}
+      `}).join("") : `<div class="community-profile-empty">Aucun profil familier visible publiquement.</div>`}
       </section>
     </div>
     <div class="community-profile-tab-panel" data-community-panel="collection">
@@ -17567,14 +17604,41 @@ function startSocialPolling(){
   refreshChatPingNotifications({silent:true});
   refreshWarningNotifications({silent:true});
   refreshFriendSummary({silent:true});
+  refreshAccountSnapshot({silent:true});
   pollAdminCommands();
   messageState.timer=setInterval(()=>refreshMessageNotifications(),3000);
   chatState.pingTimer=setInterval(()=>{
     refreshChatPingNotifications();
     refreshWarningNotifications();
     refreshFriendSummary({silent:true});
+    if(Date.now()-Number(authState.lastSnapshotAt||0)>10000)refreshAccountSnapshot({silent:true});
   },5000);
   adminCommandTimer=setInterval(pollAdminCommands,3000);
+}
+
+async function refreshAccountSnapshot({silent=false}={}){
+  if(!authState.token || authState.snapshotRefreshing)return;
+  authState.snapshotRefreshing=true;
+  try{
+    const previousRole=authState.user?.role||"";
+    const result=await authFetch("/auth/me");
+    authState.lastSnapshotAt=Date.now();
+    authState.user=result.user;
+    if(previousRole && previousRole!==result.user?.role){
+      moderationPermissions=[];
+      toast(`Votre rôle est maintenant ${authRoleLabel(result.user?.role)}.`,"info","success");
+    }
+    authRender();
+    if($("#livingEventAdmin")?.classList.contains("show"))loadAdminConsole();
+  }catch(error){
+    if([401,403].includes(Number(error?.status||0))){
+      authLogout();
+      return;
+    }
+    if(!silent && !isTransientApiError(error))toast(error.message||"Session indisponible.","error","error");
+  }finally{
+    authState.snapshotRefreshing=false;
+  }
 }
 
 async function loadMessageThread(pseudo,{silent=false,preserveScroll=false}={}){
@@ -20376,7 +20440,8 @@ function renderAdminTarget(payload){
   const canAvatar=can("users.avatar.manage");
   const canRestrict=can("users.restrict");
   const canIdentity=can("users.rename");
-  const canSecurity=can("users.sessions.revoke")||can("users.password.reset");
+  const canTechnicalSecurity=can("users.ip.view")||can("users.ip.ban")||can("users.browser.ban")||can("users.security_bans.view");
+  const canSecurity=can("users.sessions.revoke")||can("users.password.reset")||canTechnicalSecurity;
   const canTracker=can("tracker.reset")||can("achievements.manage")||can("gallery.manage")||can("profiles.manage");
   const restrictions=user.socialRestrictions||{};
   box.className="";
@@ -20422,6 +20487,9 @@ function renderAdminTarget(payload){
   $("#adminSaveTargetRestrictions")?.addEventListener("click",()=>saveAdminTargetRestrictions());
   $("#adminRevokeTargetSessions")?.addEventListener("click",()=>adminSecurityTarget("sessions/revoke"));
   $("#adminForceTargetPassword")?.addEventListener("click",()=>adminSecurityTarget("password-reset"));
+  $("#adminBanTargetIp")?.addEventListener("click",()=>adminTechnicalBanTarget("ip"));
+  $("#adminBanTargetBrowser")?.addEventListener("click",()=>adminTechnicalBanTarget("browser"));
+  $("#adminShowTechnicalBans")?.addEventListener("click",loadAdminTechnicalBans);
   $("#adminRemoveTargetAchievement")?.addEventListener("click",()=>sendAdminTargetCommand("remove-achievement",{achievementId:$("#adminTargetAchievement")?.value||""},true));
   $("#adminRemoveTargetGalleryEvent")?.addEventListener("click",()=>sendAdminTargetCommand("remove-gallery-event",{eventId:$("#adminTargetGalleryEvent")?.value||""},true));
   $("#adminRemoveTargetGalleryPykur")?.addEventListener("click",()=>sendAdminTargetCommand("remove-gallery-pykur",{pykurId:$("#adminTargetGalleryPykur")?.value||""},true));
@@ -20455,7 +20523,8 @@ function renderAdminTarget(payload){
   const canAvatar=can("users.avatar.manage");
   const canRestrict=can("users.restrict");
   const canIdentity=can("users.rename");
-  const canSecurity=can("users.sessions.revoke")||can("users.password.reset");
+  const canTechnicalSecurity=can("users.ip.view")||can("users.ip.ban")||can("users.browser.ban")||can("users.security_bans.view");
+  const canSecurity=can("users.sessions.revoke")||can("users.password.reset")||canTechnicalSecurity;
   const canTracker=can("tracker.reset")||can("achievements.manage")||can("gallery.manage")||can("profiles.manage");
   const canRoles=can("roles.manage");
   const restrictions=user.socialRestrictions||{};
@@ -20656,6 +20725,57 @@ async function adminSecurityTarget(path){
   }catch(error){toast(error.message||"Action de sécurité impossible.","error","error")}
 }
 
+async function adminTechnicalBanTarget(kind){
+  const target=adminConsoleTarget?.user;
+  if(!target)return;
+  const reason=String($("#adminTechnicalBanReason")?.value||$("#adminTargetSecurityReason")?.value||$("#adminModerationReason")?.value||"").trim();
+  if(reason.length<3)return toast("Indiquez un motif pour le ban technique.","warning","warning");
+  const label=kind==="ip"?"l'adresse IP":"ce navigateur";
+  if(!await showConfirm(`Bannir ${label} de ${target.pseudo} ?\n\nLe membre pourra toujours utiliser le tracker local, mais la connexion cloud sera bloquée depuis cette cible.`,{title:"Ban technique",danger:true,okLabel:"Bannir"}))return;
+  try{
+    await authFetch(`/moderation/users/${encodeURIComponent(target.id)}/${kind==="ip"?"ip-ban":"browser-ban"}`,{method:"POST",body:JSON.stringify({reason})});
+    toast(kind==="ip"?"IP bannie.":"Navigateur banni.","success","success");
+    await searchAdminTarget();
+    await loadAdminTechnicalBans();
+  }catch(error){toast(error.message||"Ban technique impossible.","error","error")}
+}
+
+function renderAdminTechnicalBans(result){
+  const box=$("#adminTechnicalBanList");
+  if(!box)return;
+  const ips=Array.isArray(result?.ips)?result.ips:[];
+  const browsers=Array.isArray(result?.browsers)?result.browsers:[];
+  const rows=[
+    ...ips.map(row=>({kind:"ip",id:row.id,label:row.ipAddress,target:row.targetPseudo,actor:row.actorPseudo,reason:row.reason,createdAt:row.createdAt})),
+    ...browsers.map(row=>({kind:"browser",id:row.id,label:row.browserId,target:row.targetPseudo,actor:row.actorPseudo,reason:row.reason,createdAt:row.createdAt}))
+  ];
+  box.innerHTML=rows.length?rows.map(row=>`
+    <article class="admin-clean-timeline-row">
+      <strong>${row.kind==="ip"?"IP":"Navigateur"} · ${escapeHtml(row.kind==="browser"?`${String(row.label||"").slice(0,28)}...`:row.label||"")}</strong>
+      <small>${row.target?`Cible : ${escapeHtml(row.target)} · `:""}Par ${escapeHtml(row.actor||"Equipe")} · ${adminConsoleDate(row.createdAt)}${row.reason?` · ${escapeHtml(row.reason)}`:""}</small>
+      <button class="btn btn-gray" type="button" data-admin-delete-technical-ban="${escapeHtml(String(row.id))}" data-kind="${row.kind}">Retirer</button>
+    </article>
+  `).join(""):`<div class="admin-console-empty">Aucun ban technique actif.</div>`;
+  box.querySelectorAll("[data-admin-delete-technical-ban]").forEach(button=>button.addEventListener("click",()=>deleteAdminTechnicalBan(button.dataset.kind,button.dataset.adminDeleteTechnicalBan)));
+}
+
+async function loadAdminTechnicalBans(){
+  const box=$("#adminTechnicalBanList");
+  if(box)box.innerHTML=`<div class="admin-console-empty">Chargement des bans techniques...</div>`;
+  try{
+    renderAdminTechnicalBans(await authFetch("/moderation/security-bans"));
+  }catch(error){toast(error.message||"Impossible de charger les bans techniques.","error","error")}
+}
+
+async function deleteAdminTechnicalBan(kind,id){
+  if(!await showConfirm("Retirer ce ban technique ?",{title:"Sécurité technique",okLabel:"Retirer"}))return;
+  try{
+    await authFetch(`/moderation/security-bans/${encodeURIComponent(kind)}/${encodeURIComponent(id)}`,{method:"DELETE"});
+    toast("Ban technique retiré.","success","success");
+    await loadAdminTechnicalBans();
+  }catch(error){toast(error.message||"Suppression impossible.","error","error")}
+}
+
 async function adminLiftModeration(action){
   const target=adminConsoleTarget?.user;
   if(!target)return;
@@ -20694,7 +20814,8 @@ function renderAdminTarget(payload){
   const canAvatar=can("users.avatar.manage");
   const canRestrict=can("users.restrict");
   const canIdentity=can("users.rename");
-  const canSecurity=can("users.sessions.revoke")||can("users.password.reset");
+  const canTechnicalSecurity=can("users.ip.view")||can("users.ip.ban")||can("users.browser.ban")||can("users.security_bans.view");
+  const canSecurity=can("users.sessions.revoke")||can("users.password.reset")||canTechnicalSecurity;
   const canTracker=can("tracker.reset")||can("achievements.manage")||can("gallery.manage")||can("profiles.manage");
   const canRoles=can("roles.manage");
   const restrictions=user.socialRestrictions||{};
@@ -20746,6 +20867,7 @@ function renderAdminTarget(payload){
       <section class="admin-clean-section-grid">
         ${canRoles?`<article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Rôle</span><strong>Permissions principales</strong></div><p class="options-note">Le changement de rôle est protégé, journalisé et ne peut pas supprimer le dernier administrateur.</p><div class="admin-role-editor clean"><select id="adminTargetRole">${roleOptions}</select><input id="adminTargetRoleReason" type="text" maxlength="300" placeholder="Motif du changement de rôle"><button class="btn btn-blue" id="adminChangeTargetRole" type="button">Appliquer le rôle</button></div></article>`:""}
         ${canSecurity?`<article class="admin-clean-card"><div class="admin-clean-card-head"><span>Compte</span><strong>Sessions</strong></div><input id="adminTargetSecurityReason" type="text" maxlength="300" placeholder="Motif sécurité"><div class="admin-action-buttons">${can("users.sessions.revoke")?`<button class="btn btn-red" id="adminRevokeTargetSessions" type="button">Révoquer sessions</button>`:""}${can("users.password.reset")?`<button class="btn btn-orange" id="adminForceTargetPassword" type="button">Forcer mot de passe</button>`:""}</div></article>`:""}
+        ${canTechnicalSecurity?`<article class="admin-clean-card admin-clean-card-wide"><div class="admin-clean-card-head"><span>Sécurité technique</span><strong>IP et navigateur</strong></div><div class="admin-mini-stats clean">${can("users.ip.view")?`<div><small>Dernière IP</small><strong>${escapeHtml(user.lastIpAddress||"Non connue")}</strong></div><div><small>Navigateur</small><strong>${escapeHtml(user.lastBrowserId?`${user.lastBrowserId.slice(0,18)}...`:"Non connu")}</strong></div>`:`<div><small>Données réseau</small><strong>Permission requise</strong></div>`}</div><input id="adminTechnicalBanReason" type="text" maxlength="300" placeholder="Motif du ban technique"><div class="admin-action-buttons">${can("users.ip.ban")?`<button class="btn btn-red" id="adminBanTargetIp" type="button" ${user.lastIpAddress?"":"disabled"}>Bannir l'IP</button>`:""}${can("users.browser.ban")?`<button class="btn btn-red" id="adminBanTargetBrowser" type="button" ${user.lastBrowserId?"":"disabled"}>Bannir ce navigateur</button>`:""}${can("users.security_bans.view")?`<button class="btn btn-gray" id="adminShowTechnicalBans" type="button">Voir les bans techniques</button>`:""}</div><div id="adminTechnicalBanList" class="admin-clean-timeline"></div><p class="options-note">Le ban navigateur bloque ce navigateur connu. Il reste contournable si l'utilisateur efface ses données de site.</p></article>`:""}
       </section>`,
     danger:canTracker?`
       <section class="admin-clean-section-grid">
