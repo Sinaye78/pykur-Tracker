@@ -10791,6 +10791,7 @@ body.no-anim .pykur-sparkle{
 .gallery-familiar-filter{border:1px solid rgba(119,79,28,.30);border-radius:999px;background:rgba(255,252,242,.72);color:#5b3b18;font-weight:950;padding:7px 12px;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
 .gallery-familiar-filter:hover{transform:translateY(-1px);box-shadow:0 8px 16px rgba(80,48,12,.10)}
 .gallery-familiar-filter.active{background:linear-gradient(180deg,#fff3b0,#facc15);border-color:rgba(184,122,24,.42);color:#3b2408;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 18px rgba(184,122,24,.18)}
+.gallery-familiar-select{min-height:36px;border:1px solid rgba(119,79,28,.30);border-radius:999px;background:rgba(255,252,242,.78);color:#5b3b18;font-weight:950;padding:7px 34px 7px 12px;max-width:min(100%,260px)}
 .gallery-card-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}
 .gallery-card-actions .btn{width:100%;margin-top:0}
 .gallery-global-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
@@ -12121,6 +12122,35 @@ body.no-anim .pykur-sparkle{
   font-size:20px!important;
 }
 
+.dungeon-variant-select{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+  padding:8px 10px;
+  border:1px solid rgba(126,91,43,.20);
+  border-radius:12px;
+  background:rgba(255,252,242,.64);
+  color:#5a3a1b;
+  font-weight:950;
+}
+.dungeon-variant-select span{
+  font-size:11px;
+  text-transform:uppercase;
+  color:#7b5628;
+}
+.dungeon-variant-select select{
+  min-width:0;
+  width:100%;
+  border:1px solid rgba(126,91,43,.30);
+  border-radius:10px;
+  background:rgba(255,255,255,.76);
+  padding:8px 10px;
+  color:#2b1608;
+  font-weight:950;
+}
+
 .dungeon-card.active-farm{
   border-width:2px!important;
 }
@@ -12145,6 +12175,34 @@ body.no-anim .pykur-sparkle{
     radial-gradient(circle at 8% 0,rgba(250,204,21,.18),transparent 34%),
     radial-gradient(circle at 92% 100%,rgba(14,165,233,.10),transparent 38%),
     linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,.08))!important;
+}
+.dungeon-donjonBouftous{
+  border-color:rgba(236,162,48,.34)!important;
+  background:
+    radial-gradient(circle at 9% 0,rgba(236,162,48,.20),transparent 34%),
+    radial-gradient(circle at 92% 100%,rgba(250,204,21,.14),transparent 40%),
+    linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.08))!important;
+}
+.dungeon-donjonSquelettes{
+  border-color:rgba(126,91,43,.30)!important;
+  background:
+    radial-gradient(circle at 8% 0,rgba(126,91,43,.17),transparent 34%),
+    radial-gradient(circle at 92% 100%,rgba(148,163,184,.15),transparent 40%),
+    linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.08))!important;
+}
+.dungeon-donjonBlops{
+  border-color:rgba(236,72,153,.30)!important;
+  background:
+    radial-gradient(circle at 8% 0,rgba(236,72,153,.18),transparent 34%),
+    radial-gradient(circle at 92% 100%,rgba(34,211,238,.14),transparent 40%),
+    linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.08))!important;
+}
+.dungeon-antreBlopMulticolore{
+  border-color:rgba(168,85,247,.34)!important;
+  background:
+    radial-gradient(circle at 8% 0,rgba(168,85,247,.18),transparent 34%),
+    radial-gradient(circle at 92% 100%,rgba(250,204,21,.15),transparent 40%),
+    linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.08))!important;
 }
 
 .pp-summary-card{
@@ -15104,11 +15162,15 @@ const ABRA_OBJECTIVE_MAX=55;
 const DRAGOUNE_OBJECTIVE_MAX=55;
 const TOFOUDRE_OBJECTIVE_MAX=11;
 const CROUM_OBJECTIVE_MAX=90;
+const VITALITY_OBJECTIVE_MAX=165;
 const PYKUR_RUN_LIMITS={morose:640,tynril:48};
 const ABRA_RUN_LIMITS={donjonAbraknyde:9999,cheneMou:9999,salleAbrakne:9999};
 const DRAGOUNE_RUN_LIMITS={sanctuaireDragoeufs:9999};
 const TOFOUDRE_RUN_LIMITS={ratsAmakna:9999,ratsBrakmar:9999,ratsBonta:9999};
 const CROUM_RUN_LIMITS={gouletRasboul:9999};
+const BOULOUTE_RUN_LIMITS={donjonBouftous:9999};
+const VAMPYRETTE_RUN_LIMITS={donjonSquelettes:9999};
+const GELUTIN_RUN_LIMITS={donjonBlops:9999,antreBlopMulticolore:9999};
 function createCroumFamiliar({id,label,defaultProfileName,progressLabel,progressShort,icon,basePath,difficultyStars=2}){
   const progressIntro=["agilité","intelligence"].includes(progressShort) ? `d'${progressShort}` : `de ${progressShort}`;
   return {
@@ -15136,6 +15198,35 @@ function createCroumFamiliar({id,label,defaultProfileName,progressLabel,progress
     farmMethods:["Goulet du Rasboul"],
     dungeons:[
       {key:"gouletRasboul",label:"Rasboul",fullLabel:"Goulet du Rasboul",asset:"../croum oto/donjon/goulet-du-rasboul.png",defaultAverage:1500}
+    ]
+  };
+}
+function createBoulouteFamiliar({id,label,basePath,backgroundBasePath=basePath}){
+  return {
+    id,
+    label,
+    shortLabel:label,
+    defaultProfileName:`${label} principale`,
+    progressLabel:"Vitalité",
+    progressShort:"vitalité",
+    objectiveMax:VITALITY_OBJECTIVE_MAX,
+    objectiveLabel:"165 vitalité",
+    icon:"../vitalité/vitalite.png",
+    logo:`../vitalité/${basePath}/${basePath}.png`,
+    image:`../vitalité/${basePath}/${basePath}.png`,
+    auraImage:`../vitalité/${basePath}/${basePath}-aura.png`,
+    sleepingImage:`../vitalité/${basePath}/${basePath}-z.png`,
+    background:`../vitalité/${backgroundBasePath}/fond/fond.png`,
+    status:"active",
+    statusLabel:"",
+    description:"Suivi de vitalité sur le Donjon des Bouftous.",
+    bonusAmount:165,
+    difficultyLabel:"Facile",
+    difficultyStars:1,
+    dofusCooldownMin:10,
+    farmMethods:["Donjon des Bouftous"],
+    dungeons:[
+      {key:"donjonBouftous",label:"Bouftous",fullLabel:"Donjon des Bouftous",asset:"../vitalité/donjon des bouftous/bouftou-royal.png",defaultAverage:600}
     ]
   };
 }
@@ -15293,7 +15384,74 @@ const FAMILIARS={
     icon:"force",
     basePath:"croum-vegetal",
     difficultyStars:2
-  })
+  }),
+  bouloute:createBoulouteFamiliar({
+    id:"bouloute",
+    label:"Bouloute",
+    basePath:"bouloute"
+  }),
+  "bouloute-du-parrain":createBoulouteFamiliar({
+    id:"bouloute-du-parrain",
+    label:"Bouloute du parrain",
+    basePath:"bouloute-du-parrain",
+    backgroundBasePath:"bouloute"
+  }),
+  vampyrette:{
+    id:"vampyrette",
+    label:"Vampyrette",
+    shortLabel:"Vampyrette",
+    defaultProfileName:"Vampyrette principale",
+    progressLabel:"Vitalité",
+    progressShort:"vitalité",
+    objectiveMax:VITALITY_OBJECTIVE_MAX,
+    objectiveLabel:"165 vitalité",
+    icon:"../vitalité/vitalite.png",
+    logo:"../vitalité/vampyrette/vampyrette.png",
+    image:"../vitalité/vampyrette/vampyrette.png",
+    auraImage:"../vitalité/vampyrette/vampyrette-aura.png",
+    sleepingImage:"../vitalité/vampyrette/vampyrette-z.png",
+    background:"../vitalité/vampyrette/fond/fond.png",
+    status:"active",
+    statusLabel:"",
+    description:"Suivi de vitalité sur le Donjon des Squelettes.",
+    bonusAmount:165,
+    difficultyLabel:"Facile",
+    difficultyStars:1,
+    dofusCooldownMin:10,
+    farmMethods:["Donjon des Squelettes"],
+    dungeons:[
+      {key:"donjonSquelettes",label:"Squelettes",fullLabel:"Donjon des Squelettes",asset:"../vitalité/vampyrette/monstre/chafer.png",defaultAverage:600}
+    ]
+  },
+  gelutin:{
+    id:"gelutin",
+    label:"Gelutin",
+    shortLabel:"Gelutin",
+    defaultProfileName:"Gelutin principal",
+    progressLabel:"Vitalité",
+    progressShort:"vitalité",
+    objectiveMax:VITALITY_OBJECTIVE_MAX,
+    objectiveLabel:"165 vitalité",
+    icon:"../vitalité/vitalite.png",
+    logo:"../vitalité/gelutin/gelutin.png",
+    image:"../vitalité/gelutin/gelutin.png",
+    auraImage:"../vitalité/gelutin/gelutin-aura.png",
+    sleepingImage:"../vitalité/gelutin/gelutin-z.png",
+    background:"../vitalité/gelutin/fond/fond.png",
+    status:"active",
+    statusLabel:"",
+    description:"Suivi de vitalité sur le Donjon des Blops et l'Antre du Blop Multicolore.",
+    bonusAmount:165,
+    difficultyLabel:"Moyen",
+    difficultyStars:2,
+    dofusCooldownMin:10,
+    specialDefaults:{blopBoss:"blopCocoRoyal"},
+    farmMethods:["Donjon des Blops","Antre du Blop Multicolore"],
+    dungeons:[
+      {key:"donjonBlops",label:"Blops",fullLabel:"Donjon des Blops",asset:"../vitalité/gelutin/donjon/gloutoblop.png",special:"blopBoss",defaultAverage:900},
+      {key:"antreBlopMulticolore",label:"Blop Multi",fullLabel:"Antre du Blop Multicolore",asset:"../vitalité/gelutin/donjon/blop-multicolore-royal.png",special:"blopBoss",defaultAverage:600}
+    ]
+  }
 };
 function normalizeFamiliarId(id){
   return FAMILIARS[id] ? id : "pykur";
@@ -15467,6 +15625,43 @@ const CROUM_MOBS={
   bitoufPlaines:{name:"Bitouf des Plaines",imgPath:"../croum oto/monstre/bitouf-des-plaines.png",ppNeed:50,cat:["gouletRasboul"]},
   craqueleurPoli:{name:"Craqueleur Poli",imgPath:"../croum oto/monstre/craqueleur-poli.png",ppNeed:60,cat:["gouletRasboul"]}
 };
+const BOULOUTE_MOBS={
+  bouftouRoyal:{name:"Bouftou Royal",imgPath:"../vitalité/monstre bouloute/bouftou-royal.png",ppNeed:5,cat:["donjonBouftous"]},
+  chefBouftou:{name:"Chef de Guerre Bouftou",imgPath:"../vitalité/monstre bouloute/chef-de-guerre-bouftou.png",ppNeed:20,cat:["donjonBouftous"]},
+  bouftouHalouine:{name:"Bouftou d'Halouine",imgPath:"../vitalité/monstre bouloute/bouftou-d-hallowen.png",ppNeed:25,cat:["zone"]},
+  ballotinBouftou:{name:"Ballotin le Bouftou",imgPath:"../vitalité/monstre bouloute/ballotin-le-bouftou.png",ppNeed:25,cat:["zone"]},
+  bouftou:{name:"Bouftou",imgPath:"../vitalité/monstre bouloute/bouftou.png",ppNeed:50,cat:["donjonBouftous"]},
+  bouftonBlanc:{name:"Boufton Blanc",imgPath:"../vitalité/monstre bouloute/boufton-blanc.png",ppNeed:100,cat:["donjonBouftous"]},
+  bouftonNoir:{name:"Boufton Noir",imgPath:"../vitalité/monstre bouloute/boufton-noir.png",ppNeed:100,cat:["donjonBouftous"]}
+};
+const VAMPYRETTE_MOBS={
+  chaferElite:{name:"Chafer d'élite",imgPath:"../vitalité/vampyrette/monstre/chafer-d-elite.png",ppNeed:10,cat:["zone"]},
+  chaferLancier:{name:"Chafer Lancier",imgPath:"../vitalité/vampyrette/monstre/chafer-lancier.png",ppNeed:15,cat:["zone"]},
+  rib:{name:"Rib",imgPath:"../vitalité/vampyrette/monstre/rib.png",ppNeed:20,cat:["donjonSquelettes"]},
+  chaferInvisible:{name:"Chafer Invisible",imgPath:"../vitalité/vampyrette/monstre/chafer-invisible.png",ppNeed:20,cat:["donjonSquelettes"]},
+  chaferArcher:{name:"Chafer Archer",imgPath:"../vitalité/vampyrette/monstre/chafer-archer.png",ppNeed:20,cat:["zone"]},
+  chaferFantassin:{name:"Chafer Fantassin",imgPath:"../vitalité/vampyrette/monstre/chafer-fantassin.png",ppNeed:20,cat:["donjonSquelettes"]},
+  chafer:{name:"Chafer",imgPath:"../vitalité/vampyrette/monstre/chafer.png",ppNeed:30,cat:["donjonSquelettes"]},
+  kwoan:{name:"Kwoan",imgPath:"../vitalité/vampyrette/monstre/kwoan.png",ppNeed:30,cat:["zone"]},
+  chaferPrepubere:{name:"Chafer Prépubère",imgPath:"../vitalité/vampyrette/monstre/chafer-prepubere.png",ppNeed:30,cat:["zone"]}
+};
+const GELUTIN_MOBS={
+  blopMulticoloreRoyal:{name:"Blop Multicolore Royal",imgPath:"../vitalité/gelutin/monstre/blop-multicolore-royal.png",ppNeed:1,cat:["antreBlopMulticolore"]},
+  blopReinetteRoyal:{name:"Blop Reinette Royal",imgPath:"../vitalité/gelutin/monstre/blop-reneitte-royal.png",ppNeed:2,cat:["donjonBlops","antreBlopMulticolore"]},
+  blopIndigoRoyal:{name:"Blop Indigo Royal",imgPath:"../vitalité/gelutin/monstre/blop-indigo-royal.png",ppNeed:2,cat:["donjonBlops","antreBlopMulticolore"]},
+  blopGriotteRoyal:{name:"Blop Griotte Royal",imgPath:"../vitalité/gelutin/monstre/blop-griotte-royal.png",ppNeed:2,cat:["donjonBlops","antreBlopMulticolore"]},
+  blopCocoRoyal:{name:"Blop Coco Royal",imgPath:"../vitalité/gelutin/monstre/blop-coco-royal.png",ppNeed:2,cat:["donjonBlops","antreBlopMulticolore"]},
+  gloutoblop:{name:"Gloutoblop",imgPath:"../vitalité/gelutin/monstre/gloutoblop.png",ppNeed:15,cat:["donjonBlops","antreBlopMulticolore"]},
+  tronkoblop:{name:"Tronkoblop",imgPath:"../vitalité/gelutin/monstre/tronkblop.png",ppNeed:25,cat:["donjonBlops","antreBlopMulticolore"]},
+  blopReinette:{name:"Blop Reinette",imgPath:"../vitalité/gelutin/monstre/blop-reinette.png",ppNeed:50,cat:["donjonBlops","antreBlopMulticolore"]},
+  blopGriotte:{name:"Blop Griotte",imgPath:"../vitalité/gelutin/monstre/blop-griotte.png",ppNeed:50,cat:["donjonBlops","antreBlopMulticolore"]},
+  blopIndigo:{name:"Blop Indigo",imgPath:"../vitalité/gelutin/monstre/blop-indigo.png",ppNeed:50,cat:["donjonBlops","antreBlopMulticolore"]},
+  blopCoco:{name:"Blop Coco",imgPath:"../vitalité/gelutin/monstre/blop-coco.png",ppNeed:50,cat:["donjonBlops","antreBlopMulticolore"]},
+  biblopReinette:{name:"Biblop Reinette",imgPath:"../vitalité/gelutin/monstre/biblop-reinette.png",ppNeed:100,cat:["zone"]},
+  biblopGriotte:{name:"Biblop Griotte",imgPath:"../vitalité/gelutin/monstre/biblop-griotte.png",ppNeed:100,cat:["zone"]},
+  biblopCoco:{name:"Biblop Coco",imgPath:"../vitalité/gelutin/monstre/biblop-coco.png",ppNeed:100,cat:["zone"]},
+  biblopIndigo:{name:"Biblop Indigo",imgPath:"../vitalité/gelutin/monstre/biblop-indigo.png",ppNeed:100,cat:["zone"]}
+};
 
 const PYKUR_GAINS={
   morose:{chiendent:1,nerbe:1,fecorce:1,abrakleur:1,bitouf:1,floribonde:2},
@@ -15535,6 +15730,52 @@ const CROUM_GAINS={
     kilibriss:11
   }
 };
+const BOULOUTE_GAINS={
+  donjonBouftous:{
+    bouftouRoyal:1,
+    chefBouftou:9,
+    bouftonBlanc:14,
+    bouftonNoir:13,
+    bouftou:37
+  }
+};
+const VAMPYRETTE_GAINS={
+  donjonSquelettes:{
+    chaferFantassin:4,
+    chaferInvisible:10,
+    rib:10,
+    chafer:17
+  }
+};
+const GELUTIN_BLOP_BOSS_GAINS={
+  blopCocoRoyal:{blopCocoRoyal:1,blopCoco:1},
+  blopGriotteRoyal:{blopGriotteRoyal:1,blopGriotte:1},
+  blopIndigoRoyal:{blopIndigoRoyal:1,blopIndigo:1},
+  blopReinetteRoyal:{blopReinetteRoyal:1,blopReinette:1}
+};
+const GELUTIN_DONJON_BLOPS_BASE={
+  blopGriotte:2,
+  blopReinette:2,
+  blopCoco:3,
+  blopIndigo:3,
+  gloutoblop:12,
+  tronkoblop:16
+};
+const GELUTIN_ANTRE_FINAL_GAINS={
+  blopMulticoloreRoyal:1,
+  blopCocoRoyal:1,
+  blopGriotteRoyal:1,
+  blopIndigoRoyal:1,
+  blopReinetteRoyal:1,
+  tronkoblop:2
+};
+const GELUTIN_GAINS={
+  donjonBlops:clone(GELUTIN_DONJON_BLOPS_BASE),
+  antreBlopMulticolore:Object.entries(GELUTIN_ANTRE_FINAL_GAINS).reduce((acc,[id,count])=>{
+    acc[id]=(acc[id]||0)+count;
+    return acc;
+  },clone(GELUTIN_DONJON_BLOPS_BASE))
+};
 const ABRA_SPECIAL_GAINS={
   salleAbrakneSetup:{abraknyde:4,tronknyde:3,abraknydeVenerable:1,abrakne:1}
 };
@@ -15543,7 +15784,11 @@ const ABRA_ZONE_IDS=["abraknyde","tronknyde","abraknydeVenerable","abrakne"];
 const DRAGOUNE_ZONE_IDS=Object.keys(DRAGOUNE_MOBS).filter(id=>DRAGOUNE_MOBS[id].cat.includes("zone"));
 const TOFOUDRE_ZONE_IDS=Object.keys(TOFOUDRE_MOBS).filter(id=>TOFOUDRE_MOBS[id].cat.includes("zone"));
 const CROUM_ZONE_IDS=[];
+const BOULOUTE_ZONE_IDS=Object.keys(BOULOUTE_MOBS).filter(id=>BOULOUTE_MOBS[id].cat.includes("zone"));
+const VAMPYRETTE_ZONE_IDS=Object.keys(VAMPYRETTE_MOBS).filter(id=>VAMPYRETTE_MOBS[id].cat.includes("zone"));
+const GELUTIN_ZONE_IDS=Object.keys(GELUTIN_MOBS).filter(id=>GELUTIN_MOBS[id].cat.includes("zone"));
 const CROUM_RUNTIME={runLimits:CROUM_RUN_LIMITS,mobs:CROUM_MOBS,gains:CROUM_GAINS,zoneIds:CROUM_ZONE_IDS};
+const BOULOUTE_RUNTIME={runLimits:BOULOUTE_RUN_LIMITS,mobs:BOULOUTE_MOBS,gains:BOULOUTE_GAINS,zoneIds:BOULOUTE_ZONE_IDS};
 const FAMILIAR_RUNTIME={
   pykur:{runLimits:PYKUR_RUN_LIMITS,mobs:PYKUR_MOBS,gains:PYKUR_GAINS,zoneIds:PYKUR_ZONE_IDS},
   "abra-kadabra":{runLimits:ABRA_RUN_LIMITS,mobs:ABRA_MOBS,gains:ABRA_GAINS,zoneIds:ABRA_ZONE_IDS,specialGains:ABRA_SPECIAL_GAINS},
@@ -15552,7 +15797,11 @@ const FAMILIAR_RUNTIME={
   "croum-aqueux":CROUM_RUNTIME,
   "croum-volatile":CROUM_RUNTIME,
   "croum-igne":CROUM_RUNTIME,
-  "croum-vegetal":CROUM_RUNTIME
+  "croum-vegetal":CROUM_RUNTIME,
+  bouloute:BOULOUTE_RUNTIME,
+  "bouloute-du-parrain":BOULOUTE_RUNTIME,
+  vampyrette:{runLimits:VAMPYRETTE_RUN_LIMITS,mobs:VAMPYRETTE_MOBS,gains:VAMPYRETTE_GAINS,zoneIds:VAMPYRETTE_ZONE_IDS},
+  gelutin:{runLimits:GELUTIN_RUN_LIMITS,mobs:GELUTIN_MOBS,gains:GELUTIN_GAINS,zoneIds:GELUTIN_ZONE_IDS}
 };
 let RUN_LIMITS=PYKUR_RUN_LIMITS;
 let mobs=PYKUR_MOBS;
@@ -15569,6 +15818,30 @@ function refreshFamiliarRuntime(){
   mobs=runtime.mobs;
   gains=runtime.gains;
   zoneIds=runtime.zoneIds;
+}
+
+function gelutinSelectedBoss(){
+  const boss=data?.special?.blopBoss;
+  return GELUTIN_BLOP_BOSS_GAINS[boss] ? boss : "blopCocoRoyal";
+}
+
+function gelutinBlopBossOptions(){
+  return [
+    ["blopCocoRoyal","Blop Coco Royal"],
+    ["blopGriotteRoyal","Blop Griotte Royal"],
+    ["blopIndigoRoyal","Blop Indigo Royal"],
+    ["blopReinetteRoyal","Blop Reinette Royal"]
+  ];
+}
+
+function effectiveFarmGains(farm){
+  const base=clone(gains[farm]||{});
+  if(activeFamiliarId()==="gelutin" && (farm==="donjonBlops" || farm==="antreBlopMulticolore")){
+    Object.entries(GELUTIN_BLOP_BOSS_GAINS[gelutinSelectedBoss()]||{}).forEach(([id,count])=>{
+      base[id]=(base[id]||0)+count;
+    });
+  }
+  return base;
 }
 
 const defaultData=()=>({
@@ -23245,7 +23518,7 @@ function ensureData(){
     }
   }
   farmKeys.forEach(farm=>{
-    const farmGains=gains[farm]||{};
+    const farmGains=effectiveFarmGains(farm);
     const hasRecordedMobs=Object.keys(farmGains).some(id=>(data.mobs[farm]?.[id]||0)>0);
     if(!hasRecordedMobs && (data.runs[farm]||0)>0){
       for(const id in farmGains){
@@ -23256,6 +23529,10 @@ function ensureData(){
   data.special=Object.assign({},data.special||{});
   if(activeFamiliarId()==="abra-kadabra"){
     data.special=Object.assign({salleAbrakneSetupDone:false,salleAbrakneActive:false,salleAbrakneLastActivity:null},data.special||{});
+  }
+  if(activeFamiliarId()==="gelutin"){
+    data.special=Object.assign({blopBoss:"blopCocoRoyal"},data.special||{});
+    if(!GELUTIN_BLOP_BOSS_GAINS[data.special.blopBoss])data.special.blopBoss="blopCocoRoyal";
   }
 }
 
@@ -24400,8 +24677,7 @@ function renderGallery(){
   if(!completed || !events)return;
   const gallery=activeGallery();
   const archives=(gallery.completedPykurs||[]).map((item,index)=>normalizeGalleryArchive(item,index)).filter(Boolean);
-  const filter=galleryArchiveFilter();
-  const filteredArchives=filter==="all" ? archives : archives.filter(item=>galleryArchiveFamiliarId(item)===filter);
+  let filter=galleryArchiveFilter();
   const discovered=gallery.eventsDiscovered||{};
   const eventIds=galleryEventIds();
   const found=eventIds.filter(id=>discovered[id]).length;
@@ -24411,28 +24687,38 @@ function renderGallery(){
   const firstFinished=archives.map(item=>item.finishedAt).filter(Boolean).sort((a,b)=>new Date(a)-new Date(b))[0];
   const lastFinished=archives.map(item=>item.finishedAt).filter(Boolean).sort((a,b)=>new Date(b)-new Date(a))[0];
   const chronoTotal=archives.reduce((sum,item)=>sum+(parseInt(item.totalChrono,10)||0),0);
-  const pykurCount=archives.filter(item=>galleryArchiveFamiliarId(item)==="pykur").length;
-  const abraCount=archives.filter(item=>galleryArchiveFamiliarId(item)==="abra-kadabra").length;
+  const familiarCounts=archives.reduce((acc,item)=>{
+    const familiarId=galleryArchiveFamiliarId(item);
+    acc[familiarId]=(acc[familiarId]||0)+1;
+    return acc;
+  },{});
+  if(filter!=="all" && !familiarCounts[filter]){
+    filter="all";
+    data.ui=data.ui||{};
+    data.ui.galleryFamiliarFilter="all";
+  }
+  const filteredArchives=filter==="all" ? archives : archives.filter(item=>galleryArchiveFamiliarId(item)===filter);
+  const topFamiliarEntries=Object.entries(familiarCounts).sort((a,b)=>b[1]-a[1] || (FAMILIARS[a[0]]?.label||a[0]).localeCompare(FAMILIARS[b[0]]?.label||b[0])).slice(0,4);
   if($("#galleryGlobalBadge"))$("#galleryGlobalBadge").textContent=archives.length+" familier"+(archives.length>1?"s":"");
   if(globalStats){
-    globalStats.innerHTML=[
+    const stats=[
       {label:"Familiers terminés",value:archives.length,important:true},
-      {label:"Pykurs",value:pykurCount,important:true},
-      {label:"Abra Kadabra",value:abraCount,important:true},
+      ...topFamiliarEntries.map(([id,count])=>({label:FAMILIARS[id]?.label||id,value:count,important:true})),
       {label:"Temps total farm",value:chronoTotal?formatDuration(chronoTotal):"-"},
       {label:"Événements découverts",value:found+" / "+eventIds.length,important:true},
       {label:"Premier familier terminé",value:firstFinished?formatDateShort(firstFinished):"-"},
       {label:"Dernier familier terminé",value:lastFinished?formatDateShort(lastFinished):"-"}
-    ].map(item=>'<article class="gallery-global-card'+(item.important?" important":"")+'"><span>'+item.label+'</span><strong>'+item.value+'</strong></article>').join("");
+    ];
+    globalStats.innerHTML=stats.map(item=>'<article class="gallery-global-card'+(item.important?" important":"")+'"><span>'+item.label+'</span><strong>'+item.value+'</strong></article>').join("");
   }
   const filterBox=$("#galleryFamiliarFilters");
   if(filterBox){
-    const options=[
-      {id:"all",label:"Tous",count:archives.length},
-      {id:"pykur",label:"Pykur",count:pykurCount},
-      {id:"abra-kadabra",label:"Abra Kadabra",count:abraCount}
-    ];
-    filterBox.innerHTML=options.map(option=>`<button class="gallery-familiar-filter ${filter===option.id?"active":""}" type="button" data-gallery-familiar-filter="${option.id}">${option.label} <span>${option.count}</span></button>`).join("");
+    const familyOptions=Object.entries(familiarCounts)
+      .sort((a,b)=>(FAMILIARS[a[0]]?.label||a[0]).localeCompare(FAMILIARS[b[0]]?.label||b[0]))
+      .map(([id,count])=>({id,label:FAMILIARS[id]?.label||id,count}));
+    const selectedFamily=filter;
+    filterBox.innerHTML=`<button class="gallery-familiar-filter ${selectedFamily==="all"?"active":""}" type="button" data-gallery-familiar-filter="all">Tous <span>${archives.length}</span></button>`
+      + (familyOptions.length?`<select class="gallery-familiar-select" id="galleryFamiliarSelect" aria-label="Choisir un familier dans la galerie"><option value="all">Choisir un familier</option>${familyOptions.map(option=>`<option value="${option.id}" ${selectedFamily===option.id?"selected":""}>${escapeHtml(option.label)} (${option.count})</option>`).join("")}</select>`:"");
   }
   $("#galleryPykurCount").textContent=filter==="all" ? archives.length : `${filteredArchives.length} / ${archives.length}`;
   completed.innerHTML=filteredArchives.length?filteredArchives.map(item=>{
@@ -26130,7 +26416,11 @@ function totalMobs(){
 
 function ppFrom(src){
   let pp=0;
-  for(const id in mobs)pp+=Math.floor((src[id]||0)/mobs[id].ppNeed);
+  for(const id in mobs){
+    const need=parseInt(mobs[id]?.ppNeed,10)||0;
+    if(!need || mobs[id]?.noProgress)continue;
+    pp+=Math.floor((src[id]||0)/need);
+  }
   return Math.min(pp,activeProgressMax());
 }
 
@@ -26169,8 +26459,11 @@ function runLimitReached(farm){
 function syncMobsFromRuns(farm){
   const runs=clampRunsToLimit(farm,data.runs[farm]||0);
   data.runs[farm]=runs;
-  for(const id in gains[farm]){
-    data.mobs[farm][id]=runs*gains[farm][id];
+  const farmGains=effectiveFarmGains(farm);
+  if(!data.mobs[farm])data.mobs[farm]={};
+  for(const id in mobs)data.mobs[farm][id]=0;
+  for(const id in farmGains){
+    data.mobs[farm][id]=runs*farmGains[id];
   }
 }
 
@@ -26183,7 +26476,8 @@ function simulateRemaining(farm){
   let count=0;
   while(ppFrom(sim)<max && count<capacity){
     count++;
-    for(const id in gains[farm])sim[id]=(sim[id]||0)+gains[farm][id];
+    const farmGains=effectiveFarmGains(farm);
+    for(const id in farmGains)sim[id]=(sim[id]||0)+farmGains[id];
   }
   return count;
 }
@@ -26194,8 +26488,9 @@ function simulatePPAfterRuns(farm,runs){
   const limit=RUN_LIMITS[farm]??Number.MAX_SAFE_INTEGER;
   const capacity=Math.max(0,limit-(data.runs[farm]||0));
   const count=Math.min(runs,capacity);
+  const farmGains=effectiveFarmGains(farm);
   for(let i=0;i<count;i++){
-    for(const id in gains[farm])sim[id]=(sim[id]||0)+gains[farm][id];
+    for(const id in farmGains)sim[id]=(sim[id]||0)+farmGains[id];
   }
   return ppFrom(sim);
 }
@@ -26204,8 +26499,9 @@ function applyRunDelta(farm,delta){
   data.runs[farm]+=delta;
   if(data.runs[farm]<0)data.runs[farm]=0;
 
-  for(const id in gains[farm]){
-    data.mobs[farm][id]=(data.mobs[farm][id]||0)+(gains[farm][id]*delta);
+  const farmGains=effectiveFarmGains(farm);
+  for(const id in farmGains){
+    data.mobs[farm][id]=(data.mobs[farm][id]||0)+(farmGains[id]*delta);
     if(data.mobs[farm][id]<0)data.mobs[farm][id]=0;
   }
 }
@@ -26219,8 +26515,11 @@ function setRunsSynced(farm,value){
 
   data.runs[farm]=next;
 
-  for(const id in gains[farm]){
-    data.mobs[farm][id]=next*gains[farm][id];
+  const farmGains=effectiveFarmGains(farm);
+  if(!data.mobs[farm])data.mobs[farm]={};
+  for(const id in mobs)data.mobs[farm][id]=0;
+  for(const id in farmGains){
+    data.mobs[farm][id]=next*farmGains[id];
   }
 
   if(!Number.isNaN(raw) && raw>next){
@@ -26812,6 +27111,7 @@ function renderFamiliarContext(){
       return `<div class="card dungeon-card dungeon-${dungeon.key}" data-dungeon-card="${dungeon.key}"${art}>
         <h3>${escapeHtml(dungeon.fullLabel)}</h3>
         ${dungeon.special==="salleAbrakne"?`<button class="btn ${data.special?.salleAbrakneActive?"btn-red":"btn-orange"} abra-room-button" type="button" id="abraRoomSetup" data-tooltip="${data.special?.salleAbrakneActive?"Termine la boucle Abrakne active.":"Ajoute les monstres des 4 premières salles avant la boucle Abrakne."}">${data.special?.salleAbrakneActive?"Sortir de la salle Abrakne":"Arrivé à la salle Abrakne"}</button>`:""}
+        ${dungeon.special==="blopBoss"?`<label class="dungeon-variant-select"><span>Boss affronté</span><select class="gelutin-blop-boss-select" data-farm="${dungeon.key}">${gelutinBlopBossOptions().map(([value,label])=>`<option value="${value}" ${gelutinSelectedBoss()===value?"selected":""}>${label}</option>`).join("")}</select></label>`:""}
         <div class="dungeon-mini">
           <div class="dungeon-label">Effectués</div>
           <div class="dungeon-value green-text" id="done${id}">0</div>
@@ -26827,6 +27127,18 @@ function renderFamiliarContext(){
       </div>`;
     }).join("");
     $("#abraRoomSetup")?.addEventListener("click",markAbraRoomReached);
+    $$(".gelutin-blop-boss-select").forEach(select=>{
+      select.addEventListener("change",event=>{
+        if(!data.special)data.special={};
+        data.special.blopBoss=GELUTIN_BLOP_BOSS_GAINS[event.target.value] ? event.target.value : "blopCocoRoyal";
+        ["donjonBlops","antreBlopMulticolore"].forEach(farm=>{
+          if((data.runs?.[farm]||0)>0)syncMobsFromRuns(farm);
+        });
+        save();
+        renderAll();
+        toast(`Boss Blop sélectionné : ${event.target.options[event.target.selectedIndex]?.textContent||"Blop"}`,"info","click");
+      });
+    });
     familiar.dungeons.forEach(dungeon=>{
       $(`#${dungeon.key}EstimateBox`)?.addEventListener("click",()=>setAverageTime(dungeon.key));
     });
@@ -27553,7 +27865,8 @@ function simulateRunsForPP(farm,targetPP){
     if(typeof syncMobsFromRuns==="function"){
       syncMobsFromRuns(farm);
     }else{
-      for(const id in gains[farm])data.mobs[farm][id]=r*gains[farm][id];
+      const farmGains=effectiveFarmGains(farm);
+      for(const id in farmGains)data.mobs[farm][id]=r*farmGains[id];
     }
     runs++;
     if(currentPP()>=targetPP){
@@ -27602,7 +27915,8 @@ function simulatedProjectionMobs(){
   const sim=clone(totalMobs());
   activeFarmKeys().forEach(farm=>{
     const runs=projectionSimulation[farm]||0;
-    for(const id in gains[farm])sim[id]=(sim[id]||0)+(gains[farm][id]*runs);
+    const farmGains=effectiveFarmGains(farm);
+    for(const id in farmGains)sim[id]=(sim[id]||0)+(farmGains[id]*runs);
   });
   return sim;
 }
@@ -27613,8 +27927,9 @@ function simulateRunsForPPFromMobs(farm,targetPP,baseMobs,virtualRuns){
   const capacity=Math.max(0,limit-(virtualRuns[farm]||0));
   if(capacity<=0)return null;
   const sim=clone(baseMobs);
+  const farmGains=effectiveFarmGains(farm);
   for(let count=1;count<=capacity;count++){
-    for(const id in gains[farm])sim[id]=(sim[id]||0)+gains[farm][id];
+    for(const id in farmGains)sim[id]=(sim[id]||0)+farmGains[id];
     if(ppFrom(sim)>=targetPP)return count;
   }
   return null;
@@ -29138,6 +29453,14 @@ document.addEventListener("click",e=>{
   const deletePykur=e.target.closest("[data-gallery-delete-pykur]");
   if(deletePykur){
     deleteGalleryPykur(deletePykur.dataset.galleryDeletePykur);
+  }
+});
+
+document.addEventListener("change",e=>{
+  const gallerySelect=e.target.closest("#galleryFamiliarSelect");
+  if(gallerySelect){
+    setGalleryArchiveFilter(gallerySelect.value);
+    return;
   }
 });
 
