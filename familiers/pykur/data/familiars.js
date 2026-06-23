@@ -6,6 +6,7 @@ const PP_MAX=90;
 const ABRA_OBJECTIVE_MAX=55;
 const DRAGOUNE_OBJECTIVE_MAX=55;
 const TOFOUDRE_OBJECTIVE_MAX=11;
+const FLIBALAK_OBJECTIVE_MAX=11;
 const CROUM_OBJECTIVE_MAX=90;
 const VITALITY_OBJECTIVE_MAX=165;
 const GLOUTON_OBJECTIVE_MAX=1100;
@@ -13,6 +14,7 @@ const PYKUR_RUN_LIMITS={morose:640,tynril:48};
 const ABRA_RUN_LIMITS={donjonAbraknyde:9999,cheneMou:9999,salleAbrakne:9999};
 const DRAGOUNE_RUN_LIMITS={sanctuaireDragoeufs:9999};
 const TOFOUDRE_RUN_LIMITS={ratsAmakna:9999,ratsBrakmar:9999,ratsBonta:9999};
+const FLIBALAK_RUN_LIMITS={archeDOtomai:9999,bateauVersLIleDOtomai:9999};
 const CROUM_RUN_LIMITS={gouletRasboul:9999};
 const BOULOUTE_RUN_LIMITS={donjonBouftous:9999};
 const VAMPYRETTE_RUN_LIMITS={donjonSquelettes:9999};
@@ -193,6 +195,34 @@ const FAMILIARS={
       {key:"ratsAmakna",label:"Rats Amakna",fullLabel:"Donjon des Rats du Château d'Amakna",asset:"../tofoudre/assets/images/donjon/donjon-des-rats-du-chateau-d-amakna.png",defaultAverage:1500},
       {key:"ratsBrakmar",label:"Rats Brâkmar",fullLabel:"Donjon des Rats de Brâkmar",asset:"../tofoudre/assets/images/donjon/donjon-des-rats-de-brakmar.png",defaultAverage:1200},
       {key:"ratsBonta",label:"Rats Bonta",fullLabel:"Donjon des Rats de Bonta",asset:"../tofoudre/assets/images/donjon/donjon-des-rats-de-bonta.png",defaultAverage:1200}
+    ]
+  },
+  flibalak:{
+    id:"flibalak",
+    label:"Flibalak",
+    shortLabel:"Flibalak",
+    defaultProfileName:"Flibalak principal",
+    progressLabel:"Dommages",
+    progressShort:"do",
+    objectiveMax:FLIBALAK_OBJECTIVE_MAX,
+    objectiveLabel:"11 do",
+    icon:"../tofoudre/assets/images/dommage.png",
+    logo:"../flibalak/flibalak.png",
+    image:"../flibalak/flibalak.png",
+    auraImage:"../flibalak/flibalak-aura.png",
+    sleepingImage:"../flibalak/flibalak-z.png",
+    background:"../flibalak/fond/fond.png",
+    status:"active",
+    statusLabel:"",
+    description:"Suivi de dommages sur l'Arche d'Otomaï et le bateau vers l'île d'Otomaï.",
+    bonusAmount:11,
+    difficultyLabel:"Moyen",
+    difficultyStars:2,
+    dofusCooldownMin:10,
+    farmMethods:["Arche d'Otomaï","Bateau vers l'île d'Otomaï"],
+    dungeons:[
+      {key:"archeDOtomai",label:"Gourlo",fullLabel:"Arche d'Otomaï",asset:"../flibalak/donjon/arche-d-otomai.png",defaultAverage:900},
+      {key:"bateauVersLIleDOtomai",label:"Bateau vers Oto",fullLabel:"Bateau vers l'île d'Otomaï",asset:"../flibalak/donjon/bateau-vers-otomai.png",defaultAverage:300}
     ]
   },
   "croum-aqueux":createCroumFamiliar({
@@ -492,6 +522,21 @@ const TOFOUDRE_MOBS={
   miliratEgoutantMalade:{name:"Milirat d'Egoutant malade",imgPath:"../tofoudre/assets/images/monstre/milirat-d-egoutant-malade.png",ppNeed:400,cat:["zone"]}
 };
 
+const FLIBALAK_MOBS={
+  gourloLeTerrible:{name:"Gourlo le Terrible",imgPath:"../flibalak/monstre/gourlo-le-terrible.png",ppNeed:10,cat:["archeDOtomai"]},
+  boomba:{name:"Boomba",imgPath:"../flibalak/monstre/boomba.png",ppNeed:250,cat:["archeDOtomai","zone"]},
+  canonDorf:{name:"Canon Dorf",imgPath:"../flibalak/monstre/canon-dorf.png",ppNeed:300,cat:["archeDOtomai","zone"]},
+  nakunbra:{name:"Nakunbra",imgPath:"../flibalak/monstre/nakunbra.png",ppNeed:300,cat:["archeDOtomai","zone"]},
+  barbroussa:{name:"Barbroussa",imgPath:"../flibalak/monstre/barbroussa.png",ppNeed:300,cat:["archeDOtomai","zone"]},
+  leFlib:{name:"Le Flib",imgPath:"../flibalak/monstre/le-flib.png",ppNeed:300,cat:["archeDOtomai","zone"]},
+  sparo:{name:"Sparo",imgPath:"../flibalak/monstre/sparo.png",ppNeed:300,cat:["archeDOtomai","zone"]},
+  boombaSaoule:{name:"Boomba saoulé",imgPath:"../flibalak/monstre/boomba-saoule.png",ppNeed:400,cat:["bateauVersLIleDOtomai","zone"]},
+  nakunbraEsseule:{name:"Nakunbra esseulé",imgPath:"../flibalak/monstre/nakunbra-esseule.png",ppNeed:400,cat:["bateauVersLIleDOtomai","zone"]},
+  canonDorfDebutant:{name:"Canon Dorf débutant",imgPath:"../flibalak/monstre/canon-dorf-debutant.png",ppNeed:400,cat:["bateauVersLIleDOtomai","zone"]},
+  leChouque:{name:"Le Chouque",imgPath:"../flibalak/monstre/le-chouque.png",ppNeed:25,cat:["zone"]},
+  coffreMauditDuFlib:{name:"Coffre Maudit du Flib",imgPath:"../flibalak/monstre/coffre-maudit-du-flib.png",ppNeed:400,cat:["zone"]}
+};
+
 const CROUM_MOBS={
   silfRasboul:{name:"Silf le Rasboul Majeur",imgPath:"../croum oto/monstre/rasboul.png",ppNeed:1,cat:["gouletRasboul"]},
   mufafah:{name:"Mufafah",imgPath:"../croum oto/monstre/mufafah.png",ppNeed:40,cat:["gouletRasboul"]},
@@ -648,6 +693,22 @@ const TOFOUDRE_GAINS={
     ratEgoutant:17
   }
 };
+const FLIBALAK_GAINS={
+  archeDOtomai:{
+    gourloLeTerrible:1,
+    boomba:1,
+    canonDorf:2,
+    nakunbra:2,
+    barbroussa:11,
+    leFlib:12,
+    sparo:15
+  },
+  bateauVersLIleDOtomai:{
+    boombaSaoule:1,
+    nakunbraEsseule:1,
+    canonDorfDebutant:1
+  }
+};
 const CROUM_GAINS={
   gouletRasboul:{
     silfRasboul:1,
@@ -744,6 +805,7 @@ const PYKUR_ZONE_IDS=["abrakleur","bitouf","brouture","chiendent","fecorce","flo
 const ABRA_ZONE_IDS=["abraknyde","tronknyde","abraknydeVenerable","abrakne"];
 const DRAGOUNE_ZONE_IDS=Object.keys(DRAGOUNE_MOBS).filter(id=>DRAGOUNE_MOBS[id].cat.includes("zone"));
 const TOFOUDRE_ZONE_IDS=Object.keys(TOFOUDRE_MOBS).filter(id=>TOFOUDRE_MOBS[id].cat.includes("zone"));
+const FLIBALAK_ZONE_IDS=Object.keys(FLIBALAK_MOBS).filter(id=>FLIBALAK_MOBS[id].cat.includes("zone"));
 const CROUM_ZONE_IDS=[];
 const BOULOUTE_ZONE_IDS=Object.keys(BOULOUTE_MOBS).filter(id=>BOULOUTE_MOBS[id].cat.includes("zone"));
 const VAMPYRETTE_ZONE_IDS=Object.keys(VAMPYRETTE_MOBS).filter(id=>VAMPYRETTE_MOBS[id].cat.includes("zone"));
@@ -759,6 +821,7 @@ const FAMILIAR_RUNTIME={
   "abra-kadabra":{runLimits:ABRA_RUN_LIMITS,mobs:ABRA_MOBS,gains:ABRA_GAINS,zoneIds:ABRA_ZONE_IDS,specialGains:ABRA_SPECIAL_GAINS},
   "dragoune-noir":{runLimits:DRAGOUNE_RUN_LIMITS,mobs:DRAGOUNE_MOBS,gains:DRAGOUNE_GAINS,zoneIds:DRAGOUNE_ZONE_IDS},
   tofoudre:{runLimits:TOFOUDRE_RUN_LIMITS,mobs:TOFOUDRE_MOBS,gains:TOFOUDRE_GAINS,zoneIds:TOFOUDRE_ZONE_IDS},
+  flibalak:{runLimits:FLIBALAK_RUN_LIMITS,mobs:FLIBALAK_MOBS,gains:FLIBALAK_GAINS,zoneIds:FLIBALAK_ZONE_IDS},
   "croum-aqueux":CROUM_RUNTIME,
   "croum-volatile":CROUM_RUNTIME,
   "croum-igne":CROUM_RUNTIME,
@@ -778,6 +841,7 @@ const FAMILIAR_RUNTIME={
     ABRA_OBJECTIVE_MAX,
     DRAGOUNE_OBJECTIVE_MAX,
     TOFOUDRE_OBJECTIVE_MAX,
+    FLIBALAK_OBJECTIVE_MAX,
     CROUM_OBJECTIVE_MAX,
     VITALITY_OBJECTIVE_MAX,
     GLOUTON_OBJECTIVE_MAX,
@@ -785,6 +849,7 @@ const FAMILIAR_RUNTIME={
     ABRA_RUN_LIMITS,
     DRAGOUNE_RUN_LIMITS,
     TOFOUDRE_RUN_LIMITS,
+    FLIBALAK_RUN_LIMITS,
     CROUM_RUN_LIMITS,
     BOULOUTE_RUN_LIMITS,
     VAMPYRETTE_RUN_LIMITS,
@@ -798,6 +863,7 @@ const FAMILIAR_RUNTIME={
     ABRA_MOBS,
     DRAGOUNE_MOBS,
     TOFOUDRE_MOBS,
+    FLIBALAK_MOBS,
     CROUM_MOBS,
     BOULOUTE_MOBS,
     VAMPYRETTE_MOBS,
@@ -810,6 +876,7 @@ const FAMILIAR_RUNTIME={
     ABRA_GAINS,
     DRAGOUNE_GAINS,
     TOFOUDRE_GAINS,
+    FLIBALAK_GAINS,
     CROUM_GAINS,
     BOULOUTE_GAINS,
     VAMPYRETTE_GAINS,
@@ -824,6 +891,7 @@ const FAMILIAR_RUNTIME={
     ABRA_ZONE_IDS,
     DRAGOUNE_ZONE_IDS,
     TOFOUDRE_ZONE_IDS,
+    FLIBALAK_ZONE_IDS,
     CROUM_ZONE_IDS,
     BOULOUTE_ZONE_IDS,
     VAMPYRETTE_ZONE_IDS,
