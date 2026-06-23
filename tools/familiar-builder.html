@@ -96,6 +96,20 @@
     .mini-list{display:grid;gap:8px;margin-top:10px}
     .mini-row{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:8px;align-items:end}
     .mini-row button{padding:10px 12px}
+    .presence-list{display:grid;gap:8px;margin-top:10px}
+    .presence-row{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 130px;
+      gap:8px;
+      align-items:end;
+      padding:9px;
+      border:1px solid rgba(121,82,35,.16);
+      border-radius:12px;
+      background:rgba(255,248,232,.58);
+    }
+    .presence-row strong{font-size:14px}
+    .checkline{display:flex;align-items:center;gap:10px;margin-top:10px;font-weight:950;color:#5c3d1c}
+    .checkline input{width:auto}
     .actions{display:flex;gap:8px;flex-wrap:wrap}
     button{
       border:0;
@@ -170,7 +184,7 @@
     }
     @media(max-width:680px){
       .grid,.grid-3{grid-template-columns:1fr}
-      .mini-row{grid-template-columns:1fr}
+      .mini-row,.presence-row{grid-template-columns:1fr}
       header{position:static}
     }
   </style>
@@ -371,8 +385,23 @@
         <label><span>Sprite</span><input data-field="imgPath" placeholder="../familier/monstre/kimbo.png"></label>
         <label><span>Palier</span><input data-field="ppNeed" type="number" min="1" value="1"></label>
         <label><span>Gain par palier</span><input data-field="gainValue" type="number" min="1" value="1"></label>
-        <label><span>Sources</span><input data-field="cat" placeholder="Canopee du Kimbo, zone"></label>
+        <label><span>Sources avancees optionnelles</span><input data-field="cat" placeholder="zone ou key technique si besoin"></label>
       </div>
+      <div class="section-title" style="margin:12px 0 8px">
+        <div>
+          <h3 style="font-size:16px">Presence dans les donjons</h3>
+          <small>Remplissez la quantite si ce monstre est present dans le donjon</small>
+        </div>
+      </div>
+      <div class="presence-list" data-monster-presence></div>
+      <label class="checkline"><input type="checkbox" data-field="zone"> Disponible en zone</label>
+    </div>
+  </template>
+
+  <template id="monsterPresenceTemplate">
+    <div class="presence-row" data-monster-presence-row>
+      <strong data-dungeon-name>Donjon</strong>
+      <label><span>Quantite dans ce donjon</span><input data-field="dungeonAmount" type="number" min="0" value="0"></label>
     </div>
   </template>
 
@@ -439,8 +468,13 @@
         const gains = values.gains && typeof values.gains === "object" ? values.gains : parseJson(values.gains, {});
         Object.entries(gains || {}).forEach(([monsterName, amount]) => addDungeonMonsterRow(node, { monsterName, monsterAmount: amount }));
       }
+      if (templateId === "monsterTemplate" && values.zone) {
+        const zoneInput = node.querySelector('[data-field="zone"]');
+        if (zoneInput) zoneInput.checked = true;
+      }
       node.addEventListener("input", updatePreview);
       $("#" + targetId).appendChild(node);
+      updateMonsterPresenceControls();
       updatePreview();
       return node;
     }
@@ -488,6 +522,37 @@
     function updateMonsterDatalist() {
       const names = $$("[data-monster]").map((card) => card.querySelector('[data-field="name"]').value.trim()).filter(Boolean);
       $("#monsterNames").innerHTML = Array.from(new Set(names)).map((name) => `<option value="${name.replace(/"/g, "&quot;")}"></option>`).join("");
+    }
+
+    function collectDungeonBasics() {
+      return $$("[data-dungeon]").map((card) => {
+        const get = (field) => card.querySelector(`[data-field="${field}"]`).value.trim();
+        const fullLabel = get("fullLabel");
+        const label = get("label") || fullLabel;
+        const key = get("key") || camelKey(fullLabel || label);
+        return { key, label, fullLabel };
+      }).filter((dungeon) => dungeon.key && (dungeon.label || dungeon.fullLabel));
+    }
+
+    function updateMonsterPresenceControls() {
+      const dungeons = collectDungeonBasics();
+      $$("[data-monster]").forEach((card) => {
+        const list = card.querySelector("[data-monster-presence]");
+        if (!list) return;
+        const existingValues = new Map($$("[data-monster-presence-row]", list).map((row) => [
+          row.dataset.dungeonKey,
+          row.querySelector('[data-field="dungeonAmount"]').value
+        ]));
+        list.innerHTML = "";
+        dungeons.forEach((dungeon) => {
+          const row = $("#monsterPresenceTemplate").content.firstElementChild.cloneNode(true);
+          row.dataset.dungeonKey = dungeon.key;
+          row.querySelector("[data-dungeon-name]").textContent = dungeon.fullLabel || dungeon.label || dungeon.key;
+          row.querySelector('[data-field="dungeonAmount"]').value = existingValues.get(dungeon.key) || "0";
+          row.addEventListener("input", updatePreview);
+          list.appendChild(row);
+        });
+      });
     }
 
     function prepareAssetPaths() {
@@ -625,10 +690,16 @@
           name,
           imgPath: get("imgPath"),
           ppNeed: Number(get("ppNeed")) || 1,
-          cat: get("cat").split(",")
+          cat: Array.from(new Set([
+            ...$$("[data-monster-presence-row]", card)
+              .filter((row) => (Number(row.querySelector('[data-field="dungeonAmount"]').value) || 0) > 0)
+              .map((row) => row.dataset.dungeonKey),
+            ...(card.querySelector('[data-field="zone"]')?.checked ? ["zone"] : []),
+            ...get("cat").split(",")
             .map((item) => item.trim())
             .filter(Boolean)
             .map((item) => dungeonAliases.get(item) || dungeonAliases.get(item.toLowerCase()) || dungeonAliases.get(slugify(item)) || dungeonAliases.get(camelKey(item)) || item)
+          ]))
         };
         const gainValue = Number(get("gainValue")) || defaultGainValue;
         if (gainValue !== 1) monster.gainValue = gainValue;
@@ -653,6 +724,24 @@
       }).filter(([, amount]) => amount > 0));
     }
 
+    function collectMonsterPresenceGains(monsterAliases) {
+      const gainsByDungeon = {};
+      $$("[data-monster]").forEach((card) => {
+        const name = card.querySelector('[data-field="name"]').value.trim();
+        if (!name) return;
+        const explicitId = card.querySelector('[data-field="id"]').value.trim();
+        const monsterId = explicitId || monsterAliases.get(name) || monsterAliases.get(slugify(name)) || camelKey(name);
+        $$("[data-monster-presence-row]", card).forEach((row) => {
+          const amount = Number(row.querySelector('[data-field="dungeonAmount"]').value) || 0;
+          if (amount <= 0) return;
+          const dungeonKey = row.dataset.dungeonKey;
+          gainsByDungeon[dungeonKey] = gainsByDungeon[dungeonKey] || {};
+          gainsByDungeon[dungeonKey][monsterId] = amount;
+        });
+      });
+      return gainsByDungeon;
+    }
+
     function buildExport() {
       const id = read("id") || slugify(read("label"));
       const label = read("label");
@@ -660,7 +749,14 @@
       const dungeonAliases = buildDungeonAliases(dungeons);
       const monsters = collectMonsters(dungeonAliases);
       const monsterAliases = buildMonsterAliases(monsters);
-      const gains = Object.fromEntries(dungeons.map(({ dungeon, gains }) => [dungeon.key, normalizeGains(gains, monsterAliases)]));
+      const monsterPresenceGains = collectMonsterPresenceGains(monsterAliases);
+      const gains = Object.fromEntries(dungeons.map(({ dungeon, gains }) => [
+        dungeon.key,
+        {
+          ...normalizeGains(gains, monsterAliases),
+          ...(monsterPresenceGains[dungeon.key] || {})
+        }
+      ]));
       const behaviorConfig = parseJson(read("behaviorConfig"), null);
       const behavior = {
         type: read("behaviorType") || "standard"
@@ -707,6 +803,7 @@
     }
 
     function updatePreview() {
+      updateMonsterPresenceControls();
       updateMonsterDatalist();
       const data = buildExport();
       $("#jsonPreview").textContent = JSON.stringify(data, null, 2);

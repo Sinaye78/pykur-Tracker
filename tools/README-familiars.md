@@ -58,6 +58,15 @@ Pour indiquer les monstres presents dans un donjon, utilisez la zone `Monstres p
 
 Le JSON avance est mis a jour automatiquement. Il reste disponible seulement pour les cas particuliers.
 
+Vous pouvez aussi faire l'inverse, ce qui est souvent plus pratique :
+
+1. creez les donjons ;
+2. ajoutez un monstre ;
+3. dans sa zone `Presence dans les donjons`, renseignez la quantite pour chaque donjon ou il apparait ;
+4. cochez `Disponible en zone` si le monstre peut aussi etre farm hors donjon.
+
+Le builder ajoute alors automatiquement les sources du monstre et les gains de chaque donjon dans l'export JSON.
+
 ### Assets PNG
 
 Deux modes sont possibles :
