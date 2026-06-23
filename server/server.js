@@ -10,6 +10,7 @@ const jwt = require("jsonwebtoken");
 const Database = require("better-sqlite3");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const vm = require("vm");
 
 const PORT = Number(process.env.PORT || 3000);
 const JWT_SECRET = process.env.JWT_SECRET || "dev-only-change-me";
@@ -736,7 +737,7 @@ function publicCroumFamiliar(label, progressShort) {
     ]
   };
 }
-const PUBLIC_FAMILIARS = {
+let PUBLIC_FAMILIARS = {
   pykur: {
     label: "Pykur",
     defaultProfileLabel: "Profil Pykur",
@@ -787,6 +788,45 @@ const PUBLIC_FAMILIARS = {
   "croum-igne": publicCroumFamiliar("Croum Igné", "intelligence"),
   "croum-vegetal": publicCroumFamiliar("Croum Végétal", "force")
 };
+function loadPublicFamiliarsFromClientData() {
+  const dataPath = path.join(__dirname, "..", "familiers", "pykur", "data", "familiars.js");
+  try {
+    const sandbox = { window: {} };
+    vm.runInNewContext(fs.readFileSync(dataPath, "utf8"), sandbox, { filename: dataPath, timeout: 1000 });
+    const shared = sandbox.window.PYKUR_FAMILIAR_DATA || {};
+    const familiars = shared.FAMILIARS || {};
+    const runtimes = shared.FAMILIAR_RUNTIME || {};
+    return Object.fromEntries(Object.entries(familiars).map(([id, familiar]) => {
+      const runtime = runtimes[id] || {};
+      const mobs = runtime.mobs || {};
+      const thresholds = Object.fromEntries(Object.entries(mobs).map(([mobId, mob]) => [
+        mobId,
+        {
+          need: Math.max(1, Number(mob?.ppNeed) || 1),
+          gainValue: Math.max(1, Number(mob?.gainValue) || 1)
+        }
+      ]));
+      return [id, {
+        label: String(familiar.label || id),
+        defaultProfileLabel: `Profil ${familiar.label || id}`,
+        progressShort: String(familiar.progressShort || "PP"),
+        objectiveMax: Math.max(1, Number(familiar.objectiveMax) || 90),
+        thresholds,
+        runs: Array.isArray(familiar.dungeons)
+          ? familiar.dungeons.map((run) => ({
+              key: String(run.key || ""),
+              label: String(run.label || run.fullLabel || run.key || "Run")
+            })).filter((run) => run.key)
+          : []
+      }];
+    }));
+  } catch (error) {
+    console.warn("[community] Impossible de charger les familiers publics partages:", error.message);
+    return null;
+  }
+}
+
+PUBLIC_FAMILIARS = Object.assign({}, PUBLIC_FAMILIARS, loadPublicFamiliarsFromClientData() || {});
 const PUBLIC_SECRET_ACHIEVEMENT_IDS = new Set([
   "egg_charlie",
   "egg_toom",
@@ -816,8 +856,10 @@ function publicProfileFamiliarId(profileData) {
 
 function publicProgressFromMobs(mobs, meta = PUBLIC_FAMILIARS.pykur) {
   let pp = 0;
-  Object.entries(meta.thresholds || PUBLIC_MOBS).forEach(([id, need]) => {
-    pp += Math.floor((Number(mobs?.[id]) || 0) / need);
+  Object.entries(meta.thresholds || PUBLIC_MOBS).forEach(([id, threshold]) => {
+    const need = typeof threshold === "object" ? threshold.need : threshold;
+    const gainValue = typeof threshold === "object" ? threshold.gainValue : 1;
+    pp += Math.floor((Number(mobs?.[id]) || 0) / Math.max(1, Number(need) || 1)) * Math.max(1, Number(gainValue) || 1);
   });
   return Math.min(meta.objectiveMax || PP_MAX, Math.max(0, pp));
 }
@@ -1540,7 +1582,11 @@ function cloudProfileProgress(profileData) {
       totals[id] = (totals[id] || 0) + Math.max(0, Number(value) || 0);
     }
   }
-  const value = Object.entries(familiar.thresholds || CLOUD_PP_NEEDS).reduce((sum, [id, need]) => sum + Math.floor((totals[id] || 0) / need), 0);
+  const value = Object.entries(familiar.thresholds || CLOUD_PP_NEEDS).reduce((sum, [id, threshold]) => {
+    const need = typeof threshold === "object" ? threshold.need : threshold;
+    const gainValue = typeof threshold === "object" ? threshold.gainValue : 1;
+    return sum + Math.floor((totals[id] || 0) / Math.max(1, Number(need) || 1)) * Math.max(1, Number(gainValue) || 1);
+  }, 0);
   return Math.min(familiar.objectiveMax || PP_MAX, Math.max(0, value));
 }
 
