@@ -74,6 +74,13 @@ Deux modes sont possibles :
 - si un asset existe deja dans le projet, renseignez simplement son chemin comme avant ;
 - si vous ajoutez de nouveaux PNG, selectionnez-les dans la zone `Depot PNG`.
 
+Pour les monstres, deux methodes existent :
+
+- importer tous les sprites d'un coup dans `Sprites monstres` ;
+- ou choisir le PNG directement dans la carte du monstre avec `Choisir le PNG du monstre`.
+
+Dans le second cas, le chemin du sprite est rempli automatiquement et le fichier sera copie dans le dossier `monstre`.
+
 Le bouton `Pre-remplir les chemins` met automatiquement les chemins dans la fiche.
 Le champ `Dossier relatif auto` controle aussi l'emplacement cree. Exemple : `../vitalite/bouloute` creera `vitalite/bouloute` si vous choisissez le dossier `familiers`.
 

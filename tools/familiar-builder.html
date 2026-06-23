@@ -383,6 +383,7 @@
         <label><span>Id auto optionnel</span><input data-field="id" placeholder="auto depuis le nom"></label>
         <label><span>Nom</span><input data-field="name" placeholder="Kimbo"></label>
         <label><span>Sprite</span><input data-field="imgPath" placeholder="../familier/monstre/kimbo.png"></label>
+        <label class="file-drop"><span>Choisir le PNG du monstre</span><input data-field="monsterFile" type="file" accept="image/png,image/webp,image/jpeg"></label>
         <label><span>Palier</span><input data-field="ppNeed" type="number" min="1" value="1"></label>
         <label><span>Gain par palier</span><input data-field="gainValue" type="number" min="1" value="1"></label>
         <label><span>Sources avancees optionnelles</span><input data-field="cat" placeholder="zone ou key technique si besoin"></label>
@@ -473,6 +474,14 @@
         if (zoneInput) zoneInput.checked = true;
       }
       node.addEventListener("input", updatePreview);
+      const monsterFileInput = node.querySelector('[data-field="monsterFile"]');
+      if (monsterFileInput) {
+        monsterFileInput.addEventListener("change", () => {
+          prepareMonsterCardSpritePath(node);
+          updateAssetStatus();
+          updatePreview();
+        });
+      }
       $("#" + targetId).appendChild(node);
       updateMonsterPresenceControls();
       updatePreview();
@@ -522,6 +531,22 @@
     function updateMonsterDatalist() {
       const names = $$("[data-monster]").map((card) => card.querySelector('[data-field="name"]').value.trim()).filter(Boolean);
       $("#monsterNames").innerHTML = Array.from(new Set(names)).map((name) => `<option value="${name.replace(/"/g, "&quot;")}"></option>`).join("");
+    }
+
+    function monsterCardFile(card) {
+      return card.querySelector('[data-field="monsterFile"]')?.files?.[0] || null;
+    }
+
+    function prepareMonsterCardSpritePath(card) {
+      const file = monsterCardFile(card);
+      if (!file) return;
+      const get = (field) => card.querySelector(`[data-field="${field}"]`);
+      const name = get("name").value.trim() || get("id").value.trim() || file.name.replace(/\.[^.]+$/, "");
+      const spriteInput = get("imgPath");
+      if (!spriteInput.value.trim() || spriteInput.dataset.assetAuto === "1") {
+        spriteInput.value = filePathFor("monstre", file, name);
+        spriteInput.dataset.assetAuto = "1";
+      }
     }
 
     function collectDungeonBasics() {
@@ -585,7 +610,8 @@
       $$("[data-monster]").forEach((card) => {
         const get = (field) => card.querySelector(`[data-field="${field}"]`);
         const name = get("name").value.trim();
-        const match = monsterFilesBySlug.get(slugify(name)) || monsterFilesBySlug.get(slugify(get("id").value));
+        const localFile = monsterCardFile(card);
+        const match = localFile || monsterFilesBySlug.get(slugify(name)) || monsterFilesBySlug.get(slugify(get("id").value));
         if (match && (!get("imgPath").value.trim() || get("imgPath").dataset.assetAuto === "1")) {
           get("imgPath").value = filePathFor("monstre", match, name || match.name.replace(/\.[^.]+$/, ""));
           get("imgPath").dataset.assetAuto = "1";
@@ -639,12 +665,20 @@
         await writeFile(root, [...targetFolders, "monstre"], `${safeAssetName(file.name.replace(/\.[^.]+$/, ""))}.${fileExt(file)}`, file);
         written++;
       }
+      for (const card of $$("[data-monster]")) {
+        const file = monsterCardFile(card);
+        if (!file) continue;
+        const name = card.querySelector('[data-field="name"]').value.trim() || card.querySelector('[data-field="id"]').value.trim() || file.name.replace(/\.[^.]+$/, "");
+        await writeFile(root, [...targetFolders, "monstre"], `${safeAssetName(name)}.${fileExt(file)}`, file);
+        written++;
+      }
       $("#assetStatus").textContent = `${written} fichier${written > 1 ? "s" : ""} copie${written > 1 ? "s" : ""}. Dossier cible : ${targetFolders.join("/") || familiarId}.`;
     }
 
     function updateAssetStatus() {
       const total = ["iconFile", "imageFile", "auraFile", "sleepingFile", "backgroundFile", "dungeonFiles", "monsterFiles"]
-        .reduce((sum, id) => sum + fileList(id).length, 0);
+        .reduce((sum, id) => sum + fileList(id).length, 0)
+        + $$("[data-monster]").reduce((sum, card) => sum + (monsterCardFile(card) ? 1 : 0), 0);
       $("#assetStatus").textContent = total
         ? `${total} fichier${total > 1 ? "s" : ""} selectionne${total > 1 ? "s" : ""}. Les chemins existants restent prioritaires si vous les avez remplis manuellement.`
         : "Aucun fichier selectionne. Vous pouvez aussi renseigner uniquement des chemins vers des assets deja existants.";
