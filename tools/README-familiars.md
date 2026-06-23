@@ -95,6 +95,15 @@ Selon le navigateur, l'ecriture directe de dossier peut etre refusee. Dans ce ca
 
 Le bouton `Telecharger JSON` exporte une fiche du familier. Cette fiche peut ensuite etre donnee a Codex pour integration.
 
+La colonne `Export JSON` contient aussi un `Resume rapide` lisible avant le JSON brut :
+
+- nombre de donjons et monstres ;
+- monstres ajoutes par chaque donjon ;
+- monstres disponibles en zone ;
+- avertissements avant export si un donjon est vide, si un monstre n'a pas de source ou si un gain pointe vers un monstre absent.
+
+Cette synthese sert a relire rapidement un familier complexe avant de l'envoyer a Codex.
+
 ## Template
 
 Un exemple de sortie est disponible dans :

@@ -176,6 +176,53 @@
       font-weight:950;
       font-size:12px;
     }
+    .review{
+      max-height:38vh;
+      overflow:auto;
+      padding:12px;
+      display:grid;
+      gap:10px;
+      background:rgba(255,250,240,.92);
+      border-top:1px solid rgba(121,82,35,.18);
+    }
+    .review-card{
+      border:1px solid rgba(121,82,35,.18);
+      border-radius:13px;
+      background:linear-gradient(180deg,rgba(255,255,255,.78),rgba(255,244,216,.72));
+      padding:11px;
+      box-shadow:0 8px 18px rgba(62,39,14,.06);
+    }
+    .review-card h3{
+      margin:0 0 8px;
+      font-size:15px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .review-card ul{margin:0;padding-left:18px;color:#4f3821;font-weight:800;line-height:1.38}
+    .review-card li+li{margin-top:4px}
+    .review-muted{color:var(--muted);font-weight:800;font-size:12px}
+    .review-pill{
+      display:inline-flex;
+      align-items:center;
+      border-radius:999px;
+      padding:4px 8px;
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-weight:950;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .review-warning{
+      border-color:#f5c26b;
+      background:linear-gradient(180deg,#fff7d6,#fff0bf);
+    }
+    .review-warning h3{color:#8a4b06}
+    .review-ok{
+      border-color:#9bd3ac;
+      background:linear-gradient(180deg,#f0fff4,#e4f8e9);
+    }
     .hidden{display:none!important}
     @media(max-width:1040px){
       main{grid-template-columns:1fr}
@@ -328,6 +375,7 @@
         <h2>Export JSON</h2>
         <p><span class="badge" id="summaryBadge">0 donjon · 0 monstre</span></p>
       </div>
+      <div class="review" id="humanSummary"></div>
       <pre id="jsonPreview"></pre>
       <div class="preview-actions">
         <button type="button" class="green" id="copyJson">Copier</button>
@@ -836,11 +884,96 @@
       };
     }
 
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    function formatMonsterLine(monsterId, amount, mobs) {
+      const monster = mobs[monsterId];
+      const name = monster?.name || monsterId;
+      const tier = monster?.ppNeed ? ` - palier ${monster.ppNeed}` : "";
+      const gain = monster?.gainValue && monster.gainValue !== 1 ? ` - gain ${monster.gainValue}` : "";
+      return `<li><strong>${escapeHtml(name)}</strong> x${Number(amount) || 0}<span class="review-muted">${escapeHtml(tier + gain)}</span></li>`;
+    }
+
+    function buildHumanSummary(data) {
+      const dungeons = data.familiar.dungeons || [];
+      const mobs = data.runtime.mobs || {};
+      const gains = data.runtime.gains || {};
+      const zoneIds = new Set(data.runtime.zoneIds || []);
+      const monsterIds = new Set(Object.keys(mobs));
+      const warnings = [];
+
+      const dungeonCards = dungeons.map((dungeon) => {
+        const dungeonGains = gains[dungeon.key] || {};
+        const entries = Object.entries(dungeonGains).filter(([, amount]) => Number(amount) > 0);
+        if (!entries.length) warnings.push(`Le donjon "${dungeon.fullLabel || dungeon.label || dungeon.key}" n'ajoute aucun monstre.`);
+        entries.forEach(([monsterId]) => {
+          if (!monsterIds.has(monsterId)) warnings.push(`Le donjon "${dungeon.fullLabel || dungeon.label || dungeon.key}" pointe vers le monstre inconnu "${monsterId}".`);
+        });
+        return `
+          <div class="review-card">
+            <h3>
+              <span>${escapeHtml(dungeon.fullLabel || dungeon.label || dungeon.key)}</span>
+              <span class="review-pill">${entries.length} monstre${entries.length > 1 ? "s" : ""}</span>
+            </h3>
+            <div class="review-muted">Key : ${escapeHtml(dungeon.key)} - Temps : ${Number(dungeon.defaultAverage) || 0}s</div>
+            <ul>${entries.length ? entries.map(([monsterId, amount]) => formatMonsterLine(monsterId, amount, mobs)).join("") : "<li>Aucun monstre renseigne pour ce donjon.</li>"}</ul>
+          </div>
+        `;
+      }).join("");
+
+      const zoneEntries = Object.entries(mobs)
+        .filter(([monsterId, monster]) => zoneIds.has(monsterId) || monster.cat?.includes("zone"))
+        .map(([monsterId, monster]) => `<li><strong>${escapeHtml(monster.name || monsterId)}</strong><span class="review-muted"> - palier ${Number(monster.ppNeed) || 1}</span></li>`);
+
+      Object.entries(mobs).forEach(([monsterId, monster]) => {
+        const cats = monster.cat || [];
+        if (!cats.length) warnings.push(`Le monstre "${monster.name || monsterId}" n'a aucune source.`);
+        if (!monster.imgPath) warnings.push(`Le monstre "${monster.name || monsterId}" n'a pas de sprite.`);
+        cats.filter((cat) => cat !== "zone" && !dungeons.some((dungeon) => dungeon.key === cat)).forEach((cat) => {
+          warnings.push(`Le monstre "${monster.name || monsterId}" utilise la source inconnue "${cat}".`);
+        });
+      });
+
+      const stats = `
+        <div class="review-card review-ok">
+          <h3><span>Resume rapide</span><span class="review-pill">${escapeHtml(data.familiar.objectiveLabel || "")}</span></h3>
+          <ul>
+            <li>${dungeons.length} donjon${dungeons.length > 1 ? "s" : ""} configure${dungeons.length > 1 ? "s" : ""}</li>
+            <li>${Object.keys(mobs).length} monstre${Object.keys(mobs).length > 1 ? "s" : ""} renseigne${Object.keys(mobs).length > 1 ? "s" : ""}</li>
+            <li>${zoneEntries.length} monstre${zoneEntries.length > 1 ? "s" : ""} disponible${zoneEntries.length > 1 ? "s" : ""} en zone</li>
+            <li>Difficulte : ${"*".repeat(Number(data.familiar.difficultyStars) || 1)}</li>
+          </ul>
+        </div>
+      `;
+      const zoneCard = `
+        <div class="review-card">
+          <h3><span>Monstres de zone</span><span class="review-pill">${zoneEntries.length}</span></h3>
+          <ul>${zoneEntries.length ? zoneEntries.join("") : "<li>Aucun monstre de zone.</li>"}</ul>
+        </div>
+      `;
+      const warningCard = `
+        <div class="review-card ${warnings.length ? "review-warning" : "review-ok"}">
+          <h3><span>Verification avant export</span><span class="review-pill">${warnings.length ? warnings.length + " point(s)" : "OK"}</span></h3>
+          <ul>${warnings.length ? warnings.map((warning) => `<li>${escapeHtml(warning)}</li>`).join("") : "<li>Aucun probleme evident detecte.</li>"}</ul>
+        </div>
+      `;
+      return stats + dungeonCards + zoneCard + warningCard;
+    }
+
     function updatePreview() {
       updateMonsterPresenceControls();
       updateMonsterDatalist();
       const data = buildExport();
       $("#jsonPreview").textContent = JSON.stringify(data, null, 2);
+      $("#humanSummary").innerHTML = buildHumanSummary(data);
       $("#summaryBadge").textContent = `${data.familiar.dungeons.length} donjon${data.familiar.dungeons.length > 1 ? "s" : ""} · ${Object.keys(data.runtime.mobs).length} monstre${Object.keys(data.runtime.mobs).length > 1 ? "s" : ""}`;
     }
 
