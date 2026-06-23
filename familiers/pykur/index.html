@@ -15165,6 +15165,7 @@ const {
   TOFOUDRE_OBJECTIVE_MAX,
   CROUM_OBJECTIVE_MAX,
   VITALITY_OBJECTIVE_MAX,
+  GLOUTON_OBJECTIVE_MAX,
   PYKUR_RUN_LIMITS,
   ABRA_RUN_LIMITS,
   DRAGOUNE_RUN_LIMITS,
@@ -15173,6 +15174,10 @@ const {
   BOULOUTE_RUN_LIMITS,
   VAMPYRETTE_RUN_LIMITS,
   GELUTIN_RUN_LIMITS,
+  TIFOUX_RUN_LIMITS,
+  MARCASSIN_RUN_LIMITS,
+  GLOUTON_RUN_LIMITS,
+  TIWABBIT_RUN_LIMITS,
   FAMILIARS
 }=window.PYKUR_FAMILIAR_DATA;
 function normalizeFamiliarId(id){
@@ -25904,7 +25909,8 @@ function ppFrom(src){
   for(const id in mobs){
     const need=parseInt(mobs[id]?.ppNeed,10)||0;
     if(!need || mobs[id]?.noProgress)continue;
-    pp+=Math.floor((src[id]||0)/need);
+    const gainValue=Math.max(1,parseInt(mobs[id]?.gainValue,10)||1);
+    pp+=Math.floor((src[id]||0)/need)*gainValue;
   }
   return Math.min(pp,activeProgressMax());
 }
@@ -27082,7 +27088,11 @@ function renderMonsterTable(){
     if(favDelta)return favDelta;
     if(data.ui.monsterSort==="name")return mobs[a].name.localeCompare(mobs[b].name,"fr");
     if(data.ui.monsterSort==="pp")return mobs[a].ppNeed-mobs[b].ppNeed;
-    if(data.ui.monsterSort==="frequency")return ((totals[b]||0)/mobs[b].ppNeed)-((totals[a]||0)/mobs[a].ppNeed);
+    if(data.ui.monsterSort==="frequency"){
+      const gainA=Math.max(1,parseInt(mobs[a]?.gainValue,10)||1);
+      const gainB=Math.max(1,parseInt(mobs[b]?.gainValue,10)||1);
+      return (((totals[b]||0)/mobs[b].ppNeed)*gainB)-(((totals[a]||0)/mobs[a].ppNeed)*gainA);
+    }
     return (totals[b]||0)-(totals[a]||0);
   });
   renderMonsterSummary(ids,totals,favs);

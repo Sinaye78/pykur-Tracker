@@ -8,6 +8,7 @@ const DRAGOUNE_OBJECTIVE_MAX=55;
 const TOFOUDRE_OBJECTIVE_MAX=11;
 const CROUM_OBJECTIVE_MAX=90;
 const VITALITY_OBJECTIVE_MAX=165;
+const GLOUTON_OBJECTIVE_MAX=1100;
 const PYKUR_RUN_LIMITS={morose:640,tynril:48};
 const ABRA_RUN_LIMITS={donjonAbraknyde:9999,cheneMou:9999,salleAbrakne:9999};
 const DRAGOUNE_RUN_LIMITS={sanctuaireDragoeufs:9999};
@@ -16,6 +17,10 @@ const CROUM_RUN_LIMITS={gouletRasboul:9999};
 const BOULOUTE_RUN_LIMITS={donjonBouftous:9999};
 const VAMPYRETTE_RUN_LIMITS={donjonSquelettes:9999};
 const GELUTIN_RUN_LIMITS={donjonBlops:9999,antreBlopMulticolore:9999};
+const TIFOUX_RUN_LIMITS={canopeeKimbo:9999};
+const MARCASSIN_RUN_LIMITS={dragonCochon:9999};
+const GLOUTON_RUN_LIMITS={donjonMoon:9999};
+const TIWABBIT_RUN_LIMITS={chateauWaWabbit:9999,donjonWabbit:9999};
 function createCroumFamiliar({id,label,defaultProfileName,progressLabel,progressShort,icon,basePath,difficultyStars=2}){
   const progressIntro=["agilité","intelligence"].includes(progressShort) ? `d'${progressShort}` : `de ${progressShort}`;
   return {
@@ -296,6 +301,115 @@ const FAMILIARS={
       {key:"donjonBlops",label:"Blops",fullLabel:"Donjon des Blops",asset:"../vitalité/gelutin/donjon/gloutoblop.png",special:"blopBoss",defaultAverage:900},
       {key:"antreBlopMulticolore",label:"Blop Multi",fullLabel:"Antre du Blop Multicolore",asset:"../vitalité/gelutin/donjon/blop-multicolore-royal.png",special:"blopBoss",defaultAverage:600}
     ]
+  },
+  "tifoux-tigre":{
+    id:"tifoux-tigre",
+    label:"Tifoux Tigré",
+    shortLabel:"Tifoux Tigré",
+    defaultProfileName:"Tifoux Tigré principal",
+    progressLabel:"Prospection",
+    progressShort:"PP",
+    objectiveMax:PP_MAX,
+    objectiveLabel:"90 PP",
+    icon:"./assets/images/prospection.png",
+    logo:"../tifoux-tigre/tifoux-tigre.png",
+    image:"../tifoux-tigre/tifoux-tigre.png",
+    auraImage:"../tifoux-tigre/tifoux-tigre-aura.png",
+    sleepingImage:"../tifoux-tigre/tifoux-tigre-z.png",
+    background:"../tifoux-tigre/fond/fond.png",
+    status:"active",
+    statusLabel:"",
+    description:"Suivi de prospection sur la Canopée du Kimbo.",
+    bonusAmount:90,
+    difficultyLabel:"Dur",
+    difficultyStars:3,
+    dofusCooldownMin:10,
+    farmMethods:["Canopée du Kimbo"],
+    dungeons:[
+      {key:"canopeeKimbo",label:"Kimbo",fullLabel:"Canopée du Kimbo",asset:"../tifoux-tigre/donjon/canopee-du-kimbo.png",defaultAverage:1800}
+    ]
+  },
+  marcassin:{
+    id:"marcassin",
+    label:"Marcassin",
+    shortLabel:"Marcassin",
+    defaultProfileName:"Marcassin principal",
+    progressLabel:"Puissance",
+    progressShort:"puissance",
+    objectiveMax:ABRA_OBJECTIVE_MAX,
+    objectiveLabel:"55 puissance",
+    icon:"../abra-kadabra/assets/images/puissance.png",
+    logo:"../marcassin/marcassin.png",
+    image:"../marcassin/marcassin.png",
+    auraImage:"../marcassin/marcassin-aura.png",
+    sleepingImage:"../marcassin/marcassin-z.png",
+    background:"../marcassin/fond/fond.png",
+    status:"active",
+    statusLabel:"",
+    description:"Suivi de puissance sur l'Antre du Dragon Cochon.",
+    bonusAmount:55,
+    difficultyLabel:"Moyen",
+    difficultyStars:2,
+    dofusCooldownMin:10,
+    farmMethods:["Antre du Dragon Cochon"],
+    dungeons:[
+      {key:"dragonCochon",label:"Dragon Cochon",fullLabel:"Antre du Dragon Cochon",asset:"../marcassin/donjon/antre-du-dragon-cochon.png",defaultAverage:1200}
+    ]
+  },
+  glouton:{
+    id:"glouton",
+    label:"Glouton",
+    shortLabel:"Glouton",
+    defaultProfileName:"Glouton principal",
+    progressLabel:"Pods",
+    progressShort:"pods",
+    objectiveMax:GLOUTON_OBJECTIVE_MAX,
+    objectiveLabel:"1100 pods",
+    icon:"../glouton/pods.png",
+    logo:"../glouton/glouton.png",
+    image:"../glouton/glouton.png",
+    auraImage:"../glouton/glouton-aura.png",
+    sleepingImage:"../glouton/glouton-z.png",
+    background:"../glouton/fond/fond.png",
+    status:"active",
+    statusLabel:"",
+    description:"Suivi de pods sur le Donjon du Moon.",
+    bonusAmount:1100,
+    difficultyLabel:"Dur",
+    difficultyStars:3,
+    dofusCooldownMin:10,
+    farmMethods:["Donjon du Moon"],
+    dungeons:[
+      {key:"donjonMoon",label:"Moon",fullLabel:"Donjon du Moon",asset:"../glouton/donjon/donjon-de-moon.png",defaultAverage:180}
+    ]
+  },
+  "tiwabbit-kiafin":{
+    id:"tiwabbit-kiafin",
+    label:"Tiwabbit Kiafin",
+    shortLabel:"Tiwabbit Kiafin",
+    defaultProfileName:"Tiwabbit Kiafin principal",
+    progressLabel:"Puissance",
+    progressShort:"puissance",
+    objectiveMax:ABRA_OBJECTIVE_MAX,
+    objectiveLabel:"55 puissance",
+    icon:"../abra-kadabra/assets/images/puissance.png",
+    logo:"../tiwabbit-kiafin/tiwabbit-kiafin.png",
+    image:"../tiwabbit-kiafin/tiwabbit-kiafin.png",
+    auraImage:"../tiwabbit-kiafin/tiwabbit-kiafin-aura.png",
+    sleepingImage:"../tiwabbit-kiafin/tiwabbit-kiafin-z.png",
+    background:"../tiwabbit-kiafin/fond/fond.png",
+    status:"active",
+    statusLabel:"",
+    description:"Suivi de puissance sur le Château du Wa Wabbit et le Donjon Wabbit.",
+    bonusAmount:55,
+    difficultyLabel:"Moyen",
+    difficultyStars:2,
+    dofusCooldownMin:10,
+    farmMethods:["Château du Wa Wabbit","Donjon Wabbit"],
+    dungeons:[
+      {key:"chateauWaWabbit",label:"Château Wa",fullLabel:"Château du Wa Wabbit",asset:"../tiwabbit-kiafin/donjon/chateau-du-wa-wabbit.png",defaultAverage:1500},
+      {key:"donjonWabbit",label:"Donjon Wabbit",fullLabel:"Donjon Wabbit",asset:"../tiwabbit-kiafin/donjon/donjon-wabbit.png",defaultAverage:900}
+    ]
   }
 };
 
@@ -425,6 +539,59 @@ const GELUTIN_MOBS={
   biblopIndigo:{name:"Biblop Indigo",imgPath:"../vitalité/gelutin/monstre/biblop-indigo.png",ppNeed:100,cat:["zone"]}
 };
 
+const TIFOUX_MOBS={
+  kimbo:{name:"Kimbo",imgPath:"../tifoux-tigre/monstre/kimbo.png",ppNeed:1,cat:["canopeeKimbo"]},
+  bitoufAerien:{name:"Bitouf Aérien",imgPath:"../tifoux-tigre/monstre/bitouf-aerien.png",ppNeed:30,cat:["canopeeKimbo"]},
+  abrakleurClair:{name:"Abrakleur Clair",imgPath:"../tifoux-tigre/monstre/abrakleur-clair.png",ppNeed:30,cat:["canopeeKimbo"]},
+  poolay:{name:"Poolay",imgPath:"../tifoux-tigre/monstre/poolay.png",ppNeed:40,cat:["canopeeKimbo"]},
+  kaskargo:{name:"Kaskargo",imgPath:"../tifoux-tigre/monstre/kaskargo.png",ppNeed:40,cat:["canopeeKimbo"]},
+  meupette:{name:"Meupette",imgPath:"../tifoux-tigre/monstre/meupette.png",ppNeed:60,cat:["canopeeKimbo"]}
+};
+
+const MARCASSIN_MOBS={
+  dragonCochon:{name:"Dragon Cochon",imgPath:"../marcassin/monstre/dragon-cochon.png",ppNeed:1,cat:["dragonCochon"]},
+  donDussAng:{name:"Don Duss Ang",imgPath:"../marcassin/monstre/don-duss-ang.png",ppNeed:25,cat:["dragonCochon"]},
+  donDorgan:{name:"Don Dorgan",imgPath:"../marcassin/monstre/don-dorgan.png",ppNeed:25,cat:["dragonCochon"]},
+  sanglier:{name:"Sanglier",imgPath:"../marcassin/monstre/sanglier.png",ppNeed:50,cat:["zone"]},
+  sanglierPlaines:{name:"Sanglier Des Plaines",imgPath:"../marcassin/monstre/sanglier-des-plaines.png",ppNeed:50,cat:["zone"]},
+  cavalierPorkass:{name:"Cavalier Porkass",imgPath:"../marcassin/monstre/cavalier-porkass.png",ppNeed:50,cat:["zone"]},
+  bergerPorkass:{name:"Berger Porkass",imgPath:"../marcassin/monstre/berger-porkass.png",ppNeed:50,cat:["zone"]},
+  cochonFarle:{name:"Cochon de Farle",imgPath:"../marcassin/monstre/cochon-de-farle.png",ppNeed:50,cat:["dragonCochon"]},
+  cochonLait:{name:"Cochon de Lait",imgPath:"../marcassin/monstre/cochon-de-lait.png",ppNeed:100,cat:["dragonCochon"]}
+};
+
+const GLOUTON_MOBS={
+  moon:{name:"Moon",imgPath:"../glouton/monstre/moon.png",ppNeed:1,gainValue:10,cat:["donjonMoon"]},
+  kanniboulSarbak:{name:"Kanniboul Sarbak",imgPath:"../glouton/monstre/kanniboul-sarbak.png",ppNeed:10,gainValue:10,cat:["zone"]},
+  kanniboulJav:{name:"Kanniboul Jav",imgPath:"../glouton/monstre/kanniboul-jav.png",ppNeed:10,gainValue:10,cat:["zone"]},
+  kanniboulThierry:{name:"Kanniboul Thierry",imgPath:"../glouton/monstre/kanniboul-thierry.png",ppNeed:10,gainValue:10,cat:["zone"]},
+  kanniboulArcher:{name:"Kanniboul Archer",imgPath:"../glouton/monstre/kanniboul-archer.png",ppNeed:10,gainValue:10,cat:["zone"]},
+  gloutovore:{name:"Gloutovore",imgPath:"../glouton/monstre/gloutovore.png",ppNeed:10,gainValue:10,cat:["zone"]},
+  tortueJaune:{name:"Tortue Jaune",imgPath:"../glouton/monstre/tortue-jaune.png",ppNeed:20,gainValue:10,cat:["zone"]},
+  tortueVerte:{name:"Tortue Verte",imgPath:"../glouton/monstre/tortue-verte.png",ppNeed:20,gainValue:10,cat:["zone"]},
+  tortueBleue:{name:"Tortue Bleue",imgPath:"../glouton/monstre/tortue-bleue.png",ppNeed:20,gainValue:10,cat:["zone"]},
+  tortueRouge:{name:"Tortue Rouge",imgPath:"../glouton/monstre/tortue-rouge.png",ppNeed:20,gainValue:10,cat:["zone"]},
+  trukikol:{name:"Trukikol",imgPath:"../glouton/monstre/trukikol.png",ppNeed:30,gainValue:10,cat:["zone"]},
+  nodKoko:{name:"NodKoko",imgPath:"../glouton/monstre/nodkoko.png",ppNeed:30,gainValue:10,cat:["zone"]},
+  fourbasse:{name:"Fourbasse",imgPath:"../glouton/monstre/fourbasse.png",ppNeed:40,gainValue:10,cat:["zone"]},
+  tikokoko:{name:"Tikokoko",imgPath:"../glouton/monstre/tikokoko.png",ppNeed:50,gainValue:10,cat:["zone"]},
+  kokoko:{name:"Kokoko",imgPath:"../glouton/monstre/kokoko.png",ppNeed:50,gainValue:10,cat:["zone"]}
+};
+
+const TIWABBIT_MOBS={
+  waWabbit:{name:"Wa Wabbit",imgPath:"../tiwabbit-kiafin/monstre/wa-wabbit.png",ppNeed:1,cat:["chateauWaWabbit"]},
+  wobot:{name:"Wobot",imgPath:"../tiwabbit-kiafin/monstre/wobot.png",ppNeed:10,cat:["chateauWaWabbit","donjonWabbit"]},
+  wabbitGM:{name:"Wabbit GM",imgPath:"../tiwabbit-kiafin/monstre/wabbit-gm.png",ppNeed:10,cat:["zone"]},
+  grandPaWabbit:{name:"Grand Pa Wabbit",imgPath:"../tiwabbit-kiafin/monstre/grand-pa-wabbit.png",ppNeed:40,cat:["chateauWaWabbit","donjonWabbit"]},
+  woWabbit:{name:"Wo Wabbit",imgPath:"../tiwabbit-kiafin/monstre/wo-wabbit.png",ppNeed:40,cat:["chateauWaWabbit","donjonWabbit"]},
+  wabbitSquelette:{name:"Wabbit Squelette",imgPath:"../tiwabbit-kiafin/monstre/wabbit-squelette.png",ppNeed:40,cat:["zone"]},
+  tiwabbitKiafin:{name:"Tiwabbit Kiafin",imgPath:"../tiwabbit-kiafin/monstre/tiwabbit-kiafin.png",ppNeed:50,cat:["chateauWaWabbit","donjonWabbit"]},
+  blackTiwabbit:{name:"Black Tiwabbit",imgPath:"../tiwabbit-kiafin/monstre/black-tiwabbit.png",ppNeed:50,cat:["chateauWaWabbit","donjonWabbit"]},
+  tiwabbit:{name:"Tiwabbit",imgPath:"../tiwabbit-kiafin/monstre/tiwabbit.png",ppNeed:50,cat:["chateauWaWabbit","donjonWabbit"]},
+  blackWabbit:{name:"Black Wabbit",imgPath:"../tiwabbit-kiafin/monstre/black-wabbit.png",ppNeed:50,cat:["chateauWaWabbit","donjonWabbit"]},
+  wabbit:{name:"Wabbit",imgPath:"../tiwabbit-kiafin/monstre/wabbit.png",ppNeed:50,cat:["chateauWaWabbit","donjonWabbit"]}
+};
+
 const PYKUR_GAINS={
   morose:{chiendent:1,nerbe:1,fecorce:1,abrakleur:1,bitouf:1,floribonde:2},
   tynril:{tynrilConsterne:1,tynrilDeconcerte:1,tynrilPerfide:1,tynrilAhuri:1,fecorce:2,abrakleur:3,brouture:3,chiendent:5,nerbe:6,floribonde:6,bitouf:10}
@@ -538,6 +705,38 @@ const GELUTIN_GAINS={
     return acc;
   },copyObject(GELUTIN_DONJON_BLOPS_BASE))
 };
+const TIFOUX_GAINS={
+  canopeeKimbo:{kimbo:1,kaskargo:6,poolay:6,meupette:6,abrakleurClair:5,bitoufAerien:12}
+};
+const MARCASSIN_GAINS={
+  dragonCochon:{dragonCochon:1,donDussAng:7,donDorgan:13,cochonFarle:23,cochonLait:22}
+};
+const GLOUTON_GAINS={
+  donjonMoon:{moon:1}
+};
+const TIWABBIT_GAINS={
+  chateauWaWabbit:{
+    waWabbit:1,
+    grandPaWabbit:3,
+    woWabbit:5,
+    tiwabbitKiafin:5,
+    blackTiwabbit:6,
+    tiwabbit:6,
+    wobot:12,
+    blackWabbit:9,
+    wabbit:9
+  },
+  donjonWabbit:{
+    blackTiwabbit:8,
+    blackWabbit:8,
+    grandPaWabbit:8,
+    tiwabbit:8,
+    tiwabbitKiafin:8,
+    wabbit:8,
+    wobot:8,
+    woWabbit:8
+  }
+};
 const ABRA_SPECIAL_GAINS={
   salleAbrakneSetup:{abraknyde:4,tronknyde:3,abraknydeVenerable:1,abrakne:1}
 };
@@ -549,6 +748,10 @@ const CROUM_ZONE_IDS=[];
 const BOULOUTE_ZONE_IDS=Object.keys(BOULOUTE_MOBS).filter(id=>BOULOUTE_MOBS[id].cat.includes("zone"));
 const VAMPYRETTE_ZONE_IDS=Object.keys(VAMPYRETTE_MOBS).filter(id=>VAMPYRETTE_MOBS[id].cat.includes("zone"));
 const GELUTIN_ZONE_IDS=Object.keys(GELUTIN_MOBS).filter(id=>GELUTIN_MOBS[id].cat.includes("zone"));
+const TIFOUX_ZONE_IDS=Object.keys(TIFOUX_MOBS).filter(id=>TIFOUX_MOBS[id].cat.includes("zone"));
+const MARCASSIN_ZONE_IDS=Object.keys(MARCASSIN_MOBS).filter(id=>MARCASSIN_MOBS[id].cat.includes("zone"));
+const GLOUTON_ZONE_IDS=Object.keys(GLOUTON_MOBS).filter(id=>GLOUTON_MOBS[id].cat.includes("zone"));
+const TIWABBIT_ZONE_IDS=Object.keys(TIWABBIT_MOBS).filter(id=>TIWABBIT_MOBS[id].cat.includes("zone"));
 const CROUM_RUNTIME={runLimits:CROUM_RUN_LIMITS,mobs:CROUM_MOBS,gains:CROUM_GAINS,zoneIds:CROUM_ZONE_IDS};
 const BOULOUTE_RUNTIME={runLimits:BOULOUTE_RUN_LIMITS,mobs:BOULOUTE_MOBS,gains:BOULOUTE_GAINS,zoneIds:BOULOUTE_ZONE_IDS};
 const FAMILIAR_RUNTIME={
@@ -563,7 +766,11 @@ const FAMILIAR_RUNTIME={
   bouloute:BOULOUTE_RUNTIME,
   "bouloute-du-parrain":BOULOUTE_RUNTIME,
   vampyrette:{runLimits:VAMPYRETTE_RUN_LIMITS,mobs:VAMPYRETTE_MOBS,gains:VAMPYRETTE_GAINS,zoneIds:VAMPYRETTE_ZONE_IDS},
-  gelutin:{runLimits:GELUTIN_RUN_LIMITS,mobs:GELUTIN_MOBS,gains:GELUTIN_GAINS,zoneIds:GELUTIN_ZONE_IDS}
+  gelutin:{runLimits:GELUTIN_RUN_LIMITS,mobs:GELUTIN_MOBS,gains:GELUTIN_GAINS,zoneIds:GELUTIN_ZONE_IDS},
+  "tifoux-tigre":{runLimits:TIFOUX_RUN_LIMITS,mobs:TIFOUX_MOBS,gains:TIFOUX_GAINS,zoneIds:TIFOUX_ZONE_IDS},
+  marcassin:{runLimits:MARCASSIN_RUN_LIMITS,mobs:MARCASSIN_MOBS,gains:MARCASSIN_GAINS,zoneIds:MARCASSIN_ZONE_IDS},
+  glouton:{runLimits:GLOUTON_RUN_LIMITS,mobs:GLOUTON_MOBS,gains:GLOUTON_GAINS,zoneIds:GLOUTON_ZONE_IDS},
+  "tiwabbit-kiafin":{runLimits:TIWABBIT_RUN_LIMITS,mobs:TIWABBIT_MOBS,gains:TIWABBIT_GAINS,zoneIds:TIWABBIT_ZONE_IDS}
 };
 
   window.PYKUR_FAMILIAR_DATA={
@@ -573,6 +780,7 @@ const FAMILIAR_RUNTIME={
     TOFOUDRE_OBJECTIVE_MAX,
     CROUM_OBJECTIVE_MAX,
     VITALITY_OBJECTIVE_MAX,
+    GLOUTON_OBJECTIVE_MAX,
     PYKUR_RUN_LIMITS,
     ABRA_RUN_LIMITS,
     DRAGOUNE_RUN_LIMITS,
@@ -581,6 +789,10 @@ const FAMILIAR_RUNTIME={
     BOULOUTE_RUN_LIMITS,
     VAMPYRETTE_RUN_LIMITS,
     GELUTIN_RUN_LIMITS,
+    TIFOUX_RUN_LIMITS,
+    MARCASSIN_RUN_LIMITS,
+    GLOUTON_RUN_LIMITS,
+    TIWABBIT_RUN_LIMITS,
     FAMILIARS,
     PYKUR_MOBS,
     ABRA_MOBS,
@@ -590,6 +802,10 @@ const FAMILIAR_RUNTIME={
     BOULOUTE_MOBS,
     VAMPYRETTE_MOBS,
     GELUTIN_MOBS,
+    TIFOUX_MOBS,
+    MARCASSIN_MOBS,
+    GLOUTON_MOBS,
+    TIWABBIT_MOBS,
     PYKUR_GAINS,
     ABRA_GAINS,
     DRAGOUNE_GAINS,
@@ -599,6 +815,10 @@ const FAMILIAR_RUNTIME={
     VAMPYRETTE_GAINS,
     GELUTIN_BLOP_BOSS_GAINS,
     GELUTIN_GAINS,
+    TIFOUX_GAINS,
+    MARCASSIN_GAINS,
+    GLOUTON_GAINS,
+    TIWABBIT_GAINS,
     ABRA_SPECIAL_GAINS,
     PYKUR_ZONE_IDS,
     ABRA_ZONE_IDS,
@@ -608,6 +828,10 @@ const FAMILIAR_RUNTIME={
     BOULOUTE_ZONE_IDS,
     VAMPYRETTE_ZONE_IDS,
     GELUTIN_ZONE_IDS,
+    TIFOUX_ZONE_IDS,
+    MARCASSIN_ZONE_IDS,
+    GLOUTON_ZONE_IDS,
+    TIWABBIT_ZONE_IDS,
     FAMILIAR_RUNTIME
   };
 })();
