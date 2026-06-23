@@ -50,6 +50,14 @@ Le builder les genere automatiquement depuis les noms lisibles :
 - dans les gains, vous pouvez ecrire `"Kimbo": 1` au lieu de connaitre l'id interne ;
 - dans les sources, vous pouvez ecrire le nom du donjon ou `zone`.
 
+Pour indiquer les monstres presents dans un donjon, utilisez la zone `Monstres presents dans ce donjon` dans chaque carte donjon :
+
+- cliquez sur `Ajouter` ;
+- renseignez le nom du monstre ;
+- renseignez la quantite presente dans un run.
+
+Le JSON avance est mis a jour automatiquement. Il reste disponible seulement pour les cas particuliers.
+
 ### Assets PNG
 
 Deux modes sont possibles :
