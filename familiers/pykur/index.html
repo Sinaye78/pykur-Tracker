@@ -27485,6 +27485,7 @@ function renderProjection(){
           ${farmProjection.map(item=>`<div class="projection-line"><span>${escapeHtml(familiarFarmLabel(item.farm))} restant</span><strong>${formatProjectionRuns(item.full)}</strong></div>`).join("")}
         </div>
         <div class="projection-summary-note">Consultez l'onglet Détails pour les estimations de temps et les rendements.</div>
+        ${activeFamiliar().estimateNote?`<div class="projection-summary-note">${escapeHtml(activeFamiliar().estimateNote)}</div>`:""}
       </section>
     </div>
 

@@ -23,6 +23,8 @@ const TIFOUX_RUN_LIMITS={canopeeKimbo:9999};
 const MARCASSIN_RUN_LIMITS={dragonCochon:9999};
 const GLOUTON_RUN_LIMITS={donjonMoon:9999};
 const TIWABBIT_RUN_LIMITS={chateauWaWabbit:9999,donjonWabbit:9999};
+const MINIMINOTOT_OBJECTIVE_MAX=55;
+const MINIMINOTOT_RUN_LIMITS={labyrintheDuMinotoror:9999,labyrintheDuMinotot:9999};
 function createCroumFamiliar({id,label,defaultProfileName,progressLabel,progressShort,icon,basePath,difficultyStars=2}){
   const progressIntro=["agilité","intelligence"].includes(progressShort) ? `d'${progressShort}` : `de ${progressShort}`;
   return {
@@ -440,7 +442,37 @@ const FAMILIARS={
       {key:"chateauWaWabbit",label:"Château Wa",fullLabel:"Château du Wa Wabbit",asset:"../tiwabbit-kiafin/donjon/chateau-du-wa-wabbit.png",defaultAverage:1500},
       {key:"donjonWabbit",label:"Donjon Wabbit",fullLabel:"Donjon Wabbit",asset:"../tiwabbit-kiafin/donjon/donjon-wabbit.png",defaultAverage:900}
     ]
+  },
+  miniminotot:{
+    id:"miniminotot",
+    label:"Miniminotot",
+    shortLabel:"Miniminotot",
+    defaultProfileName:"Miniminotot principal",
+    progressLabel:"Puissance",
+    progressShort:"puissance",
+    objectiveMax:MINIMINOTOT_OBJECTIVE_MAX,
+    objectiveLabel:"55 puissance",
+    icon:"../abra-kadabra/assets/images/puissance.png",
+    logo:"../miniminotot/miniminotot.png",
+    image:"../miniminotot/miniminotot.png",
+    auraImage:"../miniminotot/miniminotot-aura.png",
+    sleepingImage:"../miniminotot/miniminotot-z.png",
+    background:"../miniminotot/fond/fond.png",
+    status:"active",
+    statusLabel:"",
+    description:"Suivi de puissance sur les labyrinthes du Minotoror et du Minotot.",
+    estimateNote:"Les monstres du labyrinthe peuvent varier selon les runs. Les projections affichent un minimum estime : vous terminerez souvent le familier avant l'objectif annonce.",
+    bonusAmount:55,
+    difficultyLabel:"Dur",
+    difficultyStars:3,
+    dofusCooldownMin:10,
+    farmMethods:["Labyrinthe du Minotoror","Labyrinthe du Minotot"],
+    dungeons:[
+      {key:"labyrintheDuMinotoror",label:"Minotoror",fullLabel:"Labyrinthe du Minotoror",asset:"../miniminotot/donjon/minotoror.png",defaultAverage:1500},
+      {key:"labyrintheDuMinotot",label:"Minotot",fullLabel:"Labyrinthe du Minotot",asset:"../miniminotot/donjon/minotot.png",defaultAverage:900}
+    ]
   }
+
 };
 
 const PYKUR_MOBS={
@@ -636,6 +668,19 @@ const TIWABBIT_MOBS={
   blackWabbit:{name:"Black Wabbit",imgPath:"../tiwabbit-kiafin/monstre/black-wabbit.png",ppNeed:50,cat:["chateauWaWabbit","donjonWabbit"]},
   wabbit:{name:"Wabbit",imgPath:"../tiwabbit-kiafin/monstre/wabbit.png",ppNeed:50,cat:["chateauWaWabbit","donjonWabbit"]}
 };
+const MINIMINOTOT_MOBS={
+  minotot:{name:"Minotot",imgPath:"../miniminotot/monstre/minotot.png",ppNeed:1,cat:["labyrintheDuMinotot"]},
+  minotoror:{name:"Minotoror",imgPath:"../miniminotot/monstre/minotoror.png",ppNeed:1,cat:["labyrintheDuMinotoror","labyrintheDuMinotot"]},
+  deminoboule:{name:"Deminoboule",imgPath:"../miniminotot/monstre/deminoboule.png",ppNeed:5,cat:["labyrintheDuMinotoror","labyrintheDuMinotot","zone"]},
+  mominotor:{name:"Mominotor",imgPath:"../miniminotot/monstre/mominotor.png",ppNeed:5,cat:["labyrintheDuMinotoror","labyrintheDuMinotot","zone"]},
+  serpiplume:{name:"Serpiplume",imgPath:"../miniminotot/monstre/serpiplume.png",ppNeed:30,cat:["labyrintheDuMinotoror","zone"]},
+  kramelehon:{name:"Kram\u00e9l\u00e9hon",imgPath:"../miniminotot/monstre/kramelehon.png",ppNeed:50,cat:["zone"]},
+  mandrine:{name:"Mandrine",imgPath:"../miniminotot/monstre/mandrine.png",ppNeed:50,cat:["zone"]},
+  minoskito:{name:"Minoskito",imgPath:"../miniminotot/monstre/minoskito.png",ppNeed:50,cat:["zone"]},
+  scaratos:{name:"Scaratos",imgPath:"../miniminotot/monstre/scaratos.png",ppNeed:50,cat:["labyrintheDuMinotoror","labyrintheDuMinotot","zone"]},
+  gamino:{name:"Gamino",imgPath:"../miniminotot/monstre/gamino.png",ppNeed:50,cat:["labyrintheDuMinotoror","labyrintheDuMinotot","zone"]}
+};
+
 
 const PYKUR_GAINS={
   morose:{chiendent:1,nerbe:1,fecorce:1,abrakleur:1,bitouf:1,floribonde:2},
@@ -798,6 +843,25 @@ const TIWABBIT_GAINS={
     woWabbit:8
   }
 };
+const MINIMINOTOT_GAINS={
+  labyrintheDuMinotoror:{
+    minotoror:1,
+    deminoboule:2,
+    mominotor:2,
+    serpiplume:1,
+    scaratos:2,
+    gamino:2
+  },
+  labyrintheDuMinotot:{
+    minotot:1,
+    minotoror:2,
+    deminoboule:3,
+    mominotor:3,
+    scaratos:4,
+    gamino:4
+  }
+};
+
 const ABRA_SPECIAL_GAINS={
   salleAbrakneSetup:{abraknyde:4,tronknyde:3,abraknydeVenerable:1,abrakne:1}
 };
@@ -814,6 +878,8 @@ const TIFOUX_ZONE_IDS=Object.keys(TIFOUX_MOBS).filter(id=>TIFOUX_MOBS[id].cat.in
 const MARCASSIN_ZONE_IDS=Object.keys(MARCASSIN_MOBS).filter(id=>MARCASSIN_MOBS[id].cat.includes("zone"));
 const GLOUTON_ZONE_IDS=Object.keys(GLOUTON_MOBS).filter(id=>GLOUTON_MOBS[id].cat.includes("zone"));
 const TIWABBIT_ZONE_IDS=Object.keys(TIWABBIT_MOBS).filter(id=>TIWABBIT_MOBS[id].cat.includes("zone"));
+const MINIMINOTOT_ZONE_IDS=Object.keys(MINIMINOTOT_MOBS).filter(id=>MINIMINOTOT_MOBS[id].cat.includes("zone"));
+
 const CROUM_RUNTIME={runLimits:CROUM_RUN_LIMITS,mobs:CROUM_MOBS,gains:CROUM_GAINS,zoneIds:CROUM_ZONE_IDS};
 const BOULOUTE_RUNTIME={runLimits:BOULOUTE_RUN_LIMITS,mobs:BOULOUTE_MOBS,gains:BOULOUTE_GAINS,zoneIds:BOULOUTE_ZONE_IDS};
 const FAMILIAR_RUNTIME={
@@ -833,7 +899,8 @@ const FAMILIAR_RUNTIME={
   "tifoux-tigre":{runLimits:TIFOUX_RUN_LIMITS,mobs:TIFOUX_MOBS,gains:TIFOUX_GAINS,zoneIds:TIFOUX_ZONE_IDS},
   marcassin:{runLimits:MARCASSIN_RUN_LIMITS,mobs:MARCASSIN_MOBS,gains:MARCASSIN_GAINS,zoneIds:MARCASSIN_ZONE_IDS},
   glouton:{runLimits:GLOUTON_RUN_LIMITS,mobs:GLOUTON_MOBS,gains:GLOUTON_GAINS,zoneIds:GLOUTON_ZONE_IDS},
-  "tiwabbit-kiafin":{runLimits:TIWABBIT_RUN_LIMITS,mobs:TIWABBIT_MOBS,gains:TIWABBIT_GAINS,zoneIds:TIWABBIT_ZONE_IDS}
+  "tiwabbit-kiafin":{runLimits:TIWABBIT_RUN_LIMITS,mobs:TIWABBIT_MOBS,gains:TIWABBIT_GAINS,zoneIds:TIWABBIT_ZONE_IDS},
+  miniminotot:{runLimits:MINIMINOTOT_RUN_LIMITS,mobs:MINIMINOTOT_MOBS,gains:MINIMINOTOT_GAINS,zoneIds:MINIMINOTOT_ZONE_IDS}
 };
 
   window.PYKUR_FAMILIAR_DATA={
@@ -845,6 +912,7 @@ const FAMILIAR_RUNTIME={
     CROUM_OBJECTIVE_MAX,
     VITALITY_OBJECTIVE_MAX,
     GLOUTON_OBJECTIVE_MAX,
+    MINIMINOTOT_OBJECTIVE_MAX,
     PYKUR_RUN_LIMITS,
     ABRA_RUN_LIMITS,
     DRAGOUNE_RUN_LIMITS,
@@ -858,6 +926,7 @@ const FAMILIAR_RUNTIME={
     MARCASSIN_RUN_LIMITS,
     GLOUTON_RUN_LIMITS,
     TIWABBIT_RUN_LIMITS,
+    MINIMINOTOT_RUN_LIMITS,
     FAMILIARS,
     PYKUR_MOBS,
     ABRA_MOBS,
@@ -872,6 +941,7 @@ const FAMILIAR_RUNTIME={
     MARCASSIN_MOBS,
     GLOUTON_MOBS,
     TIWABBIT_MOBS,
+    MINIMINOTOT_MOBS,
     PYKUR_GAINS,
     ABRA_GAINS,
     DRAGOUNE_GAINS,
@@ -886,6 +956,7 @@ const FAMILIAR_RUNTIME={
     MARCASSIN_GAINS,
     GLOUTON_GAINS,
     TIWABBIT_GAINS,
+    MINIMINOTOT_GAINS,
     ABRA_SPECIAL_GAINS,
     PYKUR_ZONE_IDS,
     ABRA_ZONE_IDS,
@@ -900,6 +971,7 @@ const FAMILIAR_RUNTIME={
     MARCASSIN_ZONE_IDS,
     GLOUTON_ZONE_IDS,
     TIWABBIT_ZONE_IDS,
+    MINIMINOTOT_ZONE_IDS,
     FAMILIAR_RUNTIME
   };
 })();
