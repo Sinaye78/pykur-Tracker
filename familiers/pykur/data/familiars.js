@@ -10,6 +10,8 @@ const FLIBALAK_OBJECTIVE_MAX=11;
 const CROUM_OBJECTIVE_MAX=90;
 const VITALITY_OBJECTIVE_MAX=165;
 const GLOUTON_OBJECTIVE_MAX=1100;
+const CHENAPANDI_OBJECTIVE_MAX=440;
+const CHENAPANDI_RUN_LIMITS={repaireDesPandikazes:9999};
 const PYKUR_RUN_LIMITS={morose:640,tynril:48};
 const ABRA_RUN_LIMITS={donjonAbraknyde:9999,cheneMou:9999,salleAbrakne:9999};
 const DRAGOUNE_RUN_LIMITS={sanctuaireDragoeufs:9999};
@@ -471,6 +473,33 @@ const FAMILIARS={
       {key:"labyrintheDuMinotoror",label:"Minotoror",fullLabel:"Labyrinthe du Minotoror",asset:"../miniminotot/donjon/minotoror.png",defaultAverage:1500},
       {key:"labyrintheDuMinotot",label:"Minotot",fullLabel:"Labyrinthe du Minotot",asset:"../miniminotot/donjon/minotot.png",defaultAverage:900}
     ]
+  },
+  chenapandi:{
+    id:"chenapandi",
+    label:"Chenapandi",
+    shortLabel:"Chenapandi",
+    defaultProfileName:"Chenapandi principal",
+    progressLabel:"Vitalit\u00e9",
+    progressShort:"vitalit\u00e9",
+    objectiveMax:CHENAPANDI_OBJECTIVE_MAX,
+    objectiveLabel:"440 vitalit\u00e9",
+    icon:"../chenapandi/vitalite.png",
+    logo:"../chenapandi/chenapandi.png",
+    image:"../chenapandi/chenapandi.png",
+    auraImage:"../chenapandi/chenapandi-aura.png",
+    sleepingImage:"../chenapandi/chenapandi-z.png",
+    background:"../chenapandi/fond/fond.png",
+    status:"active",
+    statusLabel:"",
+    description:"Suivi de vitalit\u00e9 sur le Repaire des Pandikazes.",
+    bonusAmount:440,
+    difficultyLabel:"Dur",
+    difficultyStars:3,
+    dofusCooldownMin:10,
+    farmMethods:["Repaire des Pandikazes"],
+    dungeons:[
+      {key:"repaireDesPandikazes",label:"Pandikaze",fullLabel:"Repaire des Pandikazes",asset:"../chenapandi/donjon/maitre-pandore.png",defaultAverage:900}
+    ]
   }
 
 };
@@ -681,6 +710,22 @@ const MINIMINOTOT_MOBS={
   gamino:{name:"Gamino",imgPath:"../miniminotot/monstre/gamino.png",ppNeed:50,cat:["labyrintheDuMinotoror","labyrintheDuMinotot","zone"]}
 };
 
+const CHENAPANDI_MOBS={
+  fantomePandore:{name:"Fant\u00f4me Pandore",imgPath:"../chenapandi/monstre/fantome-pandore.png",ppNeed:1,cat:["zone"]},
+  pandore:{name:"Pandore",imgPath:"../chenapandi/monstre/pandore.png",ppNeed:1,cat:["zone"]},
+  maitrePandore:{name:"Ma\u00eetre Pandore",imgPath:"../chenapandi/monstre/maitre-pandore.png",ppNeed:2,cat:["repaireDesPandikazes"]},
+  fantomePandule:{name:"Fant\u00f4me Pandule",imgPath:"../chenapandi/monstre/fantome-pandule.png",ppNeed:3,cat:["zone"]},
+  fantomePandikaze:{name:"Fant\u00f4me Pandikaze",imgPath:"../chenapandi/monstre/fantome-pandikaze.png",ppNeed:3,cat:["zone"]},
+  guerrierPandikaze:{name:"Guerrier Pandikaze",imgPath:"../chenapandi/monstre/guerrier-pandikaze.png",ppNeed:8,cat:["repaireDesPandikazes"]},
+  pandikwakaze:{name:"Pandikwakaze",imgPath:"../chenapandi/monstre/pandikwakaze.png",ppNeed:10,cat:["repaireDesPandikazes"]},
+  pandulkaze:{name:"Pandulkaze",imgPath:"../chenapandi/monstre/pandulkaze.png",ppNeed:10,cat:["repaireDesPandikazes"]},
+  pandikazeVertige:{name:"Pandikaze vertige",imgPath:"../chenapandi/monstre/pandikaze-vertige.png",ppNeed:15,cat:["repaireDesPandikazes"]},
+  pandikazeAerien:{name:"Pandikaze a\u00e9rien",imgPath:"../chenapandi/monstre/pandikaze-aerien.png",ppNeed:20,cat:["repaireDesPandikazes"]},
+  pandule:{name:"Pandule",imgPath:"../chenapandi/monstre/pandule.png",ppNeed:30,cat:["zone"]},
+  pandit:{name:"Pandit",imgPath:"../chenapandi/monstre/pandit.png",ppNeed:30,cat:["zone"]},
+  pandikaze:{name:"Pandikaze",imgPath:"../chenapandi/monstre/pandikaze.png",ppNeed:30,cat:["repaireDesPandikazes","zone"]}
+};
+
 
 const PYKUR_GAINS={
   morose:{chiendent:1,nerbe:1,fecorce:1,abrakleur:1,bitouf:1,floribonde:2},
@@ -862,6 +907,18 @@ const MINIMINOTOT_GAINS={
   }
 };
 
+const CHENAPANDI_GAINS={
+  repaireDesPandikazes:{
+    maitrePandore:1,
+    guerrierPandikaze:4,
+    pandikwakaze:4,
+    pandulkaze:5,
+    pandikazeVertige:10,
+    pandikazeAerien:19,
+    pandikaze:10
+  }
+};
+
 const ABRA_SPECIAL_GAINS={
   salleAbrakneSetup:{abraknyde:4,tronknyde:3,abraknydeVenerable:1,abrakne:1}
 };
@@ -879,6 +936,8 @@ const MARCASSIN_ZONE_IDS=Object.keys(MARCASSIN_MOBS).filter(id=>MARCASSIN_MOBS[i
 const GLOUTON_ZONE_IDS=Object.keys(GLOUTON_MOBS).filter(id=>GLOUTON_MOBS[id].cat.includes("zone"));
 const TIWABBIT_ZONE_IDS=Object.keys(TIWABBIT_MOBS).filter(id=>TIWABBIT_MOBS[id].cat.includes("zone"));
 const MINIMINOTOT_ZONE_IDS=Object.keys(MINIMINOTOT_MOBS).filter(id=>MINIMINOTOT_MOBS[id].cat.includes("zone"));
+
+const CHENAPANDI_ZONE_IDS=Object.keys(CHENAPANDI_MOBS).filter(id=>CHENAPANDI_MOBS[id].cat.includes("zone"));
 
 const CROUM_RUNTIME={runLimits:CROUM_RUN_LIMITS,mobs:CROUM_MOBS,gains:CROUM_GAINS,zoneIds:CROUM_ZONE_IDS};
 const BOULOUTE_RUNTIME={runLimits:BOULOUTE_RUN_LIMITS,mobs:BOULOUTE_MOBS,gains:BOULOUTE_GAINS,zoneIds:BOULOUTE_ZONE_IDS};
@@ -900,7 +959,8 @@ const FAMILIAR_RUNTIME={
   marcassin:{runLimits:MARCASSIN_RUN_LIMITS,mobs:MARCASSIN_MOBS,gains:MARCASSIN_GAINS,zoneIds:MARCASSIN_ZONE_IDS},
   glouton:{runLimits:GLOUTON_RUN_LIMITS,mobs:GLOUTON_MOBS,gains:GLOUTON_GAINS,zoneIds:GLOUTON_ZONE_IDS},
   "tiwabbit-kiafin":{runLimits:TIWABBIT_RUN_LIMITS,mobs:TIWABBIT_MOBS,gains:TIWABBIT_GAINS,zoneIds:TIWABBIT_ZONE_IDS},
-  miniminotot:{runLimits:MINIMINOTOT_RUN_LIMITS,mobs:MINIMINOTOT_MOBS,gains:MINIMINOTOT_GAINS,zoneIds:MINIMINOTOT_ZONE_IDS}
+  miniminotot:{runLimits:MINIMINOTOT_RUN_LIMITS,mobs:MINIMINOTOT_MOBS,gains:MINIMINOTOT_GAINS,zoneIds:MINIMINOTOT_ZONE_IDS},
+  chenapandi:{runLimits:CHENAPANDI_RUN_LIMITS,mobs:CHENAPANDI_MOBS,gains:CHENAPANDI_GAINS,zoneIds:CHENAPANDI_ZONE_IDS}
 };
 
   window.PYKUR_FAMILIAR_DATA={
@@ -913,6 +973,7 @@ const FAMILIAR_RUNTIME={
     VITALITY_OBJECTIVE_MAX,
     GLOUTON_OBJECTIVE_MAX,
     MINIMINOTOT_OBJECTIVE_MAX,
+    CHENAPANDI_OBJECTIVE_MAX,
     PYKUR_RUN_LIMITS,
     ABRA_RUN_LIMITS,
     DRAGOUNE_RUN_LIMITS,
@@ -927,6 +988,7 @@ const FAMILIAR_RUNTIME={
     GLOUTON_RUN_LIMITS,
     TIWABBIT_RUN_LIMITS,
     MINIMINOTOT_RUN_LIMITS,
+    CHENAPANDI_RUN_LIMITS,
     FAMILIARS,
     PYKUR_MOBS,
     ABRA_MOBS,
@@ -942,6 +1004,7 @@ const FAMILIAR_RUNTIME={
     GLOUTON_MOBS,
     TIWABBIT_MOBS,
     MINIMINOTOT_MOBS,
+    CHENAPANDI_MOBS,
     PYKUR_GAINS,
     ABRA_GAINS,
     DRAGOUNE_GAINS,
@@ -957,6 +1020,7 @@ const FAMILIAR_RUNTIME={
     GLOUTON_GAINS,
     TIWABBIT_GAINS,
     MINIMINOTOT_GAINS,
+    CHENAPANDI_GAINS,
     ABRA_SPECIAL_GAINS,
     PYKUR_ZONE_IDS,
     ABRA_ZONE_IDS,
@@ -972,6 +1036,7 @@ const FAMILIAR_RUNTIME={
     GLOUTON_ZONE_IDS,
     TIWABBIT_ZONE_IDS,
     MINIMINOTOT_ZONE_IDS,
+    CHENAPANDI_ZONE_IDS,
     FAMILIAR_RUNTIME
   };
 })();
