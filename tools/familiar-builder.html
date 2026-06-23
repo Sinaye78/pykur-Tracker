@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generateur de familier - Familier Tracker</title>
+  <style>
+    :root{
+      --bg:#f3ead7;
+      --panel:#fffaf0;
+      --panel-2:#f8edd4;
+      --ink:#2c1a0e;
+      --muted:#735638;
+      --line:#d9bf8e;
+      --gold:#facc15;
+      --blue:#2563eb;
+      --green:#15803d;
+      --red:#b91c1c;
+      --shadow:0 18px 45px rgba(55,35,12,.16);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 20% 0%,rgba(250,204,21,.2),transparent 30%),
+        linear-gradient(135deg,#ead8b5,#fffaf0 45%,#e5d2aa);
+      min-height:100vh;
+    }
+    header{
+      position:sticky;
+      top:0;
+      z-index:5;
+      padding:18px clamp(16px,3vw,34px);
+      background:linear-gradient(90deg,#5a2f10,#8a5815);
+      color:#fff8e8;
+      box-shadow:0 8px 24px rgba(39,22,8,.22);
+    }
+    header h1{margin:0;font-size:clamp(24px,3vw,34px)}
+    header p{margin:5px 0 0;font-weight:700;opacity:.9}
+    main{
+      width:min(1320px,calc(100vw - 28px));
+      margin:18px auto 36px;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 430px;
+      gap:18px;
+      align-items:start;
+    }
+    .panel{
+      background:rgba(255,250,240,.88);
+      border:1px solid rgba(121,82,35,.24);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .panel-head{
+      padding:16px 18px;
+      border-bottom:1px solid rgba(121,82,35,.18);
+      background:linear-gradient(180deg,#fff6df,#f3dfb6);
+    }
+    .panel-head h2{margin:0;font-size:22px}
+    .panel-head p{margin:4px 0 0;color:var(--muted);font-weight:700}
+    .section{padding:16px 18px;border-bottom:1px solid rgba(121,82,35,.14)}
+    .section:last-child{border-bottom:0}
+    .section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .section-title h3{margin:0;font-size:18px}
+    .section-title small{color:var(--muted);font-weight:800}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    label{display:grid;gap:6px;font-weight:900;color:#5c3d1c}
+    label span{font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+    input,select,textarea{
+      width:100%;
+      border:1px solid rgba(95,64,28,.32);
+      border-radius:10px;
+      background:rgba(255,252,246,.95);
+      color:var(--ink);
+      padding:11px 12px;
+      font:inherit;
+      font-weight:700;
+      outline:none;
+    }
+    textarea{min-height:90px;resize:vertical;font-family:Consolas,monospace;font-size:13px}
+    input:focus,select:focus,textarea:focus{border-color:#93b4ff;box-shadow:0 0 0 3px rgba(37,99,235,.16)}
+    .item-list{display:grid;gap:12px}
+    .item-card{
+      border:1px solid rgba(121,82,35,.22);
+      border-radius:14px;
+      background:rgba(255,252,246,.78);
+      padding:13px;
+      box-shadow:0 8px 20px rgba(62,39,14,.07);
+    }
+    .item-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+    .item-card-head strong{font-size:16px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    button{
+      border:0;
+      border-radius:10px;
+      padding:11px 14px;
+      font-weight:950;
+      color:#fff;
+      background:var(--blue);
+      cursor:pointer;
+      box-shadow:0 8px 16px rgba(37,99,235,.18);
+    }
+    button:hover{filter:brightness(1.05);transform:translateY(-1px)}
+    button.secondary{background:#64748b;box-shadow:none}
+    button.green{background:var(--green)}
+    button.orange{background:#c96a0b}
+    button.red{background:var(--red)}
+    button.ghost{background:#fff8e8;color:#5c3d1c;border:1px solid rgba(121,82,35,.24);box-shadow:none}
+    .hint{
+      padding:10px 12px;
+      border-radius:12px;
+      background:#eff6ff;
+      color:#40516b;
+      font-weight:800;
+      line-height:1.35;
+      border:1px solid #bfdbfe;
+    }
+    .preview{
+      position:sticky;
+      top:95px;
+    }
+    pre{
+      margin:0;
+      max-height:64vh;
+      overflow:auto;
+      white-space:pre;
+      background:#1b120c;
+      color:#fef3c7;
+      padding:14px;
+      border-radius:0 0 14px 14px;
+      font:12px/1.45 Consolas, monospace;
+    }
+    .preview-actions{padding:12px;display:flex;gap:8px;flex-wrap:wrap;background:var(--panel-2);border-top:1px solid rgba(121,82,35,.18)}
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:5px 9px;
+      background:linear-gradient(180deg,#fff4b8,var(--gold));
+      color:#4b2d08;
+      font-weight:950;
+      font-size:12px;
+    }
+    .hidden{display:none!important}
+    @media(max-width:1040px){
+      main{grid-template-columns:1fr}
+      .preview{position:static}
+      pre{max-height:420px}
+    }
+    @media(max-width:680px){
+      .grid,.grid-3{grid-template-columns:1fr}
+      header{position:static}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Generateur de familier</h1>
+    <p>Remplissez la fiche, exportez le JSON, puis donnez-le a Codex pour integration.</p>
+  </header>
+
+  <main>
+    <form class="panel" id="builderForm">
+      <div class="panel-head">
+        <h2>Fiche familier</h2>
+        <p>Les chemins sont ceux utilises depuis <strong>familiers/pykur/index.html</strong>.</p>
+      </div>
+
+      <section class="section">
+        <div class="section-title">
+          <h3>Identite</h3>
+          <small>Nom, slug et difficulte</small>
+        </div>
+        <div class="grid">
+          <label><span>Nom affiche</span><input id="label" placeholder="Ex : Tifoux Tigre"></label>
+          <label><span>Identifiant technique</span><input id="id" placeholder="ex : tifoux-tigre"></label>
+          <label><span>Nom profil par defaut</span><input id="defaultProfileName" placeholder="ex : Tifoux Tigre principal"></label>
+          <label><span>Difficulte</span><select id="difficultyStars"><option value="1">★ Facile</option><option value="2">★★ Moyen</option><option value="3">★★★ Dur</option></select></label>
+        </div>
+        <label style="margin-top:12px"><span>Description courte</span><textarea id="description" placeholder="Suivi de prospection sur la Canopee du Kimbo."></textarea></label>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <h3>Bonus</h3>
+          <small>Libre, meme si le site ne le connait pas encore</small>
+        </div>
+        <div class="grid grid-3">
+          <label><span>Libelle long</span><input id="progressLabel" placeholder="Prospection, Sagesse, Vitalite..."></label>
+          <label><span>Libelle court</span><input id="progressShort" placeholder="PP, sagesse, vitalite..."></label>
+          <label><span>Maximum</span><input id="objectiveMax" type="number" min="1" value="90"></label>
+          <label><span>Montant badge catalogue</span><input id="bonusAmount" type="number" min="1" value="90"></label>
+          <label><span>Gain par palier</span><input id="defaultGainValue" type="number" min="1" value="1"></label>
+          <label><span>Icone bonus</span><input id="icon" placeholder="../familier/bonus.png"></label>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <h3>Assets principaux</h3>
+          <small>Normal, termine, endormi et fond</small>
+        </div>
+        <div class="grid">
+          <label><span>Image normale</span><input id="image" placeholder="../familier/familier.png"></label>
+          <label><span>Image terminee</span><input id="auraImage" placeholder="../familier/familier-aura.png"></label>
+          <label><span>Image endormie</span><input id="sleepingImage" placeholder="../familier/familier-z.png"></label>
+          <label><span>Fond du site</span><input id="background" placeholder="../familier/fond/fond.png"></label>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <div>
+            <h3>Donjons</h3>
+            <small>Chaque donjon peut ajouter des monstres au + Run</small>
+          </div>
+          <button type="button" class="green" id="addDungeon">Ajouter un donjon</button>
+        </div>
+        <div class="item-list" id="dungeons"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <div>
+            <h3>Monstres</h3>
+            <small>Incluez aussi les monstres de zone utiles aux paliers</small>
+          </div>
+          <button type="button" class="green" id="addMonster">Ajouter un monstre</button>
+        </div>
+        <div class="item-list" id="monsters"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <h3>Comportement special</h3>
+          <small>Pour les exceptions type Abrakne ou Blops</small>
+        </div>
+        <div class="grid">
+          <label>
+            <span>Type</span>
+            <select id="behaviorType">
+              <option value="standard">Classique</option>
+              <option value="loop-room">Salle en boucle</option>
+              <option value="choice-before-run">Choix avant run</option>
+              <option value="chained-dungeon">Donjon enchaine</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <label><span>Note pour Codex</span><input id="behaviorNote" placeholder="Ex : demander le boss Blop avant + Run"></label>
+        </div>
+        <label style="margin-top:12px"><span>Configuration speciale JSON optionnelle</span><textarea id="behaviorConfig" placeholder='{"choiceLabel":"Boss affronté","choices":{}}'></textarea></label>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <h3>Notes d'integration</h3>
+          <small>Infos utiles pour eviter les suppositions</small>
+        </div>
+        <textarea id="notes" placeholder="Precision de calcul, assets partages, cas particulier, valeur moyenne conseillee..."></textarea>
+      </section>
+    </form>
+
+    <aside class="panel preview">
+      <div class="panel-head">
+        <h2>Export JSON</h2>
+        <p><span class="badge" id="summaryBadge">0 donjon · 0 monstre</span></p>
+      </div>
+      <pre id="jsonPreview"></pre>
+      <div class="preview-actions">
+        <button type="button" class="green" id="copyJson">Copier</button>
+        <button type="button" id="downloadJson">Telecharger JSON</button>
+        <button type="button" class="orange" id="loadExample">Exemple</button>
+        <button type="button" class="red" id="resetForm">Reset</button>
+      </div>
+      <div class="section">
+        <div class="hint">
+          Conseil : gardez les identifiants sans accents ni espaces. Exemple : <strong>dragonCochon</strong>, <strong>donjonMoon</strong>, <strong>tifoux-tigre</strong>.
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <template id="dungeonTemplate">
+    <div class="item-card" data-dungeon>
+      <div class="item-card-head"><strong>Donjon</strong><button type="button" class="red" data-remove>Retirer</button></div>
+      <div class="grid">
+        <label><span>Key</span><input data-field="key" placeholder="canopeeKimbo"></label>
+        <label><span>Label court</span><input data-field="label" placeholder="Kimbo"></label>
+        <label><span>Nom complet</span><input data-field="fullLabel" placeholder="Canopee du Kimbo"></label>
+        <label><span>Image decorative</span><input data-field="asset" placeholder="../familier/donjon/boss.png"></label>
+        <label><span>Temps moyen secondes</span><input data-field="defaultAverage" type="number" min="0" value="900"></label>
+        <label><span>Special</span><input data-field="special" placeholder="standard, salleAbrakne..."></label>
+      </div>
+      <label style="margin-top:10px"><span>Gains du donjon JSON</span><textarea data-field="gains" placeholder='{"kimbo":1,"kaskargo":6}'></textarea></label>
+    </div>
+  </template>
+
+  <template id="monsterTemplate">
+    <div class="item-card" data-monster>
+      <div class="item-card-head"><strong>Monstre</strong><button type="button" class="red" data-remove>Retirer</button></div>
+      <div class="grid">
+        <label><span>Id</span><input data-field="id" placeholder="kimbo"></label>
+        <label><span>Nom</span><input data-field="name" placeholder="Kimbo"></label>
+        <label><span>Sprite</span><input data-field="imgPath" placeholder="../familier/monstre/kimbo.png"></label>
+        <label><span>Palier</span><input data-field="ppNeed" type="number" min="1" value="1"></label>
+        <label><span>Gain par palier</span><input data-field="gainValue" type="number" min="1" value="1"></label>
+        <label><span>Sources</span><input data-field="cat" placeholder="canopeeKimbo, zone"></label>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    const $ = (selector, root=document) => root.querySelector(selector);
+    const $$ = (selector, root=document) => Array.from(root.querySelectorAll(selector));
+    const slugify = (text) => String(text || "")
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    const camelKey = (text) => {
+      const slug = slugify(text);
+      return slug.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
+    };
+    const parseJson = (text, fallback) => {
+      const trimmed = String(text || "").trim();
+      if (!trimmed) return fallback;
+      try { return JSON.parse(trimmed); } catch { return fallback; }
+    };
+    const read = (id) => $("#" + id).value.trim();
+
+    function addCard(templateId, targetId, values = {}) {
+      const node = $("#" + templateId).content.firstElementChild.cloneNode(true);
+      Object.entries(values).forEach(([key, value]) => {
+        const field = node.querySelector(`[data-field="${key}"]`);
+        if (field) field.value = typeof value === "object" ? JSON.stringify(value, null, 2) : value;
+      });
+      node.querySelector("[data-remove]").onclick = () => { node.remove(); updatePreview(); };
+      node.addEventListener("input", updatePreview);
+      $("#" + targetId).appendChild(node);
+      updatePreview();
+      return node;
+    }
+
+    function collectDungeons() {
+      return $$("[data-dungeon]").map((card) => {
+        const get = (field) => card.querySelector(`[data-field="${field}"]`).value.trim();
+        const dungeon = {
+          key: get("key"),
+          label: get("label"),
+          fullLabel: get("fullLabel"),
+          asset: get("asset"),
+          defaultAverage: Number(get("defaultAverage")) || 0
+        };
+        if (get("special")) dungeon.special = get("special");
+        return { dungeon, gains: parseJson(get("gains"), {}) };
+      }).filter(({ dungeon }) => dungeon.key);
+    }
+
+    function collectMonsters() {
+      const defaultGainValue = Number(read("defaultGainValue")) || 1;
+      return Object.fromEntries($$("[data-monster]").map((card) => {
+        const get = (field) => card.querySelector(`[data-field="${field}"]`).value.trim();
+        const id = get("id");
+        const monster = {
+          name: get("name"),
+          imgPath: get("imgPath"),
+          ppNeed: Number(get("ppNeed")) || 1,
+          cat: get("cat").split(",").map((item) => item.trim()).filter(Boolean)
+        };
+        const gainValue = Number(get("gainValue")) || defaultGainValue;
+        if (gainValue !== 1) monster.gainValue = gainValue;
+        return [id, monster];
+      }).filter(([id]) => id));
+    }
+
+    function buildExport() {
+      const id = read("id") || slugify(read("label"));
+      const label = read("label");
+      const dungeons = collectDungeons();
+      const monsters = collectMonsters();
+      const gains = Object.fromEntries(dungeons.map(({ dungeon, gains }) => [dungeon.key, gains]));
+      const behaviorConfig = parseJson(read("behaviorConfig"), null);
+      const behavior = {
+        type: read("behaviorType") || "standard"
+      };
+      if (read("behaviorNote")) behavior.note = read("behaviorNote");
+      if (behaviorConfig) behavior.config = behaviorConfig;
+      return {
+        schemaVersion: 1,
+        generatedAt: new Date().toISOString(),
+        familiar: {
+          id,
+          label,
+          shortLabel: label,
+          defaultProfileName: read("defaultProfileName") || `${label || id} principal`,
+          progressLabel: read("progressLabel"),
+          progressShort: read("progressShort"),
+          objectiveMax: Number(read("objectiveMax")) || 1,
+          objectiveLabel: `${Number(read("objectiveMax")) || 1} ${read("progressShort")}`,
+          icon: read("icon"),
+          logo: read("image"),
+          image: read("image"),
+          auraImage: read("auraImage"),
+          sleepingImage: read("sleepingImage"),
+          background: read("background"),
+          status: "active",
+          statusLabel: "",
+          description: read("description"),
+          bonusAmount: Number(read("bonusAmount")) || Number(read("objectiveMax")) || 1,
+          difficultyLabel: Number(read("difficultyStars")) === 1 ? "Facile" : Number(read("difficultyStars")) === 2 ? "Moyen" : "Dur",
+          difficultyStars: Number(read("difficultyStars")) || 1,
+          dofusCooldownMin: 10,
+          farmMethods: dungeons.map(({ dungeon }) => dungeon.fullLabel || dungeon.label),
+          dungeons: dungeons.map(({ dungeon }) => dungeon)
+        },
+        runtime: {
+          runLimits: Object.fromEntries(dungeons.map(({ dungeon }) => [dungeon.key, 9999])),
+          mobs: monsters,
+          gains,
+          zoneIds: Object.keys(monsters).filter((monsterId) => monsters[monsterId].cat.includes("zone"))
+        },
+        behavior,
+        notes: read("notes")
+      };
+    }
+
+    function updatePreview() {
+      const data = buildExport();
+      $("#jsonPreview").textContent = JSON.stringify(data, null, 2);
+      $("#summaryBadge").textContent = `${data.familiar.dungeons.length} donjon${data.familiar.dungeons.length > 1 ? "s" : ""} · ${Object.keys(data.runtime.mobs).length} monstre${Object.keys(data.runtime.mobs).length > 1 ? "s" : ""}`;
+    }
+
+    function loadExample() {
+      $("#label").value = "Tifoux Tigre";
+      $("#id").value = "tifoux-tigre";
+      $("#defaultProfileName").value = "Tifoux Tigre principal";
+      $("#difficultyStars").value = "3";
+      $("#description").value = "Suivi de prospection sur la Canopee du Kimbo.";
+      $("#progressLabel").value = "Prospection";
+      $("#progressShort").value = "PP";
+      $("#objectiveMax").value = "90";
+      $("#bonusAmount").value = "90";
+      $("#defaultGainValue").value = "1";
+      $("#icon").value = "../pykur/assets/images/prospection.png";
+      $("#image").value = "../tifoux-tigre/tifoux-tigre.png";
+      $("#auraImage").value = "../tifoux-tigre/tifoux-tigre-aura.png";
+      $("#sleepingImage").value = "../tifoux-tigre/tifoux-tigre-z.png";
+      $("#background").value = "../tifoux-tigre/fond/fond.png";
+      $("#behaviorType").value = "standard";
+      $("#behaviorNote").value = "";
+      $("#behaviorConfig").value = "";
+      $("#notes").value = "Exemple de fiche exportee depuis le builder.";
+      $("#dungeons").innerHTML = "";
+      $("#monsters").innerHTML = "";
+      addCard("dungeonTemplate", "dungeons", {
+        key: "canopeeKimbo",
+        label: "Kimbo",
+        fullLabel: "Canopee du Kimbo",
+        asset: "../tifoux-tigre/donjon/canopee-du-kimbo.png",
+        defaultAverage: 1800,
+        gains: { kimbo: 1, kaskargo: 6 }
+      });
+      addCard("monsterTemplate", "monsters", {
+        id: "kimbo",
+        name: "Kimbo",
+        imgPath: "../tifoux-tigre/monstre/kimbo.png",
+        ppNeed: 1,
+        gainValue: 1,
+        cat: "canopeeKimbo"
+      });
+      addCard("monsterTemplate", "monsters", {
+        id: "kaskargo",
+        name: "Kaskargo",
+        imgPath: "../tifoux-tigre/monstre/kaskargo.png",
+        ppNeed: 40,
+        gainValue: 1,
+        cat: "canopeeKimbo"
+      });
+      updatePreview();
+    }
+
+    $("#label").addEventListener("input", () => {
+      if (!$("#id").dataset.touched) $("#id").value = slugify($("#label").value);
+      if (!$("#defaultProfileName").value.trim()) $("#defaultProfileName").value = `${$("#label").value} principal`;
+      updatePreview();
+    });
+    $("#id").addEventListener("input", () => { $("#id").dataset.touched = "1"; updatePreview(); });
+    $("#addDungeon").onclick = () => addCard("dungeonTemplate", "dungeons");
+    $("#addMonster").onclick = () => addCard("monsterTemplate", "monsters");
+    $("#copyJson").onclick = async () => {
+      await navigator.clipboard.writeText($("#jsonPreview").textContent);
+      $("#copyJson").textContent = "Copie !";
+      setTimeout(() => $("#copyJson").textContent = "Copier", 900);
+    };
+    $("#downloadJson").onclick = () => {
+      const data = buildExport();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${data.familiar.id || "familier"}.generated.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
+    $("#loadExample").onclick = loadExample;
+    $("#resetForm").onclick = () => {
+      $("#builderForm").reset();
+      $("#dungeons").innerHTML = "";
+      $("#monsters").innerHTML = "";
+      $("#id").dataset.touched = "";
+      updatePreview();
+    };
+    $("#builderForm").addEventListener("input", updatePreview);
+    addCard("dungeonTemplate", "dungeons");
+    addCard("monsterTemplate", "monsters");
+    updatePreview();
+  </script>
+</body>
+</html>

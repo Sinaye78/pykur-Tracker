@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-06-23T00:00:00.000Z",
+  "familiar": {
+    "id": "nouveau-familier",
+    "label": "Nouveau Familier",
+    "shortLabel": "Nouveau Familier",
+    "defaultProfileName": "Nouveau Familier principal",
+    "progressLabel": "Bonus libre",
+    "progressShort": "bonus",
+    "objectiveMax": 55,
+    "objectiveLabel": "55 bonus",
+    "icon": "../nouveau-familier/bonus.png",
+    "logo": "../nouveau-familier/nouveau-familier.png",
+    "image": "../nouveau-familier/nouveau-familier.png",
+    "auraImage": "../nouveau-familier/nouveau-familier-aura.png",
+    "sleepingImage": "../nouveau-familier/nouveau-familier-z.png",
+    "background": "../nouveau-familier/fond/fond.png",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi du bonus libre sur un donjon exemple.",
+    "bonusAmount": 55,
+    "difficultyLabel": "Moyen",
+    "difficultyStars": 2,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Donjon Exemple"
+    ],
+    "dungeons": [
+      {
+        "key": "donjonExemple",
+        "label": "Exemple",
+        "fullLabel": "Donjon Exemple",
+        "asset": "../nouveau-familier/donjon/exemple.png",
+        "defaultAverage": 900
+      }
+    ]
+  },
+  "runtime": {
+    "runLimits": {
+      "donjonExemple": 9999
+    },
+    "mobs": {
+      "bossExemple": {
+        "name": "Boss Exemple",
+        "imgPath": "../nouveau-familier/monstre/boss-exemple.png",
+        "ppNeed": 1,
+        "cat": [
+          "donjonExemple"
+        ]
+      },
+      "monstreZone": {
+        "name": "Monstre de Zone",
+        "imgPath": "../nouveau-familier/monstre/monstre-zone.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      }
+    },
+    "gains": {
+      "donjonExemple": {
+        "bossExemple": 1
+      }
+    },
+    "zoneIds": [
+      "monstreZone"
+    ]
+  },
+  "behavior": {
+    "type": "standard",
+    "note": "Utiliser loop-room, choice-before-run ou custom pour les exceptions."
+  },
+  "notes": "Ce fichier est un exemple de format exporte par tools/familiar-builder.html."
+}
