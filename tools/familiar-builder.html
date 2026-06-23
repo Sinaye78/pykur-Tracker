@@ -119,6 +119,19 @@
       line-height:1.35;
       border:1px solid #bfdbfe;
     }
+    .file-drop{
+      border:1px dashed rgba(121,82,35,.34);
+      background:rgba(255,248,232,.68);
+      border-radius:12px;
+      padding:10px;
+    }
+    .file-drop input{padding:8px;background:#fffaf0}
+    .asset-status{
+      margin-top:10px;
+      color:var(--muted);
+      font-weight:800;
+      line-height:1.35;
+    }
     .preview{
       position:sticky;
       top:95px;
@@ -211,6 +224,33 @@
           <label><span>Image endormie</span><input id="sleepingImage" placeholder="../familier/familier-z.png"></label>
           <label><span>Fond du site</span><input id="background" placeholder="../familier/fond/fond.png"></label>
         </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <div>
+            <h3>Depot PNG</h3>
+            <small>L'outil peut preparer le dossier du familier</small>
+          </div>
+        </div>
+        <div class="hint">
+          Selectionnez les PNG, puis cliquez sur "Pre-remplir les chemins". Si votre navigateur l'autorise, "Creer le dossier assets" copiera les fichiers dans le dossier `familiers` que vous choisirez.
+        </div>
+        <div class="grid" style="margin-top:12px">
+          <label><span>Dossier relatif auto</span><input id="assetBasePath" placeholder="../tifoux-tigre"></label>
+          <label class="file-drop"><span>Icone bonus</span><input id="iconFile" type="file" accept="image/png,image/webp,image/jpeg"></label>
+          <label class="file-drop"><span>Image normale</span><input id="imageFile" type="file" accept="image/png,image/webp,image/jpeg"></label>
+          <label class="file-drop"><span>Image terminee / aura</span><input id="auraFile" type="file" accept="image/png,image/webp,image/jpeg"></label>
+          <label class="file-drop"><span>Image endormie</span><input id="sleepingFile" type="file" accept="image/png,image/webp,image/jpeg"></label>
+          <label class="file-drop"><span>Fond du site</span><input id="backgroundFile" type="file" accept="image/png,image/webp,image/jpeg"></label>
+          <label class="file-drop"><span>Images de donjons</span><input id="dungeonFiles" type="file" accept="image/png,image/webp,image/jpeg" multiple></label>
+          <label class="file-drop"><span>Sprites monstres</span><input id="monsterFiles" type="file" accept="image/png,image/webp,image/jpeg" multiple></label>
+        </div>
+        <div class="actions" style="margin-top:12px">
+          <button type="button" class="orange" id="prepareAssetPaths">Pre-remplir les chemins</button>
+          <button type="button" class="green" id="writeAssetFolder">Creer le dossier assets</button>
+        </div>
+        <div class="asset-status" id="assetStatus">Aucun fichier selectionne.</div>
       </section>
 
       <section class="section">
@@ -339,6 +379,31 @@
       try { return JSON.parse(trimmed); } catch { return fallback; }
     };
     const read = (id) => $("#" + id).value.trim();
+    const fileExt = (file) => {
+      const name = file?.name || "";
+      const ext = name.includes(".") ? name.split(".").pop().toLowerCase() : "png";
+      return ["png", "webp", "jpg", "jpeg"].includes(ext) ? ext : "png";
+    };
+    const safeAssetName = (text, fallback="asset") => slugify(text || fallback) || fallback;
+    const baseAssetPath = () => read("assetBasePath") || `../${read("id") || slugify(read("label")) || "nouveau-familier"}`;
+    const targetFoldersFromBasePath = () => baseAssetPath()
+      .replace(/\\/g, "/")
+      .split("/")
+      .filter((part) => part && part !== "." && part !== ".." && part !== "familiers");
+    const fileList = (id) => Array.from($("#" + id)?.files || []);
+    const firstFile = (id) => fileList(id)[0] || null;
+    const setIfEmptyOrFile = (id, value) => {
+      const input = $("#" + id);
+      if (!input.value.trim() || input.dataset.assetAuto === "1") {
+        input.value = value;
+        input.dataset.assetAuto = "1";
+      }
+    };
+    const filePathFor = (folder, file, fallbackName) => {
+      const base = baseAssetPath();
+      const name = safeAssetName(fallbackName || file?.name?.replace(/\.[^.]+$/, ""), "asset");
+      return `${base}${folder ? `/${folder}` : ""}/${name}.${fileExt(file)}`;
+    };
 
     function addCard(templateId, targetId, values = {}) {
       const node = $("#" + templateId).content.firstElementChild.cloneNode(true);
@@ -351,6 +416,101 @@
       $("#" + targetId).appendChild(node);
       updatePreview();
       return node;
+    }
+
+    function prepareAssetPaths() {
+      const id = read("id") || slugify(read("label"));
+      if (!read("assetBasePath")) $("#assetBasePath").value = `../${id || "nouveau-familier"}`;
+      const name = id || safeAssetName(read("label"), "familier");
+      const iconFile = firstFile("iconFile");
+      const imageFile = firstFile("imageFile");
+      const auraFile = firstFile("auraFile");
+      const sleepingFile = firstFile("sleepingFile");
+      const backgroundFile = firstFile("backgroundFile");
+      if (iconFile) setIfEmptyOrFile("icon", filePathFor("", iconFile, safeAssetName(read("progressShort") || read("progressLabel"), "bonus")));
+      if (imageFile) setIfEmptyOrFile("image", filePathFor("", imageFile, name));
+      if (auraFile) setIfEmptyOrFile("auraImage", filePathFor("", auraFile, `${name}-aura`));
+      if (sleepingFile) setIfEmptyOrFile("sleepingImage", filePathFor("", sleepingFile, `${name}-z`));
+      if (backgroundFile) setIfEmptyOrFile("background", filePathFor("fond", backgroundFile, "fond"));
+
+      const dungeonFilesBySlug = new Map(fileList("dungeonFiles").map((file) => [slugify(file.name.replace(/\.[^.]+$/, "")), file]));
+      $$("[data-dungeon]").forEach((card) => {
+        const get = (field) => card.querySelector(`[data-field="${field}"]`);
+        const label = get("fullLabel").value.trim() || get("label").value.trim();
+        const match = dungeonFilesBySlug.get(slugify(label)) || dungeonFilesBySlug.get(slugify(get("key").value));
+        if (match && (!get("asset").value.trim() || get("asset").dataset.assetAuto === "1")) {
+          get("asset").value = filePathFor("donjon", match, label || match.name.replace(/\.[^.]+$/, ""));
+          get("asset").dataset.assetAuto = "1";
+        }
+      });
+
+      const monsterFilesBySlug = new Map(fileList("monsterFiles").map((file) => [slugify(file.name.replace(/\.[^.]+$/, "")), file]));
+      $$("[data-monster]").forEach((card) => {
+        const get = (field) => card.querySelector(`[data-field="${field}"]`);
+        const name = get("name").value.trim();
+        const match = monsterFilesBySlug.get(slugify(name)) || monsterFilesBySlug.get(slugify(get("id").value));
+        if (match && (!get("imgPath").value.trim() || get("imgPath").dataset.assetAuto === "1")) {
+          get("imgPath").value = filePathFor("monstre", match, name || match.name.replace(/\.[^.]+$/, ""));
+          get("imgPath").dataset.assetAuto = "1";
+        }
+      });
+      updateAssetStatus();
+      updatePreview();
+    }
+
+    async function writeFile(dirHandle, folders, filename, file) {
+      let current = dirHandle;
+      for (const folder of folders.filter(Boolean)) {
+        current = await current.getDirectoryHandle(folder, { create: true });
+      }
+      const handle = await current.getFileHandle(filename, { create: true });
+      const writable = await handle.createWritable();
+      await writable.write(file);
+      await writable.close();
+    }
+
+    async function writeAssetFolder() {
+      prepareAssetPaths();
+      if (!window.showDirectoryPicker) {
+        $("#assetStatus").textContent = "Votre navigateur ne permet pas l'ecriture de dossiers. Les chemins ont quand meme ete pre-remplis dans le JSON.";
+        return;
+      }
+      const familiarId = read("id") || slugify(read("label"));
+      if (!familiarId) {
+        $("#assetStatus").textContent = "Renseignez au moins le nom du familier avant de creer le dossier.";
+        return;
+      }
+      const root = await window.showDirectoryPicker({ mode: "readwrite" });
+      const targetFolders = targetFoldersFromBasePath();
+      let written = 0;
+      const writeSelected = async (inputId, folders, fallbackName) => {
+        const file = firstFile(inputId);
+        if (!file) return;
+        await writeFile(root, [...targetFolders, ...folders], `${safeAssetName(fallbackName)}.${fileExt(file)}`, file);
+        written++;
+      };
+      await writeSelected("iconFile", [], safeAssetName(read("progressShort") || read("progressLabel"), "bonus"));
+      await writeSelected("imageFile", [], familiarId);
+      await writeSelected("auraFile", [], `${familiarId}-aura`);
+      await writeSelected("sleepingFile", [], `${familiarId}-z`);
+      await writeSelected("backgroundFile", ["fond"], "fond");
+      for (const file of fileList("dungeonFiles")) {
+        await writeFile(root, [...targetFolders, "donjon"], `${safeAssetName(file.name.replace(/\.[^.]+$/, ""))}.${fileExt(file)}`, file);
+        written++;
+      }
+      for (const file of fileList("monsterFiles")) {
+        await writeFile(root, [...targetFolders, "monstre"], `${safeAssetName(file.name.replace(/\.[^.]+$/, ""))}.${fileExt(file)}`, file);
+        written++;
+      }
+      $("#assetStatus").textContent = `${written} fichier${written > 1 ? "s" : ""} copie${written > 1 ? "s" : ""}. Dossier cible : ${targetFolders.join("/") || familiarId}.`;
+    }
+
+    function updateAssetStatus() {
+      const total = ["iconFile", "imageFile", "auraFile", "sleepingFile", "backgroundFile", "dungeonFiles", "monsterFiles"]
+        .reduce((sum, id) => sum + fileList(id).length, 0);
+      $("#assetStatus").textContent = total
+        ? `${total} fichier${total > 1 ? "s" : ""} selectionne${total > 1 ? "s" : ""}. Les chemins existants restent prioritaires si vous les avez remplis manuellement.`
+        : "Aucun fichier selectionne. Vous pouvez aussi renseigner uniquement des chemins vers des assets deja existants.";
     }
 
     function collectDungeons() {
@@ -536,6 +696,16 @@
     $("#id").addEventListener("input", () => { $("#id").dataset.touched = "1"; updatePreview(); });
     $("#addDungeon").onclick = () => addCard("dungeonTemplate", "dungeons");
     $("#addMonster").onclick = () => addCard("monsterTemplate", "monsters");
+    $("#prepareAssetPaths").onclick = prepareAssetPaths;
+    $("#writeAssetFolder").onclick = () => writeAssetFolder().catch((error) => {
+      $("#assetStatus").textContent = `Creation annulee ou impossible : ${error.message || error}`;
+    });
+    ["iconFile", "imageFile", "auraFile", "sleepingFile", "backgroundFile", "dungeonFiles", "monsterFiles"].forEach((id) => {
+      $("#" + id).addEventListener("change", () => {
+        updateAssetStatus();
+        prepareAssetPaths();
+      });
+    });
     $("#copyJson").onclick = async () => {
       await navigator.clipboard.writeText($("#jsonPreview").textContent);
       $("#copyJson").textContent = "Copie !";
@@ -556,6 +726,7 @@
       $("#dungeons").innerHTML = "";
       $("#monsters").innerHTML = "";
       $("#id").dataset.touched = "";
+      $("#assetStatus").textContent = "Aucun fichier selectionne.";
       updatePreview();
     };
     $("#builderForm").addEventListener("input", updatePreview);

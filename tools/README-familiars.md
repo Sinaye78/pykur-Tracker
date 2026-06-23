@@ -50,6 +50,25 @@ Le builder les genere automatiquement depuis les noms lisibles :
 - dans les gains, vous pouvez ecrire `"Kimbo": 1` au lieu de connaitre l'id interne ;
 - dans les sources, vous pouvez ecrire le nom du donjon ou `zone`.
 
+### Assets PNG
+
+Deux modes sont possibles :
+
+- si un asset existe deja dans le projet, renseignez simplement son chemin comme avant ;
+- si vous ajoutez de nouveaux PNG, selectionnez-les dans la zone `Depot PNG`.
+
+Le bouton `Pre-remplir les chemins` met automatiquement les chemins dans la fiche.
+Le champ `Dossier relatif auto` controle aussi l'emplacement cree. Exemple : `../vitalite/bouloute` creera `vitalite/bouloute` si vous choisissez le dossier `familiers`.
+
+Le bouton `Creer le dossier assets` demande de choisir le dossier `familiers`, puis cree le dossier cible avec :
+
+- les images principales a la racine ;
+- le fond dans `fond` ;
+- les images de donjon dans `donjon` ;
+- les sprites de monstres dans `monstre`.
+
+Selon le navigateur, l'ecriture directe de dossier peut etre refusee. Dans ce cas, l'export JSON reste utilisable et les chemins sont quand meme prepares.
+
 Le bouton `Telecharger JSON` exporte une fiche du familier. Cette fiche peut ensuite etre donnee a Codex pour integration.
 
 ## Template
