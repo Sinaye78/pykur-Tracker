@@ -42,6 +42,14 @@ L'interface permet de remplir :
 - comportement special ;
 - notes utiles pour l'integration.
 
+Les champs techniques comme `id`, `key` et sources normalisees peuvent etre laisses vides.
+Le builder les genere automatiquement depuis les noms lisibles :
+
+- `Donjon des Rats de Bonta` devient une key propre ;
+- `Kimbo` devient un id de monstre propre ;
+- dans les gains, vous pouvez ecrire `"Kimbo": 1` au lieu de connaitre l'id interne ;
+- dans les sources, vous pouvez ecrire le nom du donjon ou `zone`.
+
 Le bouton `Telecharger JSON` exporte une fiche du familier. Cette fiche peut ensuite etre donnee a Codex pour integration.
 
 ## Template

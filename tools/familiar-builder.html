@@ -279,7 +279,7 @@
       </div>
       <div class="section">
         <div class="hint">
-          Conseil : gardez les identifiants sans accents ni espaces. Exemple : <strong>dragonCochon</strong>, <strong>donjonMoon</strong>, <strong>tifoux-tigre</strong>.
+          Conseil : vous pouvez laisser les champs techniques vides. Le generateur cree les ids de monstres, les keys de donjons et les sources automatiquement depuis les noms.
         </div>
       </div>
     </aside>
@@ -289,14 +289,14 @@
     <div class="item-card" data-dungeon>
       <div class="item-card-head"><strong>Donjon</strong><button type="button" class="red" data-remove>Retirer</button></div>
       <div class="grid">
-        <label><span>Key</span><input data-field="key" placeholder="canopeeKimbo"></label>
+        <label><span>Key auto optionnelle</span><input data-field="key" placeholder="auto depuis le nom complet"></label>
         <label><span>Label court</span><input data-field="label" placeholder="Kimbo"></label>
         <label><span>Nom complet</span><input data-field="fullLabel" placeholder="Canopee du Kimbo"></label>
         <label><span>Image decorative</span><input data-field="asset" placeholder="../familier/donjon/boss.png"></label>
         <label><span>Temps moyen secondes</span><input data-field="defaultAverage" type="number" min="0" value="900"></label>
         <label><span>Special</span><input data-field="special" placeholder="standard, salleAbrakne..."></label>
       </div>
-      <label style="margin-top:10px"><span>Gains du donjon JSON</span><textarea data-field="gains" placeholder='{"kimbo":1,"kaskargo":6}'></textarea></label>
+      <label style="margin-top:10px"><span>Gains du donjon JSON</span><textarea data-field="gains" placeholder='{"Kimbo":1,"Kaskargo":6} ou {"kimbo":1}'></textarea></label>
     </div>
   </template>
 
@@ -304,12 +304,12 @@
     <div class="item-card" data-monster>
       <div class="item-card-head"><strong>Monstre</strong><button type="button" class="red" data-remove>Retirer</button></div>
       <div class="grid">
-        <label><span>Id</span><input data-field="id" placeholder="kimbo"></label>
+        <label><span>Id auto optionnel</span><input data-field="id" placeholder="auto depuis le nom"></label>
         <label><span>Nom</span><input data-field="name" placeholder="Kimbo"></label>
         <label><span>Sprite</span><input data-field="imgPath" placeholder="../familier/monstre/kimbo.png"></label>
         <label><span>Palier</span><input data-field="ppNeed" type="number" min="1" value="1"></label>
         <label><span>Gain par palier</span><input data-field="gainValue" type="number" min="1" value="1"></label>
-        <label><span>Sources</span><input data-field="cat" placeholder="canopeeKimbo, zone"></label>
+        <label><span>Sources</span><input data-field="cat" placeholder="Canopee du Kimbo, zone"></label>
       </div>
     </div>
   </template>
@@ -323,6 +323,15 @@
     const camelKey = (text) => {
       const slug = slugify(text);
       return slug.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
+    };
+    const aliasKeys = (text) => {
+      const raw = String(text || "").trim();
+      return Array.from(new Set([
+        raw,
+        raw.toLowerCase(),
+        slugify(raw),
+        camelKey(raw)
+      ].filter(Boolean)));
     };
     const parseJson = (text, fallback) => {
       const trimmed = String(text || "").trim();
@@ -347,41 +356,78 @@
     function collectDungeons() {
       return $$("[data-dungeon]").map((card) => {
         const get = (field) => card.querySelector(`[data-field="${field}"]`).value.trim();
+        const fullLabel = get("fullLabel");
+        const label = get("label") || fullLabel;
+        const key = get("key") || camelKey(fullLabel || label);
         const dungeon = {
-          key: get("key"),
-          label: get("label"),
-          fullLabel: get("fullLabel"),
+          key,
+          label,
+          fullLabel,
           asset: get("asset"),
           defaultAverage: Number(get("defaultAverage")) || 0
         };
         if (get("special")) dungeon.special = get("special");
         return { dungeon, gains: parseJson(get("gains"), {}) };
-      }).filter(({ dungeon }) => dungeon.key);
+      }).filter(({ dungeon }) => dungeon.key && (dungeon.label || dungeon.fullLabel));
     }
 
-    function collectMonsters() {
+    function buildDungeonAliases(dungeons) {
+      const aliases = new Map();
+      dungeons.forEach(({ dungeon }) => {
+        aliasKeys(dungeon.key).forEach((key) => aliases.set(key, dungeon.key));
+        aliasKeys(dungeon.label).forEach((key) => aliases.set(key, dungeon.key));
+        aliasKeys(dungeon.fullLabel).forEach((key) => aliases.set(key, dungeon.key));
+      });
+      aliases.set("zone", "zone");
+      return aliases;
+    }
+
+    function collectMonsters(dungeonAliases) {
       const defaultGainValue = Number(read("defaultGainValue")) || 1;
-      return Object.fromEntries($$("[data-monster]").map((card) => {
+      const entries = $$("[data-monster]").map((card) => {
         const get = (field) => card.querySelector(`[data-field="${field}"]`).value.trim();
-        const id = get("id");
+        const name = get("name");
+        const id = get("id") || camelKey(name);
         const monster = {
-          name: get("name"),
+          name,
           imgPath: get("imgPath"),
           ppNeed: Number(get("ppNeed")) || 1,
-          cat: get("cat").split(",").map((item) => item.trim()).filter(Boolean)
+          cat: get("cat").split(",")
+            .map((item) => item.trim())
+            .filter(Boolean)
+            .map((item) => dungeonAliases.get(item) || dungeonAliases.get(item.toLowerCase()) || dungeonAliases.get(slugify(item)) || dungeonAliases.get(camelKey(item)) || item)
         };
         const gainValue = Number(get("gainValue")) || defaultGainValue;
         if (gainValue !== 1) monster.gainValue = gainValue;
         return [id, monster];
-      }).filter(([id]) => id));
+      }).filter(([id, monster]) => id && monster.name);
+      return Object.fromEntries(entries);
+    }
+
+    function buildMonsterAliases(monsters) {
+      const aliases = new Map();
+      Object.entries(monsters).forEach(([id, monster]) => {
+        aliasKeys(id).forEach((key) => aliases.set(key, id));
+        aliasKeys(monster.name).forEach((key) => aliases.set(key, id));
+      });
+      return aliases;
+    }
+
+    function normalizeGains(gains, monsterAliases) {
+      return Object.fromEntries(Object.entries(gains || {}).map(([monsterRef, amount]) => {
+        const monsterId = monsterAliases.get(monsterRef) || monsterAliases.get(String(monsterRef).toLowerCase()) || monsterAliases.get(slugify(monsterRef)) || monsterAliases.get(camelKey(monsterRef)) || monsterRef;
+        return [monsterId, Number(amount) || 0];
+      }).filter(([, amount]) => amount > 0));
     }
 
     function buildExport() {
       const id = read("id") || slugify(read("label"));
       const label = read("label");
       const dungeons = collectDungeons();
-      const monsters = collectMonsters();
-      const gains = Object.fromEntries(dungeons.map(({ dungeon, gains }) => [dungeon.key, gains]));
+      const dungeonAliases = buildDungeonAliases(dungeons);
+      const monsters = collectMonsters(dungeonAliases);
+      const monsterAliases = buildMonsterAliases(monsters);
+      const gains = Object.fromEntries(dungeons.map(({ dungeon, gains }) => [dungeon.key, normalizeGains(gains, monsterAliases)]));
       const behaviorConfig = parseJson(read("behaviorConfig"), null);
       const behavior = {
         type: read("behaviorType") || "standard"
