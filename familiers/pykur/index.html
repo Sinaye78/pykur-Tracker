@@ -14886,7 +14886,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
             <div class="options-action-list">
               <div class="option-row"><div><strong>Options et raccourcis partagés</strong><small>Applique les réglages d'interface, sons, accessibilité, événements et raccourcis à tous les profils.</small></div><button class="btn btn-blue tooltip" id="toggleSharedOptions" data-tooltip="Lie les réglages d'interface, sons, accessibilité, événements et raccourcis entre tous les profils."></button></div>
               <div class="option-row"><div><strong>Galerie partagée</strong><small>Utilise la même galerie de familiers terminés et d'événements découverts pour tous les profils.</small></div><button class="btn btn-blue tooltip" id="toggleSharedGalleryOption" data-tooltip="Lie ou sépare la galerie entre tous les profils."></button></div>
-              <div class="option-row"><div><strong>Succès partagés</strong><small>Utilise la même progression de succès pour tous les profils.</small></div><button class="btn btn-blue tooltip" id="toggleSharedAchievementsOption" data-tooltip="Lie ou sépare les succès entre tous les profils."></button></div>
+              <div class="option-row"><div><strong>Succès du compte</strong><small>Les succès sont liés au compte et communs à tous les profils.</small></div><span class="option-static-pill">Compte</span></div>
             </div>
             <div class="options-note">Ces options ne changent pas les donjons du profil : elles ne concernent que les réglages, la galerie et les succès.</div>
           </section>
@@ -15058,7 +15058,7 @@ body.no-anim .modal-bg.show .modal{animation:none!important}
     <div class="modal-head"><div><h2><img class="modal-title-icon" src="./assets/icone/succes.png" alt=""><span>Succès</span></h2><p>Suivez les objectifs débloqués et les défis restants.</p></div><button class="btn btn-red modal-close" data-close="achievementsModal">✕</button></div>
     <div class="modal-body">
       <div class="achievements-shell">
-        <div class="achievement-summary"><span id="achievementProgressText">Chargement...</span><div class="toolbar"><label class="gallery-shared-toggle"><input id="achievementSharedToggle" type="checkbox"> Succès partagés</label><button class="btn btn-gray achievement-secret-gate" id="unlockSecretAchievements" type="button">Œuf scellé</button><button class="btn btn-red" id="resetAchievements" type="button">Reset succès</button></div></div>
+        <div class="achievement-summary"><span id="achievementProgressText">Chargement...</span><div class="toolbar"><span class="gallery-shared-toggle achievement-account-mode">Succès du compte</span><button class="btn btn-gray achievement-secret-gate" id="unlockSecretAchievements" type="button">Œuf scellé</button><button class="btn btn-red" id="resetAchievements" type="button">Reset succès</button></div></div>
         <div class="options-note">Les catégories secrètes restent masquées jusqu'à la découverte de l'œuf caché.</div>
         <div class="achievement-cats" id="achievementCategories"></div>
         <div class="achievement-list" id="achievementList"></div>
@@ -15628,6 +15628,7 @@ function authRender(){
     return;
   }
   const user=authState.user;
+  unlockAchievement("create_account");
   const pendingFriends=socialState.incoming+socialState.outgoing;
   const friendsBadge=pendingFriends>0 ? `<span class="auth-friends-badge combined">${Math.min(99,pendingFriends)}</span>` : "";
   const socialMenuBadge=pendingFriends>0 ? `<span class="auth-notification-badge">${Math.min(99,pendingFriends)}</span>` : "";
@@ -15638,7 +15639,7 @@ function authRender(){
   const moderationButton=["moderator","admin"].includes(user.role) ? socialAssetButton({id:"authModerationOverview",asset:"moderation.png",title:"Modération",description:"Ouvrir les signalements, sanctions et journaux de modération."}) : "";
   const adminButton=["moderator","admin"].includes(user.role) ? socialAssetButton({id:"authAdminPanel",asset:"admin.png",title:"Centre de contrôle",description:"Ouvrir les outils autorisés pour votre rôle."}) : "";
   box.innerHTML='<button class="auth-user-chip account-open tooltip" id="accountProfileOpen" type="button" data-tooltip="Ouvrir le profil utilisateur"><strong>'+escapeHtml(user.pseudo)+'</strong><span>'+authRoleLabel(user.role)+'</span></button><button class="btn btn-green auth-icon-btn tooltip '+(chatState.mentionUnread?'has-notification':'')+'" id="authChatboxPanel" type="button" aria-label="Chat global" data-tooltip="Chat global'+(chatState.mentionUnread?' · '+chatState.mentionUnread+' mention(s) non lue(s)':'')+'">💬'+chatBadge+'</button><button class="btn btn-blue auth-icon-btn tooltip '+(messageState.unread?'has-notification':'')+'" id="authDirectMessages" type="button" aria-label="Messages privés" data-tooltip="Messages privés'+(messageState.unread?' · '+messageState.unread+' nouveau(x)':'')+'">✉'+directBadge+'</button><button class="btn btn-blue auth-icon-btn tooltip '+(pendingFriends?'has-notification':'')+'" id="authSocialMenu" type="button" aria-label="Menu social" data-tooltip="Menu social'+(pendingFriends?' · '+pendingFriends+' demande(s) en attente':'')+'">☰'+socialMenuBadge+'</button><div class="auth-menu-panel" id="authMenuPanel">'+memberButton+friendsButton+moderationButton+adminButton+'<button class="btn btn-gray auth-danger-btn" id="authLogout" type="button">Déconnexion</button></div>';
-  if($("#accountProfileOpen"))$("#accountProfileOpen").onclick=openAccountProfile;
+  if($("#accountProfileOpen"))$("#accountProfileOpen").onclick=()=>{unlockAchievement("open_user_profile");openAccountProfile()};
   if($("#authCommunitySearch"))$("#authCommunitySearch").onclick=openCommunityDirectory;
   if($("#authFriendsPanel"))$("#authFriendsPanel").onclick=openFriendsPanel;
   if($("#authChatboxPanel"))$("#authChatboxPanel").onclick=openChatboxPanel;
@@ -17445,6 +17446,7 @@ async function sendPrivateMessage(event){
   if(!pseudo || !body)return;
   try{
     await authFetch(`/social/messages/${encodeURIComponent(pseudo)}`,{method:"POST",body:JSON.stringify({body})});
+    unlockAchievement("private_message");
     if(input)input.value="";
     await loadMessagesList();
     await loadMessageThread(pseudo);
@@ -17706,6 +17708,7 @@ async function sendChatMessage(event){
   if(!body)return;
   try{
     await authFetch("/social/chat",{method:"POST",body:JSON.stringify({body,type:"message"})});
+    unlockAchievement("global_chat_message");
     if(input)input.value="";
     await loadChatbox({silent:true,forceBottom:true});
   }catch(error){
@@ -17811,6 +17814,7 @@ async function openCommunityProfileByPseudo(pseudo,{updateUrl=false}={}){
   try{
     const result=await authFetch(`/community/users/${encodeURIComponent(clean)}`);
     renderCommunityProfile(result.profile);
+    unlockAchievement("open_user_profile");
     if(updateUrl){
       const url=communityProfileUrl(result.profile?.pseudo||clean);
       history.replaceState(null,"",url);
@@ -17827,6 +17831,7 @@ async function openCommunityProfilePreview(){
 }
 
 function openCommunityDirectory(){
+  unlockAchievement("search_member");
   openModal("communityDirectoryModal");
   loadCommunityDirectoryOnline();
   setTimeout(()=>$("#communitySearchInput")?.focus(),60);
@@ -17902,6 +17907,7 @@ function renderCommunitySearchResults(users,query=""){
 
 let communitySearchTimer=null;
 async function runCommunitySearch(){
+  unlockAchievement("search_member");
   const input=$("#communitySearchInput");
   const query=(input?.value||"").trim();
   if(query.length<2){
@@ -23039,7 +23045,7 @@ function ensureData(){
 }
 
 function makeStore(){
-  return {active:null,needsFamiliarChoice:true,galleryShared:true,sharedGallery:defaultData().gallery,optionsShared:false,sharedSettings:defaultData().settings,achievementsShared:false,sharedAchievements:defaultData().achievements,deletedProfiles:{},profiles:{}};
+  return {active:null,needsFamiliarChoice:true,galleryShared:true,sharedGallery:defaultData().gallery,optionsShared:false,sharedSettings:defaultData().settings,achievementsShared:true,achievementAccountMode:1,sharedAchievements:defaultData().achievements,deletedProfiles:{},profiles:{}};
 }
 
 function hasActiveProfile(){
@@ -23150,9 +23156,17 @@ function ensureStoreOptionsSharing(){
 
 function ensureStoreAchievementSharing(){
   if(!store)return;
-  if(store.achievementsShared===undefined)store.achievementsShared=false;
-  const activeAchievements=store.profiles?.[store.active]?.data?.achievements || data?.achievements || defaultData().achievements;
-  store.sharedAchievements=normalizeAchievements(store.sharedAchievements || activeAchievements);
+  const needsMigration=store.achievementAccountMode!==1;
+  let accountAchievements=normalizeAchievements(store.sharedAchievements || data?.achievements || defaultData().achievements);
+  if(needsMigration){
+    Object.values(store.profiles||{}).forEach(profile=>{
+      if(profile?.data?.achievements)accountAchievements=mergeAchievements(accountAchievements,profile.data.achievements);
+    });
+    if(data?.achievements)accountAchievements=mergeAchievements(accountAchievements,data.achievements);
+    store.achievementAccountMode=1;
+  }
+  store.sharedAchievements=accountAchievements;
+  store.achievementsShared=true;
 }
 
 function applySharedSettingsToData(){
@@ -23164,9 +23178,7 @@ function applySharedSettingsToData(){
 
 function applySharedAchievementsToData(){
   ensureStoreAchievementSharing();
-  if(store?.achievementsShared){
-    data.achievements=normalizeAchievements(store.sharedAchievements);
-  }
+  if(store)data.achievements=normalizeAchievements(store.sharedAchievements);
 }
 
 function syncSharedSettingsFromData(){
@@ -23180,8 +23192,9 @@ function syncSharedSettingsFromData(){
 
 function syncSharedAchievementsFromData(){
   ensureStoreAchievementSharing();
-  if(!store?.achievementsShared)return;
+  if(!store)return;
   store.sharedAchievements=normalizeAchievements(data.achievements);
+  store.achievementsShared=true;
   Object.values(store.profiles||{}).forEach(profile=>{
     if(profile?.data)profile.data.achievements=clone(store.sharedAchievements);
   });
@@ -23288,7 +23301,7 @@ function save(){
     }
     const savedData=clone(data);
     if(store.optionsShared)savedData.settings=clone(store.sharedSettings);
-    if(store.achievementsShared)savedData.achievements=clone(store.sharedAchievements);
+    savedData.achievements=clone(store.sharedAchievements||data.achievements);
     if(savedData.ui)savedData.ui.capyMode=false;
     store.profiles[activeProfile].data=savedData;
     store.updatedAt=new Date().toISOString();
@@ -23663,6 +23676,7 @@ async function dofusOpenConfig(farm){
     dofusState.configZone=data.dofusDetection.refs[farm]?.zone||null;
     await dofusDrawConfigCanvas();
   }
+  unlockAchievement("configure_dofus_detection");
   openModal("dofusConfigModal");
 }
 
@@ -23880,6 +23894,8 @@ function galleryEventGroups(){
 
 function showGalleryTab(tab="archives"){
   const selected=["archives","events","settings"].includes(tab)?tab:"archives";
+  if(selected==="archives" && (activeGallery()?.completedPykurs||[]).length)unlockAchievement("view_archive");
+  if(selected==="events")unlockAchievement("view_event_collection");
   $$('[data-gallery-panel]').forEach(panel=>panel.classList.toggle("hidden",panel.dataset.galleryPanel!==selected));
   $$('[data-gallery-tab]').forEach(button=>{
     const active=button.dataset.galleryTab===selected;
@@ -24151,6 +24167,7 @@ async function archiveAndRestartPykur(){
   applySettings();
   renderAll();
   renderGallery();
+  unlockAchievement("restart_after_completion");
   toast(archived?`${activeFamiliar().shortLabel} #${archived.number} archivé. Nouvelle aventure lancée.`:"Nouvelle aventure lancée.","success","unlock");
   if(archived)shareCommunityMilestone("familiar",{number:archived.number,title:archived.title,pp:archived.pp,progressLabel:archived.progressLabel,familiarId:archived.familiarId,familiarLabel:archived.familiarLabel,method:archived.method,createdAt:archived.createdAt,finishedAt:archived.finishedAt});
 }
@@ -24286,6 +24303,7 @@ function renderGallery(){
 
 function replayGalleryEvent(id){
   if(!activeGallery()?.eventsDiscovered?.[id])return toast("Evenement non decouvert.","warning","warning");
+  unlockAchievement("replay_gallery_event");
   livingStart(id,{admin:true,replay:true});
 }
 
@@ -24356,33 +24374,6 @@ function setSharedOptions(enabled){
 
 function toggleSharedOptions(){
   setSharedOptions(!store?.optionsShared);
-}
-
-function setSharedAchievements(enabled){
-  ensureStoreAchievementSharing();
-  const wasShared=!!store.achievementsShared;
-  store.achievementsShared=!!enabled;
-  if(store.achievementsShared){
-    let merged=normalizeAchievements(store.sharedAchievements);
-    Object.values(store.profiles||{}).forEach(profile=>{
-      if(profile?.data?.achievements)merged=mergeAchievements(merged,profile.data.achievements);
-    });
-    merged=mergeAchievements(merged,data.achievements);
-    store.sharedAchievements=merged;
-    data.achievements=normalizeAchievements(store.sharedAchievements);
-    syncSharedAchievementsFromData();
-  }else if(wasShared){
-    data.achievements=normalizeAchievements(data.achievements);
-  }
-  save();
-  renderAchievements();
-  applySettings();
-  toast(store.achievementsShared?"Succès partagés entre profils.":"Succès propres à chaque profil.","info","click");
-}
-
-function toggleSharedAchievements(event){
-  const enabled=event?.target?.type==="checkbox" ? !!event.target.checked : !store?.achievementsShared;
-  setSharedAchievements(enabled);
 }
 
 function formatDateShort(value){
@@ -24475,7 +24466,7 @@ function createSafetyBackup(reason="import"){
   }
 }
 
-let activeAchievementCategory="PROGRESSION PYKUR";
+let activeAchievementCategory="PREMIERS PAS";
 let achievementNotificationMuted=false;
 let secretGateClicks=0;
 let adminAchievementSounds=false;
@@ -24494,11 +24485,7 @@ function achievementList({mainOnly=false,includeFinal=true}={}){
 }
 
 function achievementAppliesToActiveFamiliar(achievement){
-  if(!achievement)return false;
-  if(SECRET_COMPLETION_CATEGORIES.includes(achievement.category))return true;
-  if(achievement.category==="TRACKER & UTILISATION")return true;
-  const familiarId=achievement.familiarId || "pykur";
-  return normalizeFamiliarId(familiarId)===activeFamiliarId();
+  return !!achievement;
 }
 
 function isSecretFinalAchievement(id){
@@ -24759,6 +24746,77 @@ function tickSecretGateOld(){
   unlockSecretCategories();
 }
 
+function accountProfileEntries(){
+  return Object.values(store?.profiles||{}).filter(profile=>profile?.data);
+}
+
+function accountFamiliarProgress(profileData){
+  const familiarId=normalizeFamiliarId(profileData?.familiarId||"pykur");
+  const familiar=FAMILIARS[familiarId]||FAMILIARS.pykur;
+  const runtime=familiarRuntime(familiarId);
+  const mobsBySource=profileData?.mobs||{};
+  let value=0;
+  Object.entries(runtime.mobs||{}).forEach(([mobId,mob])=>{
+    const need=parseInt(mob?.ppNeed,10)||0;
+    if(!need || mob?.noProgress)return;
+    const total=Object.values(mobsBySource).reduce((sum,source)=>sum+(parseInt(source?.[mobId],10)||0),0);
+    const gainValue=Math.max(1,parseInt(mob?.gainValue,10)||1);
+    value+=Math.floor(total/need)*gainValue;
+  });
+  return Math.min(value,parseInt(familiar?.objectiveMax,10)||90);
+}
+
+function sumNumericDeep(value){
+  if(typeof value==="number")return Number.isFinite(value)?value:0;
+  if(!value || typeof value!=="object")return 0;
+  return Object.values(value).reduce((sum,item)=>sum+sumNumericDeep(item),0);
+}
+
+function accountAchievementStats(){
+  const profiles=accountProfileEntries();
+  const gallery=activeGallery();
+  const archives=Array.isArray(gallery?.completedPykurs)?gallery.completedPykurs:[];
+  const profileProgress=profiles.map(profile=>{
+    const familiarId=normalizeFamiliarId(profile.data?.familiarId||"pykur");
+    const familiar=FAMILIARS[familiarId]||FAMILIARS.pykur;
+    const progress=accountFamiliarProgress(profile.data);
+    const max=parseInt(familiar?.objectiveMax,10)||90;
+    return {profile,familiarId,familiar,progress,max,ratio:max?progress/max:0};
+  });
+  const totalRuns=profiles.reduce((sum,profile)=>sum+sumNumericDeep(profile.data?.runs||{}),0);
+  const distinctDungeons=new Set();
+  const farmMethods=new Set();
+  profiles.forEach(profile=>{
+    const familiarId=normalizeFamiliarId(profile.data?.familiarId||"pykur");
+    Object.entries(profile.data?.runs||{}).forEach(([key,value])=>{
+      if((parseInt(value,10)||0)>0){
+        distinctDungeons.add(key);
+        farmMethods.add(familiarId+":"+key);
+      }
+    });
+  });
+  const totalMonsters=profiles.reduce((sum,profile)=>sum+sumNumericDeep(profile.data?.mobs||{}),0);
+  const progressed=profileProgress.filter(item=>item.progress>0);
+  const progressedFamilies=new Set(progressed.map(item=>item.familiarId));
+  const progressedBonuses=new Set(progressed.map(item=>String(item.familiar?.progressShort||item.familiar?.progressLabel||"").toLowerCase()).filter(Boolean));
+  const activeDays=new Set();
+  let dailyMax=0;
+  profiles.forEach(profile=>{
+    const days=profile.data?.stats?.days||{};
+    Object.entries(days).forEach(([day,details])=>{
+      activeDays.add(day);
+      dailyMax=Math.max(dailyMax,sumNumericDeep(details?.runs||details));
+    });
+  });
+  return {profileCount:profiles.length,archivesCount:archives.length,maxProgressRatio:profileProgress.reduce((max,item)=>Math.max(max,item.ratio),0),totalRuns,distinctDungeons:distinctDungeons.size,farmMethods:farmMethods.size,totalMonsters,progressedFamilies:progressedFamilies.size,progressedBonuses:progressedBonuses.size,activeDays:activeDays.size,dailyMax};
+}
+
+function checkThresholds(value,pairs){
+  pairs.forEach(([threshold,id])=>{
+    if(value>=threshold)unlockAchievement(id);
+  });
+}
+
 async function resetAchievements(){
   if(!await showConfirm("Remettre tous les succès à zéro ? Les catégories secrètes seront à nouveau masquées.",{title:"Reset succès",danger:true,okLabel:"Reset"}))return;
   const eggCollected=!!data.achievements?.eggCollected;
@@ -24767,6 +24825,14 @@ async function resetAchievements(){
   data.achievements=clone(defaultData().achievements);
   data.achievements.removedUnlocked=removedUnlocked;
   data.achievements.eggCollected=eggCollected;
+  if(store){
+    store.sharedAchievements=normalizeAchievements(data.achievements);
+    store.achievementAccountMode=1;
+    store.achievementsShared=true;
+    Object.values(store.profiles||{}).forEach(profile=>{
+      if(profile?.data)profile.data.achievements=clone(store.sharedAchievements);
+    });
+  }
   save();
   renderHiddenSecretEgg();
   renderAchievements();
@@ -24776,18 +24842,25 @@ async function resetAchievements(){
 }
 
 function checkProgressAchievements(){
-  if(activeFamiliarId()!=="pykur")return;
-  const pp=currentPP();
-  if(pp>=1)unlockAchievement("first_pp");
-  if(pp>=30)unlockAchievement("growth");
-  if(pp>=45)unlockAchievement("half_awaken");
-  if(pp>=60)unlockAchievement("mutation");
-  if(pp>=90)unlockAchievement("full_awaken");
+  const stats=accountAchievementStats();
+  if(stats.profileCount>=1)unlockAchievement("create_profile");
+  if(stats.maxProgressRatio>=0.10)unlockAchievement("progress_10");
+  if(stats.maxProgressRatio>=0.50)unlockAchievement("progress_50");
+  if(stats.maxProgressRatio>=0.90)unlockAchievement("progress_90");
+  checkThresholds(stats.archivesCount,[[1,"complete_1"],[2,"complete_2"],[5,"complete_5"],[10,"complete_10"],[20,"complete_20"],[1,"archive_1"],[3,"archive_3"],[10,"archive_10"]]);
+  checkThresholds(stats.progressedFamilies,[[2,"familiar_variety_2"],[5,"familiar_variety_5"]]);
+  if(stats.profileCount>=5)unlockAchievement("profiles_5");
+  checkThresholds(stats.progressedBonuses,[[3,"bonus_variety_3"],[5,"bonus_variety_5"]]);
+  if(stats.farmMethods>=3)unlockAchievement("farm_methods_3");
+  checkThresholds(stats.totalMonsters,[[1,"monster_1"],[100,"monster_100"],[1000,"monster_1000"],[5000,"monster_5000"],[10000,"monster_10000"]]);
+  checkThresholds(stats.activeDays,[[2,"active_2_days"],[7,"active_7_days"],[30,"active_30_days"]]);
+  checkThresholds(stats.dailyMax,[[10,"daily_runs_10"],[25,"daily_runs_25"],[50,"daily_runs_50"]]);
 }
 
 function checkDungeonAchievements(){
-  if(activeFamiliarId()!=="pykur")return;
-  if((data.runs?.morose||0)>=320 || (data.runs?.tynril||0)>=24)unlockAchievement("halfway_dungeons");
+  const stats=accountAchievementStats();
+  checkThresholds(stats.totalRuns,[[1,"dungeon_1"],[10,"dungeon_10"],[50,"dungeon_50"],[100,"dungeon_100"],[250,"dungeon_250"],[500,"dungeon_500"]]);
+  checkThresholds(stats.distinctDungeons,[[3,"dungeon_variety_3"],[5,"dungeon_variety_5"],[10,"dungeon_variety_10"]]);
 }
 
 function visibleAchievementCategories(){
@@ -24808,11 +24881,9 @@ function renderAchievements(){
   if(!cats || !list || !progressText || !data)return;
   ensureAchievements();
   const visible=visibleAchievementCategories();
-  if(!visible.includes(activeAchievementCategory))activeAchievementCategory=visible[0]||"PROGRESSION PYKUR";
+  if(!visible.includes(activeAchievementCategory))activeAchievementCategory=visible[0]||"PREMIERS PAS";
   const mainProgress=getMainAchievementsProgress();
   progressText.textContent=`Progression principale : ${mainProgress.done}/${mainProgress.total}`;
-  const sharedToggle=$("#achievementSharedToggle");
-  if(sharedToggle)sharedToggle.checked=!!store?.achievementsShared;
   const secretBtn=$("#unlockSecretAchievements");
   if(secretBtn){
     secretBtn.textContent=data.achievements.secretCategoriesUnlocked?"Secrets débloqués":"Œuf scellé";
@@ -25589,9 +25660,7 @@ function applySettings(){
   setToggleText("toggleShortcuts",data.settings.shortcutsEnabled);
   setToggleText("toggleSharedOptions",!!store?.optionsShared);
   setToggleText("toggleSharedGalleryOption",store?.galleryShared!==false);
-  setToggleText("toggleSharedAchievementsOption",!!store?.achievementsShared);
   if($("#gallerySharedToggle"))$("#gallerySharedToggle").checked=store?.galleryShared!==false;
-  if($("#achievementSharedToggle"))$("#achievementSharedToggle").checked=!!store?.achievementsShared;
   dofusRefreshOptions();
   if(data.dofusDetection?.enabled)dofusStartLoop();
   else dofusStopLoop();
@@ -25754,9 +25823,9 @@ function runShortcutAction(actionId){
     chronoReset:resetChrono,
     openHistory:openHistoryShortcut,
     openOptions:openOptionsShortcut,
-    openProjection:()=>{unlockAchievement("open_projection");setProjectionView("summary",false);renderProjection();openModal("projectionModal")},
-    openMonsters:()=>{unlockAchievement("open_monsters");renderMonsterTable();openModal("monstersModal")},
-    openGallery:()=>{renderGallery();openModal("galleryModal")},
+    openProjection:()=>{unlockAchievement("open_projection");unlockAchievement("view_time_estimate");setProjectionView("summary",false);renderProjection();openModal("projectionModal")},
+    openMonsters:()=>{unlockAchievement("open_monsters");unlockAchievement("open_monster_threshold");renderMonsterTable();openModal("monstersModal")},
+    openGallery:()=>{unlockAchievement("open_gallery");renderGallery();openModal("galleryModal")},
     toggleSound:()=>{setGlobalSound(!data.settings.sound);playSound("click")},
     toggleNight:toggleNightShortcut,
     toggleDofusDetection:toggleDofusDetectionShortcut,
@@ -26139,10 +26208,7 @@ function addRun(delta){
   syncTodayPPGain();
   notifyPPProgress(oldPP,newPP);
   if(delta>0){
-    if(activeFamiliarId()==="pykur")unlockAchievement(farm==="morose"?"first_morose":"first_tynril");
-    const sessionRuns=data.session?.active ? activeFarmKeys().reduce((sum,key)=>sum+(data.session.runs?.[key]||0),0) : 0;
-    if(sessionRuns>=10)unlockAchievement("session_10");
-    if(sessionRuns>=25)unlockAchievement("session_25");
+    unlockAchievement("first_run");
   }
 
   if(ppDelta>0){
@@ -26992,6 +27058,7 @@ async function createProfileFromChoice({initial=false}={}){
   applySharedAchievementsToData();
   syncGlobalSoundSetting();
   ensureData();syncChronoTimerForProfile();save();renderProfiles();renderAll();
+  unlockAchievement("create_profile");
   toast(`Profil ${familiar.label} créé`,"success");
   if(initial)setTimeout(()=>startHelp(),220);
 }
@@ -28258,6 +28325,7 @@ function markTime(options={}){
   addActivity(`${auto?"Run tryhard":"Temps marqué"} ${familiarFarmLabel(farm)} : ${formatChrono(markedSeconds)}`,"success");
 
   data.chrono.lastMarkSeconds=totalSeconds;
+  unlockAchievement("chrono_mark");
   const averageUpdated=data.settings.autoDungeonEstimate
     ? syncAverageFromChronoMarks(farm)
     : false;
@@ -28431,6 +28499,7 @@ async function setAverageTime(farm){
   }
 
   data.stats[key]=average;
+  unlockAchievement("edit_average_time");
 
   addActivity(
     `Temps moyen ${label} réglé : ${averageTimeLabel(average)}`,
@@ -28697,7 +28766,7 @@ $("#undoButton").onclick=undo;
 $("#resetButton").onclick=resetAll;
 
 $("#statsButton").onclick=()=>{unlockAchievement("open_stats");setStatsView("overview",false);renderStats();openModal("statsModal")};
-$("#helpButton").onclick=startHelp;
+$("#helpButton").onclick=()=>{unlockAchievement("open_help");startHelp()};
 $("#helpNext").onclick=nextHelp;
 $("#helpPrev").onclick=prevHelp;
 $("#helpClose").onclick=closeHelp;
@@ -28708,7 +28777,7 @@ if($("#helpNoAuto"))$("#helpNoAuto").onchange=e=>{
 };
 $("#optionsButton").onclick=openOptionsShortcut;
 $("#activityButton").onclick=()=>{unlockAchievement("open_history");if($("#activitySearch"))$("#activitySearch").value=""; activityFilter="all"; $$("[data-activity-filter]").forEach(b=>b.classList.toggle("active",b.dataset.activityFilter==="all")); renderActivity();openModal("activityModal")};
-if($("#monsterLauncher"))$("#monsterLauncher").onclick=()=>{unlockAchievement("open_monsters");renderMonsterTable();openModal("monstersModal")};
+if($("#monsterLauncher"))$("#monsterLauncher").onclick=()=>{unlockAchievement("open_monsters");unlockAchievement("open_monster_threshold");renderMonsterTable();openModal("monstersModal")};
 const CHANGELOG_ENTRIES={
   "1.6":{
     title:"Version 1.6",
@@ -28803,7 +28872,7 @@ function renderChangelog(version="1.6"){
 
 if($("#changelogButton"))$("#changelogButton").onclick=()=>{renderChangelog("1.6");openModal("changelogModal")};
 if($("#achievementsButton"))$("#achievementsButton").onclick=()=>{renderAchievements();openModal("achievementsModal")};
-if($("#galleryButton"))$("#galleryButton").onclick=()=>{renderGallery();showGalleryTab("archives");openModal("galleryModal")};
+if($("#galleryButton"))$("#galleryButton").onclick=()=>{unlockAchievement("open_gallery");renderGallery();showGalleryTab("archives");openModal("galleryModal")};
 if($("#resetGallery"))$("#resetGallery").onclick=resetGallery;
 if($("#gallerySharedToggle"))$("#gallerySharedToggle").onchange=toggleSharedGallery;
 if($("#openGalleryEvents"))$("#openGalleryEvents").onclick=()=>showGalleryEvents(true);
@@ -28813,8 +28882,6 @@ $$('[data-gallery-tab]').forEach(button=>button.addEventListener("click",()=>sho
 if($("#changelogVersionSelect"))$("#changelogVersionSelect").onchange=event=>renderChangelog(event.target.value);
 if($("#toggleSharedOptions"))$("#toggleSharedOptions").onclick=toggleSharedOptions;
 if($("#toggleSharedGalleryOption"))$("#toggleSharedGalleryOption").onclick=()=>setSharedGallery(!(store?.galleryShared!==false));
-if($("#toggleSharedAchievementsOption"))$("#toggleSharedAchievementsOption").onclick=()=>setSharedAchievements(!store?.achievementsShared);
-if($("#achievementSharedToggle"))$("#achievementSharedToggle").onchange=toggleSharedAchievements;
 if($("#completionArchiveRestart"))$("#completionArchiveRestart").onclick=archiveAndRestartPykur;
 if($("#unlockSecretAchievements"))$("#unlockSecretAchievements").onclick=tickSecretGate;
 if($("#resetAchievements"))$("#resetAchievements").onclick=resetAchievements;
@@ -28901,6 +28968,7 @@ document.addEventListener("click",e=>{
   }
   const projectionTab=e.target.closest("[data-projection-view]");
   if(projectionTab){
+    if(projectionTab.dataset.projectionView==="simulator")unlockAchievement("use_projection_simulator");
     setProjectionView(projectionTab.dataset.projectionView);
     return;
   }
@@ -29036,7 +29104,7 @@ if($("#dofusFamiliarSelect"))$("#dofusFamiliarSelect").onchange=e=>{
   dofusState.selectedFamiliar=normalizeFamiliarId(e.target.value);
   dofusRefreshOptions();
 };
-if($("#testDofusDetection"))$("#testDofusDetection").onclick=dofusTestDetection;
+if($("#testDofusDetection"))$("#testDofusDetection").onclick=()=>{unlockAchievement("test_dofus_detection");dofusTestDetection()};
 if($("#openDofusTutorial"))$("#openDofusTutorial").onclick=()=>openModal("dofusTutorialModal");
 if($("#dofusCooldownInput"))$("#dofusCooldownInput").onchange=e=>{
   const min=dofusCooldownMinimum();
@@ -29133,6 +29201,7 @@ $$("[data-options-tab]").forEach(tabBtn=>{
       filterOptionsSearch();
     }
     const tabName=tabBtn.dataset.optionsTab;
+    if(tabName==="dofusDetection")unlockAchievement("open_dofus_detection");
     $$("[data-options-tab]").forEach(btn=>btn.classList.toggle("active",btn===tabBtn));
     $$("[data-options-panel]").forEach(panel=>panel.classList.toggle("active",panel.dataset.optionsPanel===tabName));
   });
@@ -29287,7 +29356,7 @@ if($("#toggleAutoMark"))$("#toggleAutoMark").onclick=()=>{
   addActivity(data.settings.autoMarkOnPlus?"Run tryhard auto activé":"Run tryhard auto désactivé","info");
 };
 
-if($("#projectionButton"))$("#projectionButton").onclick=()=>{unlockAchievement("open_projection");setProjectionView("summary",false);renderProjection();openModal("projectionModal")};
+if($("#projectionButton"))$("#projectionButton").onclick=()=>{unlockAchievement("open_projection");unlockAchievement("view_time_estimate");setProjectionView("summary",false);renderProjection();openModal("projectionModal")};
 applyHelpfulTooltips();
 load();
 authRefresh();

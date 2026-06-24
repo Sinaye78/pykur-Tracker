@@ -946,9 +946,7 @@ function buildCommunityProfile(user, savePayload, options = {}) {
     .map((entry, index) => publicProfileSummary(entry, index, activeId, preferences));
   const sharedGallery = store.galleryShared !== false ? store.sharedGallery : null;
   const gallerySource = sharedGallery || profileEntries.find((entry) => entry.id === activeId)?.data?.gallery || null;
-  const achievementSource = store.achievementsShared
-    ? store.sharedAchievements
-    : profileEntries.find((entry) => entry.id === activeId)?.data?.achievements;
+  const achievementSource = store.sharedAchievements || profileEntries.find((entry) => entry.id === activeId)?.data?.achievements;
   const unlockedAchievements = Object.entries(achievementSource?.unlocked || {})
     .filter(([, item]) => item)
     .filter(([id]) => !preferences.hideSecretAchievements || !PUBLIC_SECRET_ACHIEVEMENT_IDS.has(id))

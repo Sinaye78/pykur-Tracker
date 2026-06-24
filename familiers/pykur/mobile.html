@@ -1299,7 +1299,7 @@
     function ensureMobileSharedState(){
       if(!store)return;
       if(store.optionsShared===undefined)store.optionsShared=false;
-      if(store.achievementsShared===undefined)store.achievementsShared=false;
+      store.achievementsShared=true;
       store.sharedSettings=normalizeMobileSettings(store.sharedSettings || data?.settings);
       store.sharedAchievements=normalizeMobileAchievements(store.sharedAchievements || data?.achievements);
     }
@@ -1307,7 +1307,7 @@
     function applyMobileSharedState(){
       ensureMobileSharedState();
       if(store?.optionsShared)data.settings=normalizeMobileSettings(store.sharedSettings);
-      if(store?.achievementsShared)data.achievements=normalizeMobileAchievements(store.sharedAchievements);
+      data.achievements=normalizeMobileAchievements(store.sharedAchievements);
     }
 
     function syncMobileSharedState(){
@@ -1316,10 +1316,9 @@
         store.sharedSettings=normalizeMobileSettings(data.settings);
         Object.values(store.profiles||{}).forEach(profile=>{if(profile?.data)profile.data.settings=clone(store.sharedSettings)});
       }
-      if(store?.achievementsShared){
-        store.sharedAchievements=normalizeMobileAchievements(data.achievements);
-        Object.values(store.profiles||{}).forEach(profile=>{if(profile?.data)profile.data.achievements=clone(store.sharedAchievements)});
-      }
+      store.sharedAchievements=normalizeMobileAchievements(data.achievements);
+      store.achievementsShared=true;
+      Object.values(store.profiles||{}).forEach(profile=>{if(profile?.data)profile.data.achievements=clone(store.sharedAchievements)});
     }
 
     function loadMobileData(){
@@ -1346,7 +1345,7 @@
       store.active=activeProfile;
       const savedData=clone(data);
       if(store.optionsShared)savedData.settings=clone(store.sharedSettings);
-      if(store.achievementsShared)savedData.achievements=clone(store.sharedAchievements);
+      savedData.achievements=clone(store.sharedAchievements||data.achievements);
       store.profiles[activeProfile].data=savedData;
       syncMobileSharedState();
       if(write)localStorage.setItem(STORE_KEY,JSON.stringify(store));
@@ -1403,7 +1402,7 @@
       setTimeout(()=>node.remove(),1800);
     }
 
-    let activeAchievementCategory="PROGRESSION PYKUR";
+    let activeAchievementCategory="PREMIERS PAS";
     let achievementNotificationMuted=false;
     let secretGateClicks=0;
     const MOBILE_HIDDEN_ACHIEVEMENTS=["master_secrets","true_100"];
@@ -1576,16 +1575,12 @@
 
     function checkProgressAchievements(){
       const pp=currentPP();
-      if(pp>=1)unlockAchievement("first_pp");
-      if(pp>=30)unlockAchievement("growth");
-      if(pp>=45)unlockAchievement("half_awaken");
-      if(pp>=60)unlockAchievement("mutation");
-      if(pp>=90)unlockAchievement("full_awaken");
+      if(pp>=1)unlockAchievement("progress_10");
+      if(pp>=45)unlockAchievement("progress_50");
+      if(pp>=81)unlockAchievement("progress_90");
     }
 
-    function checkDungeonAchievements(){
-      if((data.runs?.morose||0)>=320 || (data.runs?.tynril||0)>=24)unlockAchievement("halfway_dungeons");
-    }
+    function checkDungeonAchievements(){}
 
     function visibleAchievementCategories(){
       ensureAchievements();
@@ -1603,7 +1598,7 @@
       if(!cats || !list || !progressEl || !data)return;
       ensureAchievements();
       const visible=visibleAchievementCategories();
-      if(!visible.includes(activeAchievementCategory))activeAchievementCategory=visible[0]||"PROGRESSION PYKUR";
+      if(!visible.includes(activeAchievementCategory))activeAchievementCategory=visible[0]||"PREMIERS PAS";
       const progress=getMainAchievementsProgress();
       progressEl.textContent=`Progression : ${progress.done}/${progress.total}`;
       const secretBtn=$("#mobileUnlockSecretAchievements");
@@ -1745,10 +1740,7 @@
       addDailyRun(farm,delta,newPP-oldPP);
       addActivity(`${delta>0?"+1":"-1"} donjon ${farmLabel(farm)}`,delta>0?"success":"warning");
       if(delta>0){
-        unlockAchievement(farm==="morose"?"first_morose":"first_tynril");
-        const sessionRuns=data.session?.active ? (data.session.runs?.morose||0)+(data.session.runs?.tynril||0) : 0;
-        if(sessionRuns>=10)unlockAchievement("session_10");
-        if(sessionRuns>=25)unlockAchievement("session_25");
+        unlockAchievement("first_run");
       }
       saveMobileData();
       syncFromEngine();
