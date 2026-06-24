@@ -463,7 +463,7 @@ const FAMILIARS={
     status:"active",
     statusLabel:"",
     description:"Suivi de puissance sur les labyrinthes du Minotoror et du Minotot.",
-    estimateNote:"Les monstres du labyrinthe peuvent varier selon les runs. Les projections affichent un minimum estime : vous terminerez souvent le familier avant l'objectif annonce.",
+    estimateNote:"Les monstres du labyrinthe ne sont pas identiques a chaque run. Le suivi Miniminotot n'est donc pas fiable a 100% : les donjons et temps restants affichent un minimum estime, et vous terminerez souvent le familier avant la projection.",
     bonusAmount:55,
     difficultyLabel:"Dur",
     difficultyStars:3,
