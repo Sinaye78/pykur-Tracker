@@ -10,6 +10,8 @@ const FLIBALAK_OBJECTIVE_MAX=11;
 const CROUM_OBJECTIVE_MAX=90;
 const VITALITY_OBJECTIVE_MAX=165;
 const GLOUTON_OBJECTIVE_MAX=1100;
+const CHERCHEUR_OGRINES_OBJECTIVE_MAX=55;
+const CHERCHEUR_OGRINES_RUN_LIMITS={grotteHesque:9999};
 const CHENAPANDI_OBJECTIVE_MAX=440;
 const CHENAPANDI_RUN_LIMITS={repaireDesPandikazes:9999};
 const PYKUR_RUN_LIMITS={morose:640,tynril:48};
@@ -501,6 +503,34 @@ const FAMILIARS={
       {key:"repaireDesPandikazes",label:"Pandikaze",fullLabel:"Repaire des Pandikazes",asset:"../chenapandi/donjon/maitre-pandore.png",defaultAverage:900}
     ]
   }
+,
+  "chercheur-d-ogrines":{
+    id:"chercheur-d-ogrines",
+    label:"Chercheur d'Ogrines",
+    shortLabel:"Chercheur d'Ogrines",
+    defaultProfileName:"Chercheur d'Ogrines principal",
+    progressLabel:"Puissance",
+    progressShort:"puissance",
+    objectiveMax:CHERCHEUR_OGRINES_OBJECTIVE_MAX,
+    objectiveLabel:"55 puissance",
+    icon:"../chercheur-d-ogrines/puissance.png",
+    logo:"../chercheur-d-ogrines/chercheur-d-ogrines.png",
+    image:"../chercheur-d-ogrines/chercheur-d-ogrines.png",
+    auraImage:"../chercheur-d-ogrines/chercheur-d-ogrines-aura.png",
+    sleepingImage:"../chercheur-d-ogrines/chercheur-d-ogrines-z.png",
+    background:"../chercheur-d-ogrines/fond/fond.png",
+    status:"active",
+    statusLabel:"",
+    description:"Suivi de puissance sur la Grotte Hesque.",
+    bonusAmount:55,
+    difficultyLabel:"Facile",
+    difficultyStars:1,
+    dofusCooldownMin:10,
+    farmMethods:["Grotte Hesque"],
+    dungeons:[
+      {key:"grotteHesque",label:"Grotte Hesque",fullLabel:"Grotte Hesque",asset:"../chercheur-d-ogrines/donjon/corailleur-magistral.png",defaultAverage:390}
+    ]
+  }
 
 };
 
@@ -726,6 +756,19 @@ const CHENAPANDI_MOBS={
   pandikaze:{name:"Pandikaze",imgPath:"../chenapandi/monstre/pandikaze.png",ppNeed:30,cat:["repaireDesPandikazes","zone"]}
 };
 
+const CHERCHEUR_OGRINES_MOBS={
+  corailleurMagistral:{name:"Corailleur Magistral",imgPath:"../chercheur-d-ogrines/monstre/corailleur-magistral.png",ppNeed:5,cat:["grotteHesque"]},
+  corailleur:{name:"Corailleur",imgPath:"../chercheur-d-ogrines/monstre/corailleur.png",ppNeed:100,cat:["grotteHesque","zone"]},
+  palmifleurMorito:{name:"Palmifleur Morito",imgPath:"../chercheur-d-ogrines/monstre/palmifleur-morito.png",ppNeed:100,cat:["grotteHesque","zone"]},
+  palmifleurPassaoh:{name:"Palmifleur Passaoh",imgPath:"../chercheur-d-ogrines/monstre/palmifleur-passaoh.png",ppNeed:100,cat:["grotteHesque","zone"]},
+  palmifleurMalibout:{name:"Palmifleur Malibout",imgPath:"../chercheur-d-ogrines/monstre/palmifleur-malibout.png",ppNeed:100,cat:["grotteHesque","zone"]},
+  palmifleurKouracao:{name:"Palmifleur Koura\u00e7ao",imgPath:"../chercheur-d-ogrines/monstre/palmifleur-kouracao.png",ppNeed:100,cat:["grotteHesque","zone"]},
+  crustorailMorito:{name:"Crustorail Morito",imgPath:"../chercheur-d-ogrines/monstre/crustorail-morito.png",ppNeed:150,cat:["grotteHesque","zone"]},
+  crustorailPassaoh:{name:"Crustorail Passaoh",imgPath:"../chercheur-d-ogrines/monstre/crustorail-passaoh.png",ppNeed:150,cat:["grotteHesque","zone"]},
+  crustorailMalibout:{name:"Crustorail Malibout",imgPath:"../chercheur-d-ogrines/monstre/crustorail-malibout.png",ppNeed:150,cat:["grotteHesque","zone"]},
+  crustorailKouracao:{name:"Crustorail Koura\u00e7ao",imgPath:"../chercheur-d-ogrines/monstre/crustorail-kouracao.png",ppNeed:150,cat:["grotteHesque","zone"]}
+};
+
 
 const PYKUR_GAINS={
   morose:{chiendent:1,nerbe:1,fecorce:1,abrakleur:1,bitouf:1,floribonde:2},
@@ -919,6 +962,21 @@ const CHENAPANDI_GAINS={
   }
 };
 
+const CHERCHEUR_OGRINES_GAINS={
+  grotteHesque:{
+    corailleurMagistral:1,
+    corailleur:12,
+    palmifleurMorito:4,
+    palmifleurPassaoh:4,
+    palmifleurMalibout:4,
+    palmifleurKouracao:6,
+    crustorailMorito:3,
+    crustorailPassaoh:3,
+    crustorailMalibout:3,
+    crustorailKouracao:4
+  }
+};
+
 const ABRA_SPECIAL_GAINS={
   salleAbrakneSetup:{abraknyde:4,tronknyde:3,abraknydeVenerable:1,abrakne:1}
 };
@@ -938,6 +996,8 @@ const TIWABBIT_ZONE_IDS=Object.keys(TIWABBIT_MOBS).filter(id=>TIWABBIT_MOBS[id].
 const MINIMINOTOT_ZONE_IDS=Object.keys(MINIMINOTOT_MOBS).filter(id=>MINIMINOTOT_MOBS[id].cat.includes("zone"));
 
 const CHENAPANDI_ZONE_IDS=Object.keys(CHENAPANDI_MOBS).filter(id=>CHENAPANDI_MOBS[id].cat.includes("zone"));
+
+const CHERCHEUR_OGRINES_ZONE_IDS=Object.keys(CHERCHEUR_OGRINES_MOBS).filter(id=>CHERCHEUR_OGRINES_MOBS[id].cat.includes("zone"));
 
 const CROUM_RUNTIME={runLimits:CROUM_RUN_LIMITS,mobs:CROUM_MOBS,gains:CROUM_GAINS,zoneIds:CROUM_ZONE_IDS};
 const BOULOUTE_RUNTIME={runLimits:BOULOUTE_RUN_LIMITS,mobs:BOULOUTE_MOBS,gains:BOULOUTE_GAINS,zoneIds:BOULOUTE_ZONE_IDS};
@@ -960,7 +1020,8 @@ const FAMILIAR_RUNTIME={
   glouton:{runLimits:GLOUTON_RUN_LIMITS,mobs:GLOUTON_MOBS,gains:GLOUTON_GAINS,zoneIds:GLOUTON_ZONE_IDS},
   "tiwabbit-kiafin":{runLimits:TIWABBIT_RUN_LIMITS,mobs:TIWABBIT_MOBS,gains:TIWABBIT_GAINS,zoneIds:TIWABBIT_ZONE_IDS},
   miniminotot:{runLimits:MINIMINOTOT_RUN_LIMITS,mobs:MINIMINOTOT_MOBS,gains:MINIMINOTOT_GAINS,zoneIds:MINIMINOTOT_ZONE_IDS},
-  chenapandi:{runLimits:CHENAPANDI_RUN_LIMITS,mobs:CHENAPANDI_MOBS,gains:CHENAPANDI_GAINS,zoneIds:CHENAPANDI_ZONE_IDS}
+  chenapandi:{runLimits:CHENAPANDI_RUN_LIMITS,mobs:CHENAPANDI_MOBS,gains:CHENAPANDI_GAINS,zoneIds:CHENAPANDI_ZONE_IDS},
+  "chercheur-d-ogrines":{runLimits:CHERCHEUR_OGRINES_RUN_LIMITS,mobs:CHERCHEUR_OGRINES_MOBS,gains:CHERCHEUR_OGRINES_GAINS,zoneIds:CHERCHEUR_OGRINES_ZONE_IDS}
 };
 
   window.PYKUR_FAMILIAR_DATA={
@@ -974,6 +1035,7 @@ const FAMILIAR_RUNTIME={
     GLOUTON_OBJECTIVE_MAX,
     MINIMINOTOT_OBJECTIVE_MAX,
     CHENAPANDI_OBJECTIVE_MAX,
+    CHERCHEUR_OGRINES_OBJECTIVE_MAX,
     PYKUR_RUN_LIMITS,
     ABRA_RUN_LIMITS,
     DRAGOUNE_RUN_LIMITS,
@@ -989,6 +1051,7 @@ const FAMILIAR_RUNTIME={
     TIWABBIT_RUN_LIMITS,
     MINIMINOTOT_RUN_LIMITS,
     CHENAPANDI_RUN_LIMITS,
+    CHERCHEUR_OGRINES_RUN_LIMITS,
     FAMILIARS,
     PYKUR_MOBS,
     ABRA_MOBS,
@@ -1005,6 +1068,7 @@ const FAMILIAR_RUNTIME={
     TIWABBIT_MOBS,
     MINIMINOTOT_MOBS,
     CHENAPANDI_MOBS,
+    CHERCHEUR_OGRINES_MOBS,
     PYKUR_GAINS,
     ABRA_GAINS,
     DRAGOUNE_GAINS,
@@ -1021,6 +1085,7 @@ const FAMILIAR_RUNTIME={
     TIWABBIT_GAINS,
     MINIMINOTOT_GAINS,
     CHENAPANDI_GAINS,
+    CHERCHEUR_OGRINES_GAINS,
     ABRA_SPECIAL_GAINS,
     PYKUR_ZONE_IDS,
     ABRA_ZONE_IDS,
@@ -1037,6 +1102,7 @@ const FAMILIAR_RUNTIME={
     TIWABBIT_ZONE_IDS,
     MINIMINOTOT_ZONE_IDS,
     CHENAPANDI_ZONE_IDS,
+    CHERCHEUR_OGRINES_ZONE_IDS,
     FAMILIAR_RUNTIME
   };
 })();
