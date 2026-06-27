@@ -1,7 +1,11 @@
 """Generate lightweight runtime images while keeping source PNG files untouched."""
 
 from pathlib import Path
+import json
+import os
 import re
+import shutil
+import subprocess
 
 from PIL import Image
 
@@ -11,10 +15,10 @@ PYKUR = ROOT / "familiers" / "pykur"
 DATA = PYKUR / "data" / "familiars.js"
 
 
-def save_webp(source: Path, target: Path, max_size=None, quality=82):
+def save_webp(source: Path, target: Path, max_size=None, quality=82, force=False):
     if not source.exists():
         raise FileNotFoundError(source)
-    if target.exists() and target.stat().st_mtime >= source.stat().st_mtime:
+    if not force and target.exists() and target.stat().st_mtime >= source.stat().st_mtime:
         return False
     with Image.open(source) as image:
         image.load()
@@ -29,27 +33,39 @@ def resolve_asset(asset: str) -> Path:
     return (PYKUR / asset).resolve()
 
 
-def catalog_assets():
-    source = DATA.read_text(encoding="utf-8")
-    pattern = re.compile(
-        r'\bid:"(?P<id>[^"]+)"(?P<body>[\s\S]*?)\n\s*dungeons:\[',
-        re.MULTILINE,
+def load_familiars():
+    node = os.environ.get("NODE_BINARY") or shutil.which("node")
+    if not node:
+        raise RuntimeError("Node.js est requis pour lire le registre des familiers.")
+    script = (
+        "global.window={};"
+        f"require({json.dumps(str(DATA))});"
+        "process.stdout.write(JSON.stringify(window.PYKUR_FAMILIAR_DATA.FAMILIARS));"
     )
+    result = subprocess.run(
+        [node, "-e", script],
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    return json.loads(result.stdout)
+
+
+def catalog_assets():
     output = PYKUR / "assets" / "optimized" / "catalog"
     count = 0
-    for match in pattern.finditer(source):
-        familiar_id = match.group("id")
-        body = match.group("body")
-        logo = re.search(r'\blogo:"([^"]+)"', body)
-        icon = re.search(r'\bicon:"([^"]+)"', body)
+    for familiar_id, familiar in load_familiars().items():
+        logo = familiar.get("logo") or familiar.get("image")
+        icon = familiar.get("icon")
         if not logo or not icon:
             continue
-        logo_source = resolve_asset(logo.group(1))
-        icon_source = resolve_asset(icon.group(1))
+        logo_source = resolve_asset(logo)
+        icon_source = resolve_asset(icon)
         if not logo_source.exists() or not icon_source.exists():
             continue
-        save_webp(logo_source, output / f"{familiar_id}.webp", (240, 240), 84)
-        save_webp(icon_source, output / f"{familiar_id}-icon.webp", (72, 72), 86)
+        save_webp(logo_source, output / f"{familiar_id}.webp", (240, 240), 84, force=True)
+        save_webp(icon_source, output / f"{familiar_id}-icon.webp", (72, 72), 86, force=True)
         count += 1
     return count
 
