@@ -237,6 +237,10 @@ let editingKeybind=null;
 const CAPY_IMAGE_SRC="./assets/images/capy.png";
 const PYKUR_IMAGE_SRC="./assets/images/pykur.png";
 const AURAPYKUR_IMAGE_SRC="./assets/images/aurapykur.png";
+const OPTIMIZED_CATALOG_VERSION="20260627-2";
+function optimizedCatalogAsset(familiarId,suffix=""){
+  return `./assets/optimized/catalog/${familiarId}${suffix}.webp?v=${OPTIMIZED_CATALOG_VERSION}`;
+}
 function assetPath(src){
   if(!src || typeof src!=="string")return src;
   if(/^(data:|blob:|https?:\/\/)/i.test(src))return src;
@@ -4552,7 +4556,7 @@ function toggleBrakoEasterEgg(){
 function getPykurImageSrc(pp=currentPP()){
   const familiar=activeFamiliar();
   if(pp >= activeProgressMax())return familiar.auraImage||AURAPYKUR_IMAGE_SRC;
-  return `./assets/optimized/catalog/${familiar.id}.webp`;
+  return optimizedCatalogAsset(familiar.id);
 }
 
 function setPykurImageSafely(src,alt){
@@ -11529,7 +11533,7 @@ function renderFamiliarContext(){
       ppIcon.onerror=null;
       ppIcon.src=assetPath(familiar.icon||"./assets/images/prospection.png");
     };
-    ppIcon.src=`./assets/optimized/catalog/${familiar.id}-icon.webp`;
+    ppIcon.src=optimizedCatalogAsset(familiar.id,"-icon");
   }
   const quickLabel=$(".quick-projection-label");
   if(quickLabel)quickLabel.textContent=`Prochaine ${unit}`;
@@ -11798,8 +11802,8 @@ async function chooseFamiliarForProfile(defaultId="pykur"){
     <label class="familiar-choice-card ${familiar.id===selected?"selected":""}" data-familiar-card data-card-index="${index}" data-search="${escapeHtml(search)}">
       <input type="radio" name="newProfileFamiliar" value="${familiar.id}" ${familiar.id===selected?"checked":""}>
       <span class="familiar-choice-portrait">
-        <img class="familiar-choice-art" data-src="./assets/optimized/catalog/${familiar.id}.webp" data-fallback="${assetPath(familiar.logo||familiar.image)}" alt="" decoding="async">
-        <span class="familiar-choice-bonus"><img data-src="./assets/optimized/catalog/${familiar.id}-icon.webp" data-fallback="${assetPath(familiar.icon)}" alt="" decoding="async"> ${familiar.bonusAmount||familiar.objectiveMax} ${escapeHtml(familiar.progressShort)}</span>
+        <img class="familiar-choice-art" data-src="${optimizedCatalogAsset(familiar.id)}" data-fallback="${assetPath(familiar.logo||familiar.image)}" alt="" decoding="async">
+        <span class="familiar-choice-bonus"><img data-src="${optimizedCatalogAsset(familiar.id,"-icon")}" data-fallback="${assetPath(familiar.icon)}" alt="" decoding="async"> ${familiar.bonusAmount||familiar.objectiveMax} ${escapeHtml(familiar.progressShort)}</span>
       </span>
       <span class="familiar-choice-content">
         <strong>${escapeHtml(familiar.label)}</strong>
