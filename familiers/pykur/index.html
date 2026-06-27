@@ -26,7 +26,7 @@
 </head>
 <body>
 <div class="toast-wrap" id="toastWrap"></div>
-<div class="smart-tooltip" id="smartTooltip" role="tooltip"></div>
+<div class="smart-tooltip" id="smartTooltip" role="tooltip" aria-hidden="true"></div>
 <button class="hidden-secret-egg hidden" id="hiddenSecretEgg" type="button" aria-label="Récupérer l'œuf secret">
   <img src="./assets/optimized/ui/oeuf.webp" alt="" decoding="async">
 </button>
@@ -185,8 +185,8 @@
         </div>
 
         <div class="farm-row sr-compat">
-          <span>Farm :</span>
-          <select id="farmSelect">
+          <label for="farmSelect">Farm :</label>
+          <select id="farmSelect" aria-label="Donjon actif">
             <option value="morose">Donjon Morose</option>
             <option value="tynril">Donjon Tynril</option>
           </select>

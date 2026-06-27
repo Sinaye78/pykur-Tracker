@@ -9780,12 +9780,26 @@ function setupSmartTooltips(){
   if(!tip)return;
   let active=null;
 
+  function unlinkTarget(target){
+    if(!target)return;
+    const ids=(target.getAttribute("aria-describedby")||"").split(/\s+/).filter(id=>id && id!==tip.id);
+    if(ids.length)target.setAttribute("aria-describedby",ids.join(" "));
+    else target.removeAttribute("aria-describedby");
+  }
+
+  function linkTarget(target){
+    const ids=new Set((target.getAttribute("aria-describedby")||"").split(/\s+/).filter(Boolean));
+    ids.add(tip.id);
+    target.setAttribute("aria-describedby",Array.from(ids).join(" "));
+  }
+
   function place(target){
     if(window.innerWidth<760 || matchMedia("(hover: none)").matches){
       hide();
       return;
     }
     if(!target || !target.dataset.tooltip || !data.settings.tooltips)return;
+    if(active!==target)unlinkTarget(active);
     active=target;
     const isDungeonEstimate=target.id==="moroseEstimateBox" || target.id==="tynrilEstimateBox";
     tip.classList.toggle("is-dungeon-estimate",isDungeonEstimate);
@@ -9800,6 +9814,9 @@ function setupSmartTooltips(){
     text.className="smart-tooltip-text";
     text.textContent=target.dataset.tooltip;
     tip.appendChild(text);
+    tip.setAttribute("aria-label",[target.dataset.tooltipTitle,target.dataset.tooltip].filter(Boolean).join(". "));
+    tip.setAttribute("aria-hidden","false");
+    linkTarget(target);
     tip.classList.add("show");
 
     const rect=target.getBoundingClientRect();
@@ -9833,8 +9850,11 @@ function setupSmartTooltips(){
   }
 
   function hide(){
+    unlinkTarget(active);
     active=null;
     tip.classList.remove("show");
+    tip.setAttribute("aria-hidden","true");
+    tip.removeAttribute("aria-label");
   }
 
   document.addEventListener("pointerover",e=>{
@@ -12236,19 +12256,48 @@ function bringHudToFront(id){
 }
 
 let modalZIndexSeed=3000;
+const modalFocusOrigins=new WeakMap();
+
+function setupModalAccessibility(){
+  $$(".modal-bg,.side-panel-bg").forEach((bg,index)=>{
+    bg.setAttribute("aria-hidden",bg.classList.contains("show")?"false":"true");
+    const panel=bg.querySelector(".modal,.side-panel");
+    if(!panel)return;
+    panel.setAttribute("role","dialog");
+    panel.setAttribute("aria-modal","true");
+    panel.setAttribute("tabindex","-1");
+    const heading=panel.querySelector("h1,h2,h3");
+    if(heading){
+      if(!heading.id)heading.id=`${bg.id||`trackerModal${index}`}Title`;
+      panel.setAttribute("aria-labelledby",heading.id);
+    }else if(!panel.hasAttribute("aria-label")){
+      panel.setAttribute("aria-label","Fenêtre du tracker");
+    }
+    const title=heading?.textContent?.trim()||"la fenêtre";
+    panel.querySelectorAll("[data-close],.modal-close").forEach(button=>{
+      if(!button.hasAttribute("aria-label"))button.setAttribute("aria-label",`Fermer ${title}`);
+    });
+  });
+}
 
 function openModal(id){
   const bg=$("#"+id);
   if(!bg)return;
+  if(document.activeElement instanceof HTMLElement)modalFocusOrigins.set(bg,document.activeElement);
   const isStacked=["dofusConfigModal","dofusTutorialModal"].includes(id) && $("#optionsModal")?.classList.contains("show");
   bg.classList.toggle("stacked-modal",isStacked);
   bg.style.zIndex=String(++modalZIndexSeed);
   bg.classList.add("show");
+  bg.setAttribute("aria-hidden","false");
   hydrateDeferredImages(bg);
   if(data.settings.hudMode){
     applyHudRect(id);
     bringHudToFront(id);
   }
+  requestAnimationFrame(()=>{
+    const focusTarget=bg.querySelector("[autofocus],.modal-close,[data-close],button,input,select,textarea,[tabindex]:not([tabindex='-1'])")||bg.querySelector(".modal,.side-panel");
+    if(focusTarget instanceof HTMLElement)focusTarget.focus({preventScroll:true});
+  });
 }
 
 function closeModal(id){
@@ -12260,7 +12309,12 @@ function closeModal(id){
   if(id==="chatboxModal")stopChatboxPolling();
   if(id==="communityProfileModal")clearCommunityProfileUrl();
   saveHudRect(id);
-  $("#"+id)?.classList.remove("show","hud-front","stacked-modal");
+  const bg=$("#"+id);
+  bg?.classList.remove("show","hud-front","stacked-modal");
+  const previous=bg?modalFocusOrigins.get(bg):null;
+  if(previous instanceof HTMLElement && previous.isConnected)previous.focus({preventScroll:true});
+  bg?.setAttribute("aria-hidden","true");
+  if(bg)modalFocusOrigins.delete(bg);
 }
 
 function clearCommunityProfileUrl(){
@@ -14254,6 +14308,7 @@ livingBuildAdmin();
 livingResetScheduler();
 passiveSchedule();
 schedulePykurMicroLife();
+setupModalAccessibility();
 setupSmartTooltips();
 setupHudWindows();
 renderSaveStatus();
