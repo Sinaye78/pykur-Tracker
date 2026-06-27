@@ -45,7 +45,7 @@ function createCroumFamiliar({id,label,defaultProfileName,progressLabel,progress
     image:`../croum oto/${basePath}/${basePath}.png`,
     auraImage:`../croum oto/${basePath}/${basePath}-aura.png`,
     sleepingImage:`../croum oto/${basePath}/${basePath}-z.png`,
-    background:"../croum oto/fond/fond.png",
+    background:"../croum oto/fond/fond.webp",
     status:"active",
     statusLabel:"",
     description:`Suivi ${progressIntro} sur le Goulet du Rasboul.`,
@@ -55,7 +55,7 @@ function createCroumFamiliar({id,label,defaultProfileName,progressLabel,progress
     dofusCooldownMin:10,
     farmMethods:["Goulet du Rasboul"],
     dungeons:[
-      {key:"gouletRasboul",label:"Rasboul",fullLabel:"Goulet du Rasboul",asset:"../croum oto/donjon/goulet-du-rasboul.png",defaultAverage:1500}
+      {key:"gouletRasboul",label:"Rasboul",fullLabel:"Goulet du Rasboul",asset:"../croum oto/donjon/goulet-du-rasboul.webp",defaultAverage:1500}
     ]
   };
 }
@@ -74,7 +74,7 @@ function createBoulouteFamiliar({id,label,basePath,backgroundBasePath=basePath})
     image:`../vitalité/${basePath}/${basePath}.png`,
     auraImage:`../vitalité/${basePath}/${basePath}-aura.png`,
     sleepingImage:`../vitalité/${basePath}/${basePath}-z.png`,
-    background:`../vitalité/${backgroundBasePath}/fond/fond.png`,
+    background:`../vitalité/${backgroundBasePath}/fond/fond.webp`,
     status:"active",
     statusLabel:"",
     description:"Suivi de vitalité sur le Donjon des Bouftous.",
@@ -84,7 +84,7 @@ function createBoulouteFamiliar({id,label,basePath,backgroundBasePath=basePath})
     dofusCooldownMin:10,
     farmMethods:["Donjon des Bouftous"],
     dungeons:[
-      {key:"donjonBouftous",label:"Bouftous",fullLabel:"Donjon des Bouftous",asset:"../vitalité/donjon des bouftous/bouftou-royal.png",defaultAverage:600}
+      {key:"donjonBouftous",label:"Bouftous",fullLabel:"Donjon des Bouftous",asset:"../vitalité/donjon des bouftous/bouftou-royal.webp",defaultAverage:600}
     ]
   };
 }
@@ -103,7 +103,7 @@ const FAMILIARS={
     image:"./assets/images/pykur.png",
     auraImage:"./assets/images/aurapykur.png",
     sleepingImage:"./assets/images/evenement/25. Pykur endormi/pykurz.png",
-    background:"./assets/images/fond.png",
+    background:"./assets/images/fond.webp",
     status:"complete",
     statusLabel:"",
     description:"Suivi de prospection sur Donjon Morose et Donjon Tynril.",
@@ -113,8 +113,8 @@ const FAMILIARS={
     dofusCooldownMin:10,
     farmMethods:["Donjon Morose","Donjon Tynril"],
     dungeons:[
-      {key:"morose",label:"Morose",fullLabel:"Donjon Morose",asset:"./assets/images/dj actif/morose.png",defaultAverage:125},
-      {key:"tynril",label:"Tynril",fullLabel:"Donjon Tynril",asset:"./assets/images/dj actif/tynril.png",defaultAverage:600}
+      {key:"morose",label:"Morose",fullLabel:"Donjon Morose",asset:"./assets/images/dj actif/morose.webp",defaultAverage:125},
+      {key:"tynril",label:"Tynril",fullLabel:"Donjon Tynril",asset:"./assets/images/dj actif/tynril.webp",defaultAverage:600}
     ]
   },
   "abra-kadabra":{
@@ -131,7 +131,7 @@ const FAMILIARS={
     image:"../abra-kadabra/assets/images/abra-kadabra.png",
     auraImage:"../abra-kadabra/assets/images/abra-kadabra-aura.png",
     sleepingImage:"../abra-kadabra/assets/images/abraz.png",
-    background:"../abra-kadabra/assets/images/fond.png",
+    background:"../abra-kadabra/assets/images/fond.webp",
     status:"active",
     statusLabel:"",
     description:"Suivi de puissance sur Donjon Abraknyde, Donjon Chêne Mou et boucle de la salle Abrakne.",
@@ -142,9 +142,9 @@ const FAMILIARS={
     specialDefaults:{salleAbrakneSetupDone:false,salleAbrakneActive:false,salleAbrakneLastActivity:null},
     farmMethods:["Donjon Abraknyde","Donjon Chêne Mou","Boucle salle Abrakne"],
     dungeons:[
-      {key:"donjonAbraknyde",label:"Abraknyde",fullLabel:"Donjon Abraknyde",asset:"../abra-kadabra/assets/images/donjons/donjon abraknyde.png",defaultAverage:900},
-      {key:"cheneMou",label:"Chêne Mou",fullLabel:"Donjon Chêne Mou",asset:"../abra-kadabra/assets/images/donjons/donjon chêne mou.png",defaultAverage:1800},
-      {key:"salleAbrakne",label:"Salle Abrakne",fullLabel:"Salle Abrakne",asset:"../abra-kadabra/assets/images/donjons/salle abrakne.png",special:"salleAbrakne",defaultAverage:10}
+      {key:"donjonAbraknyde",label:"Abraknyde",fullLabel:"Donjon Abraknyde",asset:"../abra-kadabra/assets/images/donjons/donjon abraknyde.webp",defaultAverage:900},
+      {key:"cheneMou",label:"Chêne Mou",fullLabel:"Donjon Chêne Mou",asset:"../abra-kadabra/assets/images/donjons/donjon chêne mou.webp",defaultAverage:1800},
+      {key:"salleAbrakne",label:"Salle Abrakne",fullLabel:"Salle Abrakne",asset:"../abra-kadabra/assets/images/donjons/salle abrakne.webp",special:"salleAbrakne",defaultAverage:10}
     ]
   },
   "dragoune-noir":{
@@ -161,7 +161,7 @@ const FAMILIARS={
     image:"../dragoune-noir/assets/images/dragoune-noir.png",
     auraImage:"../dragoune-noir/assets/images/dragoune-noir-aura.png",
     sleepingImage:"../dragoune-noir/assets/images/dragounenoirz.png",
-    background:"../dragoune-noir/assets/images/fond/fond.png",
+    background:"../dragoune-noir/assets/images/fond/fond.webp",
     status:"active",
     statusLabel:"",
     description:"Suivi de sagesse sur le Sanctuaire des Dragoeufs.",
@@ -171,7 +171,7 @@ const FAMILIARS={
     dofusCooldownMin:10,
     farmMethods:["Sanctuaire des Dragoeufs"],
     dungeons:[
-      {key:"sanctuaireDragoeufs",label:"Sanctuaire",fullLabel:"Sanctuaire des Dragoeufs",asset:"../dragoune-noir/assets/images/donjon/crocabulia.png",defaultAverage:1800}
+      {key:"sanctuaireDragoeufs",label:"Sanctuaire",fullLabel:"Sanctuaire des Dragoeufs",asset:"../dragoune-noir/assets/images/donjon/crocabulia.webp",defaultAverage:1800}
     ]
   },
   tofoudre:{
@@ -188,7 +188,7 @@ const FAMILIARS={
     image:"../tofoudre/assets/images/tofoudre.png",
     auraImage:"../tofoudre/assets/images/tofoudre-aura.png",
     sleepingImage:"../tofoudre/assets/images/tofoudrez.png",
-    background:"../tofoudre/assets/images/fond/fond.png",
+    background:"../tofoudre/assets/images/fond/fond.webp",
     status:"active",
     statusLabel:"",
     description:"Suivi de dommages sur les donjons des Rats d'Amakna, de Brâkmar et de Bonta.",
@@ -198,9 +198,9 @@ const FAMILIARS={
     dofusCooldownMin:10,
     farmMethods:["Donjon des Rats du Château d'Amakna","Donjon des Rats de Brâkmar","Donjon des Rats de Bonta"],
     dungeons:[
-      {key:"ratsAmakna",label:"Rats Amakna",fullLabel:"Donjon des Rats du Château d'Amakna",asset:"../tofoudre/assets/images/donjon/donjon-des-rats-du-chateau-d-amakna.png",defaultAverage:1500},
-      {key:"ratsBrakmar",label:"Rats Brâkmar",fullLabel:"Donjon des Rats de Brâkmar",asset:"../tofoudre/assets/images/donjon/donjon-des-rats-de-brakmar.png",defaultAverage:1200},
-      {key:"ratsBonta",label:"Rats Bonta",fullLabel:"Donjon des Rats de Bonta",asset:"../tofoudre/assets/images/donjon/donjon-des-rats-de-bonta.png",defaultAverage:1200}
+      {key:"ratsAmakna",label:"Rats Amakna",fullLabel:"Donjon des Rats du Château d'Amakna",asset:"../tofoudre/assets/images/donjon/donjon-des-rats-du-chateau-d-amakna.webp",defaultAverage:1500},
+      {key:"ratsBrakmar",label:"Rats Brâkmar",fullLabel:"Donjon des Rats de Brâkmar",asset:"../tofoudre/assets/images/donjon/donjon-des-rats-de-brakmar.webp",defaultAverage:1200},
+      {key:"ratsBonta",label:"Rats Bonta",fullLabel:"Donjon des Rats de Bonta",asset:"../tofoudre/assets/images/donjon/donjon-des-rats-de-bonta.webp",defaultAverage:1200}
     ]
   },
   flibalak:{
@@ -217,7 +217,7 @@ const FAMILIARS={
     image:"../flibalak/flibalak.png",
     auraImage:"../flibalak/flibalak-aura.png",
     sleepingImage:"../flibalak/flibalak-z.png",
-    background:"../flibalak/fond/fond.png",
+    background:"../flibalak/fond/fond.webp",
     status:"active",
     statusLabel:"",
     description:"Suivi de dommages sur l'Arche d'Otomaï et le bateau vers l'île d'Otomaï.",
@@ -227,8 +227,8 @@ const FAMILIARS={
     dofusCooldownMin:10,
     farmMethods:["Arche d'Otomaï","Bateau vers l'île d'Otomaï"],
     dungeons:[
-      {key:"archeDOtomai",label:"Gourlo",fullLabel:"Arche d'Otomaï",asset:"../flibalak/donjon/arche-d-otomai.png",defaultAverage:900},
-      {key:"bateauVersLIleDOtomai",label:"Bateau vers Oto",fullLabel:"Bateau vers l'île d'Otomaï",asset:"../flibalak/donjon/bateau-vers-otomai.png",defaultAverage:300}
+      {key:"archeDOtomai",label:"Gourlo",fullLabel:"Arche d'Otomaï",asset:"../flibalak/donjon/arche-d-otomai.webp",defaultAverage:900},
+      {key:"bateauVersLIleDOtomai",label:"Bateau vers Oto",fullLabel:"Bateau vers l'île d'Otomaï",asset:"../flibalak/donjon/bateau-vers-otomai.webp",defaultAverage:300}
     ]
   },
   "croum-aqueux":createCroumFamiliar({
@@ -296,7 +296,7 @@ const FAMILIARS={
     image:"../vitalité/vampyrette/vampyrette.png",
     auraImage:"../vitalité/vampyrette/vampyrette-aura.png",
     sleepingImage:"../vitalité/vampyrette/vampyrette-z.png",
-    background:"../vitalité/vampyrette/fond/fond.png",
+    background:"../vitalité/vampyrette/fond/fond.webp",
     status:"active",
     statusLabel:"",
     description:"Suivi de vitalité sur le Donjon des Squelettes.",
@@ -306,7 +306,7 @@ const FAMILIARS={
     dofusCooldownMin:10,
     farmMethods:["Donjon des Squelettes"],
     dungeons:[
-      {key:"donjonSquelettes",label:"Squelettes",fullLabel:"Donjon des Squelettes",asset:"../vitalité/vampyrette/monstre/chafer.png",defaultAverage:600}
+      {key:"donjonSquelettes",label:"Squelettes",fullLabel:"Donjon des Squelettes",asset:"../vitalité/vampyrette/monstre/chafer.webp",defaultAverage:600}
     ]
   },
   gelutin:{
@@ -323,7 +323,7 @@ const FAMILIARS={
     image:"../vitalité/gelutin/gelutin.png",
     auraImage:"../vitalité/gelutin/gelutin-aura.png",
     sleepingImage:"../vitalité/gelutin/gelutin-z.png",
-    background:"../vitalité/gelutin/fond/fond.png",
+    background:"../vitalité/gelutin/fond/fond.webp",
     status:"active",
     statusLabel:"",
     description:"Suivi de vitalité sur le Donjon des Blops et l'Antre du Blop Multicolore.",
@@ -334,8 +334,8 @@ const FAMILIARS={
     specialDefaults:{blopBoss:"blopCocoRoyal"},
     farmMethods:["Donjon des Blops","Antre du Blop Multicolore"],
     dungeons:[
-      {key:"donjonBlops",label:"Blops",fullLabel:"Donjon des Blops",asset:"../vitalité/gelutin/donjon/gloutoblop.png",special:"blopBoss",defaultAverage:900},
-      {key:"antreBlopMulticolore",label:"Blop Multi",fullLabel:"Antre du Blop Multicolore",asset:"../vitalité/gelutin/donjon/blop-multicolore-royal.png",special:"blopBoss",defaultAverage:600}
+      {key:"donjonBlops",label:"Blops",fullLabel:"Donjon des Blops",asset:"../vitalité/gelutin/donjon/gloutoblop.webp",special:"blopBoss",defaultAverage:900},
+      {key:"antreBlopMulticolore",label:"Blop Multi",fullLabel:"Antre du Blop Multicolore",asset:"../vitalité/gelutin/donjon/blop-multicolore-royal.webp",special:"blopBoss",defaultAverage:600}
     ]
   },
   "tifoux-tigre":{
@@ -352,7 +352,7 @@ const FAMILIARS={
     image:"../tifoux-tigre/tifoux-tigre.png",
     auraImage:"../tifoux-tigre/tifoux-tigre-aura.png",
     sleepingImage:"../tifoux-tigre/tifoux-tigre-z.png",
-    background:"../tifoux-tigre/fond/fond.png",
+    background:"../tifoux-tigre/fond/fond.webp",
     status:"active",
     statusLabel:"",
     description:"Suivi de prospection sur la Canopée du Kimbo.",
@@ -362,7 +362,7 @@ const FAMILIARS={
     dofusCooldownMin:10,
     farmMethods:["Canopée du Kimbo"],
     dungeons:[
-      {key:"canopeeKimbo",label:"Kimbo",fullLabel:"Canopée du Kimbo",asset:"../tifoux-tigre/donjon/canopee-du-kimbo.png",defaultAverage:1800}
+      {key:"canopeeKimbo",label:"Kimbo",fullLabel:"Canopée du Kimbo",asset:"../tifoux-tigre/donjon/canopee-du-kimbo.webp",defaultAverage:1800}
     ]
   },
   marcassin:{
@@ -379,7 +379,7 @@ const FAMILIARS={
     image:"../marcassin/marcassin.png",
     auraImage:"../marcassin/marcassin-aura.png",
     sleepingImage:"../marcassin/marcassin-z.png",
-    background:"../marcassin/fond/fond.png",
+    background:"../marcassin/fond/fond.webp",
     status:"active",
     statusLabel:"",
     description:"Suivi de puissance sur l'Antre du Dragon Cochon.",
@@ -389,7 +389,7 @@ const FAMILIARS={
     dofusCooldownMin:10,
     farmMethods:["Antre du Dragon Cochon"],
     dungeons:[
-      {key:"dragonCochon",label:"Dragon Cochon",fullLabel:"Antre du Dragon Cochon",asset:"../marcassin/donjon/antre-du-dragon-cochon.png",defaultAverage:1200}
+      {key:"dragonCochon",label:"Dragon Cochon",fullLabel:"Antre du Dragon Cochon",asset:"../marcassin/donjon/antre-du-dragon-cochon.webp",defaultAverage:1200}
     ]
   },
   glouton:{
@@ -406,7 +406,7 @@ const FAMILIARS={
     image:"../glouton/glouton.png",
     auraImage:"../glouton/glouton-aura.png",
     sleepingImage:"../glouton/glouton-z.png",
-    background:"../glouton/fond/fond.png",
+    background:"../glouton/fond/fond.webp",
     status:"active",
     statusLabel:"",
     description:"Suivi de pods sur le Donjon du Moon.",
@@ -416,7 +416,7 @@ const FAMILIARS={
     dofusCooldownMin:10,
     farmMethods:["Donjon du Moon"],
     dungeons:[
-      {key:"donjonMoon",label:"Moon",fullLabel:"Donjon du Moon",asset:"../glouton/donjon/donjon-de-moon.png",defaultAverage:180}
+      {key:"donjonMoon",label:"Moon",fullLabel:"Donjon du Moon",asset:"../glouton/donjon/donjon-de-moon.webp",defaultAverage:180}
     ]
   },
   "tiwabbit-kiafin":{
@@ -433,7 +433,7 @@ const FAMILIARS={
     image:"../tiwabbit-kiafin/tiwabbit-kiafin.png",
     auraImage:"../tiwabbit-kiafin/tiwabbit-kiafin-aura.png",
     sleepingImage:"../tiwabbit-kiafin/tiwabbit-kiafin-z.png",
-    background:"../tiwabbit-kiafin/fond/fond.png",
+    background:"../tiwabbit-kiafin/fond/fond.webp",
     status:"active",
     statusLabel:"",
     description:"Suivi de puissance sur le Château du Wa Wabbit et le Donjon Wabbit.",
@@ -443,8 +443,8 @@ const FAMILIARS={
     dofusCooldownMin:10,
     farmMethods:["Château du Wa Wabbit","Donjon Wabbit"],
     dungeons:[
-      {key:"chateauWaWabbit",label:"Château Wa",fullLabel:"Château du Wa Wabbit",asset:"../tiwabbit-kiafin/donjon/chateau-du-wa-wabbit.png",defaultAverage:1500},
-      {key:"donjonWabbit",label:"Donjon Wabbit",fullLabel:"Donjon Wabbit",asset:"../tiwabbit-kiafin/donjon/donjon-wabbit.png",defaultAverage:900}
+      {key:"chateauWaWabbit",label:"Château Wa",fullLabel:"Château du Wa Wabbit",asset:"../tiwabbit-kiafin/donjon/chateau-du-wa-wabbit.webp",defaultAverage:1500},
+      {key:"donjonWabbit",label:"Donjon Wabbit",fullLabel:"Donjon Wabbit",asset:"../tiwabbit-kiafin/donjon/donjon-wabbit.webp",defaultAverage:900}
     ]
   },
   miniminotot:{
@@ -461,7 +461,7 @@ const FAMILIARS={
     image:"../miniminotot/miniminotot.png",
     auraImage:"../miniminotot/miniminotot-aura.png",
     sleepingImage:"../miniminotot/miniminotot-z.png",
-    background:"../miniminotot/fond/fond.png",
+    background:"../miniminotot/fond/fond.webp",
     status:"active",
     statusLabel:"",
     description:"Suivi de puissance sur les labyrinthes du Minotoror et du Minotot.",
@@ -472,8 +472,8 @@ const FAMILIARS={
     dofusCooldownMin:10,
     farmMethods:["Labyrinthe du Minotoror","Labyrinthe du Minotot"],
     dungeons:[
-      {key:"labyrintheDuMinotoror",label:"Minotoror",fullLabel:"Labyrinthe du Minotoror",asset:"../miniminotot/donjon/minotoror.png",defaultAverage:1500},
-      {key:"labyrintheDuMinotot",label:"Minotot",fullLabel:"Labyrinthe du Minotot",asset:"../miniminotot/donjon/minotot.png",defaultAverage:900}
+      {key:"labyrintheDuMinotoror",label:"Minotoror",fullLabel:"Labyrinthe du Minotoror",asset:"../miniminotot/donjon/minotoror.webp",defaultAverage:1500},
+      {key:"labyrintheDuMinotot",label:"Minotot",fullLabel:"Labyrinthe du Minotot",asset:"../miniminotot/donjon/minotot.webp",defaultAverage:900}
     ]
   },
   chenapandi:{
@@ -490,7 +490,7 @@ const FAMILIARS={
     image:"../chenapandi/chenapandi.png",
     auraImage:"../chenapandi/chenapandi-aura.png",
     sleepingImage:"../chenapandi/chenapandi-z.png",
-    background:"../chenapandi/fond/fond.png",
+    background:"../chenapandi/fond/fond.webp",
     status:"active",
     statusLabel:"",
     description:"Suivi de vitalit\u00e9 sur le Repaire des Pandikazes.",
@@ -500,7 +500,7 @@ const FAMILIARS={
     dofusCooldownMin:10,
     farmMethods:["Repaire des Pandikazes"],
     dungeons:[
-      {key:"repaireDesPandikazes",label:"Pandikaze",fullLabel:"Repaire des Pandikazes",asset:"../chenapandi/donjon/maitre-pandore.png",defaultAverage:900}
+      {key:"repaireDesPandikazes",label:"Pandikaze",fullLabel:"Repaire des Pandikazes",asset:"../chenapandi/donjon/maitre-pandore.webp",defaultAverage:900}
     ]
   }
 ,
@@ -518,7 +518,7 @@ const FAMILIARS={
     image:"../chercheur-d-ogrines/chercheur-d-ogrines.png",
     auraImage:"../chercheur-d-ogrines/chercheur-d-ogrines-aura.png",
     sleepingImage:"../chercheur-d-ogrines/chercheur-d-ogrines-z.png",
-    background:"../chercheur-d-ogrines/fond/fond.png",
+    background:"../chercheur-d-ogrines/fond/fond.webp",
     status:"active",
     statusLabel:"",
     description:"Suivi de puissance sur la Grotte Hesque.",
@@ -528,7 +528,7 @@ const FAMILIARS={
     dofusCooldownMin:10,
     farmMethods:["Grotte Hesque"],
     dungeons:[
-      {key:"grotteHesque",label:"Grotte Hesque",fullLabel:"Grotte Hesque",asset:"../chercheur-d-ogrines/donjon/corailleur-magistral.png",defaultAverage:390}
+      {key:"grotteHesque",label:"Grotte Hesque",fullLabel:"Grotte Hesque",asset:"../chercheur-d-ogrines/donjon/corailleur-magistral.webp",defaultAverage:390}
     ]
   }
 
