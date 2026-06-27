@@ -14,6 +14,10 @@ npm ci --omit=dev
 pm2 restart pykur-api --update-env
 pm2 save
 
+if [ "$(id -u)" -eq 0 ] && [ -f "$APP_DIR/server/nginx/familier-tracker-compression.conf" ]; then
+  install -m 0644 "$APP_DIR/server/nginx/familier-tracker-compression.conf" /etc/nginx/conf.d/familier-tracker-compression.conf
+fi
+
 nginx -t
 systemctl reload nginx
 

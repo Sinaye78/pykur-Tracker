@@ -4551,12 +4551,18 @@ function toggleBrakoEasterEgg(){
 
 function getPykurImageSrc(pp=currentPP()){
   const familiar=activeFamiliar();
-  return pp >= activeProgressMax() ? (familiar.auraImage||AURAPYKUR_IMAGE_SRC) : (familiar.image||PYKUR_IMAGE_SRC);
+  if(pp >= activeProgressMax())return familiar.auraImage||AURAPYKUR_IMAGE_SRC;
+  return `./assets/optimized/catalog/${familiar.id}.webp`;
 }
 
 function setPykurImageSafely(src,alt){
   const img=$("#pykurImg");
   if(!img)return;
+  const fallback=assetPath(activeFamiliar().image||PYKUR_IMAGE_SRC);
+  img.onerror=()=>{
+    img.onerror=null;
+    img.src=fallback;
+  };
   const currentSrc=img.getAttribute("src") || "";
   if(!currentSrc.endsWith(src.replace("./","")) && currentSrc !== src){
     img.src=src;
@@ -4889,7 +4895,7 @@ async function livingPollServer(){
 }
 function livingSchedule(){
   if(!livingIsDesktop() || data?.settings?.livingEvents===false)return;
-  if(!livingState.serverPollTimer)livingState.serverPollTimer=setInterval(livingPollServer,performancePollingDelay(2000,5000));
+  if(!livingState.serverPollTimer)livingState.serverPollTimer=setInterval(livingPollServer,performancePollingDelay(4000,8000));
   livingPollServer();
 }
 function livingResetScheduler(){
@@ -8369,7 +8375,7 @@ function dofusRefreshOptions(){
     const followsActive=selectedId===activeFamiliarId();
     const dungeonCount=selectedFamiliar.dungeons.length;
     summary.innerHTML=`<div class="dofus-familiar-card">
-      <img src="${assetPath(selectedFamiliar.logo||selectedFamiliar.image)}" alt="">
+      <img data-src="${assetPath(selectedFamiliar.logo||selectedFamiliar.image)}" alt="" decoding="async">
       <div>
         <strong>${escapeHtml(selectedFamiliar.label)}</strong>
         <small>${dungeonCount===1?"1 donjon à configurer":`${dungeonCount} donjons à configurer`} · cooldown minimum ${minCooldown}s</small>
@@ -11497,7 +11503,13 @@ function renderFamiliarContext(){
   $$(".pp-summary-label").forEach(el=>el.textContent=familiar.progressLabel);
   $$(".pp-summary-goal").forEach(el=>el.textContent=`/ ${familiar.objectiveLabel}`);
   const ppIcon=$(".pp-summary-icon img");
-  if(ppIcon)ppIcon.src=familiar.icon||"./assets/images/prospection.png";
+  if(ppIcon){
+    ppIcon.onerror=()=>{
+      ppIcon.onerror=null;
+      ppIcon.src=assetPath(familiar.icon||"./assets/images/prospection.png");
+    };
+    ppIcon.src=`./assets/optimized/catalog/${familiar.id}-icon.webp`;
+  }
   const quickLabel=$(".quick-projection-label");
   if(quickLabel)quickLabel.textContent=`Prochaine ${unit}`;
   const sessionProgressLabel=$("#sessionPP")?.previousElementSibling;

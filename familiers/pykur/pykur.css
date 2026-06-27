@@ -8232,13 +8232,13 @@ body[data-farm-active="tynril"]{
   --farm-aura-2:rgba(132,204,22,.16);
 }
 body[data-farm-active="morose"]{
-  --active-dungeon-bg:url("./assets/images/dj actif/morose.png");
+  --active-dungeon-bg:url("./assets/images/dj actif/morose.webp");
   --active-dungeon-bg-size:min(250px,36vw) auto;
   --active-dungeon-bg-position:72% 54%;
   --active-dungeon-bg-opacity:.13;
 }
 body[data-farm-active="tynril"]{
-  --active-dungeon-bg:url("./assets/images/dj actif/tynril.png");
+  --active-dungeon-bg:url("./assets/images/dj actif/tynril.webp");
   --active-dungeon-bg-size:min(210px,30vw) auto;
   --active-dungeon-bg-position:72% 56%;
   --active-dungeon-bg-opacity:.16;

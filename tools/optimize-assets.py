@@ -14,12 +14,15 @@ DATA = PYKUR / "data" / "familiars.js"
 def save_webp(source: Path, target: Path, max_size=None, quality=82):
     if not source.exists():
         raise FileNotFoundError(source)
+    if target.exists() and target.stat().st_mtime >= source.stat().st_mtime:
+        return False
     with Image.open(source) as image:
         image.load()
         if max_size:
             image.thumbnail(max_size, Image.Resampling.LANCZOS)
         target.parent.mkdir(parents=True, exist_ok=True)
         image.save(target, "WEBP", quality=quality, method=6)
+    return True
 
 
 def resolve_asset(asset: str) -> Path:
@@ -67,6 +70,7 @@ def interface_assets():
         "succes": PYKUR / "assets" / "bouton" / "succes.png",
         "galerie": PYKUR / "assets" / "bouton" / "galerie.png",
         "option": PYKUR / "assets" / "bouton" / "option.png",
+        "oeuf": PYKUR / "assets" / "images" / "oeuf.png",
     }
     output = PYKUR / "assets" / "optimized" / "ui"
     for name, source in assets.items():
