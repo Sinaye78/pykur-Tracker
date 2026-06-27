@@ -8386,6 +8386,7 @@ function dofusRefreshOptions(){
       </div>
       ${followsActive?"":`<button class="btn btn-gray tooltip" type="button" data-dofus-use-active="1" data-tooltip="Revient au familier du profil actuellement sélectionné.">Revenir au profil actif</button>`}
     </div>`;
+    if($("#optionsModal")?.classList.contains("show"))hydrateDeferredImages(summary);
     summary.querySelector("[data-dofus-use-active]")?.addEventListener("click",()=>{
       dofusState.selectedFamiliar=activeFamiliarId();
       dofusRefreshOptions();
