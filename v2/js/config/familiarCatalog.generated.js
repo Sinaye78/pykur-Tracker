@@ -1,0 +1,3283 @@
+// Fichier généré depuis la source de vérité V1. Ne pas modifier à la main.
+export const GENERATED_FAMILIAR_CATALOG = Object.freeze([
+  {
+    "id": "pykur",
+    "label": "Pykur",
+    "shortLabel": "Pykur",
+    "defaultProfileName": "Pykur principal",
+    "progressLabel": "Prospection",
+    "progressShort": "PP",
+    "objectiveMax": 90,
+    "objectiveLabel": "90 PP",
+    "icon": "./assets/images/prospection.png",
+    "logo": "./assets/images/pykur.png",
+    "image": "./assets/images/pykur.png",
+    "auraImage": "./assets/images/aurapykur.png",
+    "sleepingImage": "./assets/images/evenement/25. Pykur endormi/pykurz.png",
+    "background": "./assets/images/fond.webp",
+    "status": "complete",
+    "statusLabel": "",
+    "description": "Suivi de prospection sur Donjon Morose et Donjon Tynril.",
+    "bonusAmount": 90,
+    "difficultyLabel": "Moyen",
+    "difficultyStars": 2,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Donjon Morose",
+      "Donjon Tynril"
+    ],
+    "dungeons": [
+      {
+        "key": "morose",
+        "label": "Morose",
+        "fullLabel": "Donjon Morose",
+        "asset": "./assets/images/dj actif/morose.webp",
+        "defaultAverage": 125
+      },
+      {
+        "key": "tynril",
+        "label": "Tynril",
+        "fullLabel": "Donjon Tynril",
+        "asset": "./assets/images/dj actif/tynril.webp",
+        "defaultAverage": 600
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "abra-kadabra",
+    "label": "Abra Kadabra",
+    "shortLabel": "Abra Kadabra",
+    "defaultProfileName": "Abra Kadabra principal",
+    "progressLabel": "Puissance",
+    "progressShort": "puissance",
+    "objectiveMax": 55,
+    "objectiveLabel": "55 puissance",
+    "icon": "../abra-kadabra/assets/images/puissance.png",
+    "logo": "../abra-kadabra/assets/images/abra-kadabra.png",
+    "image": "../abra-kadabra/assets/images/abra-kadabra.png",
+    "auraImage": "../abra-kadabra/assets/images/abra-kadabra-aura.png",
+    "sleepingImage": "../abra-kadabra/assets/images/abraz.png",
+    "background": "../abra-kadabra/assets/images/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de puissance sur Donjon Abraknyde, Donjon Chêne Mou et boucle de la salle Abrakne.",
+    "bonusAmount": 55,
+    "difficultyLabel": "Facile",
+    "difficultyStars": 1,
+    "dofusCooldownMin": 3,
+    "farmMethods": [
+      "Donjon Abraknyde",
+      "Donjon Chêne Mou",
+      "Boucle salle Abrakne"
+    ],
+    "dungeons": [
+      {
+        "key": "donjonAbraknyde",
+        "label": "Abraknyde",
+        "fullLabel": "Donjon Abraknyde",
+        "asset": "../abra-kadabra/assets/images/donjons/donjon abraknyde.webp",
+        "defaultAverage": 900
+      },
+      {
+        "key": "cheneMou",
+        "label": "Chêne Mou",
+        "fullLabel": "Donjon Chêne Mou",
+        "asset": "../abra-kadabra/assets/images/donjons/donjon chêne mou.webp",
+        "defaultAverage": 1800
+      },
+      {
+        "key": "salleAbrakne",
+        "label": "Salle Abrakne",
+        "fullLabel": "Salle Abrakne",
+        "asset": "../abra-kadabra/assets/images/donjons/salle abrakne.webp",
+        "special": "salleAbrakne",
+        "defaultAverage": 10
+      }
+    ],
+    "specialDefaults": {
+      "salleAbrakneSetupDone": false,
+      "salleAbrakneActive": false,
+      "salleAbrakneLastActivity": null
+    }
+  },
+  {
+    "id": "dragoune-noir",
+    "label": "Dragoune Noir",
+    "shortLabel": "Dragoune Noir",
+    "defaultProfileName": "Dragoune Noir principale",
+    "progressLabel": "Sagesse",
+    "progressShort": "sagesse",
+    "objectiveMax": 55,
+    "objectiveLabel": "55 sagesse",
+    "icon": "../dragoune-noir/assets/images/sagesse.png",
+    "logo": "../dragoune-noir/assets/images/dragoune-noir.png",
+    "image": "../dragoune-noir/assets/images/dragoune-noir.png",
+    "auraImage": "../dragoune-noir/assets/images/dragoune-noir-aura.png",
+    "sleepingImage": "../dragoune-noir/assets/images/dragounenoirz.png",
+    "background": "../dragoune-noir/assets/images/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de sagesse sur le Sanctuaire des Dragoeufs.",
+    "bonusAmount": 55,
+    "difficultyLabel": "Moyen",
+    "difficultyStars": 2,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Sanctuaire des Dragoeufs"
+    ],
+    "dungeons": [
+      {
+        "key": "sanctuaireDragoeufs",
+        "label": "Sanctuaire",
+        "fullLabel": "Sanctuaire des Dragoeufs",
+        "asset": "../dragoune-noir/assets/images/donjon/crocabulia.webp",
+        "defaultAverage": 1800
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "tofoudre",
+    "label": "Tofoudre",
+    "shortLabel": "Tofoudre",
+    "defaultProfileName": "Tofoudre principal",
+    "progressLabel": "Dommages",
+    "progressShort": "dommages",
+    "objectiveMax": 11,
+    "objectiveLabel": "11 dommages",
+    "icon": "../tofoudre/assets/images/dommage.png",
+    "logo": "../tofoudre/assets/images/tofoudre.png",
+    "image": "../tofoudre/assets/images/tofoudre.png",
+    "auraImage": "../tofoudre/assets/images/tofoudre-aura.png",
+    "sleepingImage": "../tofoudre/assets/images/tofoudrez.png",
+    "background": "../tofoudre/assets/images/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de dommages sur les donjons des Rats d'Amakna, de Brâkmar et de Bonta.",
+    "bonusAmount": 11,
+    "difficultyLabel": "Moyen",
+    "difficultyStars": 2,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Donjon des Rats du Château d'Amakna",
+      "Donjon des Rats de Brâkmar",
+      "Donjon des Rats de Bonta"
+    ],
+    "dungeons": [
+      {
+        "key": "ratsAmakna",
+        "label": "Rats Amakna",
+        "fullLabel": "Donjon des Rats du Château d'Amakna",
+        "asset": "../tofoudre/assets/images/donjon/donjon-des-rats-du-chateau-d-amakna.webp",
+        "defaultAverage": 1500
+      },
+      {
+        "key": "ratsBrakmar",
+        "label": "Rats Brâkmar",
+        "fullLabel": "Donjon des Rats de Brâkmar",
+        "asset": "../tofoudre/assets/images/donjon/donjon-des-rats-de-brakmar.webp",
+        "defaultAverage": 1200
+      },
+      {
+        "key": "ratsBonta",
+        "label": "Rats Bonta",
+        "fullLabel": "Donjon des Rats de Bonta",
+        "asset": "../tofoudre/assets/images/donjon/donjon-des-rats-de-bonta.webp",
+        "defaultAverage": 1200
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "flibalak",
+    "label": "Flibalak",
+    "shortLabel": "Flibalak",
+    "defaultProfileName": "Flibalak principal",
+    "progressLabel": "Dommages",
+    "progressShort": "do",
+    "objectiveMax": 11,
+    "objectiveLabel": "11 do",
+    "icon": "../tofoudre/assets/images/dommage.png",
+    "logo": "../flibalak/flibalak.png",
+    "image": "../flibalak/flibalak.png",
+    "auraImage": "../flibalak/flibalak-aura.png",
+    "sleepingImage": "../flibalak/flibalak-z.png",
+    "background": "../flibalak/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de dommages sur l'Arche d'Otomaï et le bateau vers l'île d'Otomaï.",
+    "bonusAmount": 11,
+    "difficultyLabel": "Moyen",
+    "difficultyStars": 2,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Arche d'Otomaï",
+      "Bateau vers l'île d'Otomaï"
+    ],
+    "dungeons": [
+      {
+        "key": "archeDOtomai",
+        "label": "Gourlo",
+        "fullLabel": "Arche d'Otomaï",
+        "asset": "../flibalak/donjon/arche-d-otomai.webp",
+        "defaultAverage": 900
+      },
+      {
+        "key": "bateauVersLIleDOtomai",
+        "label": "Bateau vers Oto",
+        "fullLabel": "Bateau vers l'île d'Otomaï",
+        "asset": "../flibalak/donjon/bateau-vers-otomai.webp",
+        "defaultAverage": 300
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "croum-aqueux",
+    "label": "Croum Aqueux",
+    "shortLabel": "Croum Aqueux",
+    "defaultProfileName": "Croum Aqueux principal",
+    "progressLabel": "Chance",
+    "progressShort": "chance",
+    "objectiveMax": 90,
+    "objectiveLabel": "90 chance",
+    "icon": "../croum oto/croum-aqueux/chance.png",
+    "logo": "../croum oto/croum-aqueux/croum-aqueux.png",
+    "image": "../croum oto/croum-aqueux/croum-aqueux.png",
+    "auraImage": "../croum oto/croum-aqueux/croum-aqueux-aura.png",
+    "sleepingImage": "../croum oto/croum-aqueux/croum-aqueux-z.png",
+    "background": "../croum oto/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de chance sur le Goulet du Rasboul.",
+    "bonusAmount": 90,
+    "difficultyLabel": "Moyen",
+    "difficultyStars": 2,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Goulet du Rasboul"
+    ],
+    "dungeons": [
+      {
+        "key": "gouletRasboul",
+        "label": "Rasboul",
+        "fullLabel": "Goulet du Rasboul",
+        "asset": "../croum oto/donjon/goulet-du-rasboul.webp",
+        "defaultAverage": 1500
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "croum-volatile",
+    "label": "Croum Volatile",
+    "shortLabel": "Croum Volatile",
+    "defaultProfileName": "Croum Volatile principal",
+    "progressLabel": "Agilité",
+    "progressShort": "agilité",
+    "objectiveMax": 90,
+    "objectiveLabel": "90 agilité",
+    "icon": "../croum oto/croum-volatile/agilite.png",
+    "logo": "../croum oto/croum-volatile/croum-volatile.png",
+    "image": "../croum oto/croum-volatile/croum-volatile.png",
+    "auraImage": "../croum oto/croum-volatile/croum-volatile-aura.png",
+    "sleepingImage": "../croum oto/croum-volatile/croum-volatile-z.png",
+    "background": "../croum oto/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi d'agilité sur le Goulet du Rasboul.",
+    "bonusAmount": 90,
+    "difficultyLabel": "Moyen",
+    "difficultyStars": 2,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Goulet du Rasboul"
+    ],
+    "dungeons": [
+      {
+        "key": "gouletRasboul",
+        "label": "Rasboul",
+        "fullLabel": "Goulet du Rasboul",
+        "asset": "../croum oto/donjon/goulet-du-rasboul.webp",
+        "defaultAverage": 1500
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "croum-igne",
+    "label": "Croum Igné",
+    "shortLabel": "Croum Igné",
+    "defaultProfileName": "Croum Igné principal",
+    "progressLabel": "Intelligence",
+    "progressShort": "intelligence",
+    "objectiveMax": 90,
+    "objectiveLabel": "90 intelligence",
+    "icon": "../croum oto/croum-igne/intelligence.png",
+    "logo": "../croum oto/croum-igne/croum-igne.png",
+    "image": "../croum oto/croum-igne/croum-igne.png",
+    "auraImage": "../croum oto/croum-igne/croum-igne-aura.png",
+    "sleepingImage": "../croum oto/croum-igne/croum-igne-z.png",
+    "background": "../croum oto/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi d'intelligence sur le Goulet du Rasboul.",
+    "bonusAmount": 90,
+    "difficultyLabel": "Moyen",
+    "difficultyStars": 2,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Goulet du Rasboul"
+    ],
+    "dungeons": [
+      {
+        "key": "gouletRasboul",
+        "label": "Rasboul",
+        "fullLabel": "Goulet du Rasboul",
+        "asset": "../croum oto/donjon/goulet-du-rasboul.webp",
+        "defaultAverage": 1500
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "croum-vegetal",
+    "label": "Croum Végétal",
+    "shortLabel": "Croum Végétal",
+    "defaultProfileName": "Croum Végétal principal",
+    "progressLabel": "Force",
+    "progressShort": "force",
+    "objectiveMax": 90,
+    "objectiveLabel": "90 force",
+    "icon": "../croum oto/croum-vegetal/force.png",
+    "logo": "../croum oto/croum-vegetal/croum-vegetal.png",
+    "image": "../croum oto/croum-vegetal/croum-vegetal.png",
+    "auraImage": "../croum oto/croum-vegetal/croum-vegetal-aura.png",
+    "sleepingImage": "../croum oto/croum-vegetal/croum-vegetal-z.png",
+    "background": "../croum oto/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de force sur le Goulet du Rasboul.",
+    "bonusAmount": 90,
+    "difficultyLabel": "Moyen",
+    "difficultyStars": 2,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Goulet du Rasboul"
+    ],
+    "dungeons": [
+      {
+        "key": "gouletRasboul",
+        "label": "Rasboul",
+        "fullLabel": "Goulet du Rasboul",
+        "asset": "../croum oto/donjon/goulet-du-rasboul.webp",
+        "defaultAverage": 1500
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "bouloute",
+    "label": "Bouloute",
+    "shortLabel": "Bouloute",
+    "defaultProfileName": "Bouloute principale",
+    "progressLabel": "Vitalité",
+    "progressShort": "vitalité",
+    "objectiveMax": 165,
+    "objectiveLabel": "165 vitalité",
+    "icon": "../vitalité/vitalite.png",
+    "logo": "../vitalité/bouloute/bouloute.png",
+    "image": "../vitalité/bouloute/bouloute.png",
+    "auraImage": "../vitalité/bouloute/bouloute-aura.png",
+    "sleepingImage": "../vitalité/bouloute/bouloute-z.png",
+    "background": "../vitalité/bouloute/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de vitalité sur le Donjon des Bouftous.",
+    "bonusAmount": 165,
+    "difficultyLabel": "Facile",
+    "difficultyStars": 1,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Donjon des Bouftous"
+    ],
+    "dungeons": [
+      {
+        "key": "donjonBouftous",
+        "label": "Bouftous",
+        "fullLabel": "Donjon des Bouftous",
+        "asset": "../vitalité/donjon des bouftous/bouftou-royal.webp",
+        "defaultAverage": 600
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "bouloute-du-parrain",
+    "label": "Bouloute du parrain",
+    "shortLabel": "Bouloute du parrain",
+    "defaultProfileName": "Bouloute du parrain principale",
+    "progressLabel": "Vitalité",
+    "progressShort": "vitalité",
+    "objectiveMax": 165,
+    "objectiveLabel": "165 vitalité",
+    "icon": "../vitalité/vitalite.png",
+    "logo": "../vitalité/bouloute-du-parrain/bouloute-du-parrain.png",
+    "image": "../vitalité/bouloute-du-parrain/bouloute-du-parrain.png",
+    "auraImage": "../vitalité/bouloute-du-parrain/bouloute-du-parrain-aura.png",
+    "sleepingImage": "../vitalité/bouloute-du-parrain/bouloute-du-parrain-z.png",
+    "background": "../vitalité/bouloute/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de vitalité sur le Donjon des Bouftous.",
+    "bonusAmount": 165,
+    "difficultyLabel": "Facile",
+    "difficultyStars": 1,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Donjon des Bouftous"
+    ],
+    "dungeons": [
+      {
+        "key": "donjonBouftous",
+        "label": "Bouftous",
+        "fullLabel": "Donjon des Bouftous",
+        "asset": "../vitalité/donjon des bouftous/bouftou-royal.webp",
+        "defaultAverage": 600
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "vampyrette",
+    "label": "Vampyrette",
+    "shortLabel": "Vampyrette",
+    "defaultProfileName": "Vampyrette principale",
+    "progressLabel": "Vitalité",
+    "progressShort": "vitalité",
+    "objectiveMax": 165,
+    "objectiveLabel": "165 vitalité",
+    "icon": "../vitalité/vitalite.png",
+    "logo": "../vitalité/vampyrette/vampyrette.png",
+    "image": "../vitalité/vampyrette/vampyrette.png",
+    "auraImage": "../vitalité/vampyrette/vampyrette-aura.png",
+    "sleepingImage": "../vitalité/vampyrette/vampyrette-z.png",
+    "background": "../vitalité/vampyrette/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de vitalité sur le Donjon des Squelettes.",
+    "bonusAmount": 165,
+    "difficultyLabel": "Facile",
+    "difficultyStars": 1,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Donjon des Squelettes"
+    ],
+    "dungeons": [
+      {
+        "key": "donjonSquelettes",
+        "label": "Squelettes",
+        "fullLabel": "Donjon des Squelettes",
+        "asset": "../vitalité/vampyrette/monstre/chafer.webp",
+        "defaultAverage": 600
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "gelutin",
+    "label": "Gelutin",
+    "shortLabel": "Gelutin",
+    "defaultProfileName": "Gelutin principal",
+    "progressLabel": "Vitalité",
+    "progressShort": "vitalité",
+    "objectiveMax": 165,
+    "objectiveLabel": "165 vitalité",
+    "icon": "../vitalité/vitalite.png",
+    "logo": "../vitalité/gelutin/gelutin.png",
+    "image": "../vitalité/gelutin/gelutin.png",
+    "auraImage": "../vitalité/gelutin/gelutin-aura.png",
+    "sleepingImage": "../vitalité/gelutin/gelutin-z.png",
+    "background": "../vitalité/gelutin/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de vitalité sur le Donjon des Blops et l'Antre du Blop Multicolore.",
+    "bonusAmount": 165,
+    "difficultyLabel": "Moyen",
+    "difficultyStars": 2,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Donjon des Blops",
+      "Antre du Blop Multicolore"
+    ],
+    "dungeons": [
+      {
+        "key": "donjonBlops",
+        "label": "Blops",
+        "fullLabel": "Donjon des Blops",
+        "asset": "../vitalité/gelutin/donjon/gloutoblop.webp",
+        "special": "blopBoss",
+        "defaultAverage": 900
+      },
+      {
+        "key": "antreBlopMulticolore",
+        "label": "Blop Multi",
+        "fullLabel": "Antre du Blop Multicolore",
+        "asset": "../vitalité/gelutin/donjon/blop-multicolore-royal.webp",
+        "special": "blopBoss",
+        "defaultAverage": 600
+      }
+    ],
+    "specialDefaults": {
+      "blopBoss": "blopCocoRoyal"
+    }
+  },
+  {
+    "id": "tifoux-tigre",
+    "label": "Tifoux Tigré",
+    "shortLabel": "Tifoux Tigré",
+    "defaultProfileName": "Tifoux Tigré principal",
+    "progressLabel": "Prospection",
+    "progressShort": "PP",
+    "objectiveMax": 90,
+    "objectiveLabel": "90 PP",
+    "icon": "./assets/images/prospection.png",
+    "logo": "../tifoux-tigre/tifoux-tigre.png",
+    "image": "../tifoux-tigre/tifoux-tigre.png",
+    "auraImage": "../tifoux-tigre/tifoux-tigre-aura.png",
+    "sleepingImage": "../tifoux-tigre/tifoux-tigre-z.png",
+    "background": "../tifoux-tigre/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de prospection sur la Canopée du Kimbo.",
+    "bonusAmount": 90,
+    "difficultyLabel": "Dur",
+    "difficultyStars": 3,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Canopée du Kimbo"
+    ],
+    "dungeons": [
+      {
+        "key": "canopeeKimbo",
+        "label": "Kimbo",
+        "fullLabel": "Canopée du Kimbo",
+        "asset": "../tifoux-tigre/donjon/canopee-du-kimbo.webp",
+        "defaultAverage": 1800
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "marcassin",
+    "label": "Marcassin",
+    "shortLabel": "Marcassin",
+    "defaultProfileName": "Marcassin principal",
+    "progressLabel": "Puissance",
+    "progressShort": "puissance",
+    "objectiveMax": 55,
+    "objectiveLabel": "55 puissance",
+    "icon": "../abra-kadabra/assets/images/puissance.png",
+    "logo": "../marcassin/marcassin.png",
+    "image": "../marcassin/marcassin.png",
+    "auraImage": "../marcassin/marcassin-aura.png",
+    "sleepingImage": "../marcassin/marcassin-z.png",
+    "background": "../marcassin/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de puissance sur l'Antre du Dragon Cochon.",
+    "bonusAmount": 55,
+    "difficultyLabel": "Moyen",
+    "difficultyStars": 2,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Antre du Dragon Cochon"
+    ],
+    "dungeons": [
+      {
+        "key": "dragonCochon",
+        "label": "Dragon Cochon",
+        "fullLabel": "Antre du Dragon Cochon",
+        "asset": "../marcassin/donjon/antre-du-dragon-cochon.webp",
+        "defaultAverage": 1200
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "glouton",
+    "label": "Glouton",
+    "shortLabel": "Glouton",
+    "defaultProfileName": "Glouton principal",
+    "progressLabel": "Pods",
+    "progressShort": "pods",
+    "objectiveMax": 1100,
+    "objectiveLabel": "1100 pods",
+    "icon": "../glouton/pods.png",
+    "logo": "../glouton/glouton.png",
+    "image": "../glouton/glouton.png",
+    "auraImage": "../glouton/glouton-aura.png",
+    "sleepingImage": "../glouton/glouton-z.png",
+    "background": "../glouton/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de pods sur le Donjon du Moon.",
+    "bonusAmount": 1100,
+    "difficultyLabel": "Dur",
+    "difficultyStars": 3,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Donjon du Moon"
+    ],
+    "dungeons": [
+      {
+        "key": "donjonMoon",
+        "label": "Moon",
+        "fullLabel": "Donjon du Moon",
+        "asset": "../glouton/donjon/donjon-de-moon.webp",
+        "defaultAverage": 180
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "tiwabbit-kiafin",
+    "label": "Tiwabbit Kiafin",
+    "shortLabel": "Tiwabbit Kiafin",
+    "defaultProfileName": "Tiwabbit Kiafin principal",
+    "progressLabel": "Puissance",
+    "progressShort": "puissance",
+    "objectiveMax": 55,
+    "objectiveLabel": "55 puissance",
+    "icon": "../abra-kadabra/assets/images/puissance.png",
+    "logo": "../tiwabbit-kiafin/tiwabbit-kiafin.png",
+    "image": "../tiwabbit-kiafin/tiwabbit-kiafin.png",
+    "auraImage": "../tiwabbit-kiafin/tiwabbit-kiafin-aura.png",
+    "sleepingImage": "../tiwabbit-kiafin/tiwabbit-kiafin-z.png",
+    "background": "../tiwabbit-kiafin/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de puissance sur le Château du Wa Wabbit et le Donjon Wabbit.",
+    "bonusAmount": 55,
+    "difficultyLabel": "Moyen",
+    "difficultyStars": 2,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Château du Wa Wabbit",
+      "Donjon Wabbit"
+    ],
+    "dungeons": [
+      {
+        "key": "chateauWaWabbit",
+        "label": "Château Wa",
+        "fullLabel": "Château du Wa Wabbit",
+        "asset": "../tiwabbit-kiafin/donjon/chateau-du-wa-wabbit.webp",
+        "defaultAverage": 1500
+      },
+      {
+        "key": "donjonWabbit",
+        "label": "Donjon Wabbit",
+        "fullLabel": "Donjon Wabbit",
+        "asset": "../tiwabbit-kiafin/donjon/donjon-wabbit.webp",
+        "defaultAverage": 900
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "miniminotot",
+    "label": "Miniminotot",
+    "shortLabel": "Miniminotot",
+    "defaultProfileName": "Miniminotot principal",
+    "progressLabel": "Puissance",
+    "progressShort": "puissance",
+    "objectiveMax": 55,
+    "objectiveLabel": "55 puissance",
+    "icon": "../abra-kadabra/assets/images/puissance.png",
+    "logo": "../miniminotot/miniminotot.png",
+    "image": "../miniminotot/miniminotot.png",
+    "auraImage": "../miniminotot/miniminotot-aura.png",
+    "sleepingImage": "../miniminotot/miniminotot-z.png",
+    "background": "../miniminotot/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de puissance sur les labyrinthes du Minotoror et du Minotot.",
+    "estimateNote": "Les monstres du labyrinthe ne sont pas identiques a chaque run. Le suivi Miniminotot n'est donc pas fiable a 100% : les donjons et temps restants affichent un minimum estime, et vous terminerez souvent le familier avant la projection.",
+    "bonusAmount": 55,
+    "difficultyLabel": "Dur",
+    "difficultyStars": 3,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Labyrinthe du Minotoror",
+      "Labyrinthe du Minotot"
+    ],
+    "dungeons": [
+      {
+        "key": "labyrintheDuMinotoror",
+        "label": "Minotoror",
+        "fullLabel": "Labyrinthe du Minotoror",
+        "asset": "../miniminotot/donjon/minotoror.webp",
+        "defaultAverage": 1500
+      },
+      {
+        "key": "labyrintheDuMinotot",
+        "label": "Minotot",
+        "fullLabel": "Labyrinthe du Minotot",
+        "asset": "../miniminotot/donjon/minotot.webp",
+        "defaultAverage": 900
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "chenapandi",
+    "label": "Chenapandi",
+    "shortLabel": "Chenapandi",
+    "defaultProfileName": "Chenapandi principal",
+    "progressLabel": "Vitalité",
+    "progressShort": "vitalité",
+    "objectiveMax": 440,
+    "objectiveLabel": "440 vitalité",
+    "icon": "../chenapandi/vitalite.png",
+    "logo": "../chenapandi/chenapandi.png",
+    "image": "../chenapandi/chenapandi.png",
+    "auraImage": "../chenapandi/chenapandi-aura.png",
+    "sleepingImage": "../chenapandi/chenapandi-z.png",
+    "background": "../chenapandi/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de vitalité sur le Repaire des Pandikazes.",
+    "bonusAmount": 440,
+    "difficultyLabel": "Dur",
+    "difficultyStars": 3,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Repaire des Pandikazes"
+    ],
+    "dungeons": [
+      {
+        "key": "repaireDesPandikazes",
+        "label": "Pandikaze",
+        "fullLabel": "Repaire des Pandikazes",
+        "asset": "../chenapandi/donjon/maitre-pandore.webp",
+        "defaultAverage": 900
+      }
+    ],
+    "specialDefaults": {}
+  },
+  {
+    "id": "chercheur-d-ogrines",
+    "label": "Chercheur d'Ogrines",
+    "shortLabel": "Chercheur d'Ogrines",
+    "defaultProfileName": "Chercheur d'Ogrines principal",
+    "progressLabel": "Puissance",
+    "progressShort": "puissance",
+    "objectiveMax": 55,
+    "objectiveLabel": "55 puissance",
+    "icon": "../chercheur-d-ogrines/puissance.png",
+    "logo": "../chercheur-d-ogrines/chercheur-d-ogrines.png",
+    "image": "../chercheur-d-ogrines/chercheur-d-ogrines.png",
+    "auraImage": "../chercheur-d-ogrines/chercheur-d-ogrines-aura.png",
+    "sleepingImage": "../chercheur-d-ogrines/chercheur-d-ogrines-z.png",
+    "background": "../chercheur-d-ogrines/fond/fond.webp",
+    "status": "active",
+    "statusLabel": "",
+    "description": "Suivi de puissance sur la Grotte Hesque.",
+    "bonusAmount": 55,
+    "difficultyLabel": "Facile",
+    "difficultyStars": 1,
+    "dofusCooldownMin": 10,
+    "farmMethods": [
+      "Grotte Hesque"
+    ],
+    "dungeons": [
+      {
+        "key": "grotteHesque",
+        "label": "Grotte Hesque",
+        "fullLabel": "Grotte Hesque",
+        "asset": "../chercheur-d-ogrines/donjon/corailleur-magistral.webp",
+        "defaultAverage": 390
+      }
+    ],
+    "specialDefaults": {}
+  }
+]);
+export const GENERATED_FAMILIAR_RUNTIME = Object.freeze({
+  "pykur": {
+    "runLimits": {
+      "morose": 640,
+      "tynril": 48
+    },
+    "mobs": {
+      "chiendent": {
+        "name": "Chiendent",
+        "img": "chiendent.png",
+        "ppNeed": 80,
+        "cat": [
+          "morose",
+          "tynril",
+          "zone"
+        ]
+      },
+      "nerbe": {
+        "name": "Nerbe",
+        "img": "nerbe.png",
+        "ppNeed": 80,
+        "cat": [
+          "morose",
+          "tynril",
+          "zone"
+        ]
+      },
+      "fecorce": {
+        "name": "Fécorce",
+        "img": "fecorce.png",
+        "ppNeed": 60,
+        "cat": [
+          "morose",
+          "tynril",
+          "zone"
+        ]
+      },
+      "abrakleur": {
+        "name": "Abrakleur Sombre",
+        "img": "abrakleur.png",
+        "ppNeed": 40,
+        "cat": [
+          "morose",
+          "tynril",
+          "zone"
+        ]
+      },
+      "bitouf": {
+        "name": "Bitouf Sombre",
+        "img": "bitouf.png",
+        "ppNeed": 40,
+        "cat": [
+          "morose",
+          "tynril",
+          "zone"
+        ]
+      },
+      "floribonde": {
+        "name": "Floribonde",
+        "img": "floribonde.png",
+        "ppNeed": 40,
+        "cat": [
+          "morose",
+          "tynril",
+          "zone"
+        ]
+      },
+      "brouture": {
+        "name": "Brouture",
+        "img": "brouture.png",
+        "ppNeed": 60,
+        "cat": [
+          "tynril",
+          "zone"
+        ]
+      },
+      "tynrilAhuri": {
+        "name": "Tynril Ahuri",
+        "img": "tynril-ahuri.png",
+        "ppNeed": 3,
+        "cat": [
+          "tynril"
+        ]
+      },
+      "tynrilPerfide": {
+        "name": "Tynril Perfide",
+        "img": "tynril-perfide.png",
+        "ppNeed": 3,
+        "cat": [
+          "tynril"
+        ]
+      },
+      "tynrilDeconcerte": {
+        "name": "Tynril Déconcerté",
+        "img": "tynril-deconcerte.png",
+        "ppNeed": 3,
+        "cat": [
+          "tynril"
+        ]
+      },
+      "tynrilConsterne": {
+        "name": "Tynril Consterné",
+        "img": "tynril-consterne.png",
+        "ppNeed": 3,
+        "cat": [
+          "tynril"
+        ]
+      }
+    },
+    "gains": {
+      "morose": {
+        "chiendent": 1,
+        "nerbe": 1,
+        "fecorce": 1,
+        "abrakleur": 1,
+        "bitouf": 1,
+        "floribonde": 2
+      },
+      "tynril": {
+        "tynrilConsterne": 1,
+        "tynrilDeconcerte": 1,
+        "tynrilPerfide": 1,
+        "tynrilAhuri": 1,
+        "fecorce": 2,
+        "abrakleur": 3,
+        "brouture": 3,
+        "chiendent": 5,
+        "nerbe": 6,
+        "floribonde": 6,
+        "bitouf": 10
+      }
+    },
+    "zoneIds": [
+      "abrakleur",
+      "bitouf",
+      "brouture",
+      "chiendent",
+      "fecorce",
+      "floribonde",
+      "nerbe"
+    ]
+  },
+  "abra-kadabra": {
+    "runLimits": {
+      "donjonAbraknyde": 9999,
+      "cheneMou": 9999,
+      "salleAbrakne": 9999
+    },
+    "mobs": {
+      "cheneMou": {
+        "name": "Chêne Mou",
+        "imgPath": "../abra-kadabra/assets/images/monstre/chêne mou.png",
+        "ppNeed": 1,
+        "cat": [
+          "cheneMou"
+        ]
+      },
+      "abraknydeAncestral": {
+        "name": "Abraknyde Ancestral",
+        "imgPath": "../abra-kadabra/assets/images/monstre/abraknyde ancestral.png",
+        "ppNeed": 10,
+        "cat": [
+          "donjonAbraknyde"
+        ]
+      },
+      "abraknydeSombre": {
+        "name": "Abraknyde Sombre",
+        "imgPath": "../abra-kadabra/assets/images/monstre/abraknyde sombre.png",
+        "ppNeed": 20,
+        "cat": [
+          "donjonAbraknyde",
+          "cheneMou"
+        ]
+      },
+      "abrakneSombre": {
+        "name": "Abrakne Sombre",
+        "imgPath": "../abra-kadabra/assets/images/monstre/abrakne sombre.png",
+        "ppNeed": 20,
+        "cat": [
+          "cheneMou"
+        ]
+      },
+      "abraknyde": {
+        "name": "Abraknyde",
+        "imgPath": "../abra-kadabra/assets/images/monstre/abraknyde.png",
+        "ppNeed": 50,
+        "cat": [
+          "donjonAbraknyde",
+          "cheneMou",
+          "zone"
+        ]
+      },
+      "abraknydeVenerable": {
+        "name": "Abraknyde Vénérable",
+        "imgPath": "../abra-kadabra/assets/images/monstre/abraknyde venerable.png",
+        "ppNeed": 50,
+        "cat": [
+          "donjonAbraknyde",
+          "cheneMou",
+          "zone"
+        ]
+      },
+      "abrakne": {
+        "name": "Abrakne",
+        "imgPath": "../abra-kadabra/assets/images/monstre/abrakne.png",
+        "ppNeed": 50,
+        "cat": [
+          "donjonAbraknyde",
+          "cheneMou",
+          "salleAbrakne",
+          "zone"
+        ]
+      },
+      "tronknyde": {
+        "name": "Tronknyde",
+        "imgPath": "../abra-kadabra/assets/images/monstre/tronknyde.png",
+        "ppNeed": 150,
+        "cat": [
+          "donjonAbraknyde",
+          "cheneMou",
+          "zone"
+        ]
+      }
+    },
+    "gains": {
+      "donjonAbraknyde": {
+        "abraknyde": 5,
+        "abraknydeVenerable": 14,
+        "abraknydeSombre": 2,
+        "abraknydeAncestral": 1,
+        "abrakne": 11,
+        "tronknyde": 4
+      },
+      "cheneMou": {
+        "cheneMou": 1,
+        "abraknyde": 4,
+        "tronknyde": 3,
+        "abraknydeVenerable": 1,
+        "abraknydeSombre": 13,
+        "abrakne": 1,
+        "abrakneSombre": 14
+      },
+      "salleAbrakne": {
+        "abrakne": 1
+      }
+    },
+    "zoneIds": [
+      "abraknyde",
+      "tronknyde",
+      "abraknydeVenerable",
+      "abrakne"
+    ],
+    "specialGains": {
+      "salleAbrakneSetup": {
+        "abraknyde": 4,
+        "tronknyde": 3,
+        "abraknydeVenerable": 1,
+        "abrakne": 1
+      }
+    }
+  },
+  "dragoune-noir": {
+    "runLimits": {
+      "sanctuaireDragoeufs": 9999
+    },
+    "mobs": {
+      "crocabulia": {
+        "name": "Crocabulia",
+        "imgPath": "../dragoune-noir/assets/images/monstre/crocabulia.png",
+        "ppNeed": 1,
+        "cat": [
+          "sanctuaireDragoeufs"
+        ]
+      },
+      "aerotrugoburMalveillant": {
+        "name": "Aerotrugobur le Malveillant",
+        "imgPath": "../dragoune-noir/assets/images/monstre/aerotrugobur-le-malveillant.png",
+        "ppNeed": 5,
+        "cat": [
+          "zone"
+        ]
+      },
+      "aqualikrosImpitoyable": {
+        "name": "Aqualikros l'Impitoyable",
+        "imgPath": "../dragoune-noir/assets/images/monstre/aqualikros-l-impitoyable.png",
+        "ppNeed": 5,
+        "cat": [
+          "zone"
+        ]
+      },
+      "aerohouctorGuerrier": {
+        "name": "Aerohouctor le Guerrier",
+        "imgPath": "../dragoune-noir/assets/images/monstre/aerohouctor-le-guerrier.png",
+        "ppNeed": 5,
+        "cat": [
+          "zone"
+        ]
+      },
+      "aquabralakGuerrier": {
+        "name": "Aquabralak le Guerrier",
+        "imgPath": "../dragoune-noir/assets/images/monstre/aquabralak-le-guerrier.png",
+        "ppNeed": 5,
+        "cat": [
+          "zone"
+        ]
+      },
+      "terrakoubiakGuerrier": {
+        "name": "Terrakoubiak le Guerrier",
+        "imgPath": "../dragoune-noir/assets/images/monstre/terrakoubiak-le-Guerrier.png",
+        "ppNeed": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "ignelicroburGuerrier": {
+        "name": "Ignelicrobur le Guerrier",
+        "imgPath": "../dragoune-noir/assets/images/monstre/ignelicrobur le-guerrier.png",
+        "ppNeed": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "terraburkalPerfide": {
+        "name": "Terraburkal le Perfide",
+        "imgPath": "../dragoune-noir/assets/images/monstre/terraburkal-le-perfide.png",
+        "ppNeed": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "ignerkocroposAffame": {
+        "name": "Ignerkocropos l'Affamé",
+        "imgPath": "../dragoune-noir/assets/images/monstre/ignerkocropos-l-affame.png",
+        "ppNeed": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "dragossNoir": {
+        "name": "Dragoss Noir",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoss-noir.png",
+        "ppNeed": 15,
+        "cat": [
+          "sanctuaireDragoeufs",
+          "zone"
+        ]
+      },
+      "dragossBlanc": {
+        "name": "Dragoss Blanc",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoss-blanc.png",
+        "ppNeed": 15,
+        "cat": [
+          "sanctuaireDragoeufs",
+          "zone"
+        ]
+      },
+      "dragossSaphir": {
+        "name": "Dragoss de Saphir",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoss-de-saphir.png",
+        "ppNeed": 15,
+        "cat": [
+          "sanctuaireDragoeufs",
+          "zone"
+        ]
+      },
+      "dragossDoreEveille": {
+        "name": "Dragoss Doré Eveillé",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoss-dore-eveille.png",
+        "ppNeed": 15,
+        "cat": [
+          "sanctuaireDragoeufs",
+          "zone"
+        ]
+      },
+      "dragossNoirEveille": {
+        "name": "Dragoss Noir Eveillé",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoss-noir-eveille.png",
+        "ppNeed": 15,
+        "cat": [
+          "sanctuaireDragoeufs",
+          "zone"
+        ]
+      },
+      "dragossBlancEveille": {
+        "name": "Dragoss Blanc Eveillé",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoss-blanc-eveille.png",
+        "ppNeed": 15,
+        "cat": [
+          "sanctuaireDragoeufs",
+          "zone"
+        ]
+      },
+      "dragossSaphirEveille": {
+        "name": "Dragoss de Saphir Eveillé",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoss-de-saphir-eveille.png",
+        "ppNeed": 15,
+        "cat": [
+          "sanctuaireDragoeufs",
+          "zone"
+        ]
+      },
+      "dragossDore": {
+        "name": "Dragoss Doré",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoss-dore.png",
+        "ppNeed": 15,
+        "cat": [
+          "sanctuaireDragoeufs",
+          "zone"
+        ]
+      },
+      "dragoeufVolant": {
+        "name": "Dragoeuf Volant",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoeuf-volant.png",
+        "ppNeed": 15,
+        "cat": [
+          "sanctuaireDragoeufs",
+          "zone"
+        ]
+      },
+      "dragoeufGuerrier": {
+        "name": "Dragoeuf Guerrier",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoeuf-guerrier.png",
+        "ppNeed": 15,
+        "cat": [
+          "sanctuaireDragoeufs",
+          "zone"
+        ]
+      },
+      "dragueuse": {
+        "name": "Dragueuse",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragueuse.png",
+        "ppNeed": 15,
+        "cat": [
+          "sanctuaireDragoeufs",
+          "zone"
+        ]
+      },
+      "dragoeufDoreImmature": {
+        "name": "DragOeuf Doré immature",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoeuf-dore-immature.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "dragoeufNoirImmature": {
+        "name": "DragOeuf Noir immature",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoeuf-noir-immature.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "dragoeufBlancImmature": {
+        "name": "DragOeuf Blanc immature",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoeuf-blanc-immature.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "dragoeufSaphirImmature": {
+        "name": "DragOeuf de Saphir immature",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoeuf-de-saphir-immature.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "dragoeufDore": {
+        "name": "DragOeuf Doré",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoeuf-dore.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "dragoeufNoir": {
+        "name": "DragOeuf Noir",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoeuf-noir.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "dragoeufBlanc": {
+        "name": "DragOeuf Blanc",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoeuf-blanc.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "dragoeufSaphir": {
+        "name": "DragOeuf de Saphir",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoeuf-de-saphir.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "dragoeufDoreEveille": {
+        "name": "DragOeuf Doré Eveillé",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoeuf-dore-eveille.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "dragoeufNoirEveille": {
+        "name": "DragOeuf Noir Eveillé",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoeuf-noir-eveille.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "dragoeufBlancEveille": {
+        "name": "DragOeuf Blanc Eveillé",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoeuf-blanc-eveille.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "dragoeufSaphirEveille": {
+        "name": "DragOeuf de Saphir Eveillé",
+        "imgPath": "../dragoune-noir/assets/images/monstre/dragoeuf-de-saphir-eveille.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "coquilleSoignante": {
+        "name": "Coquille Soignante",
+        "imgPath": "../dragoune-noir/assets/images/monstre/coquille-soignante.png",
+        "ppNeed": 100,
+        "cat": [
+          "zone"
+        ]
+      },
+      "coquilleExplosive": {
+        "name": "Coquille Explosive",
+        "imgPath": "../dragoune-noir/assets/images/monstre/coquille-explosive.png",
+        "ppNeed": 100,
+        "cat": [
+          "zone"
+        ]
+      }
+    },
+    "gains": {
+      "sanctuaireDragoeufs": {
+        "crocabulia": 1,
+        "dragossBlanc": 5,
+        "dragossDore": 5,
+        "dragossNoir": 5,
+        "dragossSaphir": 5,
+        "dragueuse": 7,
+        "dragoeufGuerrier": 5,
+        "dragoeufVolant": 8,
+        "dragossBlancEveille": 5,
+        "dragossDoreEveille": 5,
+        "dragossNoirEveille": 5,
+        "dragossSaphirEveille": 5
+      }
+    },
+    "zoneIds": [
+      "aerotrugoburMalveillant",
+      "aqualikrosImpitoyable",
+      "aerohouctorGuerrier",
+      "aquabralakGuerrier",
+      "terrakoubiakGuerrier",
+      "ignelicroburGuerrier",
+      "terraburkalPerfide",
+      "ignerkocroposAffame",
+      "dragossNoir",
+      "dragossBlanc",
+      "dragossSaphir",
+      "dragossDoreEveille",
+      "dragossNoirEveille",
+      "dragossBlancEveille",
+      "dragossSaphirEveille",
+      "dragossDore",
+      "dragoeufVolant",
+      "dragoeufGuerrier",
+      "dragueuse",
+      "dragoeufDoreImmature",
+      "dragoeufNoirImmature",
+      "dragoeufBlancImmature",
+      "dragoeufSaphirImmature",
+      "dragoeufDore",
+      "dragoeufNoir",
+      "dragoeufBlanc",
+      "dragoeufSaphir",
+      "dragoeufDoreEveille",
+      "dragoeufNoirEveille",
+      "dragoeufBlancEveille",
+      "dragoeufSaphirEveille",
+      "coquilleSoignante",
+      "coquilleExplosive"
+    ]
+  },
+  "tofoudre": {
+    "runLimits": {
+      "ratsAmakna": 9999,
+      "ratsBrakmar": 9999,
+      "ratsBonta": 9999
+    },
+    "mobs": {
+      "sphincterCell": {
+        "name": "Sphincter Cell",
+        "imgPath": "../tofoudre/assets/images/monstre/sphincter-cell.png",
+        "ppNeed": 5,
+        "cat": [
+          "ratsAmakna"
+        ]
+      },
+      "ratNoir": {
+        "name": "Rat Noir",
+        "imgPath": "../tofoudre/assets/images/monstre/rat-noir.png",
+        "ppNeed": 25,
+        "cat": [
+          "ratsAmakna",
+          "ratsBrakmar"
+        ]
+      },
+      "ratBlanc": {
+        "name": "Rat Blanc",
+        "imgPath": "../tofoudre/assets/images/monstre/rat-blanc.png",
+        "ppNeed": 25,
+        "cat": [
+          "ratsAmakna",
+          "ratsBonta"
+        ]
+      },
+      "ratCroc": {
+        "name": "Rat Croc",
+        "imgPath": "../tofoudre/assets/images/monstre/rat-croc.png",
+        "ppNeed": 150,
+        "cat": [
+          "ratsAmakna",
+          "ratsBonta"
+        ]
+      },
+      "ratBajoie": {
+        "name": "Rat Bajoie",
+        "imgPath": "../tofoudre/assets/images/monstre/rat-bajoie.png",
+        "ppNeed": 150,
+        "cat": [
+          "ratsAmakna",
+          "ratsBonta"
+        ]
+      },
+      "ratBasher": {
+        "name": "Rat Basher",
+        "imgPath": "../tofoudre/assets/images/monstre/rat-basher.png",
+        "ppNeed": 150,
+        "cat": [
+          "ratsAmakna",
+          "ratsBonta"
+        ]
+      },
+      "ratKlure": {
+        "name": "Rat Klure",
+        "imgPath": "../tofoudre/assets/images/monstre/rat-klure.png",
+        "ppNeed": 150,
+        "cat": [
+          "ratsAmakna",
+          "ratsBrakmar"
+        ]
+      },
+      "ratBatteur": {
+        "name": "Rat Batteur",
+        "imgPath": "../tofoudre/assets/images/monstre/rat-batteur.png",
+        "ppNeed": 150,
+        "cat": [
+          "ratsAmakna",
+          "ratsBrakmar"
+        ]
+      },
+      "ratDeMarais": {
+        "name": "Rat de Marais",
+        "imgPath": "../tofoudre/assets/images/monstre/rat-de-marais.png",
+        "ppNeed": 150,
+        "cat": [
+          "ratsAmakna",
+          "ratsBrakmar"
+        ]
+      },
+      "ratHyoactif": {
+        "name": "Rat d'Hyoactif",
+        "imgPath": "../tofoudre/assets/images/monstre/rat-d-hyoactif.png",
+        "ppNeed": 200,
+        "cat": [
+          "zone"
+        ]
+      },
+      "chamanEgoutant": {
+        "name": "Chaman d'Egoutant",
+        "imgPath": "../tofoudre/assets/images/monstre/chaman-d-egoutant.png",
+        "ppNeed": 250,
+        "cat": [
+          "ratsAmakna",
+          "ratsBrakmar",
+          "ratsBonta"
+        ]
+      },
+      "ratEgoutant": {
+        "name": "Rat d'Egoutant",
+        "imgPath": "../tofoudre/assets/images/monstre/rat-d-egoutant.png",
+        "ppNeed": 300,
+        "cat": [
+          "ratsAmakna",
+          "ratsBrakmar",
+          "ratsBonta"
+        ]
+      },
+      "ratEgoutantMalade": {
+        "name": "Rat d'Egoutant malade",
+        "imgPath": "../tofoudre/assets/images/monstre/rat-d-egoutant-malade.png",
+        "ppNeed": 300,
+        "cat": [
+          "zone"
+        ]
+      },
+      "miliratEgoutantMalade": {
+        "name": "Milirat d'Egoutant malade",
+        "imgPath": "../tofoudre/assets/images/monstre/milirat-d-egoutant-malade.png",
+        "ppNeed": 400,
+        "cat": [
+          "zone"
+        ]
+      }
+    },
+    "gains": {
+      "ratsAmakna": {
+        "sphincterCell": 1,
+        "ratBlanc": 1,
+        "ratNoir": 1,
+        "ratCroc": 4,
+        "ratEgoutant": 5,
+        "ratBatteur": 6,
+        "ratBajoie": 7,
+        "chamanEgoutant": 10,
+        "ratDeMarais": 7,
+        "ratKlure": 10,
+        "ratBasher": 11
+      },
+      "ratsBrakmar": {
+        "ratNoir": 1,
+        "ratBatteur": 9,
+        "ratKlure": 7,
+        "chamanEgoutant": 13,
+        "ratDeMarais": 16,
+        "ratEgoutant": 17
+      },
+      "ratsBonta": {
+        "ratBlanc": 1,
+        "ratBajoie": 9,
+        "ratBasher": 7,
+        "chamanEgoutant": 13,
+        "ratCroc": 16,
+        "ratEgoutant": 17
+      }
+    },
+    "zoneIds": [
+      "ratHyoactif",
+      "ratEgoutantMalade",
+      "miliratEgoutantMalade"
+    ]
+  },
+  "flibalak": {
+    "runLimits": {
+      "archeDOtomai": 9999,
+      "bateauVersLIleDOtomai": 9999
+    },
+    "mobs": {
+      "gourloLeTerrible": {
+        "name": "Gourlo le Terrible",
+        "imgPath": "../flibalak/monstre/gourlo-le-terrible.png",
+        "ppNeed": 10,
+        "cat": [
+          "archeDOtomai"
+        ]
+      },
+      "boomba": {
+        "name": "Boomba",
+        "imgPath": "../flibalak/monstre/boomba.png",
+        "ppNeed": 250,
+        "cat": [
+          "archeDOtomai",
+          "zone"
+        ]
+      },
+      "canonDorf": {
+        "name": "Canon Dorf",
+        "imgPath": "../flibalak/monstre/canon-dorf.png",
+        "ppNeed": 300,
+        "cat": [
+          "archeDOtomai",
+          "zone"
+        ]
+      },
+      "nakunbra": {
+        "name": "Nakunbra",
+        "imgPath": "../flibalak/monstre/nakunbra.png",
+        "ppNeed": 300,
+        "cat": [
+          "archeDOtomai",
+          "zone"
+        ]
+      },
+      "barbroussa": {
+        "name": "Barbroussa",
+        "imgPath": "../flibalak/monstre/barbroussa.png",
+        "ppNeed": 300,
+        "cat": [
+          "archeDOtomai",
+          "zone"
+        ]
+      },
+      "leFlib": {
+        "name": "Le Flib",
+        "imgPath": "../flibalak/monstre/le-flib.png",
+        "ppNeed": 300,
+        "cat": [
+          "archeDOtomai",
+          "zone"
+        ]
+      },
+      "sparo": {
+        "name": "Sparo",
+        "imgPath": "../flibalak/monstre/sparo.png",
+        "ppNeed": 300,
+        "cat": [
+          "archeDOtomai",
+          "zone"
+        ]
+      },
+      "boombaSaoule": {
+        "name": "Boomba saoulé",
+        "imgPath": "../flibalak/monstre/boomba-saoule.png",
+        "ppNeed": 400,
+        "cat": [
+          "bateauVersLIleDOtomai",
+          "zone"
+        ]
+      },
+      "nakunbraEsseule": {
+        "name": "Nakunbra esseulé",
+        "imgPath": "../flibalak/monstre/nakunbra-esseule.png",
+        "ppNeed": 400,
+        "cat": [
+          "bateauVersLIleDOtomai",
+          "zone"
+        ]
+      },
+      "canonDorfDebutant": {
+        "name": "Canon Dorf débutant",
+        "imgPath": "../flibalak/monstre/canon-dorf-debutant.png",
+        "ppNeed": 400,
+        "cat": [
+          "bateauVersLIleDOtomai",
+          "zone"
+        ]
+      },
+      "leChouque": {
+        "name": "Le Chouque",
+        "imgPath": "../flibalak/monstre/le-chouque.png",
+        "ppNeed": 25,
+        "cat": [
+          "zone"
+        ]
+      },
+      "coffreMauditDuFlib": {
+        "name": "Coffre Maudit du Flib",
+        "imgPath": "../flibalak/monstre/coffre-maudit-du-flib.png",
+        "ppNeed": 400,
+        "cat": [
+          "zone"
+        ]
+      }
+    },
+    "gains": {
+      "archeDOtomai": {
+        "gourloLeTerrible": 1,
+        "boomba": 1,
+        "canonDorf": 2,
+        "nakunbra": 2,
+        "barbroussa": 11,
+        "leFlib": 12,
+        "sparo": 15
+      },
+      "bateauVersLIleDOtomai": {
+        "boombaSaoule": 1,
+        "nakunbraEsseule": 1,
+        "canonDorfDebutant": 1
+      }
+    },
+    "zoneIds": [
+      "boomba",
+      "canonDorf",
+      "nakunbra",
+      "barbroussa",
+      "leFlib",
+      "sparo",
+      "boombaSaoule",
+      "nakunbraEsseule",
+      "canonDorfDebutant",
+      "leChouque",
+      "coffreMauditDuFlib"
+    ]
+  },
+  "croum-aqueux": {
+    "runLimits": {
+      "gouletRasboul": 9999
+    },
+    "mobs": {
+      "silfRasboul": {
+        "name": "Silf le Rasboul Majeur",
+        "imgPath": "../croum oto/monstre/rasboul.png",
+        "ppNeed": 1,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "mufafah": {
+        "name": "Mufafah",
+        "imgPath": "../croum oto/monstre/mufafah.png",
+        "ppNeed": 40,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "craqueboulePoli": {
+        "name": "Craqueboule Poli",
+        "imgPath": "../croum oto/monstre/craqueboule-poli.png",
+        "ppNeed": 40,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "kido": {
+        "name": "Kido",
+        "imgPath": "../croum oto/monstre/kido.png",
+        "ppNeed": 50,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "kilibriss": {
+        "name": "Kilibriss",
+        "imgPath": "../croum oto/monstre/kilibriss.png",
+        "ppNeed": 50,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "bitoufPlaines": {
+        "name": "Bitouf des Plaines",
+        "imgPath": "../croum oto/monstre/bitouf-des-plaines.png",
+        "ppNeed": 50,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "craqueleurPoli": {
+        "name": "Craqueleur Poli",
+        "imgPath": "../croum oto/monstre/craqueleur-poli.png",
+        "ppNeed": 60,
+        "cat": [
+          "gouletRasboul"
+        ]
+      }
+    },
+    "gains": {
+      "gouletRasboul": {
+        "silfRasboul": 1,
+        "craqueboulePoli": 1,
+        "craqueleurPoli": 6,
+        "mufafah": 5,
+        "kido": 7,
+        "bitoufPlaines": 11,
+        "kilibriss": 11
+      }
+    },
+    "zoneIds": []
+  },
+  "croum-volatile": {
+    "runLimits": {
+      "gouletRasboul": 9999
+    },
+    "mobs": {
+      "silfRasboul": {
+        "name": "Silf le Rasboul Majeur",
+        "imgPath": "../croum oto/monstre/rasboul.png",
+        "ppNeed": 1,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "mufafah": {
+        "name": "Mufafah",
+        "imgPath": "../croum oto/monstre/mufafah.png",
+        "ppNeed": 40,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "craqueboulePoli": {
+        "name": "Craqueboule Poli",
+        "imgPath": "../croum oto/monstre/craqueboule-poli.png",
+        "ppNeed": 40,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "kido": {
+        "name": "Kido",
+        "imgPath": "../croum oto/monstre/kido.png",
+        "ppNeed": 50,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "kilibriss": {
+        "name": "Kilibriss",
+        "imgPath": "../croum oto/monstre/kilibriss.png",
+        "ppNeed": 50,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "bitoufPlaines": {
+        "name": "Bitouf des Plaines",
+        "imgPath": "../croum oto/monstre/bitouf-des-plaines.png",
+        "ppNeed": 50,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "craqueleurPoli": {
+        "name": "Craqueleur Poli",
+        "imgPath": "../croum oto/monstre/craqueleur-poli.png",
+        "ppNeed": 60,
+        "cat": [
+          "gouletRasboul"
+        ]
+      }
+    },
+    "gains": {
+      "gouletRasboul": {
+        "silfRasboul": 1,
+        "craqueboulePoli": 1,
+        "craqueleurPoli": 6,
+        "mufafah": 5,
+        "kido": 7,
+        "bitoufPlaines": 11,
+        "kilibriss": 11
+      }
+    },
+    "zoneIds": []
+  },
+  "croum-igne": {
+    "runLimits": {
+      "gouletRasboul": 9999
+    },
+    "mobs": {
+      "silfRasboul": {
+        "name": "Silf le Rasboul Majeur",
+        "imgPath": "../croum oto/monstre/rasboul.png",
+        "ppNeed": 1,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "mufafah": {
+        "name": "Mufafah",
+        "imgPath": "../croum oto/monstre/mufafah.png",
+        "ppNeed": 40,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "craqueboulePoli": {
+        "name": "Craqueboule Poli",
+        "imgPath": "../croum oto/monstre/craqueboule-poli.png",
+        "ppNeed": 40,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "kido": {
+        "name": "Kido",
+        "imgPath": "../croum oto/monstre/kido.png",
+        "ppNeed": 50,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "kilibriss": {
+        "name": "Kilibriss",
+        "imgPath": "../croum oto/monstre/kilibriss.png",
+        "ppNeed": 50,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "bitoufPlaines": {
+        "name": "Bitouf des Plaines",
+        "imgPath": "../croum oto/monstre/bitouf-des-plaines.png",
+        "ppNeed": 50,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "craqueleurPoli": {
+        "name": "Craqueleur Poli",
+        "imgPath": "../croum oto/monstre/craqueleur-poli.png",
+        "ppNeed": 60,
+        "cat": [
+          "gouletRasboul"
+        ]
+      }
+    },
+    "gains": {
+      "gouletRasboul": {
+        "silfRasboul": 1,
+        "craqueboulePoli": 1,
+        "craqueleurPoli": 6,
+        "mufafah": 5,
+        "kido": 7,
+        "bitoufPlaines": 11,
+        "kilibriss": 11
+      }
+    },
+    "zoneIds": []
+  },
+  "croum-vegetal": {
+    "runLimits": {
+      "gouletRasboul": 9999
+    },
+    "mobs": {
+      "silfRasboul": {
+        "name": "Silf le Rasboul Majeur",
+        "imgPath": "../croum oto/monstre/rasboul.png",
+        "ppNeed": 1,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "mufafah": {
+        "name": "Mufafah",
+        "imgPath": "../croum oto/monstre/mufafah.png",
+        "ppNeed": 40,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "craqueboulePoli": {
+        "name": "Craqueboule Poli",
+        "imgPath": "../croum oto/monstre/craqueboule-poli.png",
+        "ppNeed": 40,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "kido": {
+        "name": "Kido",
+        "imgPath": "../croum oto/monstre/kido.png",
+        "ppNeed": 50,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "kilibriss": {
+        "name": "Kilibriss",
+        "imgPath": "../croum oto/monstre/kilibriss.png",
+        "ppNeed": 50,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "bitoufPlaines": {
+        "name": "Bitouf des Plaines",
+        "imgPath": "../croum oto/monstre/bitouf-des-plaines.png",
+        "ppNeed": 50,
+        "cat": [
+          "gouletRasboul"
+        ]
+      },
+      "craqueleurPoli": {
+        "name": "Craqueleur Poli",
+        "imgPath": "../croum oto/monstre/craqueleur-poli.png",
+        "ppNeed": 60,
+        "cat": [
+          "gouletRasboul"
+        ]
+      }
+    },
+    "gains": {
+      "gouletRasboul": {
+        "silfRasboul": 1,
+        "craqueboulePoli": 1,
+        "craqueleurPoli": 6,
+        "mufafah": 5,
+        "kido": 7,
+        "bitoufPlaines": 11,
+        "kilibriss": 11
+      }
+    },
+    "zoneIds": []
+  },
+  "bouloute": {
+    "runLimits": {
+      "donjonBouftous": 9999
+    },
+    "mobs": {
+      "bouftouRoyal": {
+        "name": "Bouftou Royal",
+        "imgPath": "../vitalité/monstre bouloute/bouftou-royal.png",
+        "ppNeed": 5,
+        "cat": [
+          "donjonBouftous"
+        ]
+      },
+      "chefBouftou": {
+        "name": "Chef de Guerre Bouftou",
+        "imgPath": "../vitalité/monstre bouloute/chef-de-guerre-bouftou.png",
+        "ppNeed": 20,
+        "cat": [
+          "donjonBouftous"
+        ]
+      },
+      "bouftouHalouine": {
+        "name": "Bouftou d'Halouine",
+        "imgPath": "../vitalité/monstre bouloute/bouftou-d-hallowen.png",
+        "ppNeed": 25,
+        "cat": [
+          "zone"
+        ]
+      },
+      "ballotinBouftou": {
+        "name": "Ballotin le Bouftou",
+        "imgPath": "../vitalité/monstre bouloute/ballotin-le-bouftou.png",
+        "ppNeed": 25,
+        "cat": [
+          "zone"
+        ]
+      },
+      "bouftou": {
+        "name": "Bouftou",
+        "imgPath": "../vitalité/monstre bouloute/bouftou.png",
+        "ppNeed": 50,
+        "cat": [
+          "donjonBouftous"
+        ]
+      },
+      "bouftonBlanc": {
+        "name": "Boufton Blanc",
+        "imgPath": "../vitalité/monstre bouloute/boufton-blanc.png",
+        "ppNeed": 100,
+        "cat": [
+          "donjonBouftous"
+        ]
+      },
+      "bouftonNoir": {
+        "name": "Boufton Noir",
+        "imgPath": "../vitalité/monstre bouloute/boufton-noir.png",
+        "ppNeed": 100,
+        "cat": [
+          "donjonBouftous"
+        ]
+      }
+    },
+    "gains": {
+      "donjonBouftous": {
+        "bouftouRoyal": 1,
+        "chefBouftou": 9,
+        "bouftonBlanc": 14,
+        "bouftonNoir": 13,
+        "bouftou": 37
+      }
+    },
+    "zoneIds": [
+      "bouftouHalouine",
+      "ballotinBouftou"
+    ]
+  },
+  "bouloute-du-parrain": {
+    "runLimits": {
+      "donjonBouftous": 9999
+    },
+    "mobs": {
+      "bouftouRoyal": {
+        "name": "Bouftou Royal",
+        "imgPath": "../vitalité/monstre bouloute/bouftou-royal.png",
+        "ppNeed": 5,
+        "cat": [
+          "donjonBouftous"
+        ]
+      },
+      "chefBouftou": {
+        "name": "Chef de Guerre Bouftou",
+        "imgPath": "../vitalité/monstre bouloute/chef-de-guerre-bouftou.png",
+        "ppNeed": 20,
+        "cat": [
+          "donjonBouftous"
+        ]
+      },
+      "bouftouHalouine": {
+        "name": "Bouftou d'Halouine",
+        "imgPath": "../vitalité/monstre bouloute/bouftou-d-hallowen.png",
+        "ppNeed": 25,
+        "cat": [
+          "zone"
+        ]
+      },
+      "ballotinBouftou": {
+        "name": "Ballotin le Bouftou",
+        "imgPath": "../vitalité/monstre bouloute/ballotin-le-bouftou.png",
+        "ppNeed": 25,
+        "cat": [
+          "zone"
+        ]
+      },
+      "bouftou": {
+        "name": "Bouftou",
+        "imgPath": "../vitalité/monstre bouloute/bouftou.png",
+        "ppNeed": 50,
+        "cat": [
+          "donjonBouftous"
+        ]
+      },
+      "bouftonBlanc": {
+        "name": "Boufton Blanc",
+        "imgPath": "../vitalité/monstre bouloute/boufton-blanc.png",
+        "ppNeed": 100,
+        "cat": [
+          "donjonBouftous"
+        ]
+      },
+      "bouftonNoir": {
+        "name": "Boufton Noir",
+        "imgPath": "../vitalité/monstre bouloute/boufton-noir.png",
+        "ppNeed": 100,
+        "cat": [
+          "donjonBouftous"
+        ]
+      }
+    },
+    "gains": {
+      "donjonBouftous": {
+        "bouftouRoyal": 1,
+        "chefBouftou": 9,
+        "bouftonBlanc": 14,
+        "bouftonNoir": 13,
+        "bouftou": 37
+      }
+    },
+    "zoneIds": [
+      "bouftouHalouine",
+      "ballotinBouftou"
+    ]
+  },
+  "vampyrette": {
+    "runLimits": {
+      "donjonSquelettes": 9999
+    },
+    "mobs": {
+      "chaferElite": {
+        "name": "Chafer d'élite",
+        "imgPath": "../vitalité/vampyrette/monstre/chafer-d-elite.png",
+        "ppNeed": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "chaferLancier": {
+        "name": "Chafer Lancier",
+        "imgPath": "../vitalité/vampyrette/monstre/chafer-lancier.png",
+        "ppNeed": 15,
+        "cat": [
+          "zone"
+        ]
+      },
+      "rib": {
+        "name": "Rib",
+        "imgPath": "../vitalité/vampyrette/monstre/rib.png",
+        "ppNeed": 20,
+        "cat": [
+          "donjonSquelettes"
+        ]
+      },
+      "chaferInvisible": {
+        "name": "Chafer Invisible",
+        "imgPath": "../vitalité/vampyrette/monstre/chafer-invisible.png",
+        "ppNeed": 20,
+        "cat": [
+          "donjonSquelettes"
+        ]
+      },
+      "chaferArcher": {
+        "name": "Chafer Archer",
+        "imgPath": "../vitalité/vampyrette/monstre/chafer-archer.png",
+        "ppNeed": 20,
+        "cat": [
+          "zone"
+        ]
+      },
+      "chaferFantassin": {
+        "name": "Chafer Fantassin",
+        "imgPath": "../vitalité/vampyrette/monstre/chafer-fantassin.png",
+        "ppNeed": 20,
+        "cat": [
+          "donjonSquelettes"
+        ]
+      },
+      "chafer": {
+        "name": "Chafer",
+        "imgPath": "../vitalité/vampyrette/monstre/chafer.png",
+        "ppNeed": 30,
+        "cat": [
+          "donjonSquelettes"
+        ]
+      },
+      "kwoan": {
+        "name": "Kwoan",
+        "imgPath": "../vitalité/vampyrette/monstre/kwoan.png",
+        "ppNeed": 30,
+        "cat": [
+          "zone"
+        ]
+      },
+      "chaferPrepubere": {
+        "name": "Chafer Prépubère",
+        "imgPath": "../vitalité/vampyrette/monstre/chafer-prepubere.png",
+        "ppNeed": 30,
+        "cat": [
+          "zone"
+        ]
+      }
+    },
+    "gains": {
+      "donjonSquelettes": {
+        "chaferFantassin": 4,
+        "chaferInvisible": 10,
+        "rib": 10,
+        "chafer": 17
+      }
+    },
+    "zoneIds": [
+      "chaferElite",
+      "chaferLancier",
+      "chaferArcher",
+      "kwoan",
+      "chaferPrepubere"
+    ]
+  },
+  "gelutin": {
+    "runLimits": {
+      "donjonBlops": 9999,
+      "antreBlopMulticolore": 9999
+    },
+    "mobs": {
+      "blopMulticoloreRoyal": {
+        "name": "Blop Multicolore Royal",
+        "imgPath": "../vitalité/gelutin/monstre/blop-multicolore-royal.png",
+        "ppNeed": 1,
+        "cat": [
+          "antreBlopMulticolore"
+        ]
+      },
+      "blopReinetteRoyal": {
+        "name": "Blop Reinette Royal",
+        "imgPath": "../vitalité/gelutin/monstre/blop-reneitte-royal.png",
+        "ppNeed": 2,
+        "cat": [
+          "donjonBlops",
+          "antreBlopMulticolore"
+        ]
+      },
+      "blopIndigoRoyal": {
+        "name": "Blop Indigo Royal",
+        "imgPath": "../vitalité/gelutin/monstre/blop-indigo-royal.png",
+        "ppNeed": 2,
+        "cat": [
+          "donjonBlops",
+          "antreBlopMulticolore"
+        ]
+      },
+      "blopGriotteRoyal": {
+        "name": "Blop Griotte Royal",
+        "imgPath": "../vitalité/gelutin/monstre/blop-griotte-royal.png",
+        "ppNeed": 2,
+        "cat": [
+          "donjonBlops",
+          "antreBlopMulticolore"
+        ]
+      },
+      "blopCocoRoyal": {
+        "name": "Blop Coco Royal",
+        "imgPath": "../vitalité/gelutin/monstre/blop-coco-royal.png",
+        "ppNeed": 2,
+        "cat": [
+          "donjonBlops",
+          "antreBlopMulticolore"
+        ]
+      },
+      "gloutoblop": {
+        "name": "Gloutoblop",
+        "imgPath": "../vitalité/gelutin/monstre/gloutoblop.png",
+        "ppNeed": 15,
+        "cat": [
+          "donjonBlops",
+          "antreBlopMulticolore"
+        ]
+      },
+      "tronkoblop": {
+        "name": "Tronkoblop",
+        "imgPath": "../vitalité/gelutin/monstre/tronkblop.png",
+        "ppNeed": 25,
+        "cat": [
+          "donjonBlops",
+          "antreBlopMulticolore"
+        ]
+      },
+      "blopReinette": {
+        "name": "Blop Reinette",
+        "imgPath": "../vitalité/gelutin/monstre/blop-reinette.png",
+        "ppNeed": 50,
+        "cat": [
+          "donjonBlops",
+          "antreBlopMulticolore"
+        ]
+      },
+      "blopGriotte": {
+        "name": "Blop Griotte",
+        "imgPath": "../vitalité/gelutin/monstre/blop-griotte.png",
+        "ppNeed": 50,
+        "cat": [
+          "donjonBlops",
+          "antreBlopMulticolore"
+        ]
+      },
+      "blopIndigo": {
+        "name": "Blop Indigo",
+        "imgPath": "../vitalité/gelutin/monstre/blop-indigo.png",
+        "ppNeed": 50,
+        "cat": [
+          "donjonBlops",
+          "antreBlopMulticolore"
+        ]
+      },
+      "blopCoco": {
+        "name": "Blop Coco",
+        "imgPath": "../vitalité/gelutin/monstre/blop-coco.png",
+        "ppNeed": 50,
+        "cat": [
+          "donjonBlops",
+          "antreBlopMulticolore"
+        ]
+      },
+      "biblopReinette": {
+        "name": "Biblop Reinette",
+        "imgPath": "../vitalité/gelutin/monstre/biblop-reinette.png",
+        "ppNeed": 100,
+        "cat": [
+          "zone"
+        ]
+      },
+      "biblopGriotte": {
+        "name": "Biblop Griotte",
+        "imgPath": "../vitalité/gelutin/monstre/biblop-griotte.png",
+        "ppNeed": 100,
+        "cat": [
+          "zone"
+        ]
+      },
+      "biblopCoco": {
+        "name": "Biblop Coco",
+        "imgPath": "../vitalité/gelutin/monstre/biblop-coco.png",
+        "ppNeed": 100,
+        "cat": [
+          "zone"
+        ]
+      },
+      "biblopIndigo": {
+        "name": "Biblop Indigo",
+        "imgPath": "../vitalité/gelutin/monstre/biblop-indigo.png",
+        "ppNeed": 100,
+        "cat": [
+          "zone"
+        ]
+      }
+    },
+    "gains": {
+      "donjonBlops": {
+        "blopGriotte": 2,
+        "blopReinette": 2,
+        "blopCoco": 3,
+        "blopIndigo": 3,
+        "gloutoblop": 12,
+        "tronkoblop": 16
+      },
+      "antreBlopMulticolore": {
+        "blopGriotte": 2,
+        "blopReinette": 2,
+        "blopCoco": 3,
+        "blopIndigo": 3,
+        "gloutoblop": 12,
+        "tronkoblop": 18,
+        "blopMulticoloreRoyal": 1,
+        "blopCocoRoyal": 1,
+        "blopGriotteRoyal": 1,
+        "blopIndigoRoyal": 1,
+        "blopReinetteRoyal": 1
+      }
+    },
+    "zoneIds": [
+      "biblopReinette",
+      "biblopGriotte",
+      "biblopCoco",
+      "biblopIndigo"
+    ]
+  },
+  "tifoux-tigre": {
+    "runLimits": {
+      "canopeeKimbo": 9999
+    },
+    "mobs": {
+      "kimbo": {
+        "name": "Kimbo",
+        "imgPath": "../tifoux-tigre/monstre/kimbo.png",
+        "ppNeed": 1,
+        "cat": [
+          "canopeeKimbo"
+        ]
+      },
+      "bitoufAerien": {
+        "name": "Bitouf Aérien",
+        "imgPath": "../tifoux-tigre/monstre/bitouf-aerien.png",
+        "ppNeed": 30,
+        "cat": [
+          "canopeeKimbo"
+        ]
+      },
+      "abrakleurClair": {
+        "name": "Abrakleur Clair",
+        "imgPath": "../tifoux-tigre/monstre/abrakleur-clair.png",
+        "ppNeed": 30,
+        "cat": [
+          "canopeeKimbo"
+        ]
+      },
+      "poolay": {
+        "name": "Poolay",
+        "imgPath": "../tifoux-tigre/monstre/poolay.png",
+        "ppNeed": 40,
+        "cat": [
+          "canopeeKimbo"
+        ]
+      },
+      "kaskargo": {
+        "name": "Kaskargo",
+        "imgPath": "../tifoux-tigre/monstre/kaskargo.png",
+        "ppNeed": 40,
+        "cat": [
+          "canopeeKimbo"
+        ]
+      },
+      "meupette": {
+        "name": "Meupette",
+        "imgPath": "../tifoux-tigre/monstre/meupette.png",
+        "ppNeed": 60,
+        "cat": [
+          "canopeeKimbo"
+        ]
+      }
+    },
+    "gains": {
+      "canopeeKimbo": {
+        "kimbo": 1,
+        "kaskargo": 6,
+        "poolay": 6,
+        "meupette": 6,
+        "abrakleurClair": 5,
+        "bitoufAerien": 12
+      }
+    },
+    "zoneIds": []
+  },
+  "marcassin": {
+    "runLimits": {
+      "dragonCochon": 9999
+    },
+    "mobs": {
+      "dragonCochon": {
+        "name": "Dragon Cochon",
+        "imgPath": "../marcassin/monstre/dragon-cochon.png",
+        "ppNeed": 1,
+        "cat": [
+          "dragonCochon"
+        ]
+      },
+      "donDussAng": {
+        "name": "Don Duss Ang",
+        "imgPath": "../marcassin/monstre/don-duss-ang.png",
+        "ppNeed": 25,
+        "cat": [
+          "dragonCochon"
+        ]
+      },
+      "donDorgan": {
+        "name": "Don Dorgan",
+        "imgPath": "../marcassin/monstre/don-dorgan.png",
+        "ppNeed": 25,
+        "cat": [
+          "dragonCochon"
+        ]
+      },
+      "sanglier": {
+        "name": "Sanglier",
+        "imgPath": "../marcassin/monstre/sanglier.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "sanglierPlaines": {
+        "name": "Sanglier Des Plaines",
+        "imgPath": "../marcassin/monstre/sanglier-des-plaines.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "cavalierPorkass": {
+        "name": "Cavalier Porkass",
+        "imgPath": "../marcassin/monstre/cavalier-porkass.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "bergerPorkass": {
+        "name": "Berger Porkass",
+        "imgPath": "../marcassin/monstre/berger-porkass.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "cochonFarle": {
+        "name": "Cochon de Farle",
+        "imgPath": "../marcassin/monstre/cochon-de-farle.png",
+        "ppNeed": 50,
+        "cat": [
+          "dragonCochon"
+        ]
+      },
+      "cochonLait": {
+        "name": "Cochon de Lait",
+        "imgPath": "../marcassin/monstre/cochon-de-lait.png",
+        "ppNeed": 100,
+        "cat": [
+          "dragonCochon"
+        ]
+      }
+    },
+    "gains": {
+      "dragonCochon": {
+        "dragonCochon": 1,
+        "donDussAng": 7,
+        "donDorgan": 13,
+        "cochonFarle": 23,
+        "cochonLait": 22
+      }
+    },
+    "zoneIds": [
+      "sanglier",
+      "sanglierPlaines",
+      "cavalierPorkass",
+      "bergerPorkass"
+    ]
+  },
+  "glouton": {
+    "runLimits": {
+      "donjonMoon": 9999
+    },
+    "mobs": {
+      "moon": {
+        "name": "Moon",
+        "imgPath": "../glouton/monstre/moon.png",
+        "ppNeed": 1,
+        "gainValue": 10,
+        "cat": [
+          "donjonMoon"
+        ]
+      },
+      "kanniboulSarbak": {
+        "name": "Kanniboul Sarbak",
+        "imgPath": "../glouton/monstre/kanniboul-sarbak.png",
+        "ppNeed": 10,
+        "gainValue": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "kanniboulJav": {
+        "name": "Kanniboul Jav",
+        "imgPath": "../glouton/monstre/kanniboul-jav.png",
+        "ppNeed": 10,
+        "gainValue": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "kanniboulThierry": {
+        "name": "Kanniboul Thierry",
+        "imgPath": "../glouton/monstre/kanniboul-thierry.png",
+        "ppNeed": 10,
+        "gainValue": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "kanniboulArcher": {
+        "name": "Kanniboul Archer",
+        "imgPath": "../glouton/monstre/kanniboul-archer.png",
+        "ppNeed": 10,
+        "gainValue": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "gloutovore": {
+        "name": "Gloutovore",
+        "imgPath": "../glouton/monstre/gloutovore.png",
+        "ppNeed": 10,
+        "gainValue": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "tortueJaune": {
+        "name": "Tortue Jaune",
+        "imgPath": "../glouton/monstre/tortue-jaune.png",
+        "ppNeed": 20,
+        "gainValue": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "tortueVerte": {
+        "name": "Tortue Verte",
+        "imgPath": "../glouton/monstre/tortue-verte.png",
+        "ppNeed": 20,
+        "gainValue": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "tortueBleue": {
+        "name": "Tortue Bleue",
+        "imgPath": "../glouton/monstre/tortue-bleue.png",
+        "ppNeed": 20,
+        "gainValue": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "tortueRouge": {
+        "name": "Tortue Rouge",
+        "imgPath": "../glouton/monstre/tortue-rouge.png",
+        "ppNeed": 20,
+        "gainValue": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "trukikol": {
+        "name": "Trukikol",
+        "imgPath": "../glouton/monstre/trukikol.png",
+        "ppNeed": 30,
+        "gainValue": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "nodKoko": {
+        "name": "NodKoko",
+        "imgPath": "../glouton/monstre/nodkoko.png",
+        "ppNeed": 30,
+        "gainValue": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "fourbasse": {
+        "name": "Fourbasse",
+        "imgPath": "../glouton/monstre/fourbasse.png",
+        "ppNeed": 40,
+        "gainValue": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "tikokoko": {
+        "name": "Tikokoko",
+        "imgPath": "../glouton/monstre/tikokoko.png",
+        "ppNeed": 50,
+        "gainValue": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "kokoko": {
+        "name": "Kokoko",
+        "imgPath": "../glouton/monstre/kokoko.png",
+        "ppNeed": 50,
+        "gainValue": 10,
+        "cat": [
+          "zone"
+        ]
+      }
+    },
+    "gains": {
+      "donjonMoon": {
+        "moon": 1
+      }
+    },
+    "zoneIds": [
+      "kanniboulSarbak",
+      "kanniboulJav",
+      "kanniboulThierry",
+      "kanniboulArcher",
+      "gloutovore",
+      "tortueJaune",
+      "tortueVerte",
+      "tortueBleue",
+      "tortueRouge",
+      "trukikol",
+      "nodKoko",
+      "fourbasse",
+      "tikokoko",
+      "kokoko"
+    ]
+  },
+  "tiwabbit-kiafin": {
+    "runLimits": {
+      "chateauWaWabbit": 9999,
+      "donjonWabbit": 9999
+    },
+    "mobs": {
+      "waWabbit": {
+        "name": "Wa Wabbit",
+        "imgPath": "../tiwabbit-kiafin/monstre/wa-wabbit.png",
+        "ppNeed": 1,
+        "cat": [
+          "chateauWaWabbit"
+        ]
+      },
+      "wobot": {
+        "name": "Wobot",
+        "imgPath": "../tiwabbit-kiafin/monstre/wobot.png",
+        "ppNeed": 10,
+        "cat": [
+          "chateauWaWabbit",
+          "donjonWabbit"
+        ]
+      },
+      "wabbitGM": {
+        "name": "Wabbit GM",
+        "imgPath": "../tiwabbit-kiafin/monstre/wabbit-gm.png",
+        "ppNeed": 10,
+        "cat": [
+          "zone"
+        ]
+      },
+      "grandPaWabbit": {
+        "name": "Grand Pa Wabbit",
+        "imgPath": "../tiwabbit-kiafin/monstre/grand-pa-wabbit.png",
+        "ppNeed": 40,
+        "cat": [
+          "chateauWaWabbit",
+          "donjonWabbit"
+        ]
+      },
+      "woWabbit": {
+        "name": "Wo Wabbit",
+        "imgPath": "../tiwabbit-kiafin/monstre/wo-wabbit.png",
+        "ppNeed": 40,
+        "cat": [
+          "chateauWaWabbit",
+          "donjonWabbit"
+        ]
+      },
+      "wabbitSquelette": {
+        "name": "Wabbit Squelette",
+        "imgPath": "../tiwabbit-kiafin/monstre/wabbit-squelette.png",
+        "ppNeed": 40,
+        "cat": [
+          "zone"
+        ]
+      },
+      "tiwabbitKiafin": {
+        "name": "Tiwabbit Kiafin",
+        "imgPath": "../tiwabbit-kiafin/monstre/tiwabbit-kiafin.png",
+        "ppNeed": 50,
+        "cat": [
+          "chateauWaWabbit",
+          "donjonWabbit"
+        ]
+      },
+      "blackTiwabbit": {
+        "name": "Black Tiwabbit",
+        "imgPath": "../tiwabbit-kiafin/monstre/black-tiwabbit.png",
+        "ppNeed": 50,
+        "cat": [
+          "chateauWaWabbit",
+          "donjonWabbit"
+        ]
+      },
+      "tiwabbit": {
+        "name": "Tiwabbit",
+        "imgPath": "../tiwabbit-kiafin/monstre/tiwabbit.png",
+        "ppNeed": 50,
+        "cat": [
+          "chateauWaWabbit",
+          "donjonWabbit"
+        ]
+      },
+      "blackWabbit": {
+        "name": "Black Wabbit",
+        "imgPath": "../tiwabbit-kiafin/monstre/black-wabbit.png",
+        "ppNeed": 50,
+        "cat": [
+          "chateauWaWabbit",
+          "donjonWabbit"
+        ]
+      },
+      "wabbit": {
+        "name": "Wabbit",
+        "imgPath": "../tiwabbit-kiafin/monstre/wabbit.png",
+        "ppNeed": 50,
+        "cat": [
+          "chateauWaWabbit",
+          "donjonWabbit"
+        ]
+      }
+    },
+    "gains": {
+      "chateauWaWabbit": {
+        "waWabbit": 1,
+        "grandPaWabbit": 3,
+        "woWabbit": 5,
+        "tiwabbitKiafin": 5,
+        "blackTiwabbit": 6,
+        "tiwabbit": 6,
+        "wobot": 12,
+        "blackWabbit": 9,
+        "wabbit": 9
+      },
+      "donjonWabbit": {
+        "blackTiwabbit": 8,
+        "blackWabbit": 8,
+        "grandPaWabbit": 8,
+        "tiwabbit": 8,
+        "tiwabbitKiafin": 8,
+        "wabbit": 8,
+        "wobot": 8,
+        "woWabbit": 8
+      }
+    },
+    "zoneIds": [
+      "wabbitGM",
+      "wabbitSquelette"
+    ]
+  },
+  "miniminotot": {
+    "runLimits": {
+      "labyrintheDuMinotoror": 9999,
+      "labyrintheDuMinotot": 9999
+    },
+    "mobs": {
+      "minotot": {
+        "name": "Minotot",
+        "imgPath": "../miniminotot/monstre/minotot.png",
+        "ppNeed": 1,
+        "cat": [
+          "labyrintheDuMinotot"
+        ]
+      },
+      "minotoror": {
+        "name": "Minotoror",
+        "imgPath": "../miniminotot/monstre/minotoror.png",
+        "ppNeed": 1,
+        "cat": [
+          "labyrintheDuMinotoror",
+          "labyrintheDuMinotot"
+        ]
+      },
+      "deminoboule": {
+        "name": "Deminoboule",
+        "imgPath": "../miniminotot/monstre/deminoboule.png",
+        "ppNeed": 5,
+        "cat": [
+          "labyrintheDuMinotoror",
+          "labyrintheDuMinotot",
+          "zone"
+        ]
+      },
+      "mominotor": {
+        "name": "Mominotor",
+        "imgPath": "../miniminotot/monstre/mominotor.png",
+        "ppNeed": 5,
+        "cat": [
+          "labyrintheDuMinotoror",
+          "labyrintheDuMinotot",
+          "zone"
+        ]
+      },
+      "serpiplume": {
+        "name": "Serpiplume",
+        "imgPath": "../miniminotot/monstre/serpiplume.png",
+        "ppNeed": 30,
+        "cat": [
+          "labyrintheDuMinotoror",
+          "zone"
+        ]
+      },
+      "kramelehon": {
+        "name": "Kraméléhon",
+        "imgPath": "../miniminotot/monstre/kramelehon.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "mandrine": {
+        "name": "Mandrine",
+        "imgPath": "../miniminotot/monstre/mandrine.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "minoskito": {
+        "name": "Minoskito",
+        "imgPath": "../miniminotot/monstre/minoskito.png",
+        "ppNeed": 50,
+        "cat": [
+          "zone"
+        ]
+      },
+      "scaratos": {
+        "name": "Scaratos",
+        "imgPath": "../miniminotot/monstre/scaratos.png",
+        "ppNeed": 50,
+        "cat": [
+          "labyrintheDuMinotoror",
+          "labyrintheDuMinotot",
+          "zone"
+        ]
+      },
+      "gamino": {
+        "name": "Gamino",
+        "imgPath": "../miniminotot/monstre/gamino.png",
+        "ppNeed": 50,
+        "cat": [
+          "labyrintheDuMinotoror",
+          "labyrintheDuMinotot",
+          "zone"
+        ]
+      }
+    },
+    "gains": {
+      "labyrintheDuMinotoror": {
+        "minotoror": 1,
+        "deminoboule": 2,
+        "mominotor": 2,
+        "serpiplume": 1,
+        "scaratos": 2,
+        "gamino": 2
+      },
+      "labyrintheDuMinotot": {
+        "minotot": 1,
+        "minotoror": 2,
+        "deminoboule": 3,
+        "mominotor": 3,
+        "scaratos": 4,
+        "gamino": 4
+      }
+    },
+    "zoneIds": [
+      "deminoboule",
+      "mominotor",
+      "serpiplume",
+      "kramelehon",
+      "mandrine",
+      "minoskito",
+      "scaratos",
+      "gamino"
+    ]
+  },
+  "chenapandi": {
+    "runLimits": {
+      "repaireDesPandikazes": 9999
+    },
+    "mobs": {
+      "fantomePandore": {
+        "name": "Fantôme Pandore",
+        "imgPath": "../chenapandi/monstre/fantome-pandore.png",
+        "ppNeed": 1,
+        "cat": [
+          "zone"
+        ]
+      },
+      "pandore": {
+        "name": "Pandore",
+        "imgPath": "../chenapandi/monstre/pandore.png",
+        "ppNeed": 1,
+        "cat": [
+          "zone"
+        ]
+      },
+      "maitrePandore": {
+        "name": "Maître Pandore",
+        "imgPath": "../chenapandi/monstre/maitre-pandore.png",
+        "ppNeed": 2,
+        "cat": [
+          "repaireDesPandikazes"
+        ]
+      },
+      "fantomePandule": {
+        "name": "Fantôme Pandule",
+        "imgPath": "../chenapandi/monstre/fantome-pandule.png",
+        "ppNeed": 3,
+        "cat": [
+          "zone"
+        ]
+      },
+      "fantomePandikaze": {
+        "name": "Fantôme Pandikaze",
+        "imgPath": "../chenapandi/monstre/fantome-pandikaze.png",
+        "ppNeed": 3,
+        "cat": [
+          "zone"
+        ]
+      },
+      "guerrierPandikaze": {
+        "name": "Guerrier Pandikaze",
+        "imgPath": "../chenapandi/monstre/guerrier-pandikaze.png",
+        "ppNeed": 8,
+        "cat": [
+          "repaireDesPandikazes"
+        ]
+      },
+      "pandikwakaze": {
+        "name": "Pandikwakaze",
+        "imgPath": "../chenapandi/monstre/pandikwakaze.png",
+        "ppNeed": 10,
+        "cat": [
+          "repaireDesPandikazes"
+        ]
+      },
+      "pandulkaze": {
+        "name": "Pandulkaze",
+        "imgPath": "../chenapandi/monstre/pandulkaze.png",
+        "ppNeed": 10,
+        "cat": [
+          "repaireDesPandikazes"
+        ]
+      },
+      "pandikazeVertige": {
+        "name": "Pandikaze vertige",
+        "imgPath": "../chenapandi/monstre/pandikaze-vertige.png",
+        "ppNeed": 15,
+        "cat": [
+          "repaireDesPandikazes"
+        ]
+      },
+      "pandikazeAerien": {
+        "name": "Pandikaze aérien",
+        "imgPath": "../chenapandi/monstre/pandikaze-aerien.png",
+        "ppNeed": 20,
+        "cat": [
+          "repaireDesPandikazes"
+        ]
+      },
+      "pandule": {
+        "name": "Pandule",
+        "imgPath": "../chenapandi/monstre/pandule.png",
+        "ppNeed": 30,
+        "cat": [
+          "zone"
+        ]
+      },
+      "pandit": {
+        "name": "Pandit",
+        "imgPath": "../chenapandi/monstre/pandit.png",
+        "ppNeed": 30,
+        "cat": [
+          "zone"
+        ]
+      },
+      "pandikaze": {
+        "name": "Pandikaze",
+        "imgPath": "../chenapandi/monstre/pandikaze.png",
+        "ppNeed": 30,
+        "cat": [
+          "repaireDesPandikazes",
+          "zone"
+        ]
+      }
+    },
+    "gains": {
+      "repaireDesPandikazes": {
+        "maitrePandore": 1,
+        "guerrierPandikaze": 4,
+        "pandikwakaze": 4,
+        "pandulkaze": 5,
+        "pandikazeVertige": 10,
+        "pandikazeAerien": 19,
+        "pandikaze": 10
+      }
+    },
+    "zoneIds": [
+      "fantomePandore",
+      "pandore",
+      "fantomePandule",
+      "fantomePandikaze",
+      "pandule",
+      "pandit",
+      "pandikaze"
+    ]
+  },
+  "chercheur-d-ogrines": {
+    "runLimits": {
+      "grotteHesque": 9999
+    },
+    "mobs": {
+      "corailleurMagistral": {
+        "name": "Corailleur Magistral",
+        "imgPath": "../chercheur-d-ogrines/monstre/corailleur-magistral.png",
+        "ppNeed": 5,
+        "cat": [
+          "grotteHesque"
+        ]
+      },
+      "corailleur": {
+        "name": "Corailleur",
+        "imgPath": "../chercheur-d-ogrines/monstre/corailleur.png",
+        "ppNeed": 100,
+        "cat": [
+          "grotteHesque",
+          "zone"
+        ]
+      },
+      "palmifleurMorito": {
+        "name": "Palmifleur Morito",
+        "imgPath": "../chercheur-d-ogrines/monstre/palmifleur-morito.png",
+        "ppNeed": 100,
+        "cat": [
+          "grotteHesque",
+          "zone"
+        ]
+      },
+      "palmifleurPassaoh": {
+        "name": "Palmifleur Passaoh",
+        "imgPath": "../chercheur-d-ogrines/monstre/palmifleur-passaoh.png",
+        "ppNeed": 100,
+        "cat": [
+          "grotteHesque",
+          "zone"
+        ]
+      },
+      "palmifleurMalibout": {
+        "name": "Palmifleur Malibout",
+        "imgPath": "../chercheur-d-ogrines/monstre/palmifleur-malibout.png",
+        "ppNeed": 100,
+        "cat": [
+          "grotteHesque",
+          "zone"
+        ]
+      },
+      "palmifleurKouracao": {
+        "name": "Palmifleur Kouraçao",
+        "imgPath": "../chercheur-d-ogrines/monstre/palmifleur-kouracao.png",
+        "ppNeed": 100,
+        "cat": [
+          "grotteHesque",
+          "zone"
+        ]
+      },
+      "crustorailMorito": {
+        "name": "Crustorail Morito",
+        "imgPath": "../chercheur-d-ogrines/monstre/crustorail-morito.png",
+        "ppNeed": 150,
+        "cat": [
+          "grotteHesque",
+          "zone"
+        ]
+      },
+      "crustorailPassaoh": {
+        "name": "Crustorail Passaoh",
+        "imgPath": "../chercheur-d-ogrines/monstre/crustorail-passaoh.png",
+        "ppNeed": 150,
+        "cat": [
+          "grotteHesque",
+          "zone"
+        ]
+      },
+      "crustorailMalibout": {
+        "name": "Crustorail Malibout",
+        "imgPath": "../chercheur-d-ogrines/monstre/crustorail-malibout.png",
+        "ppNeed": 150,
+        "cat": [
+          "grotteHesque",
+          "zone"
+        ]
+      },
+      "crustorailKouracao": {
+        "name": "Crustorail Kouraçao",
+        "imgPath": "../chercheur-d-ogrines/monstre/crustorail-kouracao.png",
+        "ppNeed": 150,
+        "cat": [
+          "grotteHesque",
+          "zone"
+        ]
+      }
+    },
+    "gains": {
+      "grotteHesque": {
+        "corailleurMagistral": 1,
+        "corailleur": 12,
+        "palmifleurMorito": 4,
+        "palmifleurPassaoh": 4,
+        "palmifleurMalibout": 4,
+        "palmifleurKouracao": 6,
+        "crustorailMorito": 3,
+        "crustorailPassaoh": 3,
+        "crustorailMalibout": 3,
+        "crustorailKouracao": 4
+      }
+    },
+    "zoneIds": [
+      "corailleur",
+      "palmifleurMorito",
+      "palmifleurPassaoh",
+      "palmifleurMalibout",
+      "palmifleurKouracao",
+      "crustorailMorito",
+      "crustorailPassaoh",
+      "crustorailMalibout",
+      "crustorailKouracao"
+    ]
+  }
+});
+export const GENERATED_GELUTIN_BOSS_GAINS = Object.freeze({
+  "blopCocoRoyal": {
+    "blopCocoRoyal": 1,
+    "blopCoco": 1
+  },
+  "blopGriotteRoyal": {
+    "blopGriotteRoyal": 1,
+    "blopGriotte": 1
+  },
+  "blopIndigoRoyal": {
+    "blopIndigoRoyal": 1,
+    "blopIndigo": 1
+  },
+  "blopReinetteRoyal": {
+    "blopReinetteRoyal": 1,
+    "blopReinette": 1
+  }
+});

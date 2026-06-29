@@ -1,0 +1,259 @@
+select,
+input,
+textarea {
+  width: 100%;
+  min-height: 2.6rem;
+  padding: 0 0.8rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-small);
+  color: var(--color-text);
+  background: #fff8e8;
+  font-weight: 700;
+}
+
+.auth-form {
+  width: min(30rem, 100%);
+  margin: 0 auto;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.auth-field {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--color-text-soft);
+  font-weight: 800;
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.auth-link {
+  width: max-content;
+  padding: 0;
+  color: var(--color-action);
+  background: transparent;
+  font-weight: 800;
+}
+
+.auth-success {
+  min-height: 9rem;
+  padding: 1.5rem;
+  display: grid;
+  place-content: center;
+  gap: 0.4rem;
+  border: 1px solid #8bc69b;
+  border-radius: var(--radius-medium);
+  color: #185a2d;
+  background: #effaf2;
+  text-align: center;
+}
+
+.auth-success strong,
+.auth-success span {
+  display: block;
+}
+
+select:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 0.2rem solid rgb(37 99 235 / 45%);
+  outline-offset: 0.12rem;
+}
+
+.options-search {
+  margin-bottom: 0.8rem;
+}
+
+.options-shell {
+  min-height: 31rem;
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 0.8rem;
+}
+
+.options-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.options-tab {
+  min-height: 2.65rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-small);
+  color: var(--color-text-muted);
+  background: transparent;
+  font-weight: 800;
+  text-align: left;
+}
+
+.options-tab:hover,
+.options-tab.is-active {
+  color: #fff;
+  border-color: #9c651b;
+  background: #875218;
+}
+
+.options-content {
+  min-width: 0;
+  padding-left: 0.8rem;
+  border-left: 1px solid var(--color-border-soft);
+}
+
+.options-panel {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.options-panel[hidden],
+.options-tab[hidden],
+.option-row[hidden],
+.shortcut-row[hidden] {
+  display: none;
+}
+
+.options-panel > h3 {
+  font-size: 1.1rem;
+}
+
+.options-description {
+  margin-bottom: 0.35rem;
+  color: var(--color-text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.option-row,
+.shortcut-row {
+  min-width: 0;
+  min-height: 4rem;
+  padding: 0.65rem 0.75rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(7.5rem, 11rem);
+  align-items: center;
+  gap: 0.8rem;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-small);
+  background: rgb(255 255 255 / 43%);
+}
+
+.option-copy,
+.option-copy strong,
+.option-copy small {
+  min-width: 0;
+  display: block;
+}
+
+.option-copy small {
+  margin-top: 0.15rem;
+  line-height: 1.3;
+}
+
+.option-switch {
+  width: 3.25rem;
+  min-height: 1.8rem;
+  justify-self: end;
+  accent-color: var(--color-action);
+}
+
+.option-select {
+  min-width: 0;
+}
+
+.option-range {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.5rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.option-range input {
+  min-height: 1.6rem;
+  padding: 0;
+}
+
+.option-range output {
+  color: var(--color-action);
+  font-weight: 900;
+  text-align: right;
+}
+
+.shortcut-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.shortcut-row {
+  grid-template-columns: minmax(0, 1fr) 7rem 6rem;
+}
+
+.shortcut-key {
+  min-width: 0;
+  padding: 0.4rem;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 0.35rem;
+  background: #fff8e8;
+  font-family: inherit;
+  font-weight: 900;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.options-note,
+.options-empty {
+  padding: 0.75rem;
+  border: 1px solid #b9d2e8;
+  border-radius: var(--radius-small);
+  color: #44556c;
+  background: #edf5fb;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+@media (max-width: 42rem) {
+  .options-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .options-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+  }
+
+  .options-tab {
+    flex: 0 0 auto;
+  }
+
+  .options-content {
+    padding: 0;
+    border: 0;
+  }
+
+  .shortcut-row {
+    grid-template-columns: minmax(0, 1fr) 6.5rem;
+  }
+
+  .shortcut-row .button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 30rem) {
+  .option-row,
+  .shortcut-row {
+    grid-template-columns: 1fr;
+  }
+
+  .option-switch {
+    justify-self: start;
+  }
+}

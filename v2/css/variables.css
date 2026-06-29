@@ -1,0 +1,50 @@
+:root {
+  --color-background: #1f140c;
+  --color-surface: #ead6b3;
+  --color-surface-raised: #f6e8cc;
+  --color-surface-soft: rgb(255 252 244 / 88%);
+  --color-text: #2b1609;
+  --color-text-muted: #6b4f2a;
+  --color-border: #a88f6c;
+  --color-border-soft: #d8c8aa;
+  --color-success: #168b3d;
+  --color-action: #2563eb;
+  --color-accent: #cf6d0b;
+  --color-danger: #c5231a;
+  --color-neutral: #68748b;
+  --color-gold: #facc15;
+  --color-chrono: #0e1a2d;
+  --color-chrono-card: #303a4d;
+
+  --font-family-base: Arial, "Trebuchet MS", sans-serif;
+  --font-size-base: 1rem;
+  --line-height-base: 1.45;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  --radius-small: 0.5rem;
+  --radius-medium: 0.75rem;
+  --radius-large: 1rem;
+
+  --shadow-surface: 0 0.875rem 2.1875rem rgb(0 0 0 / 35%);
+  --shadow-card: 0 0.35rem 0.8rem rgb(74 46 18 / 12%);
+  --shadow-control: 0 0.25rem 0.5rem rgb(0 0 0 / 18%);
+
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+
+  --app-max-width: 73.75rem;
+  --sidebar-width: 18.625rem;
+
+  --z-base: 0;
+  --z-sticky: 100;
+  --z-overlay: 1000;
+  --z-modal: 1100;
+  --z-toast: 1200;
+}
+

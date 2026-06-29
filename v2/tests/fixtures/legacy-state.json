@@ -1,0 +1,41 @@
+{
+  "active": "p_abra",
+  "galleryShared": true,
+  "optionsShared": false,
+  "achievementsShared": false,
+  "achievementAccountMode": 0,
+  "deletedProfiles": {
+    "p_deleted": "2026-06-20T12:00:00.000Z"
+  },
+  "legacyTopLevel": "conserver",
+  "profiles": {
+    "p_pykur": {
+      "name": "Pykur historique",
+      "data": {
+        "familiarId": "pykur",
+        "runs": { "morose": 12, "tynril": 3 },
+        "mobs": { "morose": { "floribonde": 12 }, "tynril": {}, "zone": {} },
+        "settings": { "night": true, "soundVolume": 42 },
+        "achievements": { "unlocked": { "first_run": { "date": "2026-06-01" } }, "counters": { "happiosHover": 2 } },
+        "gallery": { "completedPykurs": [{ "id": "archive_1", "name": "Pykur #1" }], "eventsDiscovered": { "pluie": { "count": 1 } } },
+        "legacyProfileField": { "value": 17 }
+      }
+    },
+    "p_abra": {
+      "name": "Abra principal",
+      "data": {
+        "familiarId": "abra-kadabra",
+        "runs": { "donjonAbraknyde": 4, "cheneMou": 1, "salleAbrakne": 30 },
+        "mobs": { "donjonAbraknyde": {}, "cheneMou": {}, "salleAbrakne": { "abrakne": 30 }, "zone": {} },
+        "settings": { "animations": false },
+        "achievements": { "unlocked": { "projection_opened": { "date": "2026-06-02" } }, "eggCollected": true },
+        "gallery": { "completedPykurs": [{ "id": "archive_2", "name": "Abra #1" }], "eventsDiscovered": { "vent": { "count": 2 } } },
+        "special": { "salleAbrakneSetupDone": true, "salleAbrakneActive": false }
+      }
+    },
+    "p_deleted": {
+      "name": "Profil supprimé",
+      "data": { "familiarId": "pykur", "runs": { "morose": 999 } }
+    }
+  }
+}

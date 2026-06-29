@@ -1,0 +1,7 @@
+.no-anim *,
+.performance-mode * {
+  scroll-behavior: auto;
+  transition-duration: 0s;
+  animation-duration: 0s;
+  animation-iteration-count: 1;
+}

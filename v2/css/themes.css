@@ -1,0 +1,59 @@
+.theme-dragoune {
+  --familiar-background: url("../../familiers/dragoune-noir/assets/images/fond/fond.webp");
+}
+
+body.night {
+  --color-surface: #25262b;
+  --color-surface-raised: #313238;
+  --color-surface-soft: rgb(40 41 47 / 92%);
+  --color-text: #fff4dc;
+  --color-text-muted: #d8c6a6;
+  --color-border: #76664e;
+  --color-border-soft: #514839;
+}
+
+body.night .app-shell,
+body.night .card,
+body.night .modal-window {
+  color: var(--color-text);
+  background-color: rgb(37 38 43 / 96%);
+}
+
+body.night select,
+body.night input,
+body.night textarea,
+body.night .shortcut-key {
+  color: var(--color-text);
+  background: #343238;
+}
+
+body.large-font { font-size: 1.0625rem; }
+body.reduced-saturation { filter: saturate(0.78); }
+body.high-contrast { --color-border: #665034; --color-border-soft: #8b7555; }
+
+body[data-opacity="opaque"] .app-shell { background-color: rgb(234 214 179 / 99%); }
+body[data-opacity="glass"] .app-shell { background-color: rgb(234 214 179 / 85%); }
+body.night[data-opacity="opaque"] .app-shell { background-color: rgb(37 38 43 / 99%); }
+body.night[data-opacity="glass"] .app-shell { background-color: rgb(37 38 43 / 88%); }
+
+body[data-fx="minimal"] .card,
+body.performance-mode .card,
+body.performance-mode .app-shell {
+  box-shadow: none;
+}
+
+body[data-dashboard-mode="focus"] .action-groups,
+body[data-dashboard-mode="focus"] .projection-strip { opacity: 0.76; }
+
+body[data-dashboard-mode="simple"] .action-groups,
+body[data-dashboard-mode="simple"] .projection-strip { display: none; }
+
+body[data-chrono-style="fantasy"] .chrono-panel {
+  border-color: #9b7137;
+  background: linear-gradient(#2a1a10, #15100d);
+}
+
+body[data-chrono-style="compact"] .chrono-history { display: none; }
+body[data-chrono-style="overlay"] .chrono-panel { position: sticky; top: 0; z-index: 2; }
+
+.icon-button.is-muted img { opacity: 1; }

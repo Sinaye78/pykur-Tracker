@@ -1,0 +1,43 @@
+html {
+  min-width: 20rem;
+  background: var(--color-background);
+}
+
+body {
+  display: flow-root;
+  min-height: 100vh;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-base);
+  color: var(--color-text);
+  background:
+    linear-gradient(rgb(0 0 0 / 30%), rgb(0 0 0 / 30%)),
+    var(--familiar-background) center / cover fixed no-repeat,
+    var(--color-background);
+}
+
+button,
+select {
+  color: inherit;
+}
+
+button {
+  border: 0;
+}
+
+h1,
+h2,
+h3,
+strong {
+  font-weight: 800;
+}
+
+small {
+  color: var(--color-text-muted);
+}
+
+[hidden] {
+  display: none;
+}

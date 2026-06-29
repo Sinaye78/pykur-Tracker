@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="../../css/variables.css">
+  <link rel="stylesheet" href="../../css/reset.css">
+  <link rel="stylesheet" href="../../css/base.css">
+  <link rel="stylesheet" href="../../css/buttons.css">
+  <link rel="stylesheet" href="../../css/forms.css">
+  <link rel="stylesheet" href="../../css/modals.css">
+  <title>V2 Profiles Smoke Test</title>
+</head>
+<body>
+  <section class="profile-bar">
+    <select id="profilePreview" aria-label="Profil actif"></select>
+    <button id="profileCreate" type="button">+ Profil</button>
+    <button id="profileRename" type="button">Renommer</button>
+    <button id="profileDelete" type="button">Supprimer</button>
+  </section>
+  <section class="familiar-card"><img class="familiar-image" alt=""><p class="familiar-caption"></p></section>
+  <div class="modal-layer" id="appModal" hidden>
+    <section class="modal-window" role="dialog" aria-modal="true" aria-labelledby="appModalTitle">
+      <header class="modal-header"><div><h2 id="appModalTitle"></h2><p id="appModalSubtitle"></p></div><button class="modal-close" type="button" aria-label="Fermer">×</button></header>
+      <div class="modal-body" id="appModalBody"></div>
+      <footer class="modal-footer" id="appModalFooter"></footer>
+    </section>
+  </div>
+  <script type="module" src="./profiles-smoke.js"></script>
+</body>
+</html>

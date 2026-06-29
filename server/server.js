@@ -1905,14 +1905,18 @@ function tokenHash(token) {
   return crypto.createHash("sha256").update(String(token || "")).digest("hex");
 }
 
-function resetLink(token) {
-  const url = new URL("/familiers/pykur/index.html", APP_PUBLIC_URL);
+function authClientPath(client) {
+  return client === "v2" ? "/v2/index.html" : "/familiers/pykur/index.html";
+}
+
+function resetLink(token, client) {
+  const url = new URL(authClientPath(client), APP_PUBLIC_URL);
   url.searchParams.set("resetToken", token);
   return url.toString();
 }
 
-function verificationLink(token) {
-  const url = new URL("/familiers/pykur/index.html", APP_PUBLIC_URL);
+function verificationLink(token, client) {
+  const url = new URL(authClientPath(client), APP_PUBLIC_URL);
   url.searchParams.set("verifyToken", token);
   return url.toString();
 }
@@ -2007,7 +2011,7 @@ app.post("/api/auth/register", registrationLimiter, asyncRoute(async (req, res) 
       VALUES(?,?,?)
     `).run(user.id, tokenHash(token), expiresAt);
     try {
-      await sendEmailVerificationEmail(user, verificationLink(token));
+      await sendEmailVerificationEmail(user, verificationLink(token, req.body.client));
     } catch (mailError) {
       db.prepare("DELETE FROM users WHERE id = ?").run(user.id);
       console.error(mailError);
@@ -2096,7 +2100,7 @@ app.post("/api/auth/password-reset/request", passwordResetLimiter, asyncRoute(as
       VALUES(?,?,?)
     `).run(user.id, tokenHash(token), expiresAt);
     try {
-      await sendPasswordResetEmail(user, resetLink(token));
+      await sendPasswordResetEmail(user, resetLink(token, req.body.client));
     } catch (error) {
       console.error("[password-reset] Envoi impossible.", error?.message || error);
     }

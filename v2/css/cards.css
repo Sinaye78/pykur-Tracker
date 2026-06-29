@@ -1,0 +1,183 @@
+.card {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface-soft);
+  box-shadow: var(--shadow-card);
+}
+
+.familiar-card {
+  height: clamp(16.5rem, calc(45.2vh - 3.8rem), 23.95rem);
+  min-height: 0;
+  padding: 1rem;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto auto;
+  gap: 0.45rem;
+  text-align: center;
+  overflow: hidden;
+}
+
+.familiar-aura {
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgb(250 204 21 / 25%) 0 8deg, transparent 8deg 16deg);
+}
+
+.familiar-image {
+  width: min(13.5rem, 78%);
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0.6rem 0.7rem rgb(80 45 15 / 20%));
+}
+
+.familiar-caption {
+  font-size: 0.78rem;
+}
+
+.progress-track {
+  height: 0.85rem;
+  overflow: hidden;
+  border: 1px solid #777164;
+  border-radius: 999px;
+  background: linear-gradient(#aea99d, #d3d0c8);
+  box-shadow: inset 0 0.12rem 0.25rem rgb(0 0 0 / 30%);
+}
+
+.progress-track span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #11913e, #f2d812);
+}
+
+.progress-value {
+  color: #14a34b;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.profile-bar {
+  min-height: 4.75rem;
+  padding: 0.8rem 1rem;
+  display: grid;
+  grid-template-columns: auto minmax(12rem, 1fr) auto;
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.profile-bar label {
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.profile-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+.run-panel {
+  padding: 1.25rem;
+}
+
+.dungeon-card {
+  min-height: 16rem;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.dungeon-card.is-active {
+  border: 2px solid var(--color-gold);
+}
+
+.dungeon-card header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+
+.dungeon-card h2 {
+  font-size: 1.15rem;
+}
+
+.dungeon-decoration {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 48%;
+  opacity: 0.08;
+  background: url("../../familiers/dragoune-noir/assets/images/donjon/crocabulia.webp") center / contain no-repeat;
+}
+
+.bonus-card {
+  min-height: 5.4rem;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-color: #e7c36c;
+  background: linear-gradient(105deg, #fffaf0, #fff3bd);
+}
+
+.bonus-card strong {
+  display: block;
+  margin-top: 0.1rem;
+}
+
+.bonus-card img {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+}
+
+.bonus-value {
+  margin-right: 0.4rem;
+  color: var(--color-action);
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.projection-strip {
+  min-height: 6rem;
+  padding: 0.9rem 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 1rem;
+  align-items: center;
+  border-color: #a9d7e7;
+  background: linear-gradient(100deg, #e7f7ff, #fffdf4);
+}
+
+.projection-strip strong,
+.projection-strip small {
+  display: block;
+}
+
+.projection-strip strong {
+  font-size: 1.2rem;
+}
+
+.version-card {
+  width: 9.4rem;
+  padding: 0.55rem;
+  border: 1px solid #ddc99e;
+  border-radius: var(--radius-medium);
+  background: rgb(255 250 233 / 85%);
+  text-align: center;
+}
+
+.version-card button {
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.4rem;
+  border-radius: var(--radius-small);
+  color: #fff;
+  background: var(--color-neutral);
+  font-weight: 700;
+}

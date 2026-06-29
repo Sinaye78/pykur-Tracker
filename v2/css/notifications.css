@@ -1,0 +1,93 @@
+.toast-region {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: var(--z-toast);
+  width: min(23rem, calc(100vw - 2rem));
+  display: grid;
+  gap: 0.55rem;
+  pointer-events: none;
+}
+
+.app-toast {
+  min-width: 0;
+  padding: 0.75rem 2.65rem 0.75rem 0.85rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  overflow-wrap: anywhere;
+  border: 1px solid rgb(255 255 255 / 44%);
+  border-radius: var(--radius-small);
+  color: #fff;
+  background: linear-gradient(135deg, #5e6b82, #3e485b);
+  box-shadow: 0 0.45rem 1rem rgb(0 0 0 / 24%);
+  font-weight: 750;
+  pointer-events: auto;
+  animation: toast-enter var(--duration-normal) ease-out both;
+  cursor: pointer;
+}
+
+.app-toast-content {
+  min-width: 0;
+  display: grid;
+  gap: 0.1rem;
+}
+
+.app-toast-content strong { font-size: 0.82rem; }
+.app-toast-content span { line-height: 1.35; }
+.app-toast-small { font-size: 0.78rem; }
+.app-toast-normal { font-size: 0.88rem; }
+.app-toast-large { font-size: 1rem; }
+.app-toast-success,
+.app-toast-profile { background: linear-gradient(135deg, #24994d, #127336); }
+.app-toast-warning { background: linear-gradient(135deg, #d97706, #a94f05); }
+.app-toast-error { background: linear-gradient(135deg, #df3c32, #ad1d17); }
+.app-toast-pause { background: linear-gradient(135deg, #7c8799, #4c5668); }
+.app-toast-milestone {
+  color: #382300;
+  border-color: #e9b71a;
+  background: linear-gradient(135deg, #fff29b, #f9c928);
+}
+
+.app-toast-close {
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  position: absolute;
+  top: 50%;
+  right: 0.45rem;
+  translate: 0 -50%;
+  border: 0;
+  color: currentColor;
+  background: transparent;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.app-toast-action {
+  flex: 0 0 auto;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 0.4rem;
+  color: inherit;
+  background: rgb(0 0 0 / 16%);
+  font-weight: 800;
+}
+
+@keyframes toast-enter {
+  from { opacity: 0; translate: 0 0.65rem; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@media (max-width: 40rem) {
+  .toast-region {
+    right: 0.65rem;
+    bottom: 0.65rem;
+    width: calc(100vw - 1.3rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-toast { animation: none; }
+}

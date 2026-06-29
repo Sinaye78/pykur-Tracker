@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Reconstruction statique mobile de Pykur Tracker V2">
+  <title>Pykur Tracker V2 - Mobile statique</title>
+  <link rel="icon" href="../familiers/pykur/assets/bouton/option.png">
+  <link rel="stylesheet" href="./css/variables.css">
+  <link rel="stylesheet" href="./css/reset.css">
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/dashboard.css">
+  <link rel="stylesheet" href="./css/components.css">
+  <link rel="stylesheet" href="./css/cards.css">
+  <link rel="stylesheet" href="./css/buttons.css">
+  <link rel="stylesheet" href="./css/forms.css">
+  <link rel="stylesheet" href="./css/modals.css">
+  <link rel="stylesheet" href="./css/themes.css">
+  <link rel="stylesheet" href="./css/responsive.css">
+</head>
+<body class="theme-dragoune">
+  <div class="auth-dock"><button class="button button-primary" type="button">Connexion</button><button class="button button-accent" type="button">Inscription</button></div>
+  <main class="app-shell" id="app">
+    <header class="app-toolbar" aria-label="Navigation principale">
+      <button class="icon-button" type="button" aria-label="Aide"><img src="../familiers/pykur/assets/bouton/aide.png" alt=""></button>
+      <button class="icon-button" type="button" aria-label="Son"><img src="../familiers/pykur/assets/bouton/son.png" alt=""></button>
+      <button class="icon-button" type="button" aria-label="Succès"><img src="../familiers/pykur/assets/bouton/succes.png" alt=""></button>
+      <button class="icon-button" type="button" aria-label="Galerie"><img src="../familiers/pykur/assets/bouton/galerie.png" alt=""></button>
+      <button class="icon-button" type="button" aria-label="Options"><img src="../familiers/pykur/assets/bouton/option.png" alt=""></button>
+    </header>
+    <div class="tracker-layout">
+      <aside class="tracker-sidebar">
+        <section class="card familiar-card">
+          <div class="familiar-aura"><img class="familiar-image" src="../familiers/dragoune-noir/assets/images/dragoune-noir.png" alt="Dragoune Noir"></div>
+          <p class="familiar-caption">Progression du Dragoune Noir</p>
+          <div class="progress-track"><span style="width:0%"></span></div>
+          <strong class="progress-value">0.00 %</strong>
+        </section>
+        <section class="chrono-panel">
+          <div class="chrono-heading"><div><span class="eyebrow">Session &amp; Chrono</span><strong>Prête</strong></div><span class="live-badge">Live run</span></div>
+          <div class="chrono-main"><span>Donjon en cours</span><strong>00:00:00</strong></div>
+          <div class="chrono-stats"><div><span>Donjons</span><strong>0</strong></div><div><span>Sagesse</span><strong>+0</strong></div><div><span>Meilleur</span><strong>—</strong></div><div><span>Moyenne</span><strong>—</strong></div></div>
+          <div class="chrono-actions"><button class="button button-success" type="button">Démarrer</button><button class="button button-neutral" type="button">Pause</button><button class="button button-primary" type="button">Terminer</button><button class="button button-danger" type="button">Reset</button><button class="button button-accent" type="button">Marquer run</button><button class="button button-neutral" type="button" aria-label="Réglages">⚙</button></div>
+          <button class="chrono-history" type="button">Temps chrono</button>
+        </section>
+      </aside>
+      <section class="tracker-main">
+        <section class="card profile-bar"><label for="mobileProfilePreview">Profil</label><select id="mobileProfilePreview"><option>Dragoune Noir principale</option></select><div class="profile-actions"><button class="button button-success" type="button">+ Profil</button><button class="button button-accent" type="button">Renommer</button><button class="button button-danger" type="button">Supprimer</button></div></section>
+        <section class="card run-panel">
+          <div class="run-panel-top"><div class="run-buttons"><button class="button run-add" type="button">+ Run</button><button class="button run-remove" type="button">-</button></div><div class="active-dungeon"><span class="eyebrow">Donjon actif</span><button class="dungeon-choice is-active" type="button"><img src="../familiers/dragoune-noir/assets/images/donjon/crocabulia.webp" alt=""><span>Sanctuaire</span></button></div></div>
+          <div class="action-groups"><div class="action-group"><strong>Suivi</strong><div><button class="button button-outline" type="button">Stats</button><button class="button button-outline" type="button">Historique</button></div></div><div class="action-group"><strong>Données</strong><div><button class="button button-outline" type="button">Modifier</button><button class="button button-outline" type="button">Annuler</button></div></div><div class="action-group"><strong>Danger</strong><div><button class="button button-danger-outline" type="button">Reset profil</button></div></div></div>
+        </section>
+        <section class="dungeon-grid"><article class="card dungeon-card is-active"><div class="dungeon-decoration"></div><header><h2>Sanctuaire des Dragoeufs</h2><span class="status-badge">Actif</span></header><div class="dungeon-stats"><div><span>Effectués</span><strong class="value-positive">0</strong></div><div><span>Restants</span><strong class="value-danger">12</strong></div></div><div class="time-estimate"><span>Temps estimé restant</span><strong>≈ 6h 00min</strong></div></article></section>
+        <section class="card bonus-card"><div><span class="eyebrow">Sagesse</span><strong><span class="bonus-value">0</span> / 55 sagesse</strong></div><img src="../familiers/dragoune-noir/assets/images/sagesse.png" alt="Sagesse"></section>
+        <section class="card projection-strip"><div><span class="eyebrow">Prochaine sagesse</span><strong>Sanctuaire 1 donjon</strong><small>Estimation basée sur vos compteurs actuels.</small></div><span class="gain-badge">+1 sagesse</span><button class="button button-outline" type="button">Projection</button></section>
+        <footer class="dashboard-footer"><button class="monster-launcher" type="button">Monstres</button><div class="version-card"><strong>Version 1.6</strong><button type="button">Changelog</button></div></footer>
+      </section>
+    </div>
+  </main>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>

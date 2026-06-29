@@ -1,0 +1,88 @@
+.app-shell {
+  width: min(var(--app-max-width), calc(100% - 2rem));
+  height: calc(100vh - 2.25rem);
+  min-height: 38rem;
+  margin: 1.125rem auto;
+  padding: 1.5rem;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(rgb(255 255 255 / 12%), rgb(255 255 255 / 4%)),
+    repeating-linear-gradient(0deg, transparent 0 2rem, rgb(120 85 40 / 4%) 2rem calc(2rem + 1px)),
+    repeating-linear-gradient(90deg, transparent 0 2rem, rgb(120 85 40 / 4%) 2rem calc(2rem + 1px)),
+    rgb(234 214 179 / 96%);
+  box-shadow: var(--shadow-surface);
+}
+
+.app-toolbar {
+  height: 3.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  margin-bottom: 0.75rem;
+}
+
+.tracker-layout {
+  height: calc(100% - 4rem);
+  display: grid;
+  grid-template-columns: minmax(15rem, var(--sidebar-width)) minmax(0, 1fr);
+  gap: 1.6rem;
+  align-items: start;
+}
+
+.tracker-sidebar {
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 1rem;
+  align-content: start;
+}
+
+.tracker-main {
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.45rem;
+  scrollbar-color: #858585 transparent;
+  scrollbar-width: thin;
+}
+
+.tracker-main > * + * {
+  margin-top: 0.9rem;
+}
+
+.auth-dock {
+  position: fixed;
+  top: 1rem;
+  right: max(1rem, calc((100vw - var(--app-max-width)) / 2 + 1.2rem));
+  z-index: var(--z-sticky);
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.3rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: rgb(246 232 204 / 94%);
+  box-shadow: var(--shadow-control);
+}
+
+.auth-account {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.auth-identity {
+  min-width: 0;
+  display: grid;
+  line-height: 1.05;
+}
+
+.auth-identity small {
+  color: var(--color-text-soft);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}

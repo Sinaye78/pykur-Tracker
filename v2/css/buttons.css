@@ -1,0 +1,44 @@
+.button {
+  min-height: 2.35rem;
+  padding: 0.55rem 0.8rem;
+  border-radius: var(--radius-small);
+  color: #fff;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.button-primary { background: var(--color-action); }
+.button-success { background: var(--color-success); }
+.button-accent { background: var(--color-accent); }
+.button-danger { background: var(--color-danger); }
+.button-neutral { background: var(--color-neutral); }
+
+.button-outline,
+.button-danger-outline {
+  color: var(--color-action);
+  border: 1px solid #a9c3f8;
+  background: rgb(255 255 255 / 32%);
+}
+
+.button-danger-outline {
+  color: var(--color-danger);
+  border-color: #efa99f;
+}
+
+.run-add,
+.run-remove {
+  min-height: 4.1rem;
+  font-size: 1.5rem;
+  box-shadow: var(--shadow-control);
+}
+
+.run-add {
+  min-width: 9.6rem;
+  background: var(--color-success);
+}
+
+.run-remove {
+  min-width: 4.5rem;
+  background: var(--color-danger);
+}
+
