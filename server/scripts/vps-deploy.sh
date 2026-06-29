@@ -21,5 +21,18 @@ fi
 nginx -t
 systemctl reload nginx
 
-curl --fail --silent --show-error http://127.0.0.1:3000/api/health
+health_ready=0
+for attempt in {1..20}; do
+  if curl --fail --silent --show-error http://127.0.0.1:3000/api/health; then
+    health_ready=1
+    break
+  fi
+  sleep 1
+done
+
+if [ "$health_ready" -ne 1 ]; then
+  printf '\nL API ne repond pas apres 20 secondes.\n' >&2
+  pm2 logs pykur-api --lines 30 --nostream >&2 || true
+  exit 1
+fi
 printf '\nDéploiement terminé.\n'
