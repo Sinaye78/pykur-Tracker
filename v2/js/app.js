@@ -16,6 +16,7 @@ import { createShortcutsController } from "./ui/shortcuts.js";
 import { createToastRenderer } from "./components/toast.js";
 import { createNotificationService } from "./services/notifications.js";
 import { createAuthService } from "./services/auth.js";
+import { createCloudSyncService } from "./services/cloudSync.js";
 import { createAuthController } from "./ui/auth.js";
 import { selectSettings } from "./state/selectors.js";
 import { updateSetting } from "./domain/options.js";
@@ -36,6 +37,7 @@ export const notificationService = createNotificationService({
 
 const backups = createBackupStorage({ migrateOptions: { resolveFamiliar } });
 let migrationBackedUp = loaded.source !== "v1";
+let cloudSyncService = null;
 const persistence = {
   save(state) {
     if (!migrationBackedUp) {
@@ -43,7 +45,9 @@ const persistence = {
       if (!backup.ok) return backup;
       migrationBackedUp = true;
     }
-    return localState.save(state);
+    const result = localState.save(state);
+    if (result.ok) cloudSyncService?.schedule(state);
+    return result;
   }
 };
 
@@ -58,7 +62,6 @@ export const authController = createAuthController({
 const hasAuthCallback = new URLSearchParams(globalThis.location.search).has("verifyToken")
   || new URLSearchParams(globalThis.location.search).has("resetToken");
 const authCallback = authController.processUrlTokens();
-authService.initialize();
 
 export const historyController = createHistoryController({
   store: appState,
@@ -154,6 +157,41 @@ export const shortcutsController = createShortcutsController({
 });
 optionsController.setShortcutEditor(shortcutsController);
 
+let cloudErrorActive = false;
+cloudSyncService = createCloudSyncService({
+  auth: authService,
+  store: appState,
+  localStorage: globalThis.localStorage,
+  migrateOptions: { resolveFamiliar },
+  saveLocal: (state) => localState.save(state),
+  createBackup: (state, reason) => backups.create(state, reason),
+  createEmptyState: () => createDefaultState(),
+  onRemoteApplied: () => profilesController.render(),
+  onStatus: ({ value, error, remoteApplied }) => {
+    if (value === "error" && !cloudErrorActive) {
+      cloudErrorActive = true;
+      notificationService.error(error?.message || "La sauvegarde cloud est momentanément indisponible.");
+    } else if (value === "synced") {
+      if (cloudErrorActive) notificationService.success("Synchronisation cloud rétablie.");
+      else if (remoteApplied) notificationService.success("Progression cloud chargée.");
+      cloudErrorActive = false;
+    }
+  }
+});
+
+let cloudUserId = null;
+authService.subscribe((state) => {
+  const nextUserId = state.user?.id || null;
+  if (nextUserId && String(nextUserId) !== String(cloudUserId)) {
+    cloudUserId = nextUserId;
+    cloudSyncService.start(state.user).catch(() => {});
+  } else if (!nextUserId && cloudUserId) {
+    cloudUserId = null;
+    cloudSyncService.stop();
+  }
+});
+authService.initialize();
+
 for (const error of storageErrors) notificationService.error(error.userMessage || error.message);
 
-export { APP_METADATA, storageErrors };
+export { APP_METADATA, storageErrors, cloudSyncService };

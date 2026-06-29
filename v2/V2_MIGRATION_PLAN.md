@@ -386,3 +386,29 @@ Vérifications :
 - aucun fichier d'interface V1 modifié.
 
 Prochaine étape après validation explicite : **Phase 5 - Synchronisation cloud**.
+
+### Phase 5 - Module 14 : synchronisation cloud
+
+**Date :** 30 juin 2026
+**État :** terminé, en attente de validation
+
+Travaux effectués :
+
+- sauvegarde automatique des comptes V2 dans une table dédiée ;
+- chargement automatique et synchronisation périodique entre appareils ;
+- révisions serveur et résolution des conflits sans écrasement silencieux ;
+- backup avant application d'une copie distante ;
+- isolation des comptes et maintien du stockage local pour les invités ;
+- routes V2 séparées des sauvegardes cloud historiques de la V1.
+
+Livrable :
+
+- `v2/V2_PHASE5_CLOUD_REPORT.md`.
+
+Vérifications :
+
+- 93 tests unitaires réussis, 0 échec ;
+- syntaxe serveur et client validée ;
+- aucun fichier d'interface V1 modifié dans ce module.
+
+Prochaine étape après validation explicite : sélection du prochain module V2.

@@ -2243,6 +2243,64 @@ app.get("/api/cloud/save", requireAuth, (req, res) => {
   res.json({ payload: row ? safeParseJson(row.payload, null) : null, updatedAt: row?.updated_at || null });
 });
 
+app.put("/api/cloud/v2/save", requireAuth, (req, res) => {
+  const incomingPayload = req.body.payload;
+  const expectedRevision = req.body.expectedRevision === null || req.body.expectedRevision === undefined
+    ? null
+    : Number(req.body.expectedRevision);
+  if (!incomingPayload || typeof incomingPayload !== "object" || Array.isArray(incomingPayload)) {
+    return res.status(400).json({ error: "Sauvegarde cloud V2 invalide." });
+  }
+  if (expectedRevision !== null && (!Number.isInteger(expectedRevision) || expectedRevision < 0)) {
+    return res.status(400).json({ error: "Révision cloud V2 invalide." });
+  }
+
+  const nextPayload = Object.assign({}, incomingPayload, { savedAt: new Date().toISOString() });
+  const serializedPayload = JSON.stringify(nextPayload);
+  if (Buffer.byteLength(serializedPayload, "utf8") > 1_750_000) {
+    return res.status(413).json({ error: "Sauvegarde cloud V2 trop volumineuse." });
+  }
+
+  const result = db.transaction(() => {
+    const current = db.prepare("SELECT payload,revision,updated_at FROM cloud_saves_v2 WHERE user_id = ?").get(req.user.id);
+    const currentRevision = Number(current?.revision || 0);
+    if (expectedRevision !== null && expectedRevision !== currentRevision) {
+      return { conflict: true, current, currentRevision };
+    }
+    const revision = currentRevision + 1;
+    db.prepare(`
+      INSERT INTO cloud_saves_v2(user_id,payload,revision,updated_at)
+      VALUES(?,?,?,CURRENT_TIMESTAMP)
+      ON CONFLICT(user_id) DO UPDATE SET
+        payload = excluded.payload,
+        revision = excluded.revision,
+        updated_at = CURRENT_TIMESTAMP
+    `).run(req.user.id, serializedPayload, revision);
+    return { conflict: false, revision };
+  })();
+
+  if (result.conflict) {
+    return res.status(409).json({
+      error: "La sauvegarde cloud a été modifiée depuis un autre appareil.",
+      code: "CLOUD_REVISION_CONFLICT",
+      payload: result.current ? safeParseJson(result.current.payload, null) : null,
+      revision: result.currentRevision,
+      updatedAt: result.current?.updated_at || null
+    });
+  }
+  res.json({ ok: true, payload: nextPayload, revision: result.revision });
+});
+
+app.get("/api/cloud/v2/save", requireAuth, (req, res) => {
+  const row = db.prepare("SELECT payload,revision,updated_at FROM cloud_saves_v2 WHERE user_id = ?").get(req.user.id);
+  res.setHeader("Cache-Control", "no-store");
+  res.json({
+    payload: row ? safeParseJson(row.payload, null) : null,
+    revision: Number(row?.revision || 0),
+    updatedAt: row?.updated_at || null
+  });
+});
+
 app.get("/api/account/admin-commands", requireCommandAuth, (req, res) => {
   const rows = db.prepare(`
     SELECT c.*, actor.pseudo AS actor_pseudo, actor.role AS actor_role

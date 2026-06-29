@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createApiClient, ensureBrowserId, resolveApiBase } from "../../js/services/api.js";
+import { ApiRequestError, createApiClient, ensureBrowserId, resolveApiBase } from "../../js/services/api.js";
 
 function memoryStorage() {
   const values = new Map();
@@ -41,4 +41,21 @@ test("le client transmet session, navigateur et identifiant de requête", async 
   assert.equal(calls[0].options.headers.Authorization, "Bearer token-v2");
   assert.ok(calls[0].options.headers["X-Browser-Id"]);
   assert.ok(calls[0].options.headers["X-Request-Id"]);
+});
+
+test("une erreur API conserve le corps utile à la résolution de conflit", async () => {
+  const api = createApiClient({
+    baseUrl: "https://example.test/api",
+    storage: memoryStorage(),
+    fetchImpl: async () => ({
+      ok: false,
+      status: 409,
+      json: async () => ({ error: "Conflit", code: "CLOUD_REVISION_CONFLICT", revision: 4 }),
+      headers: { get: () => null }
+    })
+  });
+  await assert.rejects(
+    () => api.request("/cloud/v2/save"),
+    (error) => error instanceof ApiRequestError && error.body.revision === 4
+  );
 });

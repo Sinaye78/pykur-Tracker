@@ -9,6 +9,7 @@ export class ApiRequestError extends Error {
     this.code = details.code || "API_ERROR";
     this.path = details.path || "";
     this.requestId = details.requestId || "";
+    this.body = details.body || null;
   }
 }
 
@@ -75,7 +76,8 @@ export function createApiClient(options = {}) {
           status: response.status,
           code: body.code,
           path,
-          requestId: body.requestId || response.headers?.get?.("X-Request-Id") || requestId
+          requestId: body.requestId || response.headers?.get?.("X-Request-Id") || requestId,
+          body
         });
       }
       return body;
