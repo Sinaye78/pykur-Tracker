@@ -8,7 +8,7 @@ export const SHORTCUT_ACTIONS = Object.freeze([
   { id: "openOptions", label: "Ouvrir les options", description: "Ouvre le centre de réglages." },
   { id: "openProjection", label: "Ouvrir la projection", description: "Affiche les estimations." },
   { id: "openMonsters", label: "Ouvrir les monstres", description: "Affiche le bestiaire de suivi." },
-  { id: "openGallery", label: "Ouvrir la galerie", description: "Conservé pour le futur module Galerie." },
+  { id: "openGallery", label: "Ouvrir la galerie", description: "Ouvre les archives et événements découverts." },
   { id: "toggleSound", label: "Activer ou couper le son", description: "Bascule le son global." },
   { id: "toggleNight", label: "Mode nuit", description: "Bascule l'apparence sombre." },
   { id: "toggleDofusDetection", label: "Détection Dofus", description: "Conservé pour le futur module Détection." },

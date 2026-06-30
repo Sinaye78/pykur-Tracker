@@ -122,9 +122,9 @@ function mergeGallery(base = {}, extra = {}) {
 
 export function setGalleryShared(state, enabled) {
   const next = cloneValue(state);
-  if (enabled && next.galleryShared === false) {
+  if (next.galleryShared === false || enabled) {
     for (const profile of Object.values(next.profiles || {})) next.sharedGallery = mergeGallery(next.sharedGallery, profile.data?.gallery);
   }
-  next.galleryShared = Boolean(enabled);
+  next.galleryShared = true;
   return next;
 }

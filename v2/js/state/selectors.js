@@ -7,9 +7,7 @@ export const selectActiveProfile = (state) => selectProfileById(state, selectAct
 export const selectActiveProfileData = (state) => selectActiveProfile(state)?.data || null;
 export const selectHasActiveProfile = (state) => Boolean(selectActiveProfile(state));
 export const selectNeedsFamiliarChoice = (state) => Boolean(state?.needsFamiliarChoice || !selectHasActiveProfile(state));
-export const selectGallery = (state) => state?.galleryShared === false
-  ? selectActiveProfileData(state)?.gallery || null
-  : state?.sharedGallery || null;
+export const selectGallery = (state) => state?.sharedGallery || null;
 export const selectSettings = (state) => state?.optionsShared
   ? state?.sharedSettings || null
   : selectActiveProfileData(state)?.settings || state?.sharedSettings || null;

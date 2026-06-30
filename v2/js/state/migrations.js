@@ -110,9 +110,11 @@ export function migrateState(input, options = {}) {
   migrated.active = activeId;
   migrated.needsFamiliarChoice = activeId ? Boolean(source.needsFamiliarChoice) : true;
 
-  if (!isRecord(source.sharedGallery)) {
-    migrated.sharedGallery = mergeLegacyGalleries(profileEntries.map((profile) => profile.data.gallery));
-  }
+  migrated.sharedGallery = mergeLegacyGalleries([
+    source.sharedGallery,
+    ...profileEntries.map((profile) => profile.data.gallery)
+  ]);
+  migrated.galleryShared = true;
   if (!isRecord(source.sharedSettings)) {
     migrated.sharedSettings = mergeDefaults(createDefaultSettings(), activeId ? migrated.profiles[activeId].data.settings : {});
   }

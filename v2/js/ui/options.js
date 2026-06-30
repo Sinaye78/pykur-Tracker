@@ -1,6 +1,5 @@
 import {
   resetKeybinds,
-  setGalleryShared,
   setOptionsShared,
   updateNotificationDuration,
   updateSetting,
@@ -190,10 +189,12 @@ export function createOptionsController(options) {
 
   function drawLinks(panel) {
     const state = store.getState();
-    for (const [label, description, checked, handler] of [
-      ["Options et raccourcis partagés", "Applique les mêmes réglages à tous les profils.", state.optionsShared, (value) => setOptionsShared(state, value)],
-      ["Galerie partagée", "Réunit les archives de tous les profils sans supprimer les données locales.", state.galleryShared !== false, (value) => setGalleryShared(state, value)]
-    ]) {
+    for (const [label, description, checked, handler] of [[
+      "Options et raccourcis partagés",
+      "Applique les mêmes réglages à tous les profils.",
+      state.optionsShared,
+      (value) => setOptionsShared(state, value)
+    ]]) {
       const row = element("label", "option-row");
       row.dataset.search = `${label} ${description}`.toLowerCase();
       const copy = element("span", "option-copy");
@@ -211,7 +212,7 @@ export function createOptionsController(options) {
       row.append(copy, input);
       panel.append(row);
     }
-    const account = element("div", "options-note", "Les succès restent communs au compte. Les donjons et la progression restent propres à chaque profil.");
+    const account = element("div", "options-note", "La galerie et les succès appartiennent au compte, ou à ce navigateur en mode invité. Les donjons et la progression restent propres à chaque profil.");
     panel.append(account);
   }
 

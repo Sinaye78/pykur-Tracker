@@ -20,6 +20,7 @@ import { createCloudSyncService } from "./services/cloudSync.js";
 import { createAudioService } from "./services/audio.js";
 import { createAuthController } from "./ui/auth.js";
 import { createAchievementsController } from "./ui/achievements.js";
+import { createGalleryController } from "./ui/gallery.js";
 import { selectSettings } from "./state/selectors.js";
 import { updateSetting } from "./domain/options.js";
 
@@ -41,6 +42,7 @@ const backups = createBackupStorage({ migrateOptions: { resolveFamiliar } });
 let migrationBackedUp = loaded.source !== "v1";
 let cloudSyncService = null;
 let achievementsController = null;
+let galleryController = null;
 const persistence = {
   save(state) {
     if (!migrationBackedUp) {
@@ -163,6 +165,7 @@ export const shortcutsController = createShortcutsController({
       achievementsController?.unlock("open_monster_threshold");
       dashboardController.openMonsters("all");
     },
+    openGallery: () => galleryController?.open(),
     toggleSound: optionsController.toggleSound,
     toggleNight: () => {
       const settings = selectSettings(appState.getState()) || {};
@@ -185,6 +188,25 @@ achievementsController = createAchievementsController({
   resolveRuntime: resolveFamiliarRuntime
 });
 dashboardController.subscribeRun(() => achievementsController.evaluate({ allowRemoved: true }));
+
+galleryController = createGalleryController({
+  store: appState,
+  persistence,
+  modal: modalController,
+  notifications: notificationService,
+  resolveFamiliar,
+  resolveRuntime: resolveFamiliarRuntime,
+  subscribeRun: dashboardController.subscribeRun,
+  onOpen: () => achievementsController?.unlock("open_gallery"),
+  onSectionViewed: (section) => {
+    if (section === "archives") achievementsController?.unlock("view_archive");
+    if (section === "events") achievementsController?.unlock("view_event_collection");
+  },
+  onArchive: () => {
+    achievementsController?.unlock("restart_after_completion");
+    achievementsController?.evaluate({ allowRemoved: true });
+  }
+});
 
 document.querySelector("#projectionOpen")?.addEventListener("click", () => {
   achievementsController.unlock("open_projection");
@@ -237,4 +259,4 @@ authService.initialize();
 
 for (const error of storageErrors) notificationService.error(error.userMessage || error.message);
 
-export { APP_METADATA, storageErrors, cloudSyncService, achievementsController };
+export { APP_METADATA, storageErrors, cloudSyncService, achievementsController, galleryController };

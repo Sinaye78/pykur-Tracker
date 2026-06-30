@@ -412,3 +412,31 @@ Vérifications :
 - aucun fichier d'interface V1 modifié dans ce module.
 
 Prochaine étape après validation explicite : sélection du prochain module V2.
+
+### Phase 5 - Module 16 : galerie
+
+**Date :** 30 juin 2026
+**État :** terminé, en attente de validation
+
+Travaux effectués :
+
+- galerie unique liée au compte, ou au navigateur pour un invité ;
+- archives multi-familiers et filtres ;
+- archivage de fin de familier et redémarrage du cycle ;
+- conservation des options et références Dofus ;
+- événements découverts issus des sauvegardes ;
+- suppressions et reset protégés par tombstones ;
+- branchement des succès et du raccourci Galerie.
+
+Livrable :
+
+- `v2/V2_PHASE5_GALLERY_REPORT.md`.
+
+Vérifications :
+
+- 109 tests unitaires réussis, 0 échec ;
+- navigation réelle des trois sections validée ;
+- aucune erreur console ;
+- aucun fichier V1 modifié par ce module.
+
+Prochaine étape après validation explicite : **Phase 5 - Easter eggs**.
