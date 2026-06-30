@@ -5,3 +5,35 @@
   animation-duration: 0s;
   animation-iteration-count: 1;
 }
+
+.achievement-fireworks {
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.achievement-fireworks span {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--color);
+  box-shadow: 0 0 0.65rem var(--color);
+  opacity: 0;
+  animation: achievementFirework 1.5s ease-out var(--delay) forwards;
+}
+
+@keyframes achievementFirework {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.2); }
+  12% { opacity: 1; }
+  75% { opacity: 0.95; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.5); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .achievement-fireworks { display: none; }
+}

@@ -24,6 +24,7 @@ export function createCloudSyncService(options) {
     migrateOptions = {},
     saveLocal,
     createBackup,
+    onRemoteApplying,
     onRemoteApplied,
     onStatus,
     createEmptyState,
@@ -65,6 +66,7 @@ export function createCloudSyncService(options) {
   function applyRemote(envelope, reason = "cloud") {
     const remoteState = readCloudEnvelope(envelope, migrateOptions);
     createBackup?.(store.getState(), `avant-${reason}`);
+    onRemoteApplying?.();
     suppressNextSchedule = true;
     store.replaceState(remoteState);
     saveLocal?.(remoteState);
@@ -143,6 +145,7 @@ export function createCloudSyncService(options) {
         if (owner() && owner() !== String(activeUserId) && createEmptyState) {
           const emptyState = createEmptyState();
           createBackup?.(store.getState(), "avant-changement-compte");
+          onRemoteApplying?.();
           suppressNextSchedule = true;
           store.replaceState(emptyState);
           saveLocal?.(emptyState);

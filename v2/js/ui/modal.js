@@ -7,18 +7,24 @@ export function createModalController(root = document.querySelector("#appModal")
   const footer = root.querySelector("#appModalFooter");
   let open = false;
   let lastFocused = null;
+  let onClose = null;
 
   function close() {
     if (!open) return;
+    const callback = onClose;
+    onClose = null;
     root.hidden = true;
     open = false;
     body.replaceChildren();
     footer.replaceChildren();
     lastFocused?.focus?.();
+    callback?.();
   }
 
-  function show(dialogTitle, dialogSubtitle = "") {
+  function show(dialogTitle, dialogSubtitle = "", options = {}) {
+    if (open) onClose?.();
     lastFocused = document.activeElement;
+    onClose = typeof options.onClose === "function" ? options.onClose : null;
     title.textContent = dialogTitle;
     subtitle.textContent = dialogSubtitle;
     body.replaceChildren();

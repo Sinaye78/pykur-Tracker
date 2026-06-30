@@ -22,7 +22,7 @@ function normalizedText(value) {
 }
 
 export function createTrackingDialogs(options) {
-  const { store, modal, resolveFamiliar, resolveRuntime, gelutinBossGains, persist, announce, recordHistory } = options;
+  const { store, modal, resolveFamiliar, resolveRuntime, gelutinBossGains, persist, announce, recordHistory, onManualAdjustment } = options;
   const dependencies = { resolveFamiliar, resolveRuntime, gelutinBossGains };
 
   function context() {
@@ -74,10 +74,13 @@ export function createTrackingDialogs(options) {
           return Number(profile.data.runs?.[dungeon.key] || 0) !== Number(next.profiles[state.active].data.runs?.[dungeon.key] || 0);
         });
         const saved = persist(next);
-        if (saved && changes.length) recordHistory?.(state.active, {
-          message: `Compteurs de donjons corrigés : ${changes.map((dungeon) => dungeon.label).join(", ")}.`,
-          kind: "edit"
-        });
+        if (saved && changes.length) {
+          recordHistory?.(state.active, {
+            message: `Compteurs de donjons corrigés : ${changes.map((dungeon) => dungeon.label).join(", ")}.`,
+            kind: "edit"
+          });
+          onManualAdjustment?.("runs");
+        }
         modal.close();
         announce("Compteurs de donjons et monstres synchronisés.");
       } catch (error) {
@@ -202,11 +205,14 @@ export function createTrackingDialogs(options) {
           }
           next.profiles[state.active].data = data;
           const saved = persist(next);
-          if (saved) recordHistory?.(state.active, {
-            message: `Compteurs de monstres corrigés pour ${sourceLabel(source, familiar)}.`,
-            kind: "edit",
-            farmKey: source === "zone" || source === "all" ? null : source
-          });
+          if (saved) {
+            recordHistory?.(state.active, {
+              message: `Compteurs de monstres corrigés pour ${sourceLabel(source, familiar)}.`,
+              kind: "edit",
+              farmKey: source === "zone" || source === "all" ? null : source
+            });
+            onManualAdjustment?.("monsters");
+          }
           announce(`Compteurs ${sourceLabel(source, familiar)} enregistrés.`);
           draw();
         } catch (error) {

@@ -57,7 +57,8 @@ export function createDashboardController(options) {
     gelutinBossGains,
     persist,
     announce,
-    recordHistory
+    recordHistory,
+    onManualAdjustment: options.onManualAdjustment
   });
 
   function activeContext() {

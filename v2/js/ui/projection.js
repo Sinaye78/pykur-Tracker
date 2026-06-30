@@ -167,7 +167,11 @@ export function createProjectionController(options) {
     for (const [key, label] of [["summary", "Résumé"], ["simulator", "Simulateur"], ["details", "Détails"]]) {
       const tab = button(label, `projection-tab${view === key ? " is-active" : ""}`);
       tab.setAttribute("aria-pressed", String(view === key));
-      tab.addEventListener("click", () => { view = key; render(); });
+      tab.addEventListener("click", () => {
+        view = key;
+        options.onViewChange?.(key);
+        render();
+      });
       tabs.append(tab);
     }
     const content = element("div", "projection-content");

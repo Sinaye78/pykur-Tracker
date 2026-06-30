@@ -17,7 +17,9 @@ import { createToastRenderer } from "./components/toast.js";
 import { createNotificationService } from "./services/notifications.js";
 import { createAuthService } from "./services/auth.js";
 import { createCloudSyncService } from "./services/cloudSync.js";
+import { createAudioService } from "./services/audio.js";
 import { createAuthController } from "./ui/auth.js";
+import { createAchievementsController } from "./ui/achievements.js";
 import { selectSettings } from "./state/selectors.js";
 import { updateSetting } from "./domain/options.js";
 
@@ -38,6 +40,7 @@ export const notificationService = createNotificationService({
 const backups = createBackupStorage({ migrateOptions: { resolveFamiliar } });
 let migrationBackedUp = loaded.source !== "v1";
 let cloudSyncService = null;
+let achievementsController = null;
 const persistence = {
   save(state) {
     if (!migrationBackedUp) {
@@ -102,7 +105,8 @@ export const dashboardController = createDashboardController({
   gelutinBossGains: GELUTIN_BOSS_GAINS,
   modal: modalController,
   recordHistory: historyController.record,
-  notifications: notificationService
+  notifications: notificationService,
+  onManualAdjustment: () => achievementsController?.unlock("manual_adjustments")
 });
 
 export const projectionController = createProjectionController({
@@ -110,7 +114,8 @@ export const projectionController = createProjectionController({
   modal: modalController,
   resolveFamiliar,
   resolveRuntime: resolveFamiliarRuntime,
-  gelutinBossGains: GELUTIN_BOSS_GAINS
+  gelutinBossGains: GELUTIN_BOSS_GAINS,
+  onViewChange: (view) => { if (view === "simulator") achievementsController?.unlock("use_projection_simulator"); }
 });
 
 export const chronoController = createChronoController({
@@ -142,10 +147,18 @@ export const shortcutsController = createShortcutsController({
     switchDungeon: dashboardController.switchDungeon,
     chronoToggle: chronoController.toggle,
     chronoReset: chronoController.reset,
-    openHistory: historyController.open,
-    openOptions: optionsController.open,
-    openProjection: projectionController.openProjection,
-    openMonsters: () => dashboardController.openMonsters("all"),
+    openHistory: () => { achievementsController?.unlock("open_history"); historyController.open(); },
+    openOptions: () => { achievementsController?.unlock("open_options"); optionsController.open(); },
+    openProjection: () => {
+      achievementsController?.unlock("open_projection");
+      achievementsController?.unlock("view_time_estimate");
+      projectionController.openProjection();
+    },
+    openMonsters: () => {
+      achievementsController?.unlock("open_monsters");
+      achievementsController?.unlock("open_monster_threshold");
+      dashboardController.openMonsters("all");
+    },
     toggleSound: optionsController.toggleSound,
     toggleNight: () => {
       const settings = selectSettings(appState.getState()) || {};
@@ -157,6 +170,28 @@ export const shortcutsController = createShortcutsController({
 });
 optionsController.setShortcutEditor(shortcutsController);
 
+export const audioService = createAudioService({ store: appState });
+achievementsController = createAchievementsController({
+  store: appState,
+  persistence,
+  modal: modalController,
+  notifications: notificationService,
+  audio: audioService,
+  resolveFamiliar,
+  resolveRuntime: resolveFamiliarRuntime
+});
+
+document.querySelector("#projectionOpen")?.addEventListener("click", () => {
+  achievementsController.unlock("open_projection");
+  achievementsController.unlock("view_time_estimate");
+});
+document.querySelector("#monsterLauncher")?.addEventListener("click", () => {
+  achievementsController.unlock("open_monsters");
+  achievementsController.unlock("open_monster_threshold");
+});
+document.querySelector("#historyOpen")?.addEventListener("click", () => achievementsController.unlock("open_history"));
+document.querySelector("#optionsOpen")?.addEventListener("click", () => achievementsController.unlock("open_options"));
+
 let cloudErrorActive = false;
 cloudSyncService = createCloudSyncService({
   auth: authService,
@@ -166,6 +201,7 @@ cloudSyncService = createCloudSyncService({
   saveLocal: (state) => localState.save(state),
   createBackup: (state, reason) => backups.create(state, reason),
   createEmptyState: () => createDefaultState(),
+  onRemoteApplying: () => achievementsController?.silenceNextEvaluation(),
   onRemoteApplied: () => profilesController.render(),
   onStatus: ({ value, error, remoteApplied }) => {
     if (value === "error" && !cloudErrorActive) {
@@ -184,7 +220,9 @@ authService.subscribe((state) => {
   const nextUserId = state.user?.id || null;
   if (nextUserId && String(nextUserId) !== String(cloudUserId)) {
     cloudUserId = nextUserId;
-    cloudSyncService.start(state.user).catch(() => {});
+    cloudSyncService.start(state.user)
+      .then(() => achievementsController?.unlock("create_account"))
+      .catch(() => {});
   } else if (!nextUserId && cloudUserId) {
     cloudUserId = null;
     cloudSyncService.stop();
@@ -194,4 +232,4 @@ authService.initialize();
 
 for (const error of storageErrors) notificationService.error(error.userMessage || error.message);
 
-export { APP_METADATA, storageErrors, cloudSyncService };
+export { APP_METADATA, storageErrors, cloudSyncService, achievementsController };
