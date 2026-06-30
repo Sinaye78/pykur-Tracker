@@ -27,6 +27,8 @@ export function createToomController(options = {}) {
 
   return Object.freeze({
     toggle,
+    deactivate: () => setEnabled(false, { silent: true }),
+    getElement: () => overlay,
     isEnabled: () => enabled,
     destroy() {
       setEnabled(false, { silent: true });

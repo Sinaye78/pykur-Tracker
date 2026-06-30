@@ -56,6 +56,8 @@ export function createAinaController(options = {}) {
   return Object.freeze({
     toggle,
     react,
+    deactivate: () => setEnabled(false, { silent: true }),
+    getElement: () => overlay,
     isEnabled: () => enabled,
     destroy() {
       setEnabled(false, { silent: true });

@@ -540,3 +540,29 @@ Vérifications :
 - aucun fichier V1 modifié par ce module.
 
 Prochaine étape après validation explicite : **Easter egg Raj**.
+
+### Phase 5 - Module 21 : Easter egg 5 - Raj
+
+**Date :** 1 juillet 2026
+**État :** terminé, en attente de validation
+
+Travaux effectués :
+
+- migration isolée du déclencheur clavier `raj` ;
+- déplacements, combats contre les Bouftous, contre-attaques et butin ;
+- interactions contractuelles avec Aina, Toom et Charlie ;
+- ronde anti-bot de Happios, carton rouge et bannissement automatique ;
+- déblocage de `egg_raj` et `secret_raj_ban` ;
+- nettoyage complet des timers, promesses et éléments temporaires.
+
+Livrable :
+
+- `v2/V2_PHASE5_EASTER_EGG_RAJ_REPORT.md`.
+
+Vérifications :
+
+- 119 tests unitaires réussis, 0 échec ;
+- activation visuelle locale et assets validés ;
+- aucun fichier V1 modifié par ce module.
+
+Prochaine étape après validation explicite : **Easter egg Brako**.

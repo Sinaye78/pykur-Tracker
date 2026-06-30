@@ -5,6 +5,7 @@ import { collectSecretEgg, isSecretEggCollected } from "../../js/domain/easterEg
 import { createEasterEggController } from "../../js/events/easterEggs.js";
 import { createAinaController } from "../../js/events/easterEggs/aina.js";
 import { createCharlieController } from "../../js/events/easterEggs/charlie.js";
+import { createRajController } from "../../js/events/easterEggs/raj.js";
 import { createSecretSequenceController } from "../../js/events/easterEggs/sequence.js";
 import { createToomController } from "../../js/events/easterEggs/toom.js";
 import { createDefaultState } from "../../js/state/defaults.js";
@@ -108,7 +109,7 @@ test("Charlie active puis desactive son curseur et nettoie ses ecouteurs", () =>
   assert.equal(listeners.size, 0);
 });
 
-test("le routeur reconnait Aina, Charlie et Toom sans intercepter les formulaires", () => {
+test("le routeur reconnait Aina, Charlie, Raj et Toom sans intercepter les formulaires", () => {
   const listeners = new Map();
   const calls = [];
   const documentRef = {
@@ -117,7 +118,7 @@ test("le routeur reconnait Aina, Charlie et Toom sans intercepter les formulaire
   };
   const controller = createSecretSequenceController({
     documentRef,
-    commands: { aina: () => calls.push("aina"), charlie: () => calls.push("charlie"), toom: () => calls.push("toom") }
+    commands: { aina: () => calls.push("aina"), charlie: () => calls.push("charlie"), raj: () => calls.push("raj"), toom: () => calls.push("toom") }
   });
   const type = (word, target = { closest: () => null }) => {
     for (const key of word) listeners.get("keydown")({
@@ -132,9 +133,162 @@ test("le routeur reconnait Aina, Charlie et Toom sans intercepter les formulaire
   type("charlie");
   type("toom");
   type("aina");
-  assert.deepEqual(calls, ["charlie", "toom", "aina"]);
+  type("raj");
+  assert.deepEqual(calls, ["charlie", "toom", "aina", "raj"]);
   controller.destroy();
   assert.equal(listeners.size, 0);
+});
+
+test("Raj se connecte sur desktop, debloque son succes et nettoie sa scene", () => {
+  const classes = new Set();
+  const children = [];
+  const createElement = () => {
+    const ownClasses = new Set();
+    const node = {
+      children: [],
+      style: { setProperty() {} },
+      classList: {
+        add(...values) { values.forEach((value) => ownClasses.add(value)); },
+        remove(...values) { values.forEach((value) => ownClasses.delete(value)); },
+        contains(value) { return ownClasses.has(value); }
+      },
+      append(...values) { node.children.push(...values); },
+      prepend(...values) { node.children.unshift(...values); },
+      querySelector(selector) {
+        if (selector === "img") return node.children.find((child) => child.tagName === "IMG") || null;
+        return null;
+      },
+      remove() { node.removed = true; },
+      setAttribute() {}
+    };
+    return node;
+  };
+  const layer = {
+    classList: {
+      add(value) { classes.add(value); },
+      remove(value) { classes.delete(value); }
+    },
+    append(node) { children.push(node); },
+    setAttribute() {},
+    replaceChildren() { children.length = 0; }
+  };
+  const documentRef = {
+    createElement(tagName) {
+      const node = createElement();
+      node.tagName = tagName.toUpperCase();
+      return node;
+    },
+    querySelector: () => layer
+  };
+  const unlocked = [];
+  const messages = [];
+  const controller = createRajController({
+    documentRef,
+    windowRef: { innerWidth: 1280, innerHeight: 720, matchMedia: () => ({ matches: false }) },
+    autoRun: false,
+    onUnlock: (id) => unlocked.push(id),
+    notifications: {
+      notify: ({ message }) => messages.push(message),
+      warning: (message) => messages.push(message)
+    }
+  });
+  assert.equal(controller.start(), true);
+  assert.equal(controller.isEnabled(), true);
+  assert.ok(classes.has("is-active"));
+  assert.deepEqual(unlocked, ["egg_raj"]);
+  assert.ok(children.length > 0);
+  assert.equal(controller.stop(), true);
+  assert.equal(controller.isEnabled(), false);
+  assert.equal(classes.has("is-active"), false);
+  assert.equal(children.length, 0);
+  assert.ok(messages.some((message) => message.includes("connect")));
+  controller.destroy();
+});
+
+test("Raj peut capturer un easter egg actif via son contrat public", () => {
+  const makeNode = () => {
+    const classes = new Set();
+    const node = {
+      children: [],
+      style: { setProperty() {} },
+      classList: {
+        add(...values) { values.forEach((value) => classes.add(value)); },
+        remove(...values) { values.forEach((value) => classes.delete(value)); },
+        contains(value) { return classes.has(value); }
+      },
+      append(...nodes) { node.children.push(...nodes); },
+      prepend(...nodes) { node.children.unshift(...nodes); },
+      querySelector(selector) {
+        if (selector === "img") return node.children.find((child) => child.tagName === "IMG") || null;
+        if (selector === ".raj-dofus-trophy") return null;
+        return null;
+      },
+      remove() {},
+      setAttribute() {}
+    };
+    return node;
+  };
+  const layer = { classList: { add() {}, remove() {} }, append() {}, setAttribute() {}, replaceChildren() {} };
+  let deactivated = 0;
+  const targetElement = { getBoundingClientRect: () => ({ left: 500, top: 300, width: 120, height: 100 }) };
+  const messages = [];
+  const controller = createRajController({
+    documentRef: {
+      querySelector: () => layer,
+      createElement: (tag) => Object.assign(makeNode(), { tagName: tag.toUpperCase() })
+    },
+    windowRef: { innerWidth: 1280, innerHeight: 720, matchMedia: () => ({ matches: false }) },
+    autoRun: false,
+    targets: [{
+      id: "toom",
+      label: "Toom",
+      controller: {
+        isEnabled: () => true,
+        getElement: () => targetElement,
+        deactivate: () => { deactivated += 1; }
+      }
+    }],
+    notifications: { notify: ({ message }) => messages.push(message), warning() {} }
+  });
+  controller.start();
+  assert.equal(controller.claimAvailableTarget("toom"), true);
+  assert.equal(deactivated, 1);
+  assert.ok(messages.some((message) => message.includes("NRG 500")));
+  controller.destroy();
+});
+
+test("Raj annule proprement une ronde Happios encore en attente", async () => {
+  const timers = new Map();
+  let timerId = 0;
+  const makeNode = () => ({
+    children: [],
+    style: { setProperty() {} },
+    classList: { add() {}, remove() {}, contains() { return false; } },
+    append(...nodes) { this.children.push(...nodes); },
+    prepend(...nodes) { this.children.unshift(...nodes); },
+    querySelector(selector) { return selector === "img" ? this.children[0] || null : null; },
+    remove() {},
+    setAttribute() {}
+  });
+  const layer = { classList: { add() {}, remove() {} }, append() {}, setAttribute() {}, replaceChildren() {} };
+  const controller = createRajController({
+    documentRef: {
+      querySelector: () => layer,
+      createElement: (tag) => Object.assign(makeNode(), { tagName: tag.toUpperCase() })
+    },
+    windowRef: { innerWidth: 1280, innerHeight: 720, matchMedia: () => ({ matches: false }) },
+    autoRun: false,
+    setTimer(callback) { const id = ++timerId; timers.set(id, callback); return id; },
+    clearTimer(id) { timers.delete(id); },
+    notifications: { notify() {}, warning() {} }
+  });
+  controller.start();
+  const moderation = controller.moderateNow();
+  assert.equal(timers.size, 1);
+  controller.stop({ silent: true });
+  assert.equal(timers.size, 0);
+  assert.equal(await moderation, false);
+  controller.destroy();
 });
 
 test("Toom affiche la NRG, debloque son succes puis se nettoie", () => {

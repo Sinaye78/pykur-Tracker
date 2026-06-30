@@ -60,6 +60,8 @@ export function createCharlieController(options = {}) {
 
   return Object.freeze({
     toggle,
+    deactivate: () => setEnabled(false, { silent: true }),
+    getElement: () => cursor,
     isEnabled: () => enabled,
     destroy() {
       setEnabled(false, { silent: true });

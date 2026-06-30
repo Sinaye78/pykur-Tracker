@@ -39,6 +39,182 @@
   }
 }
 
+.raj-egg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9200;
+  display: none;
+  overflow: hidden;
+  pointer-events: none;
+  contain: layout style paint;
+}
+
+.raj-egg-layer.is-active { display: block; }
+
+.raj-unit,
+.raj-monster,
+.raj-loot,
+.raj-arrow,
+.raj-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.raj-unit {
+  width: clamp(70px, 6.7vw, 96px);
+  height: clamp(84px, 8vw, 116px);
+  transform: translate3d(var(--raj-x, -120px), var(--raj-y, -120px), 0);
+  transition: transform var(--raj-speed, 1.6s) ease-in-out, opacity 240ms ease;
+}
+
+.raj-unit.raj-happios {
+  width: clamp(86px, 8.2vw, 122px);
+  height: clamp(102px, 9.8vw, 146px);
+}
+
+.raj-character,
+.raj-monster img,
+.raj-loot img,
+.raj-arrow img,
+.raj-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.raj-character {
+  filter: drop-shadow(0 10px 12px rgb(0 0 0 / 34%));
+  animation: raj-idle 1.8s ease-in-out infinite;
+}
+
+.raj-unit.moving .raj-character { animation: raj-walk 720ms ease-in-out infinite; }
+.raj-unit.under-attack .raj-character { animation: raj-impact 300ms ease-in-out 2; }
+.raj-unit.banned {
+  opacity: 0;
+  transform: translate3d(var(--raj-x, -120px), var(--raj-y, -120px), 0) scale(0.72) rotate(-9deg);
+}
+
+.raj-nameplate {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  width: clamp(220px, 18vw, 300px);
+  height: clamp(80px, 6.5vw, 108px);
+  opacity: 0;
+  transform: translateX(-50%) translateY(6px) scale(0.96);
+  filter: drop-shadow(0 10px 14px rgb(0 0 0 / 52%));
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.raj-unit:hover .raj-nameplate {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+.raj-unit.mounted {
+  width: clamp(118px, 11vw, 168px);
+  height: clamp(92px, 8.6vw, 132px);
+}
+
+.raj-mount-bike {
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 14px rgb(0 0 0 / 36%));
+}
+
+.raj-unit.mounted .raj-character {
+  position: absolute;
+  top: 2%;
+  left: 42%;
+  z-index: 2;
+  width: 34%;
+  height: 48%;
+}
+
+.raj-trophy {
+  position: absolute;
+  top: 6%;
+  right: 18%;
+  z-index: 3;
+  width: 24%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgb(255 255 255 / 88%));
+  animation: raj-trophy 2.4s ease-in-out infinite;
+}
+
+.raj-monster {
+  width: var(--raj-monster-size, clamp(40px, 4vw, 58px));
+  height: var(--raj-monster-size, clamp(40px, 4vw, 58px));
+  transform: translate3d(var(--raj-x, 0), var(--raj-y, 0), 0);
+  transition: transform 240ms ease, opacity 250ms ease, filter 200ms ease;
+}
+
+.raj-monster.boufton-blanc { --raj-monster-size: clamp(38px, 3.6vw, 52px); }
+.raj-monster.boufton-noir { --raj-monster-size: clamp(44px, 4.1vw, 60px); }
+.raj-monster.bouftou { --raj-monster-size: clamp(54px, 5vw, 74px); }
+.raj-monster.chef-bouftou { --raj-monster-size: clamp(68px, 6.3vw, 96px); }
+.raj-monster.attacking { animation: raj-monster-attack 460ms ease-in-out; }
+.raj-monster.dead { opacity: 0; transform: translate3d(var(--raj-x, 0), var(--raj-y, 0), 0) scale(0.55) rotate(12deg); }
+.raj-hit,
+.raj-egg-victim { animation: raj-hit 250ms ease-in-out 2; filter: brightness(1.28) saturate(1.2) !important; }
+
+.raj-loot {
+  width: 28px;
+  height: 28px;
+  opacity: 0;
+  transform: translate3d(var(--raj-x, 0), var(--raj-y, 0), 0) scale(0.7);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.raj-loot.show { opacity: 1; transform: translate3d(var(--raj-x, 0), var(--raj-y, 0), 0) scale(1); }
+.raj-loot.picked { opacity: 0; transform: translate3d(var(--raj-x, 0), var(--raj-y, 0), 0) translateY(-14px) scale(0.45); }
+
+.raj-arrow {
+  width: 52px;
+  height: 22px;
+  transform: translate3d(var(--raj-x, 0), var(--raj-y, 0), 0) rotate(var(--raj-angle, 0deg));
+  transition: transform 520ms linear;
+}
+
+.raj-card {
+  width: 42px;
+  height: 54px;
+  opacity: 0;
+  transform: translate3d(var(--raj-x, 0), var(--raj-y, 0), 0) scale(0.65) rotate(-8deg);
+  transition: opacity 180ms ease, transform 240ms ease;
+}
+.raj-card.show { opacity: 1; transform: translate3d(var(--raj-x, 0), var(--raj-y, 0), 0) rotate(-8deg); }
+
+@keyframes raj-idle { 50% { transform: translateY(-3px); } }
+@keyframes raj-walk { 50% { transform: translateY(-5px) rotate(1.5deg); } }
+@keyframes raj-impact { 45% { transform: translateX(-8px); } }
+@keyframes raj-trophy { 50% { opacity: 1; transform: translateY(-3px) scale(1.08); } }
+@keyframes raj-hit { 50% { opacity: 0.62; filter: brightness(1.35); } }
+@keyframes raj-monster-attack { 42% { transform: translate3d(calc(var(--raj-x, 0) + 24px), var(--raj-y, 0), 0) scale(1.08); } }
+
+@media (max-width: 760px), (pointer: coarse) {
+  .raj-egg-layer { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .raj-unit,
+  .raj-character,
+  .raj-monster,
+  .raj-loot,
+  .raj-arrow,
+  .raj-card,
+  .raj-trophy { animation: none !important; transition: none !important; }
+}
+
 .aina-overlay {
   position: fixed;
   left: 18px;
