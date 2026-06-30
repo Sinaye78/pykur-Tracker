@@ -18,6 +18,7 @@ import {
 import { createProfile } from "../../js/domain/profiles.js";
 import { applyRunDelta } from "../../js/domain/runs.js";
 import { createDefaultState } from "../../js/state/defaults.js";
+import { createAchievementsController } from "../../js/ui/achievements.js";
 
 const NOW = "2026-06-30T12:00:00.000Z";
 const dependencies = { resolveFamiliar, resolveRuntime: resolveFamiliarRuntime, gelutinBossGains: GELUTIN_BOSS_GAINS };
@@ -102,4 +103,34 @@ test("une nouvelle run permet de regagner les succes retires", () => {
   const result = recalculateAchievements(state, dependencies, { now: "2026-06-30T12:01:00.000Z", allowRemoved: true });
   assert.ok(result.state.sharedAchievements.unlocked.first_run);
   assert.ok(result.state.sharedAchievements.unlocked.dungeon_1);
+});
+
+test("le controleur transmet l'autorisation de regagner un succes", () => {
+  let current = pykurState();
+  current = unlockAchievements(current, ["first_run", "dungeon_1"], { now: NOW }).state;
+  current = resetAchievements(current, { now: NOW });
+  current = applyRunDelta(current, "p_test", 1, dependencies).state;
+  const listeners = new Set();
+  const store = {
+    getState: () => current,
+    replaceState(next) { current = next; listeners.forEach((listener) => listener()); },
+    subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); }
+  };
+  const previousDocument = globalThis.document;
+  globalThis.document = { querySelector: () => null };
+  try {
+    const controller = createAchievementsController({
+      store,
+      persistence: { save: () => ({ ok: true }) },
+      modal: {},
+      resolveFamiliar,
+      resolveRuntime: resolveFamiliarRuntime
+    });
+    controller.evaluate({ allowRemoved: true });
+    assert.ok(current.sharedAchievements.unlocked.first_run);
+    assert.ok(current.sharedAchievements.unlocked.dungeon_1);
+    controller.destroy();
+  } finally {
+    globalThis.document = previousDocument;
+  }
 });

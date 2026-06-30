@@ -113,7 +113,7 @@ export function createAchievementsController(options) {
     if (evaluating) return [];
     evaluating = true;
     try {
-      return apply(recalculateAchievements(store.getState(), dependencies), options);
+      return apply(recalculateAchievements(store.getState(), dependencies, options), options);
     } finally {
       evaluating = false;
     }
