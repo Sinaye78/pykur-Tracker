@@ -440,3 +440,28 @@ Vérifications :
 - aucun fichier V1 modifié par ce module.
 
 Prochaine étape après validation explicite : **Phase 5 - Easter eggs**.
+
+### Phase 5 - Module 17 : Easter egg 1 - œuf secret
+
+**Date :** 30 juin 2026
+**État :** terminé, en attente de validation
+
+Travaux effectués :
+
+- migration isolée de l'œuf secret caché ;
+- collecte unique et persistante dans les succès partagés ;
+- conservation du déverrouillage en deux temps via le sceau des succès ;
+- notification de récupération et nettoyage du contrôleur ;
+- retrait du bloc informatif « Mémoire de la galerie » demandé.
+
+Livrable :
+
+- `v2/V2_PHASE5_EASTER_EGG_GATE_REPORT.md`.
+
+Vérifications :
+
+- 112 tests unitaires réussis, 0 échec ;
+- double collecte impossible ;
+- aucun fichier V1 modifié par ce module.
+
+Prochaine étape après validation explicite : **Easter egg Charlie**.

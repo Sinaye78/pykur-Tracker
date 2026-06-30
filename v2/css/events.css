@@ -1,2 +1,40 @@
-/* Couche events réservée pour les phases suivantes. */
+.hidden-secret-egg {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 78;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.34;
+  filter: drop-shadow(0 5px 10px rgb(0 0 0 / 28%));
+  transition: opacity 180ms ease, transform 180ms ease, filter 180ms ease;
+}
 
+.hidden-secret-egg:hover,
+.hidden-secret-egg:focus-visible {
+  opacity: 1;
+  transform: translateY(-2px) scale(1.08);
+  filter: drop-shadow(0 7px 14px rgb(126 34 206 / 32%));
+}
+
+.hidden-secret-egg:focus-visible {
+  outline: 2px solid #f4c648;
+  outline-offset: 3px;
+}
+
+.hidden-secret-egg img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hidden-secret-egg {
+    transition: none;
+  }
+}

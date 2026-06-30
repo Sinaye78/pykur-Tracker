@@ -23,6 +23,7 @@ import { createAchievementsController } from "./ui/achievements.js";
 import { createGalleryController } from "./ui/gallery.js";
 import { selectSettings } from "./state/selectors.js";
 import { updateSetting } from "./domain/options.js";
+import { createEasterEggController } from "./events/easterEggs.js";
 
 const storageErrors = [];
 const localState = createLocalStateStorage({
@@ -188,6 +189,12 @@ achievementsController = createAchievementsController({
   resolveRuntime: resolveFamiliarRuntime
 });
 dashboardController.subscribeRun(() => achievementsController.evaluate({ allowRemoved: true }));
+
+export const easterEggController = createEasterEggController({
+  store: appState,
+  persistence,
+  notifications: notificationService
+});
 
 galleryController = createGalleryController({
   store: appState,

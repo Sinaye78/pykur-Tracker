@@ -214,20 +214,13 @@ export function createGalleryController(options) {
 
   function renderSettings(context) {
     const container = element("section", "gallery-view gallery-settings");
-    const account = element("section", "gallery-setting-card");
-    const accountCopy = element("div");
-    accountCopy.append(
-      element("strong", "", "Mémoire de la galerie"),
-      element("small", "", "Elle est liée à votre compte. En mode invité, elle reste enregistrée uniquement dans ce navigateur.")
-    );
-    account.append(accountCopy);
     const danger = element("section", "gallery-setting-card is-danger");
     const dangerCopy = element("div");
     dangerCopy.append(element("strong", "", "Réinitialiser la galerie"), element("small", "", "Supprime les archives et événements de la galerie active."));
     const reset = button("Réinitialiser", "button button-danger");
     reset.addEventListener("click", () => confirmReset(context.profileId));
     danger.append(dangerCopy, reset);
-    container.append(account, danger);
+    container.append(danger);
     return container;
   }
 
