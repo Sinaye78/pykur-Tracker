@@ -170,7 +170,10 @@ export function unlockAchievements(state, ids, options = {}) {
 }
 
 export function recalculateAchievements(state, dependencies, options = {}) {
-  return unlockAchievements(state, automaticAchievementIds(state, dependencies), { ...options, respectRemoved: true });
+  return unlockAchievements(state, automaticAchievementIds(state, dependencies), {
+    ...options,
+    respectRemoved: options.allowRemoved !== true
+  });
 }
 
 export function resetAchievements(state, options = {}) {

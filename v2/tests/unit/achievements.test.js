@@ -93,3 +93,13 @@ test("un recalcul automatique ne restaure pas un succes retire", () => {
   assert.equal(result.state.sharedAchievements.unlocked.create_profile, undefined);
   assert.ok(result.state.sharedAchievements.removedUnlocked.create_profile);
 });
+
+test("une nouvelle run permet de regagner les succes retires", () => {
+  let state = pykurState();
+  state = unlockAchievements(state, ["first_run", "dungeon_1"], { now: NOW }).state;
+  state = resetAchievements(state, { now: NOW });
+  state = applyRunDelta(state, "p_test", 1, dependencies).state;
+  const result = recalculateAchievements(state, dependencies, { now: "2026-06-30T12:01:00.000Z", allowRemoved: true });
+  assert.ok(result.state.sharedAchievements.unlocked.first_run);
+  assert.ok(result.state.sharedAchievements.unlocked.dungeon_1);
+});

@@ -16,6 +16,7 @@
 - son standard et son final respectant le mute et le volume du site ;
 - feu d'artifice CSS non bloquant pour Le vrai 100 % ;
 - reset avec marqueurs de retrait pour eviter le retour immediat des succes ;
+- possibilite de regagner les succes retires apres une nouvelle action eligible ;
 - chargement cloud silencieux afin de ne pas rejouer les sons ou notifications existants.
 
 ## Architecture

@@ -129,6 +129,7 @@ export function createProfilesController(options) {
           type: "success"
         });
         if (saved) notifications?.profile(`Profil ${result.state.profiles[result.profileId].name} créé.`);
+        if (saved) options.onProfileCreated?.(result.profileId);
         closeModal();
       } catch (error) {
         showError(error.message);

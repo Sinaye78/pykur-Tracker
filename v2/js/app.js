@@ -88,7 +88,8 @@ export const profilesController = createProfilesController({
   modal: modalController,
   recordHistory: historyController.record,
   notifications: notificationService,
-  autoOpenInitial: !hasAuthCallback
+  autoOpenInitial: !hasAuthCallback,
+  onProfileCreated: () => achievementsController?.evaluate({ allowRemoved: true })
 });
 
 if (hasAuthCallback) {
@@ -106,7 +107,10 @@ export const dashboardController = createDashboardController({
   modal: modalController,
   recordHistory: historyController.record,
   notifications: notificationService,
-  onManualAdjustment: () => achievementsController?.unlock("manual_adjustments")
+  onManualAdjustment: () => {
+    achievementsController?.unlock("manual_adjustments");
+    achievementsController?.evaluate({ allowRemoved: true });
+  }
 });
 
 export const projectionController = createProjectionController({
@@ -180,6 +184,7 @@ achievementsController = createAchievementsController({
   resolveFamiliar,
   resolveRuntime: resolveFamiliarRuntime
 });
+dashboardController.subscribeRun(() => achievementsController.evaluate({ allowRemoved: true }));
 
 document.querySelector("#projectionOpen")?.addEventListener("click", () => {
   achievementsController.unlock("open_projection");
