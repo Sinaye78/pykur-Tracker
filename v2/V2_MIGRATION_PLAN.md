@@ -465,3 +465,28 @@ Vérifications :
 - aucun fichier V1 modifié par ce module.
 
 Prochaine étape après validation explicite : **Easter egg Charlie**.
+
+### Phase 5 - Module 18 : Easter egg 2 - Charlie
+
+**Date :** 30 juin 2026
+**État :** terminé, en attente de validation
+
+Travaux effectués :
+
+- migration isolée du déclencheur clavier `charlie` ;
+- curseur Charlie, suivi du pointeur et animation au clic ;
+- déblocage persistant du succès `egg_charlie` ;
+- protection des champs de saisie et des raccourcis ;
+- nettoyage complet des listeners, styles, classes et timer.
+
+Livrable :
+
+- `v2/V2_PHASE5_EASTER_EGG_CHARLIE_REPORT.md`.
+
+Vérifications :
+
+- 113 tests unitaires réussis, 0 échec ;
+- asset et syntaxe validés ;
+- aucun fichier V1 modifié par ce module.
+
+Prochaine étape après validation explicite : **Easter egg Toom**.

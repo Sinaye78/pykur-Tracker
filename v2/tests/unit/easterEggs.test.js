@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { collectSecretEgg, isSecretEggCollected } from "../../js/domain/easterEggs.js";
 import { createEasterEggController } from "../../js/events/easterEggs.js";
+import { createCharlieController } from "../../js/events/easterEggs/charlie.js";
 import { createDefaultState } from "../../js/state/defaults.js";
 import { createStateStore } from "../../js/state/store.js";
 
@@ -33,7 +34,14 @@ test("le controleur persiste et notifie une seule collecte puis nettoie son ecou
     removeEventListener(type, listener) { if (listeners.get(type) === listener) listeners.delete(type); }
   };
   const previousDocument = globalThis.document;
-  globalThis.document = { querySelector: (selector) => selector === "#hiddenSecretEgg" ? egg : null };
+  globalThis.document = {
+    body: { classList: { toggle() {} } },
+    querySelector: (selector) => selector === "#hiddenSecretEgg" ? egg : null,
+    addEventListener(type, listener) { listeners.set(`document:${type}`, listener); },
+    removeEventListener(type, listener) {
+      if (listeners.get(`document:${type}`) === listener) listeners.delete(`document:${type}`);
+    }
+  };
   const store = createStateStore(createDefaultState());
   let saves = 0;
   let notifications = 0;
@@ -54,4 +62,56 @@ test("le controleur persiste et notifie une seule collecte puis nettoie son ecou
   } finally {
     globalThis.document = previousDocument;
   }
+});
+
+test("taper charlie active puis desactive le curseur sans intercepter les champs", () => {
+  const listeners = new Map();
+  const bodyClasses = new Set();
+  const cursorClasses = new Set();
+  const styles = new Map();
+  const cursor = {
+    offsetWidth: 54,
+    style: { setProperty(key, value) { styles.set(key, value); } },
+    classList: {
+      add(value) { cursorClasses.add(value); },
+      remove(value) { cursorClasses.delete(value); }
+    },
+    removeAttribute(name) { if (name === "style") styles.clear(); }
+  };
+  const documentRef = {
+    body: { classList: { toggle(name, enabled) { enabled ? bodyClasses.add(name) : bodyClasses.delete(name); } } },
+    querySelector: () => cursor,
+    addEventListener(type, listener) { listeners.set(type, listener); },
+    removeEventListener(type, listener) { if (listeners.get(type) === listener) listeners.delete(type); }
+  };
+  const unlocked = [];
+  const messages = [];
+  const controller = createCharlieController({
+    documentRef,
+    onUnlock: (id) => unlocked.push(id),
+    notifications: { info: (message) => messages.push(message) }
+  });
+  const typeSequence = (target = { closest: () => null }) => {
+    for (const key of "charlie") listeners.get("keydown")({
+      key,
+      target,
+      preventDefault() {},
+      stopImmediatePropagation() {}
+    });
+  };
+
+  typeSequence({ closest: () => true });
+  assert.equal(controller.isEnabled(), false);
+  typeSequence();
+  assert.equal(controller.isEnabled(), true);
+  assert.ok(bodyClasses.has("charlie-mode"));
+  assert.deepEqual(unlocked, ["egg_charlie"]);
+  listeners.get("pointermove")({ clientX: 100, clientY: 80 });
+  assert.equal(styles.get("--charlie-x"), "82px");
+  assert.equal(styles.get("--charlie-y"), "72px");
+  typeSequence();
+  assert.equal(controller.isEnabled(), false);
+  assert.deepEqual(messages, ["Charlie est là", "Charlie est reparti"]);
+  controller.destroy();
+  assert.equal(listeners.size, 0);
 });

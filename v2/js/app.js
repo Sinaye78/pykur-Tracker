@@ -193,7 +193,8 @@ dashboardController.subscribeRun(() => achievementsController.evaluate({ allowRe
 export const easterEggController = createEasterEggController({
   store: appState,
   persistence,
-  notifications: notificationService
+  notifications: notificationService,
+  onUnlock: (achievementId) => achievementsController?.unlock(achievementId)
 });
 
 galleryController = createGalleryController({

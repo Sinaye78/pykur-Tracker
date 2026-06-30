@@ -1,8 +1,10 @@
 import { collectSecretEgg, isSecretEggCollected } from "../domain/easterEggs.js";
+import { createCharlieController } from "./easterEggs/charlie.js";
 
 export function createEasterEggController(options) {
-  const { store, persistence, notifications } = options;
+  const { store, persistence, notifications, onUnlock } = options;
   const secretEgg = document.querySelector("#hiddenSecretEgg");
+  const charlie = createCharlieController({ notifications, onUnlock });
   let destroyed = false;
 
   function render(state = store.getState()) {
@@ -29,9 +31,11 @@ export function createEasterEggController(options) {
   return Object.freeze({
     collect,
     render,
+    charlie,
     destroy() {
       destroyed = true;
       unsubscribe();
+      charlie.destroy();
       secretEgg?.removeEventListener("click", collect);
       if (secretEgg) secretEgg.hidden = true;
     }
