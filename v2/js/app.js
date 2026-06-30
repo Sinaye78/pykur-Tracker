@@ -194,6 +194,7 @@ export const easterEggController = createEasterEggController({
   store: appState,
   persistence,
   notifications: notificationService,
+  audio: audioService,
   onUnlock: (achievementId) => achievementsController?.unlock(achievementId)
 });
 

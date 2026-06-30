@@ -39,6 +39,126 @@
   }
 }
 
+.aina-overlay {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 9300;
+  width: clamp(120px, 16vw, 184px);
+  height: clamp(142px, 20vw, 226px);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(-14px, 12px, 0) scale(0.96);
+  transition: opacity 280ms ease, transform 280ms ease, visibility 0s linear 280ms;
+}
+
+.aina-overlay.is-active,
+body.aina-mode .aina-overlay {
+  opacity: 1;
+  visibility: visible;
+  transform: translate3d(0, 0, 0) scale(1);
+  transition-delay: 0s;
+}
+
+.aina-hero {
+  position: absolute;
+  inset: auto 0 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 22px rgb(0 0 0 / 34%));
+}
+
+.aina-dofus {
+  position: absolute;
+  left: 58%;
+  top: 42%;
+  width: clamp(34px, 4.7vw, 58px);
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  pointer-events: auto;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 12px rgb(255 255 255 / 90%)) drop-shadow(0 0 22px rgb(147 197 253 / 72%));
+}
+
+.aina-dofus img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.aina-dofus::before {
+  content: "";
+  position: absolute;
+  inset: -18px;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 255 255 / 82%), rgb(191 219 254 / 34%) 42%, transparent 70%);
+  animation: aina-glow 2.8s ease-in-out infinite;
+}
+
+.aina-dofus::after {
+  content: "";
+  position: absolute;
+  inset: -30px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 22% 30%, rgb(255 255 255 / 78%) 0 2px, transparent 3px),
+    radial-gradient(circle at 70% 24%, rgb(219 234 254 / 90%) 0 2px, transparent 3px),
+    radial-gradient(circle at 58% 78%, rgb(255 255 255 / 74%) 0 1px, transparent 3px);
+  animation: aina-sparkles 3.6s ease-in-out infinite;
+}
+
+body.aina-mode .aina-dofus {
+  animation: aina-float 3.4s ease-in-out infinite;
+}
+
+@keyframes aina-float {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0) rotate(-1deg); }
+  50% { transform: translate(-50%, -50%) translateY(-6px) rotate(2deg); }
+}
+
+@keyframes aina-glow {
+  0%, 100% { opacity: 0.55; transform: scale(0.92); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+@keyframes aina-sparkles {
+  0%, 100% { opacity: 0.35; transform: translateY(2px) scale(0.96); }
+  50% { opacity: 0.95; transform: translateY(-4px) scale(1.04); }
+}
+
+@media (max-width: 760px) {
+  .aina-overlay {
+    left: 8px;
+    bottom: 10px;
+    width: 94px;
+    height: 116px;
+  }
+
+  .aina-dofus {
+    width: 34px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aina-overlay {
+    transition: none;
+  }
+
+  body.aina-mode .aina-dofus,
+  .aina-dofus::before,
+  .aina-dofus::after {
+    animation: none;
+  }
+}
+
 .toom-overlay {
   position: fixed;
   left: 50%;

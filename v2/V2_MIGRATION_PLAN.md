@@ -515,3 +515,28 @@ Vérifications :
 - aucun fichier V1 modifié par ce module.
 
 Prochaine étape après validation explicite : **Easter egg Aina**.
+
+### Phase 5 - Module 20 : Easter egg 4 - Aina
+
+**Date :** 30 juin 2026
+**État :** terminé, en attente de validation
+
+Travaux effectués :
+
+- migration isolée du déclencheur clavier `aina` ;
+- scène Aina et Dofus Ivoire interactive ;
+- réactions limitées à une toutes les 900 ms ;
+- son doux respectant le mute et le volume globaux ;
+- déblocage du succès `egg_aina` et nettoyage complet.
+
+Livrable :
+
+- `v2/V2_PHASE5_EASTER_EGG_AINA_REPORT.md`.
+
+Vérifications :
+
+- 116 tests unitaires réussis, 0 échec ;
+- assets, syntaxe et ressources locales validés ;
+- aucun fichier V1 modifié par ce module.
+
+Prochaine étape après validation explicite : **Easter egg Raj**.

@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { collectSecretEgg, isSecretEggCollected } from "../../js/domain/easterEggs.js";
 import { createEasterEggController } from "../../js/events/easterEggs.js";
+import { createAinaController } from "../../js/events/easterEggs/aina.js";
 import { createCharlieController } from "../../js/events/easterEggs/charlie.js";
 import { createSecretSequenceController } from "../../js/events/easterEggs/sequence.js";
 import { createToomController } from "../../js/events/easterEggs/toom.js";
@@ -107,7 +108,7 @@ test("Charlie active puis desactive son curseur et nettoie ses ecouteurs", () =>
   assert.equal(listeners.size, 0);
 });
 
-test("le routeur reconnait Charlie et Toom sans intercepter les formulaires", () => {
+test("le routeur reconnait Aina, Charlie et Toom sans intercepter les formulaires", () => {
   const listeners = new Map();
   const calls = [];
   const documentRef = {
@@ -116,7 +117,7 @@ test("le routeur reconnait Charlie et Toom sans intercepter les formulaires", ()
   };
   const controller = createSecretSequenceController({
     documentRef,
-    commands: { charlie: () => calls.push("charlie"), toom: () => calls.push("toom") }
+    commands: { aina: () => calls.push("aina"), charlie: () => calls.push("charlie"), toom: () => calls.push("toom") }
   });
   const type = (word, target = { closest: () => null }) => {
     for (const key of word) listeners.get("keydown")({
@@ -130,7 +131,8 @@ test("le routeur reconnait Charlie et Toom sans intercepter les formulaires", ()
   assert.deepEqual(calls, []);
   type("charlie");
   type("toom");
-  assert.deepEqual(calls, ["charlie", "toom"]);
+  type("aina");
+  assert.deepEqual(calls, ["charlie", "toom", "aina"]);
   controller.destroy();
   assert.equal(listeners.size, 0);
 });
@@ -162,4 +164,60 @@ test("Toom affiche la NRG, debloque son succes puis se nettoie", () => {
   assert.equal(overlayClasses.has("is-active"), false);
   assert.deepEqual(notifications, ["Félicitations, Toom a obtenu une NRG 500.", "Nipsey a récupéré la NRG 500."]);
   controller.destroy();
+});
+
+test("Aina limite les clics sur l'Ivoire, joue le son et nettoie la scene", () => {
+  const bodyClasses = new Set();
+  const overlayClasses = new Set();
+  const dofusListeners = new Map();
+  const overlay = { classList: { toggle(name, enabled) { enabled ? overlayClasses.add(name) : overlayClasses.delete(name); } } };
+  const dofus = {
+    addEventListener(type, listener) { dofusListeners.set(type, listener); },
+    removeEventListener(type, listener) { if (dofusListeners.get(type) === listener) dofusListeners.delete(type); }
+  };
+  const documentRef = {
+    body: { classList: { toggle(name, enabled) { enabled ? bodyClasses.add(name) : bodyClasses.delete(name); } } },
+    querySelector(selector) {
+      if (selector === "#ainaOverlay") return overlay;
+      if (selector === "#ainaDofus") return dofus;
+      return null;
+    }
+  };
+  const unlocked = [];
+  const messages = [];
+  const sounds = [];
+  let clock = 1000;
+  const controller = createAinaController({
+    documentRef,
+    now: () => clock,
+    random: () => 0,
+    onUnlock: (id) => unlocked.push(id),
+    audio: { play: (source) => sounds.push(source) },
+    notifications: {
+      notify: (value) => messages.push(value.message),
+      info: (message) => messages.push(message)
+    }
+  });
+  assert.equal(controller.toggle(), true);
+  assert.deepEqual(unlocked, ["egg_aina"]);
+  assert.ok(bodyClasses.has("aina-mode"));
+  assert.ok(overlayClasses.has("is-active"));
+  assert.equal(dofusListeners.get("click")(), true);
+  clock = 1500;
+  assert.equal(dofusListeners.get("click")(), false);
+  clock = 1900;
+  assert.equal(dofusListeners.get("click")(), true);
+  assert.equal(sounds.length, 2);
+  assert.ok(sounds.every((source) => source.endsWith("reset_soft.wav")));
+  assert.equal(controller.toggle(), false);
+  assert.equal(bodyClasses.has("aina-mode"), false);
+  assert.equal(overlayClasses.has("is-active"), false);
+  assert.deepEqual(messages, [
+    "Aina brandit le Dofus Ivoire.",
+    "Impossible de récupérer le Dofus Ivoire.",
+    "Impossible de récupérer le Dofus Ivoire.",
+    "Le Dofus Ivoire disparaît dans la brume."
+  ]);
+  controller.destroy();
+  assert.equal(dofusListeners.size, 0);
 });

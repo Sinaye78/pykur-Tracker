@@ -1,15 +1,17 @@
 import { collectSecretEgg, isSecretEggCollected } from "../domain/easterEggs.js";
+import { createAinaController } from "./easterEggs/aina.js";
 import { createCharlieController } from "./easterEggs/charlie.js";
 import { createSecretSequenceController } from "./easterEggs/sequence.js";
 import { createToomController } from "./easterEggs/toom.js";
 
 export function createEasterEggController(options) {
-  const { store, persistence, notifications, onUnlock } = options;
+  const { store, persistence, notifications, audio, onUnlock } = options;
   const secretEgg = document.querySelector("#hiddenSecretEgg");
   const charlie = createCharlieController({ notifications, onUnlock });
   const toom = createToomController({ notifications, onUnlock });
+  const aina = createAinaController({ notifications, audio, onUnlock });
   const sequences = createSecretSequenceController({
-    commands: { charlie: charlie.toggle, toom: toom.toggle }
+    commands: { aina: aina.toggle, charlie: charlie.toggle, toom: toom.toggle }
   });
   let destroyed = false;
 
@@ -39,11 +41,13 @@ export function createEasterEggController(options) {
     render,
     charlie,
     toom,
+    aina,
     destroy() {
       destroyed = true;
       unsubscribe();
       charlie.destroy();
       toom.destroy();
+      aina.destroy();
       sequences.destroy();
       secretEgg?.removeEventListener("click", collect);
       if (secretEgg) secretEgg.hidden = true;

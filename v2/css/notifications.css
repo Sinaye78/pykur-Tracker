@@ -59,6 +59,13 @@
   background: linear-gradient(135deg, #111827, #2563eb 45%, #f97316);
   box-shadow: 0 0.65rem 1.5rem rgb(37 99 235 / 32%);
 }
+.app-toast-aina {
+  color: #243044;
+  border-color: rgb(255 255 255 / 58%);
+  background: linear-gradient(135deg, #fff7ed, #e0f2fe 48%, #93c5fd);
+  text-shadow: 0 1px 0 rgb(255 255 255 / 45%);
+  box-shadow: 0 0.65rem 1.6rem rgb(147 197 253 / 36%);
+}
 
 .app-toast-close {
   width: 1.75rem;
