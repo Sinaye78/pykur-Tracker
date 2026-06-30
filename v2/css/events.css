@@ -39,6 +39,107 @@
   }
 }
 
+.toom-overlay {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  z-index: 9400;
+  width: clamp(160px, 24vw, 270px);
+  height: clamp(88px, 13vw, 150px);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(-50%, 18px, 0) scale(0.96);
+  transition: opacity 240ms ease, transform 240ms ease, visibility 0s linear 240ms;
+}
+
+.toom-rider {
+  position: absolute;
+  inset: 0;
+  transform-origin: 48% 82%;
+}
+
+.toom-bike {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 18px rgb(0 0 0 / 38%));
+}
+
+.toom-avatar {
+  position: absolute;
+  left: 43%;
+  top: 12%;
+  width: clamp(34px, 5.2vw, 58px);
+  aspect-ratio: 1;
+  border: 2px solid rgb(255 255 255 / 85%);
+  border-radius: 50%;
+  background: #111827;
+  object-fit: cover;
+  box-shadow: 0 8px 18px rgb(0 0 0 / 38%), 0 0 0 3px rgb(37 99 235 / 24%);
+}
+
+.toom-smoke {
+  position: absolute;
+  left: 7%;
+  bottom: 16%;
+  width: 42px;
+  height: 18px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgb(148 163 184 / 42%), transparent 65%);
+  opacity: 0.65;
+}
+
+.toom-overlay.is-active,
+body.toom-mode .toom-overlay {
+  opacity: 1;
+  visibility: visible;
+  transform: translate3d(-50%, 0, 0) scale(1);
+  transition-delay: 0s;
+}
+
+body.toom-mode .toom-rider {
+  animation: toom-wheelie 3.2s ease-in-out infinite;
+}
+
+body.toom-mode .toom-smoke {
+  animation: toom-smoke 1.8s ease-in-out infinite;
+}
+
+@keyframes toom-wheelie {
+  0%, 100% { transform: translateX(-14px) translateY(0) rotate(-2deg); }
+  35% { transform: translateX(8px) translateY(-5px) rotate(-13deg); }
+  62% { transform: translateX(18px) translateY(-2px) rotate(-7deg); }
+}
+
+@keyframes toom-smoke {
+  0%, 100% { opacity: 0.22; transform: translateX(0) scale(0.72); }
+  50% { opacity: 0.7; transform: translateX(-18px) scale(1.2); }
+}
+
+@media (max-width: 760px) {
+  .toom-overlay {
+    left: 44%;
+    bottom: 12px;
+    width: 150px;
+    height: 82px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toom-overlay {
+    transition: none;
+  }
+
+  body.toom-mode .toom-rider,
+  body.toom-mode .toom-smoke {
+    animation: none;
+  }
+}
+
 body.charlie-mode,
 body.charlie-mode * {
   cursor: none !important;

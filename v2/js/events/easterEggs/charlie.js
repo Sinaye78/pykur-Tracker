@@ -1,9 +1,3 @@
-const TRIGGER = "charlie";
-
-function isEditableTarget(target) {
-  return Boolean(target?.closest?.("input, textarea, select, [contenteditable='true'], [contenteditable='']"));
-}
-
 export function createCharlieController(options = {}) {
   const {
     documentRef = document,
@@ -14,7 +8,6 @@ export function createCharlieController(options = {}) {
   } = options;
   const cursor = documentRef.querySelector("#charlieCursor");
   let enabled = false;
-  let sequenceIndex = 0;
   let chompTimer = null;
   let destroyed = false;
 
@@ -62,30 +55,6 @@ export function createCharlieController(options = {}) {
     position(event.clientX, event.clientY);
   }
 
-  function handleKeydown(event) {
-    if (event.ctrlKey || event.metaKey || event.altKey || isEditableTarget(event.target) || event.key?.length !== 1) {
-      sequenceIndex = 0;
-      return;
-    }
-    const key = event.key.toLowerCase();
-    if (key === TRIGGER[sequenceIndex]) {
-      sequenceIndex += 1;
-      event.preventDefault();
-      event.stopImmediatePropagation?.();
-      if (sequenceIndex === TRIGGER.length) {
-        sequenceIndex = 0;
-        toggle();
-      }
-      return;
-    }
-    sequenceIndex = key === TRIGGER[0] ? 1 : 0;
-    if (sequenceIndex) {
-      event.preventDefault();
-      event.stopImmediatePropagation?.();
-    }
-  }
-
-  documentRef.addEventListener("keydown", handleKeydown, true);
   documentRef.addEventListener("pointermove", handlePointerMove, { passive: true });
   documentRef.addEventListener("pointerdown", animateClick, true);
 
@@ -95,7 +64,6 @@ export function createCharlieController(options = {}) {
     destroy() {
       setEnabled(false, { silent: true });
       destroyed = true;
-      documentRef.removeEventListener("keydown", handleKeydown, true);
       documentRef.removeEventListener("pointermove", handlePointerMove, { passive: true });
       documentRef.removeEventListener("pointerdown", animateClick, true);
     }

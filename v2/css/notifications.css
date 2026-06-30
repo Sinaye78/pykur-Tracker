@@ -49,6 +49,16 @@
   border-color: #e9b71a;
   background: linear-gradient(135deg, #fff29b, #f9c928);
 }
+.app-toast-rare {
+  color: #2f2100;
+  border-color: #e6b62b;
+  background: linear-gradient(135deg, #fff5b7, #f6c63b);
+}
+.app-toast-toom {
+  color: #fff7ed;
+  background: linear-gradient(135deg, #111827, #2563eb 45%, #f97316);
+  box-shadow: 0 0.65rem 1.5rem rgb(37 99 235 / 32%);
+}
 
 .app-toast-close {
   width: 1.75rem;

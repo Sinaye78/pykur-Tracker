@@ -4,6 +4,8 @@ import test from "node:test";
 import { collectSecretEgg, isSecretEggCollected } from "../../js/domain/easterEggs.js";
 import { createEasterEggController } from "../../js/events/easterEggs.js";
 import { createCharlieController } from "../../js/events/easterEggs/charlie.js";
+import { createSecretSequenceController } from "../../js/events/easterEggs/sequence.js";
+import { createToomController } from "../../js/events/easterEggs/toom.js";
 import { createDefaultState } from "../../js/state/defaults.js";
 import { createStateStore } from "../../js/state/store.js";
 
@@ -64,7 +66,7 @@ test("le controleur persiste et notifie une seule collecte puis nettoie son ecou
   }
 });
 
-test("taper charlie active puis desactive le curseur sans intercepter les champs", () => {
+test("Charlie active puis desactive son curseur et nettoie ses ecouteurs", () => {
   const listeners = new Map();
   const bodyClasses = new Set();
   const cursorClasses = new Set();
@@ -91,27 +93,73 @@ test("taper charlie active puis desactive le curseur sans intercepter les champs
     onUnlock: (id) => unlocked.push(id),
     notifications: { info: (message) => messages.push(message) }
   });
-  const typeSequence = (target = { closest: () => null }) => {
-    for (const key of "charlie") listeners.get("keydown")({
-      key,
-      target,
-      preventDefault() {},
-      stopImmediatePropagation() {}
-    });
-  };
-
-  typeSequence({ closest: () => true });
-  assert.equal(controller.isEnabled(), false);
-  typeSequence();
+  controller.toggle();
   assert.equal(controller.isEnabled(), true);
   assert.ok(bodyClasses.has("charlie-mode"));
   assert.deepEqual(unlocked, ["egg_charlie"]);
   listeners.get("pointermove")({ clientX: 100, clientY: 80 });
   assert.equal(styles.get("--charlie-x"), "82px");
   assert.equal(styles.get("--charlie-y"), "72px");
-  typeSequence();
+  controller.toggle();
   assert.equal(controller.isEnabled(), false);
   assert.deepEqual(messages, ["Charlie est là", "Charlie est reparti"]);
   controller.destroy();
   assert.equal(listeners.size, 0);
+});
+
+test("le routeur reconnait Charlie et Toom sans intercepter les formulaires", () => {
+  const listeners = new Map();
+  const calls = [];
+  const documentRef = {
+    addEventListener(type, listener) { listeners.set(type, listener); },
+    removeEventListener(type, listener) { if (listeners.get(type) === listener) listeners.delete(type); }
+  };
+  const controller = createSecretSequenceController({
+    documentRef,
+    commands: { charlie: () => calls.push("charlie"), toom: () => calls.push("toom") }
+  });
+  const type = (word, target = { closest: () => null }) => {
+    for (const key of word) listeners.get("keydown")({
+      key,
+      target,
+      preventDefault() {},
+      stopImmediatePropagation() {}
+    });
+  };
+  type("toom", { closest: () => true });
+  assert.deepEqual(calls, []);
+  type("charlie");
+  type("toom");
+  assert.deepEqual(calls, ["charlie", "toom"]);
+  controller.destroy();
+  assert.equal(listeners.size, 0);
+});
+
+test("Toom affiche la NRG, debloque son succes puis se nettoie", () => {
+  const bodyClasses = new Set();
+  const overlayClasses = new Set();
+  const overlay = { classList: { toggle(name, enabled) { enabled ? overlayClasses.add(name) : overlayClasses.delete(name); } } };
+  const documentRef = {
+    body: { classList: { toggle(name, enabled) { enabled ? bodyClasses.add(name) : bodyClasses.delete(name); } } },
+    querySelector: () => overlay
+  };
+  const unlocked = [];
+  const notifications = [];
+  const controller = createToomController({
+    documentRef,
+    onUnlock: (id) => unlocked.push(id),
+    notifications: {
+      notify: (value) => notifications.push(value.message),
+      warning: (message) => notifications.push(message)
+    }
+  });
+  assert.equal(controller.toggle(), true);
+  assert.ok(bodyClasses.has("toom-mode"));
+  assert.ok(overlayClasses.has("is-active"));
+  assert.deepEqual(unlocked, ["egg_toom"]);
+  assert.equal(controller.toggle(), false);
+  assert.equal(bodyClasses.has("toom-mode"), false);
+  assert.equal(overlayClasses.has("is-active"), false);
+  assert.deepEqual(notifications, ["Félicitations, Toom a obtenu une NRG 500.", "Nipsey a récupéré la NRG 500."]);
+  controller.destroy();
 });

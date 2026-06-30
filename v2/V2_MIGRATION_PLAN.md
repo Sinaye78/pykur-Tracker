@@ -490,3 +490,28 @@ Vérifications :
 - aucun fichier V1 modifié par ce module.
 
 Prochaine étape après validation explicite : **Easter egg Toom**.
+
+### Phase 5 - Module 19 : Easter egg 3 - Toom
+
+**Date :** 30 juin 2026
+**État :** terminé, en attente de validation
+
+Travaux effectués :
+
+- migration isolée du déclencheur clavier `toom` ;
+- scène NRG 500 avec avatar, mouvement et fumée ;
+- notification dédiée et déblocage du succès `egg_toom` ;
+- routeur commun des séquences secrètes pour les prochains easter eggs ;
+- nettoyage des classes et du listener clavier.
+
+Livrable :
+
+- `v2/V2_PHASE5_EASTER_EGG_TOOM_REPORT.md`.
+
+Vérifications :
+
+- 115 tests unitaires réussis, 0 échec ;
+- assets, syntaxe et ressources locales validés ;
+- aucun fichier V1 modifié par ce module.
+
+Prochaine étape après validation explicite : **Easter egg Aina**.
