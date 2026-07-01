@@ -197,6 +197,8 @@ test("Raj se connecte sur desktop, debloque son succes et nettoie sa scene", () 
   assert.ok(classes.has("is-active"));
   assert.deepEqual(unlocked, ["egg_raj"]);
   assert.ok(children.length > 0);
+  assert.match(children[0].className, /interactive/);
+  assert.ok(children[0].children.some((child) => child.className === "raj-nameplate"));
   assert.equal(controller.stop(), true);
   assert.equal(controller.isEnabled(), false);
   assert.equal(classes.has("is-active"), false);

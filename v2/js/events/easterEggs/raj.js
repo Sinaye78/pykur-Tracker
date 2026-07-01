@@ -115,7 +115,7 @@ export function createRajController(options = {}) {
   }
 
   function createUnit(kind, source, labelSource, position) {
-    const unit = createImage(`raj-unit raj-${kind}`, source, kind === "raj" ? "Raj-Pah" : "Happios");
+    const unit = createImage(`raj-unit interactive raj-${kind}`, source, kind === "raj" ? "Raj-Pah" : "Happios");
     unit.style.setProperty("--raj-x", `${position.x}px`);
     unit.style.setProperty("--raj-y", `${position.y}px`);
     unit.querySelector("img")?.classList.add("raj-character");
@@ -178,10 +178,10 @@ export function createRajController(options = {}) {
     target?.controller?.deactivate?.();
     if (target?.id === "aina") {
       attachTrophy(ASSETS.ivory, "raj-dofus-trophy");
-      notify("Raj-Pah rÃ©cupÃ¨re le Dofus Ivoire d'Aina.", "aina");
+      notify("Raj-Pah récupère le Dofus Ivoire d'Aina.", "aina");
     } else if (target?.id === "toom") {
       mountBike();
-      notify("Raj-Pah rÃ©cupÃ¨re la NRG 500 de Toom et continue son farm.", "toom");
+      notify("Raj-Pah récupère la NRG 500 de Toom et continue son farm.", "toom");
     } else if (target?.id === "charlie") {
       notify("Raj-Pah tire sur Charlie. Le curseur redevient normal.", "warning");
     }
@@ -220,7 +220,7 @@ export function createRajController(options = {}) {
     const target = candidates.find((candidate) => candidate.id === preferredId)
       || candidates[Math.floor(random() * candidates.length)];
     if (!target || !active || banned) return false;
-    notify(`Raj-Pah repÃ¨re ${target.label}.`, "warning");
+    notify(`Raj-Pah repère ${target.label}.`, "warning");
     if (!await moveUnit(raj, { x: target.position.x - 82, y: target.position.y - 46 }, 1000)) return false;
     if (!await shoot(target.position, target.element)) return false;
     target.element.classList.add("raj-egg-victim");
@@ -288,9 +288,9 @@ export function createRajController(options = {}) {
     card.classList.add("show");
     await wait(650);
     raj?.classList.add("banned");
-    notify("Le compte Raj-Pah a Ã©tÃ© banni dÃ©finitivement pour botting.", "error");
+    notify("Le compte Raj-Pah a été banni définitivement pour botting.", "error");
     await wait(2600);
-    notify("Happios a terminÃ© sa ronde.", "info");
+    notify("Happios a terminé sa ronde.", "info");
     await wait(1200);
     stop({ silent: true });
     return true;
@@ -321,7 +321,7 @@ export function createRajController(options = {}) {
   function start() {
     if (!layer || destroyed || active) return false;
     if (!canStart()) {
-      notifications?.info?.("Raj-Pah prÃ©fÃ¨re farmer sur desktop.");
+      notifications?.info?.("Raj-Pah préfère farmer sur desktop.");
       return false;
     }
     active = true;
@@ -334,7 +334,7 @@ export function createRajController(options = {}) {
     rajPosition = clamp(80, viewport().height - 190);
     raj = createUnit("raj", ASSETS.raj, ASSETS.rajLabel, rajPosition);
     onUnlock?.("egg_raj");
-    notify("Raj-Pah s'est connectÃ©.", "success");
+    notify("Raj-Pah s'est connecté.", "success");
     if (autoRun) {
       mainLoop().catch(noop);
       schedule(() => moderateNow().catch(noop), 45000 + random() * 24000);
@@ -352,7 +352,7 @@ export function createRajController(options = {}) {
     layer?.classList.remove("is-active");
     layer?.setAttribute("aria-hidden", "true");
     layer?.replaceChildren?.();
-    if (!options.silent) notifications?.warning?.("Raj-Pah s'est dÃ©connectÃ©.");
+    if (!options.silent) notifications?.warning?.("Raj-Pah s'est déconnecté.");
     return true;
   }
 
