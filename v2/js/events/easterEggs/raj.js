@@ -187,6 +187,8 @@ export function createRajController(options = {}) {
       notify("Raj-Pah récupère la NRG 500 de Toom et continue son farm.", "toom");
     } else if (target?.id === "charlie") {
       notify("Raj-Pah tire sur Charlie. Le curseur redevient normal.", "warning");
+    } else if (target?.id === "alhass") {
+      notify("Raj-Pah neutralise Alhass avant l'inspection.", "warning");
     }
     target?.onClaim?.();
   }

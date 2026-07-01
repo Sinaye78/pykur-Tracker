@@ -591,3 +591,28 @@ Vérifications :
 - aucun fichier V1 modifié par ce module.
 
 Prochaine étape après validation explicite : **Easter egg Alhass**.
+
+### Phase 5 - Module 23 : Easter egg 7 - Alhass
+
+**Date :** 1 juillet 2026
+**État :** terminé, en attente de validation
+
+Travaux effectués :
+
+- migration isolée du déclencheur clavier `alhass` ;
+- présence visuelle, aura et voile d'observation responsives ;
+- réactions aux runs, paliers et limites avec règles V1 conservées ;
+- interaction contractuelle avec Raj-Pah ;
+- chargement différé de l'asset et nettoyage complet.
+
+Livrable :
+
+- `v2/V2_PHASE5_EASTER_EGG_ALHASS_REPORT.md`.
+
+Vérifications :
+
+- 123 tests unitaires réussis, 0 échec ;
+- rendus desktop et mobile validés sans overflow ;
+- aucun fichier V1 modifié par ce module.
+
+Prochaine étape après validation explicite : **Easter egg Capy**.

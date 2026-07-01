@@ -33,6 +33,107 @@
   object-fit: contain;
 }
 
+.alhass-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 18;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 88% 82%, rgb(127 29 29 / 22%), transparent 34%),
+    radial-gradient(circle at 92% 88%, rgb(0 0 0 / 26%), transparent 28%);
+  transition: opacity 350ms ease;
+}
+
+.alhass-presence {
+  position: fixed;
+  right: 18px;
+  bottom: 72px;
+  z-index: 9500;
+  width: clamp(92px, 12vw, 142px);
+  aspect-ratio: 1;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(18px, 14px, 0) scale(0.94);
+  filter: drop-shadow(0 18px 28px rgb(0 0 0 / 46%));
+  transition: opacity 280ms ease, transform 280ms ease;
+  contain: layout style paint;
+}
+
+.alhass-presence::before {
+  content: "";
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(127 29 29 / 38%), rgb(20 6 6 / 8%) 55%, transparent 72%);
+  filter: blur(12px);
+  animation: alhass-aura 3.4s ease-in-out infinite;
+}
+
+.alhass-presence img {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  animation: alhass-float 4.8s ease-in-out infinite;
+}
+
+.alhass-presence span {
+  position: absolute;
+  right: 4px;
+  bottom: -4px;
+  padding: 4px 8px;
+  border: 1px solid rgb(248 113 113 / 34%);
+  border-radius: 999px;
+  background: rgb(20 6 6 / 82%);
+  color: #fecaca;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 34%);
+}
+
+body.alhass-mode .alhass-veil { opacity: 1; }
+
+body.alhass-mode .alhass-presence {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+body.alhass-mode .app-shell {
+  box-shadow: 0 0 0 1px rgb(127 29 29 / 16%), 0 24px 70px rgb(0 0 0 / 42%);
+}
+
+@keyframes alhass-aura {
+  0%, 100% { opacity: 0.54; transform: scale(0.96); }
+  50% { opacity: 0.86; transform: scale(1.06); }
+}
+
+@keyframes alhass-float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-7px) rotate(1.5deg); }
+}
+
+@media (max-width: 760px) {
+  .alhass-presence {
+    right: 10px;
+    bottom: 76px;
+    width: 84px;
+  }
+
+  .alhass-presence span { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .alhass-veil,
+  .alhass-presence { transition: none; }
+
+  .alhass-presence::before,
+  .alhass-presence img { animation: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hidden-secret-egg {
     transition: none;

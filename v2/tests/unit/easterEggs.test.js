@@ -4,6 +4,7 @@ import test from "node:test";
 import { collectSecretEgg, isSecretEggCollected, recordHappiosHover } from "../../js/domain/easterEggs.js";
 import { createEasterEggController } from "../../js/events/easterEggs.js";
 import { createAinaController } from "../../js/events/easterEggs/aina.js";
+import { createAlhassController } from "../../js/events/easterEggs/alhass.js";
 import { createBrakoController } from "../../js/events/easterEggs/brako.js";
 import { createCharlieController } from "../../js/events/easterEggs/charlie.js";
 import { createRajController } from "../../js/events/easterEggs/raj.js";
@@ -123,7 +124,7 @@ test("Charlie active puis desactive son curseur et nettoie ses ecouteurs", () =>
   assert.equal(listeners.size, 0);
 });
 
-test("le routeur reconnait Aina, Brako, Charlie, Raj et Toom sans intercepter les formulaires", () => {
+test("le routeur reconnait Aina, Alhass, Brako, Charlie, Raj et Toom sans intercepter les formulaires", () => {
   const listeners = new Map();
   const calls = [];
   const documentRef = {
@@ -134,6 +135,7 @@ test("le routeur reconnait Aina, Brako, Charlie, Raj et Toom sans intercepter le
     documentRef,
     commands: {
       aina: () => calls.push("aina"),
+      alhass: () => calls.push("alhass"),
       brako: () => calls.push("brako"),
       charlie: () => calls.push("charlie"),
       raj: () => calls.push("raj"),
@@ -155,9 +157,57 @@ test("le routeur reconnait Aina, Brako, Charlie, Raj et Toom sans intercepter le
   type("aina");
   type("raj");
   type("brako");
-  assert.deepEqual(calls, ["charlie", "toom", "aina", "raj", "brako"]);
+  type("alhass");
+  assert.deepEqual(calls, ["charlie", "toom", "aina", "raj", "brako", "alhass"]);
   controller.destroy();
   assert.equal(listeners.size, 0);
+});
+
+test("Alhass observe le tracker, respecte son cooldown et nettoie sa presence", () => {
+  const bodyClasses = new Set();
+  const attributes = new Map();
+  const image = { src: "", dataset: { src: "../familiers/pykur/assets/images/alhass.png" } };
+  const presence = {
+    querySelector: (selector) => selector === "img" ? image : null,
+    setAttribute(name, value) { attributes.set(`presence:${name}`, value); }
+  };
+  const veil = { setAttribute(name, value) { attributes.set(`veil:${name}`, value); } };
+  const documentRef = {
+    body: { classList: { toggle(name, enabled) { enabled ? bodyClasses.add(name) : bodyClasses.delete(name); } } },
+    querySelector(selector) {
+      if (selector === "#alhassPresence") return presence;
+      if (selector === "#alhassVeil") return veil;
+      return null;
+    }
+  };
+  const unlocked = [];
+  const messages = [];
+  let clock = 1000;
+  const controller = createAlhassController({
+    documentRef,
+    now: () => clock,
+    random: () => 0,
+    logger: { info() {} },
+    onUnlock: (id) => unlocked.push(id),
+    notifications: {
+      notify: ({ message }) => messages.push(message),
+      info: (message) => messages.push(message)
+    }
+  });
+  assert.equal(controller.start(), true);
+  assert.ok(bodyClasses.has("alhass-mode"));
+  assert.equal(image.src, "../familiers/pykur/assets/images/alhass.png");
+  assert.equal(attributes.get("presence:aria-hidden"), "false");
+  assert.deepEqual(unlocked, ["egg_alhass"]);
+  assert.equal(controller.react("run"), false);
+  clock += 45000;
+  assert.equal(controller.react("run"), "Alhass valide cette run.");
+  assert.equal(controller.react("guard", true), "Alhass bloque l'excès avant qu'il ne devienne un bug.");
+  assert.equal(controller.stop(), true);
+  assert.equal(bodyClasses.has("alhass-mode"), false);
+  assert.equal(attributes.get("veil:aria-hidden"), "true");
+  assert.ok(messages.includes("Alhass retourne dans l'ombre."));
+  controller.destroy();
 });
 
 test("Brako demarre sur desktop, debloque sa scene et nettoie son calque", async () => {

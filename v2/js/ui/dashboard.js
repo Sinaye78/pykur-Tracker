@@ -32,6 +32,7 @@ export function createDashboardController(options) {
   const editRunsButton = document.querySelector("#runEdit");
   const monstersButton = document.querySelector("#monsterLauncher");
   const runListeners = new Set();
+  const guardListeners = new Set();
 
   const normalized = normalizeProgressionState(store.getState(), dependencies);
   if (normalized.changed) store.replaceState(normalized.state);
@@ -217,6 +218,7 @@ export function createDashboardController(options) {
       const result = applyRunDelta(state, state.active, delta, dependencies);
       if (!result.applied && !result.specialAction) {
         announce(delta > 0 ? "Limite de donjons atteinte." : "Aucun donjon à retirer.");
+        if (delta > 0) for (const listener of guardListeners) listener(Object.freeze({ profileId: state.active, reason: "run-limit" }));
         return;
       }
       const stateWithStats = result.applied
@@ -288,8 +290,14 @@ export function createDashboardController(options) {
       runListeners.add(listener);
       return () => runListeners.delete(listener);
     },
+    subscribeGuard(listener) {
+      if (typeof listener !== "function") throw new TypeError("Le suivi de garde attend une fonction.");
+      guardListeners.add(listener);
+      return () => guardListeners.delete(listener);
+    },
     destroy() {
       runListeners.clear();
+      guardListeners.clear();
       unsubscribe();
     },
     ...trackingDialogs
