@@ -67,6 +67,14 @@
   box-shadow: 0 0.65rem 1.6rem rgb(147 197 253 / 36%);
 }
 
+.app-toast-capy {
+  color: #3b2408;
+  border-color: rgb(255 255 255 / 45%);
+  background: linear-gradient(135deg, #d9f99d, #84cc16 46%, #65a30d);
+  text-shadow: 0 1px 0 rgb(255 255 255 / 35%);
+  box-shadow: 0 0.65rem 1.4rem rgb(101 163 13 / 34%);
+}
+
 .app-toast-close {
   width: 1.75rem;
   height: 1.75rem;

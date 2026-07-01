@@ -189,6 +189,8 @@ export function createRajController(options = {}) {
       notify("Raj-Pah tire sur Charlie. Le curseur redevient normal.", "warning");
     } else if (target?.id === "alhass") {
       notify("Raj-Pah neutralise Alhass avant l'inspection.", "warning");
+    } else if (target?.id === "capy") {
+      notify("Raj-Pah chasse Capy du tracker.", "warning");
     }
     target?.onClaim?.();
   }

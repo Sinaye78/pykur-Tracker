@@ -616,3 +616,29 @@ Vérifications :
 - aucun fichier V1 modifié par ce module.
 
 Prochaine étape après validation explicite : **Easter egg Capy**.
+
+### Phase 5 - Module 24 : Easter egg 8 - Capy
+
+**Date :** 1 juillet 2026
+**État :** terminé, en attente de validation
+
+Travaux effectués :
+
+- migration isolée du déclencheur clavier `capy` ;
+- remplacement non destructif du familier par Capy ;
+- persistance par profil et restauration fiable après nouveau rendu ;
+- notification, historique et style Capy dédiés ;
+- interaction contractuelle avec Raj-Pah ;
+- repli automatique en cas d'asset manquant.
+
+Livrable :
+
+- `v2/V2_PHASE5_EASTER_EGG_CAPY_REPORT.md`.
+
+Vérifications :
+
+- 124 tests unitaires réussis, 0 échec ;
+- état, rendu et sauvegarde validés sans mutation de progression ;
+- aucun fichier V1 modifié par ce module.
+
+Prochaine étape après validation explicite : **Easter egg Dimeh**.

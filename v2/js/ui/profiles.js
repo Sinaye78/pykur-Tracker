@@ -65,11 +65,13 @@ export function createProfilesController(options) {
     if (!familiar) return;
     const image = document.querySelector(".familiar-image");
     const caption = document.querySelector(".familiar-caption");
+    const capyMode = Boolean(active.data?.ui?.capyMode);
+    document.body.classList.toggle("capy-mode", capyMode);
     if (image) {
-      image.src = familiar.image;
-      image.alt = familiar.label;
+      image.src = capyMode ? "../familiers/pykur/assets/images/capy.png" : familiar.image;
+      image.alt = capyMode ? "Capykur" : familiar.label;
     }
-    if (caption) caption.textContent = `Progression du ${familiar.label}`;
+    if (caption) caption.textContent = capyMode ? "Progression du Capykur" : `Progression du ${familiar.label}`;
     if (familiar.background) document.body.style.setProperty("--familiar-background", `url("${familiar.background}")`);
   }
 

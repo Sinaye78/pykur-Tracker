@@ -1,4 +1,4 @@
-const VALID_TYPES = new Set(["info", "success", "warning", "error", "profile", "pause", "milestone", "rare", "toom", "aina"]);
+const VALID_TYPES = new Set(["info", "success", "warning", "error", "profile", "pause", "milestone", "rare", "toom", "aina", "capy"]);
 
 function createButton(documentRef, label, className) {
   const button = documentRef.createElement("button");

@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { collectSecretEgg, isSecretEggCollected, recordHappiosHover } from "../../js/domain/easterEggs.js";
+import { createProfile } from "../../js/domain/profiles.js";
+import { resolveFamiliar } from "../../js/config/familiars.js";
 import { createEasterEggController } from "../../js/events/easterEggs.js";
 import { createAinaController } from "../../js/events/easterEggs/aina.js";
 import { createAlhassController } from "../../js/events/easterEggs/alhass.js";
 import { createBrakoController } from "../../js/events/easterEggs/brako.js";
+import { createCapyController } from "../../js/events/easterEggs/capy.js";
 import { createCharlieController } from "../../js/events/easterEggs/charlie.js";
 import { createRajController } from "../../js/events/easterEggs/raj.js";
 import { createSecretSequenceController } from "../../js/events/easterEggs/sequence.js";
@@ -124,7 +127,7 @@ test("Charlie active puis desactive son curseur et nettoie ses ecouteurs", () =>
   assert.equal(listeners.size, 0);
 });
 
-test("le routeur reconnait Aina, Alhass, Brako, Charlie, Raj et Toom sans intercepter les formulaires", () => {
+test("le routeur reconnait Aina, Alhass, Brako, Capy, Charlie, Raj et Toom sans intercepter les formulaires", () => {
   const listeners = new Map();
   const calls = [];
   const documentRef = {
@@ -137,6 +140,7 @@ test("le routeur reconnait Aina, Alhass, Brako, Charlie, Raj et Toom sans interc
       aina: () => calls.push("aina"),
       alhass: () => calls.push("alhass"),
       brako: () => calls.push("brako"),
+      capy: () => calls.push("capy"),
       charlie: () => calls.push("charlie"),
       raj: () => calls.push("raj"),
       toom: () => calls.push("toom")
@@ -158,9 +162,69 @@ test("le routeur reconnait Aina, Alhass, Brako, Charlie, Raj et Toom sans interc
   type("raj");
   type("brako");
   type("alhass");
-  assert.deepEqual(calls, ["charlie", "toom", "aina", "raj", "brako", "alhass"]);
+  type("capy");
+  assert.deepEqual(calls, ["charlie", "toom", "aina", "raj", "brako", "alhass", "capy"]);
   controller.destroy();
   assert.equal(listeners.size, 0);
+});
+
+test("Capy remplace seulement l'identite visuelle du profil actif puis restaure son familier", () => {
+  const created = createProfile(createDefaultState({ now: NOW }), { familiarId: "pykur", name: "Pykur test" }, {
+    resolveFamiliar,
+    idFactory: () => "p_capy",
+    now: NOW
+  });
+  const store = createStateStore(created.state, { resolveFamiliar });
+  const bodyClasses = new Set();
+  const imageListeners = new Map();
+  const image = {
+    src: "",
+    alt: "",
+    addEventListener(type, listener) { imageListeners.set(type, listener); },
+    removeEventListener(type, listener) { if (imageListeners.get(type) === listener) imageListeners.delete(type); }
+  };
+  const caption = { textContent: "" };
+  const documentRef = {
+    body: { classList: {
+      toggle(name, enabled) { enabled ? bodyClasses.add(name) : bodyClasses.delete(name); },
+      remove(name) { bodyClasses.delete(name); }
+    } },
+    querySelector(selector) {
+      if (selector === ".familiar-image") return image;
+      if (selector === ".familiar-caption") return caption;
+      return null;
+    }
+  };
+  const unlocked = [];
+  const messages = [];
+  let saves = 0;
+  const controller = createCapyController({
+    documentRef,
+    store,
+    resolveFamiliar,
+    persistence: { save() { saves += 1; return { ok: true }; } },
+    onUnlock: (id) => unlocked.push(id),
+    notifications: {
+      notify: ({ message }) => messages.push(message),
+      error: (message) => messages.push(message)
+    }
+  });
+  assert.equal(controller.start(), true);
+  assert.equal(controller.isEnabled(), true);
+  assert.ok(bodyClasses.has("capy-mode"));
+  assert.ok(image.src.endsWith("/capy.png"));
+  assert.equal(image.alt, "Capykur");
+  assert.equal(caption.textContent, "Progression du Capykur");
+  assert.deepEqual(unlocked, ["egg_capy"]);
+  assert.equal(controller.deactivate(), true);
+  assert.equal(controller.isEnabled(), false);
+  assert.equal(bodyClasses.has("capy-mode"), false);
+  assert.equal(image.src, resolveFamiliar("pykur").image);
+  assert.equal(caption.textContent, "Progression du Pykur");
+  assert.equal(saves, 2);
+  assert.equal(messages.length, 1);
+  controller.destroy();
+  assert.equal(imageListeners.size, 0);
 });
 
 test("Alhass observe le tracker, respecte son cooldown et nettoie sa presence", () => {

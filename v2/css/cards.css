@@ -33,6 +33,12 @@
   filter: drop-shadow(0 0.6rem 0.7rem rgb(80 45 15 / 20%));
 }
 
+body.capy-mode .familiar-aura {
+  box-shadow: inset 0 0 2.5rem rgb(132 204 22 / 20%), 0 0 1.25rem rgb(132 204 22 / 24%);
+}
+
+body.capy-mode .familiar-caption { color: #568b12; font-weight: 800; }
+
 .familiar-caption {
   font-size: 0.78rem;
 }

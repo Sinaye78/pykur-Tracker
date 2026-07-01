@@ -198,6 +198,7 @@ export const easterEggController = createEasterEggController({
   resolveFamiliar,
   subscribeRun: dashboardController.subscribeRun,
   subscribeGuard: dashboardController.subscribeGuard,
+  recordHistory: historyController.record,
   onUnlock: (achievementId) => achievementsController?.unlock(achievementId)
 });
 

@@ -2,18 +2,20 @@ import { collectSecretEgg, isSecretEggCollected, recordHappiosHover } from "../d
 import { createAinaController } from "./easterEggs/aina.js";
 import { createAlhassController } from "./easterEggs/alhass.js";
 import { createBrakoController } from "./easterEggs/brako.js";
+import { createCapyController } from "./easterEggs/capy.js";
 import { createCharlieController } from "./easterEggs/charlie.js";
 import { createRajController } from "./easterEggs/raj.js";
 import { createSecretSequenceController } from "./easterEggs/sequence.js";
 import { createToomController } from "./easterEggs/toom.js";
 
 export function createEasterEggController(options) {
-  const { store, persistence, notifications, audio, onUnlock, resolveFamiliar, subscribeRun, subscribeGuard } = options;
+  const { store, persistence, notifications, audio, onUnlock, resolveFamiliar, subscribeRun, subscribeGuard, recordHistory } = options;
   const secretEgg = document.querySelector("#hiddenSecretEgg");
   const charlie = createCharlieController({ notifications, onUnlock });
   const toom = createToomController({ notifications, onUnlock });
   const aina = createAinaController({ notifications, audio, onUnlock });
   const alhass = createAlhassController({ notifications, onUnlock });
+  const capy = createCapyController({ store, persistence, notifications, onUnlock, resolveFamiliar, recordHistory });
 
   function handleHappiosHover() {
     const result = recordHappiosHover(store.getState());
@@ -30,6 +32,7 @@ export function createEasterEggController(options) {
     targets: [
       { id: "aina", label: "Aina", controller: aina },
       { id: "alhass", label: "Alhass", controller: alhass },
+      { id: "capy", label: "Capy", controller: capy },
       { id: "toom", label: "Toom", controller: toom },
       { id: "charlie", label: "Charlie", controller: charlie }
     ]
@@ -41,6 +44,7 @@ export function createEasterEggController(options) {
       aina: aina.toggle,
       alhass: alhass.toggle,
       brako: brako.toggle,
+      capy: capy.toggle,
       charlie: charlie.toggle,
       raj: raj.toggle,
       toom: toom.toggle
@@ -87,6 +91,7 @@ export function createEasterEggController(options) {
     toom,
     aina,
     alhass,
+    capy,
     raj,
     brako,
     destroy() {
@@ -96,6 +101,7 @@ export function createEasterEggController(options) {
       toom.destroy();
       aina.destroy();
       alhass.destroy();
+      capy.destroy();
       brako.destroy();
       raj.destroy();
       sequences.destroy();
