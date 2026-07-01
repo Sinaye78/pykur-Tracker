@@ -44,6 +44,7 @@ export function createRajController(options = {}) {
   let combats = 0;
   let combatsBeforeBan = 3;
   let destroyed = false;
+  let rivalController = null;
 
   function notify(message, type = "info") {
     notifications?.notify?.({ message, type });
@@ -326,6 +327,10 @@ export function createRajController(options = {}) {
       notifications?.info?.("Raj-Pah préfère farmer sur desktop.");
       return false;
     }
+    if (rivalController?.isEnabled?.()) {
+      rivalController.requestRajInterrupt?.();
+      return false;
+    }
     active = true;
     banned = false;
     moderatorActive = false;
@@ -371,6 +376,8 @@ export function createRajController(options = {}) {
     claimAvailableTarget,
     moderateNow,
     getElement: () => raj,
+    getPosition: () => ({ ...rajPosition }),
+    setRivalController(controller) { rivalController = controller || null; },
     isEnabled: () => active,
     isBanned: () => banned,
     destroy() {

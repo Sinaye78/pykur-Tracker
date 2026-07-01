@@ -4,6 +4,7 @@ import test from "node:test";
 import { collectSecretEgg, isSecretEggCollected, recordHappiosHover } from "../../js/domain/easterEggs.js";
 import { createEasterEggController } from "../../js/events/easterEggs.js";
 import { createAinaController } from "../../js/events/easterEggs/aina.js";
+import { createBrakoController } from "../../js/events/easterEggs/brako.js";
 import { createCharlieController } from "../../js/events/easterEggs/charlie.js";
 import { createRajController } from "../../js/events/easterEggs/raj.js";
 import { createSecretSequenceController } from "../../js/events/easterEggs/sequence.js";
@@ -122,7 +123,7 @@ test("Charlie active puis desactive son curseur et nettoie ses ecouteurs", () =>
   assert.equal(listeners.size, 0);
 });
 
-test("le routeur reconnait Aina, Charlie, Raj et Toom sans intercepter les formulaires", () => {
+test("le routeur reconnait Aina, Brako, Charlie, Raj et Toom sans intercepter les formulaires", () => {
   const listeners = new Map();
   const calls = [];
   const documentRef = {
@@ -131,7 +132,13 @@ test("le routeur reconnait Aina, Charlie, Raj et Toom sans intercepter les formu
   };
   const controller = createSecretSequenceController({
     documentRef,
-    commands: { aina: () => calls.push("aina"), charlie: () => calls.push("charlie"), raj: () => calls.push("raj"), toom: () => calls.push("toom") }
+    commands: {
+      aina: () => calls.push("aina"),
+      brako: () => calls.push("brako"),
+      charlie: () => calls.push("charlie"),
+      raj: () => calls.push("raj"),
+      toom: () => calls.push("toom")
+    }
   });
   const type = (word, target = { closest: () => null }) => {
     for (const key of word) listeners.get("keydown")({
@@ -147,9 +154,65 @@ test("le routeur reconnait Aina, Charlie, Raj et Toom sans intercepter les formu
   type("toom");
   type("aina");
   type("raj");
-  assert.deepEqual(calls, ["charlie", "toom", "aina", "raj"]);
+  type("brako");
+  assert.deepEqual(calls, ["charlie", "toom", "aina", "raj", "brako"]);
   controller.destroy();
   assert.equal(listeners.size, 0);
+});
+
+test("Brako demarre sur desktop, debloque sa scene et nettoie son calque", async () => {
+  const classes = new Set();
+  const children = [];
+  const layer = {
+    classList: {
+      add(value) { classes.add(value); },
+      remove(value) { classes.delete(value); }
+    },
+    append(node) { children.push(node); },
+    setAttribute() {},
+    replaceChildren() { children.length = 0; }
+  };
+  const unlocked = [];
+  const messages = [];
+  const controller = createBrakoController({
+    documentRef: { querySelector: () => layer, createElement() { throw new Error("Aucun acteur ne doit être créé sans fight()."); } },
+    windowRef: { innerWidth: 1280, innerHeight: 720, matchMedia: () => ({ matches: false }) },
+    autoRun: false,
+    random: () => 0.9,
+    onUnlock: (id) => unlocked.push(id),
+    notifications: { notify: ({ message }) => messages.push(message), warning: (message) => messages.push(message) }
+  });
+  assert.equal(controller.start(), true);
+  assert.equal(controller.isEnabled(), true);
+  assert.ok(classes.has("is-active"));
+  assert.deepEqual(unlocked, ["egg_brako"]);
+  assert.equal(await controller.rollLoot(), false);
+  assert.deepEqual(unlocked, ["egg_brako", "secret_brako_no_drop"]);
+  assert.ok(messages.some((message) => message.includes("pas d'œuf")));
+  assert.equal(controller.stop({ silent: true }), true);
+  assert.equal(controller.isEnabled(), false);
+  assert.equal(classes.has("is-active"), false);
+  assert.equal(children.length, 0);
+  controller.destroy();
+});
+
+test("Raj demande a Brako d'interrompre son combat au lieu de lancer une seconde scene", () => {
+  const layer = { classList: { add() {}, remove() {} }, append() {}, setAttribute() {}, replaceChildren() {} };
+  let interruptions = 0;
+  const controller = createRajController({
+    documentRef: { querySelector: () => layer },
+    windowRef: { innerWidth: 1280, innerHeight: 720, matchMedia: () => ({ matches: false }) },
+    autoRun: false,
+    notifications: { notify() {}, warning() {} }
+  });
+  controller.setRivalController({
+    isEnabled: () => true,
+    requestRajInterrupt: () => { interruptions += 1; }
+  });
+  assert.equal(controller.start(), false);
+  assert.equal(interruptions, 1);
+  assert.equal(controller.isEnabled(), false);
+  controller.destroy();
 });
 
 test("Raj se connecte sur desktop, debloque son succes et nettoie sa scene", () => {

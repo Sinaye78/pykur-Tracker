@@ -1,5 +1,6 @@
 import { collectSecretEgg, isSecretEggCollected, recordHappiosHover } from "../domain/easterEggs.js";
 import { createAinaController } from "./easterEggs/aina.js";
+import { createBrakoController } from "./easterEggs/brako.js";
 import { createCharlieController } from "./easterEggs/charlie.js";
 import { createRajController } from "./easterEggs/raj.js";
 import { createSecretSequenceController } from "./easterEggs/sequence.js";
@@ -30,8 +31,16 @@ export function createEasterEggController(options) {
       { id: "charlie", label: "Charlie", controller: charlie }
     ]
   });
+  const brako = createBrakoController({ notifications, onUnlock, rajController: raj });
+  raj.setRivalController(brako);
   const sequences = createSecretSequenceController({
-    commands: { aina: aina.toggle, charlie: charlie.toggle, raj: raj.toggle, toom: toom.toggle }
+    commands: {
+      aina: aina.toggle,
+      brako: brako.toggle,
+      charlie: charlie.toggle,
+      raj: raj.toggle,
+      toom: toom.toggle
+    }
   });
   let destroyed = false;
 
@@ -63,12 +72,14 @@ export function createEasterEggController(options) {
     toom,
     aina,
     raj,
+    brako,
     destroy() {
       destroyed = true;
       unsubscribe();
       charlie.destroy();
       toom.destroy();
       aina.destroy();
+      brako.destroy();
       raj.destroy();
       sequences.destroy();
       secretEgg?.removeEventListener("click", collect);

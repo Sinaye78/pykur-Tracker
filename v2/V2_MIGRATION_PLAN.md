@@ -566,3 +566,28 @@ Vérifications :
 - aucun fichier V1 modifié par ce module.
 
 Prochaine étape après validation explicite : **Easter egg Brako**.
+
+### Phase 5 - Module 22 : Easter egg 6 - Brako
+
+**Date :** 1 juillet 2026
+**État :** terminé, en attente de validation
+
+Travaux effectués :
+
+- migration isolée du déclencheur clavier `brako` ;
+- combat complet contre le Minotot avec dialogue, flèches et baguette ;
+- conservation du drop Pourpre à 20 % et des deux issues secrètes ;
+- conflit bidirectionnel avec Raj-Pah et déblocage de la guerre des easter eggs ;
+- nametag au survol et nettoyage complet de la scène.
+
+Livrable :
+
+- `v2/V2_PHASE5_EASTER_EGG_BRAKO_REPORT.md`.
+
+Vérifications :
+
+- 122 tests unitaires réussis, 0 échec ;
+- activation visuelle locale, dimensions et assets validés ;
+- aucun fichier V1 modifié par ce module.
+
+Prochaine étape après validation explicite : **Easter egg Alhass**.

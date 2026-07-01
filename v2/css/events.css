@@ -39,6 +39,166 @@
   }
 }
 
+.brako-egg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 126000;
+  display: none;
+  overflow: hidden;
+  pointer-events: none;
+  contain: layout style paint;
+}
+
+.brako-egg-layer.is-active { display: block; }
+
+.brako-unit,
+.brako-weapon,
+.brako-arrow,
+.brako-impact,
+.brako-loot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.brako-unit {
+  z-index: 3;
+  width: clamp(94px, 8vw, 138px);
+  transform: translate3d(var(--brako-x, -180px), var(--brako-y, -180px), 0);
+  transition: transform var(--brako-speed, 1.2s) ease-in-out, opacity 360ms ease, filter 260ms ease;
+}
+
+.brako-unit.interactive { pointer-events: auto; }
+.brako-unit.brako-minotot { width: clamp(150px, 14vw, 230px); }
+.brako-unit.brako-raj-intruder { width: clamp(82px, 7vw, 116px); }
+
+.brako-body {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  transform: scaleX(var(--brako-face, 1));
+  transform-origin: center bottom;
+  filter: drop-shadow(0 12px 12px rgb(0 0 0 / 30%));
+  animation: brako-idle 1.9s ease-in-out infinite;
+}
+
+.brako-unit.moving .brako-body { animation: brako-walk 640ms ease-in-out infinite; }
+.brako-unit.hit .brako-body { animation: brako-hit 260ms ease-in-out 2; }
+.brako-unit.dead,
+.brako-unit.defeated {
+  opacity: 0;
+  filter: grayscale(0.5);
+  transform: translate3d(var(--brako-x, -180px), var(--brako-y, -180px), 0) translateY(36px) scale(0.72) rotate(10deg);
+}
+
+.brako-nametag {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 5px);
+  width: clamp(112px, 10vw, 154px);
+  height: auto;
+  max-width: none;
+  opacity: 0;
+  transform: translate(-50%, 6px);
+  transition: opacity 180ms ease, transform 180ms ease;
+  pointer-events: none;
+}
+
+.brako-unit:hover .brako-nametag {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.brako-dialogue {
+  position: absolute;
+  left: 72%;
+  bottom: 88%;
+  width: max-content;
+  max-width: min(270px, 44vw);
+  padding: 9px 12px;
+  border: 2px solid #7f501f;
+  border-radius: 8px;
+  background: #fff8df;
+  color: #38200f;
+  font-weight: 800;
+  line-height: 1.25;
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+  transition: opacity 180ms ease, transform 180ms ease;
+  filter: drop-shadow(0 8px 12px rgb(0 0 0 / 24%));
+}
+
+.brako-dialogue.show { opacity: 1; transform: translateY(0) scale(1); }
+
+.brako-weapon {
+  z-index: 6;
+  width: clamp(54px, 5vw, 78px);
+  opacity: 0;
+  transform: translate3d(var(--brako-x, 0), var(--brako-y, 0), 0) rotate(var(--brako-angle, 0deg));
+  transition: opacity 100ms ease;
+}
+
+.brako-weapon.show { opacity: 1; }
+
+.brako-arrow {
+  z-index: 7;
+  width: clamp(42px, 4vw, 64px);
+  transform: translate3d(var(--brako-x, 0), var(--brako-y, 0), 0) rotate(var(--brako-angle, 0deg));
+  transition: transform 520ms linear;
+}
+
+.brako-impact {
+  z-index: 8;
+  width: clamp(96px, 10vw, 160px);
+  opacity: 0;
+  transform: translate3d(var(--brako-x, 0), var(--brako-y, 0), 0) scale(0.45);
+}
+
+.brako-impact.show { animation: brako-explosion 1.45s ease-out both; }
+
+.brako-loot {
+  z-index: 5;
+  width: clamp(52px, 5vw, 76px);
+  opacity: 0;
+  transform: translate3d(var(--brako-x, 0), var(--brako-y, 0), 0) scale(0.58);
+  transition: opacity 260ms ease, transform 420ms ease;
+}
+
+.brako-loot.show {
+  opacity: 1;
+  transform: translate3d(var(--brako-x, 0), var(--brako-y, 0), 0) scale(1);
+}
+
+.brako-loot.picked {
+  opacity: 0;
+  transform: translate3d(var(--brako-x, 0), var(--brako-y, 0), 0) translateY(-24px) scale(0.4);
+}
+
+@keyframes brako-idle { 50% { transform: scaleX(var(--brako-face, 1)) translateY(-3px); } }
+@keyframes brako-walk { 50% { transform: scaleX(var(--brako-face, 1)) translateY(-7px) rotate(1.5deg); } }
+@keyframes brako-hit { 45% { transform: scaleX(var(--brako-face, 1)) translateX(-9px); filter: brightness(1.35); } }
+@keyframes brako-explosion {
+  0% { opacity: 0; transform: translate3d(var(--brako-x, 0), var(--brako-y, 0), 0) scale(0.35); }
+  18% { opacity: 1; transform: translate3d(var(--brako-x, 0), var(--brako-y, 0), 0) scale(1.15); }
+  100% { opacity: 0; transform: translate3d(var(--brako-x, 0), var(--brako-y, 0), 0) scale(1.7); }
+}
+
+@media (max-width: 760px), (pointer: coarse) {
+  .brako-egg-layer { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brako-unit,
+  .brako-body,
+  .brako-weapon,
+  .brako-arrow,
+  .brako-impact,
+  .brako-loot { animation: none !important; transition: none !important; }
+}
+
 .raj-egg-layer {
   position: fixed;
   inset: 0;
