@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { collectSecretEgg, isSecretEggCollected } from "../../js/domain/easterEggs.js";
+import { collectSecretEgg, isSecretEggCollected, recordHappiosHover } from "../../js/domain/easterEggs.js";
 import { createEasterEggController } from "../../js/events/easterEggs.js";
 import { createAinaController } from "../../js/events/easterEggs/aina.js";
 import { createCharlieController } from "../../js/events/easterEggs/charlie.js";
@@ -28,6 +28,19 @@ test("un oeuf deja collecte ne peut pas etre collecte deux fois", () => {
   assert.equal(second.collected, false);
   assert.equal(second.state, first.state);
   assert.equal(second.state.updatedAt, NOW);
+});
+
+test("le troisieme survol de Happios demande le succes sans muter l'etat source", () => {
+  const source = createDefaultState({ now: NOW });
+  const first = recordHappiosHover(source, { now: NOW });
+  const second = recordHappiosHover(first.state, { now: NOW });
+  const third = recordHappiosHover(second.state, { now: NOW });
+  const fourth = recordHappiosHover(third.state, { now: NOW });
+  assert.equal(source.sharedAchievements.counters.happiosHover, 0);
+  assert.equal(third.count, 3);
+  assert.equal(third.shouldUnlock, true);
+  assert.equal(fourth.count, 4);
+  assert.equal(fourth.shouldUnlock, false);
 });
 
 test("le controleur persiste et notifie une seule collecte puis nettoie son ecouteur", () => {
@@ -261,18 +274,25 @@ test("Raj peut capturer un easter egg actif via son contrat public", () => {
 
 test("Raj annule proprement une ronde Happios encore en attente", async () => {
   const timers = new Map();
+  const appended = [];
   let timerId = 0;
-  const makeNode = () => ({
-    children: [],
-    style: { setProperty() {} },
-    classList: { add() {}, remove() {}, contains() { return false; } },
-    append(...nodes) { this.children.push(...nodes); },
-    prepend(...nodes) { this.children.unshift(...nodes); },
-    querySelector(selector) { return selector === "img" ? this.children[0] || null : null; },
-    remove() {},
-    setAttribute() {}
-  });
-  const layer = { classList: { add() {}, remove() {} }, append() {}, setAttribute() {}, replaceChildren() {} };
+  const makeNode = () => {
+    const listeners = new Map();
+    return {
+      children: [],
+      style: { setProperty() {} },
+      classList: { add() {}, remove() {}, contains() { return false; } },
+      append(...nodes) { this.children.push(...nodes); },
+      prepend(...nodes) { this.children.unshift(...nodes); },
+      querySelector(selector) { return selector === "img" ? this.children[0] || null : null; },
+      addEventListener(type, listener) { listeners.set(type, listener); },
+      emit(type) { listeners.get(type)?.(); },
+      remove() {},
+      setAttribute() {}
+    };
+  };
+  const layer = { classList: { add() {}, remove() {} }, append(node) { appended.push(node); }, setAttribute() {}, replaceChildren() {} };
+  let hoverCount = 0;
   const controller = createRajController({
     documentRef: {
       querySelector: () => layer,
@@ -280,12 +300,17 @@ test("Raj annule proprement une ronde Happios encore en attente", async () => {
     },
     windowRef: { innerWidth: 1280, innerHeight: 720, matchMedia: () => ({ matches: false }) },
     autoRun: false,
+    onHappiosHover: () => { hoverCount += 1; },
     setTimer(callback) { const id = ++timerId; timers.set(id, callback); return id; },
     clearTimer(id) { timers.delete(id); },
     notifications: { notify() {}, warning() {} }
   });
   controller.start();
   const moderation = controller.moderateNow();
+  appended[1].emit("mouseenter");
+  appended[1].emit("mouseenter");
+  appended[1].emit("mouseenter");
+  assert.equal(hoverCount, 3);
   assert.equal(timers.size, 1);
   controller.stop({ silent: true });
   assert.equal(timers.size, 0);

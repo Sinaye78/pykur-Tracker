@@ -25,6 +25,7 @@ export function createRajController(options = {}) {
     windowRef = globalThis.window || {},
     notifications,
     onUnlock,
+    onHappiosHover,
     targets = [],
     random = Math.random,
     setTimer = setTimeout,
@@ -124,6 +125,7 @@ export function createRajController(options = {}) {
     label.src = labelSource;
     label.alt = "";
     unit.append(label);
+    if (kind === "happios") unit.addEventListener("mouseenter", () => onHappiosHover?.());
     return unit;
   }
 

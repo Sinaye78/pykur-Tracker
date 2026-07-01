@@ -1,4 +1,4 @@
-import { collectSecretEgg, isSecretEggCollected } from "../domain/easterEggs.js";
+import { collectSecretEgg, isSecretEggCollected, recordHappiosHover } from "../domain/easterEggs.js";
 import { createAinaController } from "./easterEggs/aina.js";
 import { createCharlieController } from "./easterEggs/charlie.js";
 import { createRajController } from "./easterEggs/raj.js";
@@ -11,9 +11,19 @@ export function createEasterEggController(options) {
   const charlie = createCharlieController({ notifications, onUnlock });
   const toom = createToomController({ notifications, onUnlock });
   const aina = createAinaController({ notifications, audio, onUnlock });
+
+  function handleHappiosHover() {
+    const result = recordHappiosHover(store.getState());
+    store.replaceState(result.state);
+    persistence.save(store.getState());
+    if (result.shouldUnlock) onUnlock?.("secret_happios_hover");
+    return result.count;
+  }
+
   const raj = createRajController({
     notifications,
     onUnlock,
+    onHappiosHover: handleHappiosHover,
     targets: [
       { id: "aina", label: "Aina", controller: aina },
       { id: "toom", label: "Toom", controller: toom },
