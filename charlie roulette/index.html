@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Charlie Roulette</title>
+<style>
+:root{--bg:#07020a;--panel:#140b1fdd;--gold:#ffd166;--gold2:#b97800;--red:#d90429;--green:#00c853;--txt:#fff7df;--muted:#c9b98f}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;color:var(--txt);background:#050208;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% -10%,#ffb70355,transparent 28%),radial-gradient(circle at 15% 25%,#d9042944,transparent 20%),radial-gradient(circle at 85% 20%,#7b2cbf55,transparent 22%),linear-gradient(180deg,#160314,#050208 65%,#000)}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;background:repeating-linear-gradient(90deg,transparent 0 70px,#ffffff08 71px 72px),repeating-linear-gradient(0deg,transparent 0 70px,#ffffff07 71px 72px)}
+.login,.app{position:relative;z-index:1}.login{min-height:100vh;display:grid;place-items:center;padding:18px}.box,.panel{background:linear-gradient(180deg,#1b1029ee,#0c0712ee);border:1px solid #ffd16655;border-radius:22px;box-shadow:0 20px 60px #000b,0 0 42px #ffb70322}.box{width:min(460px,100%);text-align:center;padding:30px}.title,.box h1{margin:0;color:var(--gold);text-transform:uppercase;letter-spacing:2px;text-shadow:0 0 20px #ffb703;font-size:clamp(34px,5vw,64px);line-height:1}.small{color:var(--muted);font-size:12px}.field,input,select{width:100%;padding:12px 13px;border-radius:12px;border:1px solid #ffd16644;background:#09050f;color:white;font-size:14px}.btn{border:0;border-radius:13px;padding:12px 16px;cursor:pointer;font-weight:950;text-transform:uppercase;background:linear-gradient(180deg,#fff1a6,#c98500);color:#2a1600;box-shadow:0 5px 0 #734600,0 0 18px #ffcc3344}.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #734600}.btn.red{background:linear-gradient(180deg,#ff6670,#a90e1a);color:#fff;box-shadow:0 5px 0 #5a050b}.btn.dark{background:#241833;color:#fff;border:1px solid #ffd16633;box-shadow:none}.btn.green{background:linear-gradient(180deg,#80ed99,#00a344);box-shadow:0 5px 0 #006928;color:#061b0d}.app{display:none;max-width:1500px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.grid{display:grid;grid-template-columns:330px minmax(420px,1fr) 390px;gap:16px;margin-top:16px}.panel{padding:16px}h2,h3{margin:6px 0 12px;color:#ffe28a}.profiles{display:grid;gap:9px}.profile{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px;border-radius:13px;background:#08050d;border:1px solid #ffffff18}.profile.active{outline:2px solid var(--gold);box-shadow:0 0 18px #ffb70333}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.soundGrid{display:grid;gap:8px}.audioRow{display:grid;grid-template-columns:92px 1fr 78px 78px;gap:7px;align-items:center}.audioRow .btn{padding:10px 8px;font-size:12px}@media(max-width:520px){.audioRow{grid-template-columns:1fr}.audioRow label{margin-top:6px}}.roulette-wrap{text-align:center;min-height:720px;display:grid;align-content:center;justify-items:center}.participantTitle{min-height:34px;font-size:clamp(20px,3vw,34px);font-weight:1000;color:#fff7df;text-shadow:0 0 16px #d90429;margin-bottom:6px}.participantName{min-height:34px;font-size:clamp(22px,3.2vw,40px);font-weight:1000;color:#fff7df;text-shadow:0 0 16px #d90429;margin-bottom:4px}.result{min-height:92px;height:auto;max-width:900px;line-height:1.05;margin:0 auto 8px;padding:0 16px;position:relative;z-index:8;word-break:break-word;font-size:clamp(24px,4vw,42px);font-weight:1000;color:#ffe28a;text-shadow:0 0 18px #ffb703}.wheelBox{position:relative;touch-action:none;width:min(690px,88vw);aspect-ratio:1;margin:10px auto}.pointer{position:absolute;left:50%;top:-8px;transform:translateX(-50%);z-index:5;width:0;height:0;border-left:30px solid transparent;border-right:30px solid transparent;border-top:68px solid #ffe28a;filter:drop-shadow(0 0 12px #ffcc33)}canvas{width:100%;height:100%;border-radius:50%;filter:drop-shadow(0 0 38px #ffb70377)}.centerFace{position:absolute;inset:35.5%;border-radius:50%;border:9px solid #d69b22;background:#16101d center/cover no-repeat;box-shadow:inset 0 0 18px #000,0 0 26px #ffcc33}.controls{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px}.lot{display:grid;grid-template-columns:1.25fr 74px 1fr 42px;gap:7px;align-items:center;margin:8px 0;padding:8px;border-radius:14px;background:#09050f;border:1px solid #ffffff12}.lotDetails{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:6px}.lotDetails label{font-size:11px;color:var(--muted);display:grid;gap:3px}.lotDetails input{padding:8px 9px}.lot img{width:36px;height:36px;object-fit:contain}.total{padding:10px;border-radius:12px;background:#08050d;border:1px solid #ffd16633;margin:10px 0;color:#ffe28a;font-weight:800}.flash{animation:flash .8s alternate infinite}@keyframes flash{to{filter:drop-shadow(0 0 75px #ffd166)}}.confetti{position:fixed;top:-20px;width:10px;height:16px;z-index:10;pointer-events:none;animation:fall 1.8s linear forwards}@keyframes fall{to{transform:translateY(110vh) rotate(680deg);opacity:0}}body.presenter .configPanel{display:none}body.presenter .app{max-width:1100px;min-height:100vh;display:block!important}body.presenter .grid{grid-template-columns:1fr;margin-top:0}body.presenter .roulette-wrap{min-height:calc(100vh - 80px);border:0;background:transparent;box-shadow:none;padding:8px}body.presenter .top{justify-content:center;margin-bottom:4px}body.presenter .top .title,body.presenter .top .small,body.presenter #logoutBtn{display:none}body.presenter .wheelBox{width:min(760px,82vh,92vw)}body.presenter .participantTitle{font-size:clamp(28px,4vw,50px);min-height:56px}body.presenter .result{height:62px;font-size:clamp(30px,5vw,56px)}body.presenter .controls .btn{font-size:16px;padding:14px 20px}
+.editorBox{margin:12px 0;padding:12px;border-radius:14px;background:#09050f;border:1px solid #ffd16633}
+.editorBox .hint{font-size:12px;color:var(--muted);line-height:1.35;margin:6px 0 10px}
+.editorGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.editorGrid label{font-size:11px;color:var(--muted);display:grid;gap:4px}
+.editorGrid input,.editorGrid select{padding:8px 9px}
+#selectedInfo{font-weight:900;color:#ffe28a;margin-bottom:8px}
+#dropZone{border:1px dashed #ffd16677;border-radius:12px;padding:10px;text-align:center;color:#ffe28a;background:#120818;margin-top:8px}
+#dropZone.drag{background:#2a1536;box-shadow:0 0 20px #ffb70355}
+canvas.editing{cursor:grab;outline:2px solid #ffd16666;outline-offset:4px}
+canvas.dragging{cursor:grabbing}
+
+body.presenter canvas.editing{cursor:default;outline:none}
+body.presenter canvas.dragging{cursor:default}
+.winOverlay{position:fixed;inset:0;z-index:30;display:none;place-items:center;padding:20px;background:radial-gradient(circle at 50% 25%,#ffd16633,transparent 28%),rgba(0,0,0,.72);backdrop-filter:blur(5px)}
+.winOverlay.show{display:grid;animation:overlayIn .18s ease-out}
+.winCard{width:min(620px,92vw);text-align:center;border-radius:28px;padding:28px 24px 24px;background:linear-gradient(180deg,#2a1237f5,#09050ff5);border:2px solid #ffd166;box-shadow:0 0 55px #ffb70388,0 28px 90px #000;transform:scale(.96);animation:cardPop .28s ease-out forwards}
+.winKicker{font-size:18px;font-weight:1000;color:#fff7df;text-transform:uppercase;letter-spacing:1px;text-shadow:0 0 12px #d90429;margin-bottom:8px}
+.winTitle{font-size:clamp(34px,6vw,68px);line-height:.98;font-weight:1000;color:#ffe28a;text-transform:uppercase;text-shadow:0 0 22px #ffb703,0 4px 0 #7a3500;margin:8px 0 14px;word-break:break-word}
+.winImg{max-width:min(210px,50vw);max-height:210px;object-fit:contain;margin:6px auto 14px;filter:drop-shadow(0 0 20px #ffd16688)}
+.winBtn{margin-top:8px}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+@keyframes cardPop{to{transform:scale(1)}}
+
+
+.fxLayer{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .25s ease;overflow:hidden}
+.fxLayer .fxBeam{position:absolute;top:-20vh;left:50%;width:18vw;height:140vh;transform-origin:50% 0;background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,214,102,.12) 35%,transparent 78%);filter:blur(10px);mix-blend-mode:screen;opacity:.65}
+.fxLayer .fxBeam:nth-child(1){transform:rotate(-38deg) translateX(-50%);animation:beamSweep 2.1s linear infinite}
+.fxLayer .fxBeam:nth-child(2){transform:rotate(32deg) translateX(-50%);animation:beamSweep2 2.4s linear infinite;background:linear-gradient(180deg,rgba(0,229,255,.35),rgba(123,44,191,.2),transparent 78%)}
+.fxLayer .fxBeam:nth-child(3){transform:rotate(0deg) translateX(-50%);animation:beamSweep3 1.8s linear infinite;background:linear-gradient(180deg,rgba(255,0,92,.35),rgba(255,214,102,.12),transparent 78%)}
+.fxLayer:before{content:"";position:absolute;inset:-20%;background:radial-gradient(circle at 18% 22%,#ff004c88 0 4%,transparent 11%),radial-gradient(circle at 82% 18%,#00e5ff77 0 5%,transparent 12%),radial-gradient(circle at 22% 80%,#ffd16688 0 4%,transparent 12%),radial-gradient(circle at 78% 76%,#7b2cbf99 0 5%,transparent 14%);filter:blur(16px);animation:discoPulse 1.1s ease-in-out infinite alternate}
+.fxLayer:after{content:"";position:absolute;inset:0;background:repeating-conic-gradient(from 0deg at 50% 45%,transparent 0 12deg,rgba(255,255,255,.08) 13deg 15deg,transparent 16deg 30deg);mix-blend-mode:screen;animation:spinLights 6s linear infinite}
+body.presenter.fx-jingle .fxLayer,body.presenter.fx-spin .fxLayer,body.presenter.fx-win .fxLayer{opacity:1;z-index:2}
+body.presenter.fx-jingle .roulette-wrap,body.presenter.fx-spin .roulette-wrap,body.presenter.fx-win .roulette-wrap{position:relative;z-index:3}
+body.presenter.fx-jingle canvas{filter:drop-shadow(0 0 45px #00e5ffaa) drop-shadow(0 0 80px #ff006e77)}
+body.presenter.fx-spin canvas{filter:drop-shadow(0 0 55px #ffd166cc) drop-shadow(0 0 100px #00e5ff66)}
+body.presenter.fx-win canvas{filter:drop-shadow(0 0 70px #ffd166ee) drop-shadow(0 0 120px #ff006e99)}
+body.presenter.fx-jingle .pointer,body.presenter.fx-spin .pointer,body.presenter.fx-win .pointer{filter:drop-shadow(0 0 22px #fff) drop-shadow(0 0 40px #ffcc33);animation:pointerParty .55s ease-in-out infinite alternate}
+body.presenter.fx-win .winCard{animation:cardPop .28s ease-out forwards, winGlow .8s ease-in-out infinite alternate}
+@keyframes beamSweep{to{transform:rotate(322deg) translateX(-50%)}}
+@keyframes beamSweep2{to{transform:rotate(-328deg) translateX(-50%)}}
+@keyframes beamSweep3{to{transform:rotate(360deg) translateX(-50%)}}
+@keyframes discoPulse{from{opacity:.55;transform:scale(1)}to{opacity:1;transform:scale(1.08)}}
+@keyframes spinLights{to{transform:rotate(360deg)}}
+@keyframes pointerParty{to{transform:translateX(-50%) scale(1.08)}}
+@keyframes winGlow{to{box-shadow:0 0 75px #ffd166cc,0 0 140px #ff006e88,0 28px 90px #000}}
+.centerFace{background-position:center;background-size:contain;background-repeat:no-repeat;transform-origin:50% 82%}
+body.fx-jingle .centerFace{animation:charlieDance .62s ease-in-out infinite}
+body.fx-win .centerFace{animation:charlieHappy .72s ease-in-out infinite alternate;box-shadow:inset 0 0 16px #000,0 0 34px #ffd166,0 0 62px #ff7b00aa}
+@keyframes charlieDance{0%,100%{transform:translateY(0) rotate(-7deg) scale(1)}25%{transform:translateY(-9%) rotate(8deg) scale(1.06)}50%{transform:translateY(1%) rotate(-4deg) scale(.98)}75%{transform:translateY(-7%) rotate(7deg) scale(1.05)}}
+@keyframes charlieHappy{from{transform:translateY(0) scale(1) rotate(-3deg)}to{transform:translateY(-10%) scale(1.1) rotate(3deg)}}
+.configSection{margin-top:14px;padding-top:14px;border-top:1px solid #ffffff18}.configSection:first-of-type{margin-top:0;padding-top:0;border-top:0}.configLabel{display:block;margin:0 0 6px;color:var(--muted);font-size:12px}.queueInput{min-height:92px;resize:vertical}.queueStatus{margin-top:8px;padding:9px 10px;border-radius:10px;background:#08050d;border:1px solid #ffd16622;color:#ffe28a;font-size:12px;font-weight:800}.toggleRow{display:flex;align-items:center;gap:9px;margin:8px 0;color:#fff7df;font-size:13px;font-weight:800}.toggleRow input{width:auto}.volumeControl{display:grid;grid-template-columns:1fr 52px;gap:8px;align-items:center;margin:8px 0}.volumeControl input{padding:0}.volumeValue{text-align:right;color:#ffe28a;font-size:12px;font-weight:900}.historyList{display:grid;gap:7px;max-height:240px;overflow:auto;margin:8px 0}.historyItem{padding:9px 10px;border-radius:11px;background:#08050d;border:1px solid #ffffff14;font-size:12px;line-height:1.35}.historyItem b{color:#ffe28a}.historyTime{display:block;color:var(--muted);font-size:10px;margin-top:2px}.emptyState{padding:12px;text-align:center;color:var(--muted);border:1px dashed #ffffff22;border-radius:11px;font-size:12px}.lotChance{grid-column:1/-1;color:#ffe28a;font-size:11px;font-weight:900;text-align:right}.topActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+
+@media(max-width:1180px){.grid{grid-template-columns:1fr}.roulette-wrap{min-height:auto}.lot{grid-template-columns:1fr 72px}.lot .wide{grid-column:1/3}.lot button{grid-column:1/3}}
+</style>
+</head>
+<body>
+<section class="login" id="loginScreen"><div class="box"><h1>Charlie Roulette</h1><p class="small">Accès privé · mot de passe par défaut : <b>charlie</b></p><input id="pass" type="password" placeholder="Mot de passe"><br><br><button class="btn" id="loginBtn">Entrer</button><p id="loginErr" class="small"></p></div></section>
+<div class="fxLayer" id="fxLayer"><span class="fxBeam"></span><span class="fxBeam"></span><span class="fxBeam"></span></div>
+<div class="winOverlay" id="winOverlay" aria-hidden="true">
+  <div class="winCard">
+    <div class="winKicker" id="winKicker">Lot remporté</div>
+    <div class="winTitle" id="winTitle">CADEAU</div>
+    <img class="winImg" id="winImg" alt="Lot gagné" style="display:none">
+    <button class="btn winBtn" id="closeWinBtn">OK</button>
+  </div>
+</div>
+
+<main class="app" id="app"><div class="top"><div><div class="title">Charlie Roulette</div><div class="small">Casino privé · profils, lots, sons et images sauvegardés dans ce navigateur</div></div><div class="topActions"><button class="btn dark" id="fullscreenBtn">Plein écran</button><button class="btn dark" id="modeToggleBtn">Mode Discord</button><button class="btn dark" id="logoutBtn">Déconnexion</button></div></div>
+<div class="grid">
+<aside class="panel configPanel">
+  <h2>Configuration</h2>
+  <section class="configSection">
+    <h3>Participant actuel</h3>
+    <label class="configLabel" for="participantName">Pseudo affiché pendant le tirage</label>
+    <input id="participantName" class="field" placeholder="Ex : Kephren">
+    <div class="row" style="margin-top:8px"><button class="btn dark" id="saveParticipantBtn">Sauvegarder</button><button class="btn red" id="clearParticipantBtn">Effacer</button></div>
+  </section>
+  <section class="configSection">
+    <h3>File de participants</h3>
+    <label class="configLabel" for="participantQueue">Un pseudo par ligne. Le suivant sera chargé après validation du résultat.</label>
+    <textarea id="participantQueue" class="field queueInput" placeholder="Kephren&#10;Charlie&#10;Invité 3"></textarea>
+    <div class="row" style="margin-top:8px"><button class="btn" id="saveQueueBtn">Charger la file</button><button class="btn dark" id="nextParticipantBtn">Suivant</button></div>
+    <div class="queueStatus" id="queueStatus">Aucune file chargée</div>
+  </section>
+  <section class="configSection">
+    <h3>Tirage</h3>
+    <label class="toggleRow"><input id="antiRepeatEnabled" type="checkbox"> Activer l’anti-répétition</label>
+    <label class="configLabel" for="antiRepeatMode">Comportement</label>
+    <select id="antiRepeatMode"><option value="last">Éviter seulement le dernier lot</option><option value="session">Un seul passage par lot</option></select>
+  </section>
+  <section class="configSection">
+    <h3>Son</h3>
+    <label class="toggleRow"><input id="muteAll" type="checkbox"> Couper tous les sons</label>
+    <label class="configLabel" for="jingleVolume">Volume des jingles</label>
+    <div class="volumeControl"><input id="jingleVolume" type="range" min="0" max="100" value="90"><span class="volumeValue" id="jingleVolumeValue">90%</span></div>
+    <label class="configLabel" for="spinVolume">Volume de la roulette</label>
+    <div class="volumeControl"><input id="spinVolume" type="range" min="0" max="100" value="90"><span class="volumeValue" id="spinVolumeValue">90%</span></div>
+  </section>
+  <section class="configSection">
+    <h3>Historique des tirages</h3>
+    <div class="historyList" id="historyList"></div>
+    <button class="btn red" id="clearHistoryBtn">Effacer l’historique</button>
+  </section>
+  <section class="configSection">
+    <h2>Profils roulette</h2><div id="profiles" class="profiles"></div><br><input id="newProfile" class="field" placeholder="Nom du nouveau profil"><br><br><div class="row"><button class="btn" id="addProfileBtn">Créer</button><button class="btn red" id="delProfileBtn">Supprimer</button></div>
+  </section>
+</aside>
+<section class="panel roulette-wrap"><div class="participantTitle" id="participantTitle"></div><div class="result" id="result"></div><div class="wheelBox" id="wheelBox"><div class="pointer"></div><canvas id="wheel" width="1000" height="1000"></canvas><div class="centerFace" id="centerFace"></div></div><div class="controls"><button class="btn" id="startJingleBtn">Jingle début</button><button class="btn green" id="playBtn">Lancer roulette</button><button class="btn red" id="stopBtn">STOP</button><button class="btn dark" id="endJingleBtn">Jingle fin</button></div><p class="small">Espace = lancer · Entrée = stop</p></section>
+<aside class="panel configPanel"><h2>Lots & taux de drop</h2>
+<div class="editorBox">
+  <h3>Éditeur visuel</h3>
+  <div id="selectedInfo">Aucun élément sélectionné</div>
+  <div class="hint">Clique directement sur un texte ou un PNG dans la roue, puis déplace-le à la souris. La sauvegarde ancre la position.</div>
+  <div class="editorGrid">
+    <label>Élément<select id="editKind"><option value="text">Texte</option><option value="img">PNG</option></select></label>
+    <label>Lot<select id="editLot"></select></label>
+    <label>Texte<input id="editName" type="text"></label>
+    <label>Police<select id="editFont"><option value="system-ui">System</option><option value="Impact">Impact</option><option value="Arial Black">Arial Black</option><option value="Trebuchet MS">Trebuchet</option><option value="Georgia">Georgia</option></select></label>
+    <label>Couleur texte<input id="editTextColor" type="color"></label>
+    <label>Couleur case<input id="editCaseColor" type="color"></label>
+    <label>Taille texte<input id="editTextSize" type="range" min="12" max="90"></label>
+    <label>Rotation texte<input id="editTextRot" type="range" min="-180" max="180"></label>
+    <label>Taille PNG<input id="editImgSize" type="range" min="20" max="220"></label>
+    <label>Rotation PNG<input id="editImgRot" type="range" min="-180" max="180"></label>
+  </div>
+  <div id="dropZone">Glisse un PNG ici pour le lot sélectionné</div>
+  <br><button class="btn dark" id="saveVisualBtn">Ancrer / sauvegarder</button>
+</div>
+<div class="total" id="totalRate"></div><div id="lots"></div><div class="row"><button class="btn" id="addLotBtn">Ajouter</button><button class="btn dark" id="saveLotsBtn">Sauvegarder</button></div><p class="small">Le taux est un poids. Exemple : 50 tombe cinq fois plus souvent que 10. Le total n'a pas besoin de faire 100.</p></aside>
+</div></main>
+<script>
+const PASSWORD='charlie', LS='charlieRouletteV2';
+const DEFAULT_AUDIO={start:'asset/jingle-debut/charlie-roulette.mp3',spin:'asset/son-roulette/roulette.wav',end:'asset/jingle-fin/fin.mp3'};
+const DEFAULT_LOTS=[
+  {name:'bourse de 50.000k',rate:45,img:'',color:'#ef2f3b'},
+  {name:'1000 KAMAS',rate:8,img:'',color:'#11131a'},
+  {name:'CADEAU',rate:18,img:'',color:'#b7791f'}
+];
+function cloneDefaultLots(){return DEFAULT_LOTS.map((l,i)=>({...l,textColor:'#fff7df',font:'system-ui',textSize:34,textRadius:285,textX:0,textY:0,textRot:0,imgSize:i===0?160:64,imgRadius:i===0?335:335,imgY:i===0?-32:-32,imgRot:0}))}
+function defaultSettings(){return {antiRepeatEnabled:false,antiRepeatMode:'last',mute:false,jingleVolume:90,spinVolume:90}}
+function isCssColor(v){if(!v||typeof v!=='string')return false;let o=new Option().style;o.color=v;return !!o.color}
+function num(v,def,min,max){let n=parseFloat(String(v).replace(',','.'));if(!Number.isFinite(n))n=def;if(min!=null)n=Math.max(min,n);if(max!=null)n=Math.min(max,n);return n}
+function repairData(){
+  if(!data||typeof data!=='object')data={active:'Défaut',profiles:{}};
+  if(!data.profiles||typeof data.profiles!=='object')data.profiles={};
+  if(!data.active||!data.profiles[data.active])data.active=Object.keys(data.profiles)[0]||'Défaut';
+  if(!data.profiles[data.active])data.profiles[data.active]={center:'',participant:'',audio:{...DEFAULT_AUDIO},lots:cloneDefaultLots()};
+  Object.values(data.profiles).forEach(p=>{
+    if(!p||typeof p!=='object')return;
+    if(!('participant' in p))p.participant='';
+    p.queue=Array.isArray(p.queue)?p.queue.map(v=>String(v).trim()).filter(Boolean):[];
+    p.queueIndex=Math.floor(num(p.queueIndex,0,0,Math.max(0,p.queue.length-1)));
+    p.history=Array.isArray(p.history)?p.history.slice(0,100):[];
+    p.settings={...defaultSettings(),...(p.settings||{})};
+    p.settings.antiRepeatMode=p.settings.antiRepeatMode==='session'?'session':'last';
+    p.settings.jingleVolume=num(p.settings.jingleVolume,90,0,100);
+    p.settings.spinVolume=num(p.settings.spinVolume,90,0,100);
+    p.drawnLotIds=Array.isArray(p.drawnLotIds)?p.drawnLotIds:[];
+    p.lastLotId=String(p.lastLotId||'');
+    p.audio={...DEFAULT_AUDIO};
+    if(!Array.isArray(p.lots)||p.lots.length<1)p.lots=cloneDefaultLots();
+    p.lots=p.lots.map((l,i)=>{
+      l=(l&&typeof l==='object')?l:{};
+      l.id=String(l.id||('lot-'+Date.now().toString(36)+'-'+i+'-'+Math.random().toString(36).slice(2,8)));
+      l.name=String(l.name||DEFAULT_LOTS[i%DEFAULT_LOTS.length]?.name||'Lot');
+      l.rate=num(l.rate,DEFAULT_LOTS[i%DEFAULT_LOTS.length]?.rate||10,0,9999);
+      l.img=String(l.img||'');
+      l.color=isCssColor(l.color)?l.color:(DEFAULT_LOTS[i%DEFAULT_LOTS.length]?.color||['#940b12','#11131a','#b7791f','#5a189a'][i%4]);
+      l.textColor=isCssColor(l.textColor)?l.textColor:'#fff7df';
+      l.font=String(l.font||'system-ui');
+      l.textSize=num(l.textSize,34,12,120);l.textRadius=num(l.textRadius,285,40,520);l.textX=num(l.textX,0,-300,300);l.textY=num(l.textY,0,-300,300);l.textRot=num(l.textRot,0,-360,360);
+      l.imgSize=num(l.imgSize,64,20,260);l.imgRadius=num(l.imgRadius,335,40,520);l.imgY=num(l.imgY,-32,-300,300);l.imgRot=num(l.imgRot,0,-360,360);
+      return l;
+    });
+    if(p.lots.reduce((s,l)=>s+(parseFloat(l.rate)||0),0)<=0)p.lots=cloneDefaultLots();
+  });
+}
+
+let data=JSON.parse(localStorage.getItem(LS)||'null')||{active:'Défaut',profiles:{'Défaut':{center:'',participant:'',audio:{...DEFAULT_AUDIO},lots:cloneDefaultLots()}}};
+repairData();
+save();
+Object.values(data.profiles).forEach(p=>{
+  if(!('participant' in p))p.participant='';
+  p.audio={...DEFAULT_AUDIO,...(p.audio||{})};
+  (p.lots||[]).forEach((l,i)=>{
+    if(!l.color)l.color=['#940b12','#11131a','#b7791f','#5a189a','#0f766e','#7f1d1d','#1f2937'][i%7];
+    if(!l.textColor)l.textColor='#fff7df';
+    if(l.textSize==null)l.textSize=34;
+    if(l.textRadius==null)l.textRadius=285;
+    if(l.textX==null)l.textX=0;
+    if(l.textY==null)l.textY=0;
+    if(l.imgSize==null)l.imgSize=64;
+    if(l.imgRadius==null)l.imgRadius=335;
+    if(l.imgY==null)l.imgY=-32;
+  });
+});
+let angle=0, velocity=0, spinning=false, raf=0, selected=null;
+const $=id=>document.getElementById(id), canvas=$('wheel'), ctx=canvas.getContext('2d');
+let audio={start:null,spin:null,end:null};
+let presenterMode=localStorage.getItem('charliePresenterMode')==='1';
+function applyPresenterMode(){document.body.classList.toggle('presenter',presenterMode);let b=$('modeToggleBtn');if(b)b.textContent=presenterMode?'Afficher configuration':'Mode Discord';if(presenterMode){selectedEdit=null;draggingEdit=null;canvas&&canvas.classList.remove('dragging')}else{stopFx()}if(canvas)canvas.classList.toggle('editing',!presenterMode);}
+window.addEventListener('load',applyPresenterMode);
+function save(){localStorage.setItem(LS,JSON.stringify(data))} function cur(){return data.profiles[data.active]} function src(kind){return DEFAULT_AUDIO[kind]}
+function showApp(){ $('loginScreen').style.display='none'; $('app').style.display='block'; renderAll() }
+function login(){ if($('pass').value.trim()===PASSWORD){sessionStorage.setItem('charlieAccess','1');showApp()} else $('loginErr').textContent='Mot de passe incorrect.' }
+$('loginBtn').onclick=login; $('pass').onkeydown=e=>{if(e.key==='Enter')login()}; $('logoutBtn').onclick=()=>{sessionStorage.removeItem('charlieAccess');location.reload()}; $('modeToggleBtn').onclick=()=>{presenterMode=!presenterMode;localStorage.setItem('charliePresenterMode',presenterMode?'1':'0');applyPresenterMode();drawWheel()}; if(sessionStorage.getItem('charlieAccess')==='1')showApp();
+$('fullscreenBtn').onclick=async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){alert('Le plein écran n’est pas disponible dans ce navigateur.')}};
+document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent=document.fullscreenElement?'Quitter plein écran':'Plein écran'});
+function renderAll(){applyPresenterMode();renderProfiles();renderParticipant();renderQueue();renderSettings();renderHistory();renderLots();loadAudio();drawWheel();$('centerFace').style.backgroundImage='url("asset/charlie/charlie.png")'}
+function renderProfiles(){let box=$('profiles');box.innerHTML='';Object.keys(data.profiles).forEach(n=>{let d=document.createElement('div');d.className='profile '+(n===data.active?'active':'');d.innerHTML=`<b>${esc(n)}</b><button class="btn dark">Ouvrir</button>`;d.querySelector('button').onclick=()=>{data.active=n;save();renderAll()};box.appendChild(d)})}
+function renderParticipant(){let name=cur().participant||'';let input=$('participantName');if(input)input.value=name;$('participantTitle').textContent=name?'🎰 Roulette de '+name:'🎰 Charlie Roulette'}
+$('saveParticipantBtn').onclick=()=>{cur().participant=$('participantName').value.trim();save();renderParticipant()};
+$('clearParticipantBtn').onclick=()=>{cur().participant='';$('participantName').value='';$('result').textContent='';save();renderParticipant()};
+$('participantName').oninput=()=>{cur().participant=$('participantName').value.trim();save();renderParticipant()};
+function renderQueue(){let p=cur(),q=p.queue||[];$('participantQueue').value=q.join('\n');if(!q.length){$('queueStatus').textContent='Aucune file chargée';return}let pos=Math.min((p.queueIndex||0)+1,q.length);$('queueStatus').textContent=pos+' / '+q.length+' · Participant actuel : '+(q[pos-1]||'—')+(pos===q.length?' · dernier participant':'')}
+function loadParticipantQueue(){let q=$('participantQueue').value.split(/\r?\n/).map(v=>v.trim()).filter(Boolean);cur().queue=q;cur().queueIndex=0;if(q.length)cur().participant=q[0];save();renderParticipant();renderQueue()}
+function advanceParticipant(){let p=cur(),q=p.queue||[];if(!q.length)return false;if((p.queueIndex||0)+1>=q.length){renderQueue();return false}p.queueIndex++;p.participant=q[p.queueIndex];save();renderParticipant();renderQueue();return true}
+$('saveQueueBtn').onclick=loadParticipantQueue;
+$('nextParticipantBtn').onclick=advanceParticipant;
+function renderSettings(){let s=cur().settings||defaultSettings();$('antiRepeatEnabled').checked=!!s.antiRepeatEnabled;$('antiRepeatMode').value=s.antiRepeatMode||'last';$('muteAll').checked=!!s.mute;$('jingleVolume').value=s.jingleVolume;$('spinVolume').value=s.spinVolume;$('jingleVolumeValue').textContent=s.jingleVolume+'%';$('spinVolumeValue').textContent=s.spinVolume+'%';$('antiRepeatMode').disabled=!s.antiRepeatEnabled}
+function updateSettings(){let s=cur().settings;s.antiRepeatEnabled=$('antiRepeatEnabled').checked;s.antiRepeatMode=$('antiRepeatMode').value;s.mute=$('muteAll').checked;s.jingleVolume=+$('jingleVolume').value;s.spinVolume=+$('spinVolume').value;save();renderSettings();applyAudioSettings()}
+['antiRepeatEnabled','antiRepeatMode','muteAll','jingleVolume','spinVolume'].forEach(id=>{$(id).oninput=updateSettings;$(id).onchange=updateSettings});
+function renderHistory(){let list=$('historyList'),items=cur().history||[];list.innerHTML=items.length?items.map(h=>`<div class="historyItem"><b>${esc(h.participant||'Sans participant')}</b> · ${esc(h.lot||'Lot')}<span class="historyTime">${esc(h.at||'')}</span></div>`).join(''):'<div class="emptyState">Aucun tirage enregistré.</div>'}
+function addHistory(lot){let p=cur();p.history=p.history||[];p.history.unshift({participant:p.participant||'',lot:lot.name||'Lot',at:new Date().toLocaleString('fr-FR')});p.history=p.history.slice(0,100);save();renderHistory()}
+$('clearHistoryBtn').onclick=()=>{if(confirm('Effacer tout l’historique de ce profil ?')){cur().history=[];save();renderHistory()}};
+$('addProfileBtn').onclick=()=>{let n=$('newProfile').value.trim();if(!n||data.profiles[n])return;data.profiles[n]=structuredClone(cur());data.active=n;$('newProfile').value='';save();renderAll()};
+$('delProfileBtn').onclick=()=>{if(Object.keys(data.profiles).length<=1)return alert('Impossible : garde au moins un profil.');if(confirm('Supprimer le profil actuel ?')){delete data.profiles[data.active];data.active=Object.keys(data.profiles)[0];save();renderAll()}};
+function loadAudio(){
+  audio.start=new Audio(DEFAULT_AUDIO.start);
+  audio.spin=new Audio(DEFAULT_AUDIO.spin);
+  audio.end=new Audio(DEFAULT_AUDIO.end);
+  audio.spin.loop=true;
+  applyAudioSettings();
+}
+function applyAudioSettings(){let s=cur()?.settings||defaultSettings(),muted=!!s.mute;if(audio.start){audio.start.volume=muted?0:s.jingleVolume/100;audio.start.muted=muted}if(audio.end){audio.end.volume=muted?0:s.jingleVolume/100;audio.end.muted=muted}if(audio.spin){audio.spin.volume=muted?0:s.spinVolume/100;audio.spin.muted=muted}}
+function stopEndJingle(){if(!audio.end)return;audio.end.pause();audio.end.currentTime=0;audio.end.onended=null;audio.end.onerror=null}
+function playSound(a,label,fxKind){
+  try{
+    if(!a)return;
+    a.pause();
+    a.currentTime=0;
+
+    if(fxKind) startFx(fxKind,0);
+
+    a.onended=()=>{ if(fxKind) stopFx(fxKind); };
+    a.onerror=()=>{ if(fxKind) stopFx(fxKind); alert('Son introuvable : vérifie le chemin '+(label||'')); };
+
+    let p=a.play();
+    if(p)p.catch(()=>{
+      if(fxKind) stopFx(fxKind);
+      alert('Son introuvable ou bloqué : '+(label||'vérifie le chemin'));
+    });
+  }catch(e){
+    if(fxKind) stopFx(fxKind);
+    alert('Son introuvable : vérifie le chemin '+(label||''));
+  }
+}
+let fxTimer=0;
+function startFx(kind,duration=0){
+  clearTimeout(fxTimer);
+  document.body.classList.remove('fx-jingle','fx-spin','fx-win');
+  document.body.classList.add('fx-'+kind);
+  if(duration>0)fxTimer=setTimeout(()=>stopFx(kind),duration);
+}
+function stopFx(kind){
+  clearTimeout(fxTimer);
+  if(kind)document.body.classList.remove('fx-'+kind);
+  else document.body.classList.remove('fx-jingle','fx-spin','fx-win');
+}
+$('startJingleBtn').onclick=()=>playSound(audio.start,DEFAULT_AUDIO.start,'jingle');
+$('endJingleBtn').onclick=()=>playSound(audio.end,DEFAULT_AUDIO.end,'jingle');
+
+function normalizeLot(l,i){
+  if(!isCssColor(l.color))l.color=['#940b12','#11131a','#b7791f','#5a189a','#0f766e','#7f1d1d','#1f2937'][i%7];
+  if(!isCssColor(l.textColor))l.textColor='#fff7df';
+  if(!l.font)l.font='system-ui';
+  l.rate=num(l.rate,10,0,9999);
+  l.textSize=num(l.textSize,34,12,120);l.textRadius=num(l.textRadius,285,40,520);l.textX=num(l.textX,0,-300,300);l.textY=num(l.textY,0,-300,300);l.textRot=num(l.textRot,0,-360,360);
+  l.imgSize=num(l.imgSize,64,20,260);l.imgRadius=num(l.imgRadius,335,40,520);l.imgY=num(l.imgY,-32,-300,300);l.imgRot=num(l.imgRot,0,-360,360);
+}
+
+let hitMap=[], selectedEdit=null, draggingEdit=null, imageCache={};
+function getImage(src){if(!src)return null;if(imageCache[src]?.complete)return imageCache[src]; if(!imageCache[src]){let im=new Image();im.onload=()=>drawWheel();im.src=src;imageCache[src]=im}return imageCache[src]}
+function renderLots(){
+  let box=$('lots');box.innerHTML='';
+  let total=cur().lots.reduce((s,l)=>s+(+l.rate||0),0);
+  $('totalRate').textContent='Total des poids : '+total;
+  let editLot=$('editLot'); if(editLot){editLot.innerHTML='';cur().lots.forEach((l,i)=>{let o=document.createElement('option');o.value=i;o.textContent=(i+1)+' · '+l.name;editLot.appendChild(o)})}
+  cur().lots.forEach((l,i)=>{
+    normalizeLot(l,i);
+    let row=document.createElement('div');row.className='lot';
+    row.innerHTML=`
+      <input class="field" value="${esc(l.name)}" placeholder="Nom">
+      <input class="field" type="number" min="0" value="${+l.rate||0}" title="Taux / poids">
+      <input class="field wide" value="${esc(l.img||'')}" placeholder="PNG : asset/lots/image.png">
+      <button class="btn red">X</button>
+      <input class="wide" type="file" accept="image/png,image/*">
+      <div class="lotChance" data-chance-index="${i}">Chance réelle : ${total>0?(((+l.rate||0)/total)*100).toFixed(2):'0.00'} %</div>`;
+    row.children[0].oninput=e=>{l.name=e.target.value;let option=$('editLot').querySelector(`option[value="${i}"]`);if(option)option.textContent=(i+1)+' · '+l.name;syncEditor();drawWheel()};
+    row.children[1].oninput=e=>{l.rate=+e.target.value||0;$('totalRate').textContent='Total des poids : '+cur().lots.reduce((s,x)=>s+(+x.rate||0),0);updateLotChances();drawWheel()};
+    row.children[2].oninput=e=>{l.img=e.target.value;drawWheel()};
+    row.children[3].onclick=()=>{cur().lots.splice(i,1);selectedEdit=null;save();renderLots();drawWheel();syncEditor()};
+    row.children[4].onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{l.img=r.result;save();renderLots();drawWheel()};r.readAsDataURL(f)};
+    box.appendChild(row)
+  });
+  syncEditor();
+}
+function updateLotChances(){let total=cur().lots.reduce((s,l)=>s+(+l.rate||0),0);document.querySelectorAll('[data-chance-index]').forEach(el=>{let l=cur().lots[+el.dataset.chanceIndex],pct=total>0?(((+l.rate||0)/total)*100).toFixed(2):'0.00';el.textContent='Chance réelle : '+pct+' %'})}
+$('addLotBtn').onclick=()=>{cur().lots.push({name:'Nouveau lot',rate:10,img:'',color:'#940b12',textColor:'#fff7df',font:'system-ui',textSize:34,textRadius:285,textX:0,textY:0,textRot:0,imgSize:64,imgRadius:335,imgY:-32,imgRot:0});save();renderLots();drawWheel()};
+$('saveLotsBtn').onclick=()=>{save();renderLots();drawWheel()};
+$('saveVisualBtn').onclick=()=>{save();alert('Personnalisation ancrée.')};
+function getLots(){let p=cur(); if(!p||!Array.isArray(p.lots))return []; p.lots.forEach(normalizeLot); let lots=p.lots.filter(l=>(parseFloat(l.rate)||0)>0); if(!lots.length){p.lots=cloneDefaultLots(); save(); lots=p.lots;} return lots}
+function wheelScale(){let r=canvas.getBoundingClientRect();return {sx:1000/r.width,sy:1000/r.height,left:r.left,top:r.top}}
+function screenToCanvas(e){let sc=wheelScale();return {x:(e.clientX-sc.left)*sc.sx,y:(e.clientY-sc.top)*sc.sy}}
+function drawWheel(){
+  let lots=getLots(), total=lots.reduce((s,l)=>s+(+l.rate||0),0)||1;
+  hitMap=[];
+  ctx.clearRect(0,0,1000,1000);ctx.save();ctx.translate(500,500);ctx.rotate(angle);
+  let a=-Math.PI/2;
+  lots.forEach((l,i)=>{
+    normalizeLot(l,i); let realIndex=cur().lots.indexOf(l);
+    let slice=(+l.rate/total)*Math.PI*2, mid=a+slice/2;
+    let color=l.color||['#940b12','#11131a','#b7791f','#5a189a','#0f766e','#7f1d1d','#1f2937'][i%7];
+    ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,460,a,a+slice);ctx.closePath();ctx.fillStyle=color;ctx.fill();
+    ctx.strokeStyle='#ffd166';ctx.lineWidth=5;ctx.stroke();
+    ctx.save();ctx.rotate(mid);
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=l.textColor||'#fff7df';ctx.font=`900 ${(+l.textSize||34)}px ${l.font||'system-ui'}`;ctx.shadowColor='#000';ctx.shadowBlur=8;
+    ctx.save();ctx.translate((+l.textRadius||285)+(+l.textX||0),+l.textY||0);ctx.rotate(((+l.textRot||0)*Math.PI)/180);wrap(l.name.toUpperCase(),0,0,210,(+l.textSize||34)+2);ctx.restore();
+    if(l.img){let im=getImage(l.img);if(im&&im.complete){let size=+l.imgSize||64;ctx.save();ctx.translate((+l.imgRadius||335),+l.imgY||-32);ctx.rotate(((+l.imgRot||0)*Math.PI)/180);ctx.drawImage(im,-size/2,-size/2,size,size);ctx.restore();}}
+    ctx.restore();
+    let th=angle+mid;
+    let tx=500+Math.cos(th)*((+l.textRadius||285)+(+l.textX||0))-Math.sin(th)*(+l.textY||0);
+    let ty=500+Math.sin(th)*((+l.textRadius||285)+(+l.textX||0))+Math.cos(th)*(+l.textY||0);
+    hitMap.push({type:'text',i:realIndex,x:tx,y:ty,r:70,theta:th});
+    let ix=500+Math.cos(th)*(+l.imgRadius||335)-Math.sin(th)*(+l.imgY||-32);
+    let iy=500+Math.sin(th)*(+l.imgRadius||335)+Math.cos(th)*(+l.imgY||-32);
+    hitMap.push({type:'img',i:realIndex,x:ix,y:iy,r:(+l.imgSize||64)/1.3+18,theta:th});
+    if(!presenterMode&&selectedEdit&&selectedEdit.i===realIndex){
+      ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();ctx.arc(selectedEdit.type==='text'?tx:ix,selectedEdit.type==='text'?ty:iy,selectedEdit.type==='text'?72:(+l.imgSize||64)/2+16,0,Math.PI*2);ctx.strokeStyle='#00e5ff';ctx.lineWidth=5;ctx.setLineDash([12,8]);ctx.stroke();ctx.restore();
+    }
+    a+=slice
+  });
+  ctx.beginPath();ctx.arc(0,0,468,0,Math.PI*2);ctx.lineWidth=28;ctx.strokeStyle='#d69b22';ctx.stroke();
+  for(let i=0;i<60;i++){ctx.rotate(Math.PI*2/60);ctx.beginPath();ctx.arc(0,-475,7,0,Math.PI*2);ctx.fillStyle=i%2?'#fff1a6':'#ffb703';ctx.fill()}
+  ctx.restore()
+}
+function wrap(t,x,y,max,line){let words=String(t).split(' '),ln='',lines=[],yy=y;for(let w of words){let test=ln+w+' ';if(ctx.measureText(test).width>max&&ln){lines.push(ln.trim());ln=w+' '}else ln=test}lines.push(ln.trim());yy=y-(lines.length-1)*line/2;for(let lineText of lines){ctx.fillText(lineText,x,yy);yy+=line}}
+function syncEditor(){
+  if(presenterMode){selectedEdit=null;let si=$('selectedInfo');if(si)si.textContent='Mode Discord : édition désactivée';return}
+  let lots=cur().lots;if(!selectedEdit&&lots[0])selectedEdit={type:'text',i:0};
+  if(!selectedEdit||!lots[selectedEdit.i]){selectedEdit=null;$('selectedInfo').textContent='Aucun élément sélectionné';return}
+  let l=lots[selectedEdit.i];normalizeLot(l,selectedEdit.i);
+  $('selectedInfo').textContent=(selectedEdit.type==='text'?'Texte':'PNG')+' sélectionné : '+l.name;
+  $('editKind').value=selectedEdit.type;$('editLot').value=selectedEdit.i;$('editName').value=l.name;$('editFont').value=l.font||'system-ui';$('editTextColor').value=l.textColor||'#fff7df';$('editCaseColor').value=l.color||'#940b12';$('editTextSize').value=+l.textSize||34;$('editTextRot').value=+l.textRot||0;$('editImgSize').value=+l.imgSize||64;$('editImgRot').value=+l.imgRot||0;
+}
+function bindEditor(){
+  const bind=(id,fn)=>$(id).oninput=e=>{if(!selectedEdit)return;let l=cur().lots[selectedEdit.i];fn(l,e.target.value);save();drawWheel();};
+  $('editKind').onchange=e=>{selectedEdit={type:e.target.value,i:+$('editLot').value||0};syncEditor();drawWheel()};
+  $('editLot').onchange=e=>{selectedEdit={type:$('editKind').value,i:+e.target.value};syncEditor();drawWheel()};
+  bind('editName',(l,v)=>{l.name=v;renderLots()}); bind('editFont',(l,v)=>l.font=v); bind('editTextColor',(l,v)=>l.textColor=v); bind('editCaseColor',(l,v)=>l.color=v); bind('editTextSize',(l,v)=>l.textSize=+v); bind('editTextRot',(l,v)=>l.textRot=+v); bind('editImgSize',(l,v)=>l.imgSize=+v); bind('editImgRot',(l,v)=>l.imgRot=+v);
+  let dz=$('dropZone');dz.ondragover=e=>{e.preventDefault();dz.classList.add('drag')};dz.ondragleave=()=>dz.classList.remove('drag');dz.ondrop=e=>{e.preventDefault();dz.classList.remove('drag');let f=e.dataTransfer.files[0];if(!f||!selectedEdit)return;let r=new FileReader();r.onload=()=>{let l=cur().lots[selectedEdit.i];l.img=r.result;selectedEdit.type='img';save();renderLots();drawWheel()};r.readAsDataURL(f)};
+}
+bindEditor();
+canvas.classList.toggle('editing',!presenterMode);
+canvas.addEventListener('mousedown',e=>{if(spinning||presenterMode)return;let p=screenToCanvas(e);let best=null,bd=1e9;for(let h of hitMap){let d=Math.hypot(p.x-h.x,p.y-h.y);if(d<h.r&&d<bd){best=h;bd=d}}if(best){selectedEdit={type:best.type,i:best.i};syncEditor();drawWheel();draggingEdit={last:p,theta:best.theta};canvas.classList.add('dragging');e.preventDefault()}});
+window.addEventListener('mousemove',e=>{if(!draggingEdit||!selectedEdit)return;let p=screenToCanvas(e),dx=p.x-draggingEdit.last.x,dy=p.y-draggingEdit.last.y;draggingEdit.last=p;let l=cur().lots[selectedEdit.i],th=draggingEdit.theta;let lx=Math.cos(th)*dx+Math.sin(th)*dy, ly=-Math.sin(th)*dx+Math.cos(th)*dy;if(selectedEdit.type==='text'){l.textX=(+l.textX||0)+lx;l.textY=(+l.textY||0)+ly}else{l.imgRadius=(+l.imgRadius||335)+lx;l.imgY=(+l.imgY||-32)+ly}drawWheel()});
+window.addEventListener('mouseup',()=>{if(draggingEdit){draggingEdit=null;canvas.classList.remove('dragging');save();syncEditor()}});
+canvas.addEventListener('wheel',e=>{if(!selectedEdit||spinning||presenterMode)return;let l=cur().lots[selectedEdit.i];if(selectedEdit.type==='text')l.textSize=Math.max(12,Math.min(90,(+l.textSize||34)+(e.deltaY<0?2:-2)));else l.imgSize=Math.max(20,Math.min(220,(+l.imgSize||64)+(e.deltaY<0?4:-4)));save();syncEditor();drawWheel();e.preventDefault()},{passive:false});
+function pickWeightedIndex(){let p=cur(),lots=getLots(),eligible=lots.map((lot,index)=>({lot,index})),s=p.settings||defaultSettings();if(s.antiRepeatEnabled&&eligible.length>1){if(s.antiRepeatMode==='session'){eligible=eligible.filter(x=>!p.drawnLotIds.includes(x.lot.id));if(!eligible.length){p.drawnLotIds=[];eligible=lots.map((lot,index)=>({lot,index}))}}else{let filtered=eligible.filter(x=>x.lot.id!==p.lastLotId);if(filtered.length)eligible=filtered}}let total=eligible.reduce((sum,x)=>sum+(+x.lot.rate||0),0),r=Math.random()*total;for(let x of eligible){r-=+x.lot.rate;if(r<=0)return x.index}return eligible[0]?.index||0}
+function markLotDrawn(lot){let p=cur();p.lastLotId=lot.id;p.drawnLotIds=p.drawnLotIds||[];if(!p.drawnLotIds.includes(lot.id))p.drawnLotIds.push(lot.id);save()}
+function targetAngleForIndex(idx){let lots=getLots(), total=lots.reduce((s,l)=>s+(+l.rate||0),0)||1;let a=-Math.PI/2;for(let i=0;i<lots.length;i++){let slice=(+lots[i].rate/total)*Math.PI*2;if(i===idx){let mid=a+slice/2;let base=(-Math.PI/2)-mid;let extra=Math.PI*2*(4+Math.floor(Math.random()*3));let target=base+extra;while(target<angle+Math.PI*2)target+=Math.PI*2;return target}a+=slice}return angle+Math.PI*8}
+$('playBtn').onclick=()=>{if(spinning)return;hideWinModal();selected=null;renderParticipant();$('result').textContent='';$('wheelBox').classList.add('flash');spinning=true;velocity=.42+Math.random()*.1;startFx('spin',0);playSound(audio.spin);loop()};
+function loop(){angle+=velocity;drawWheel();raf=requestAnimationFrame(loop)}
+
+function showWinModal(lot){
+  let overlay=$('winOverlay'), title=$('winTitle'), kicker=$('winKicker'), img=$('winImg');
+  if(!overlay||!lot)return;
+  let p=cur().participant||'';
+  kicker.textContent=p ? (p+' remporte') : 'Lot remporté';
+  title.textContent=lot.name||'Lot';
+  if(lot.img){img.src=lot.img;img.style.display='block'}else{img.removeAttribute('src');img.style.display='none'}
+  overlay.classList.add('show');overlay.setAttribute('aria-hidden','false');
+  playSound(audio.end,src('end'),'win');
+}
+function hideWinModal(){let overlay=$('winOverlay');if(!overlay)return;stopEndJingle();overlay.classList.remove('show');overlay.setAttribute('aria-hidden','true');stopFx('win')}
+function confirmWinResult(){hideWinModal();$('result').textContent='';advanceParticipant()}
+$('closeWinBtn').onclick=confirmWinResult;
+$('winOverlay').addEventListener('click',e=>{if(e.target.id==='winOverlay')hideWinModal()});
+$('stopBtn').onclick=()=>{if(!spinning)return;let idx=pickWeightedIndex();selected=getLots()[idx];cancelAnimationFrame(raf);let start=angle,target=targetAngleForIndex(idx),dur=3600,t0=performance.now();function ease(t){return 1-Math.pow(1-t,4)}function anim(now){let t=Math.min(1,(now-t0)/dur);angle=start+(target-start)*ease(t);drawWheel();if(t<1){raf=requestAnimationFrame(anim)}else{spinning=false;velocity=0;audio.spin.pause();audio.spin.currentTime=0;stopFx('spin');$('wheelBox').classList.remove('flash');let p=cur().participant||'';$('result').textContent=p ? (p+' remporte : '+selected.name) : ('Résultat : '+selected.name);markLotDrawn(selected);addHistory(selected);drawWheel();confetti();showWinModal(selected);}}raf=requestAnimationFrame(anim)};
+function confetti(){for(let i=0;i<80;i++){let d=document.createElement('div');d.className='confetti';d.style.left=Math.random()*100+'vw';d.style.background=['#ffd166','#d90429','#7b2cbf','#00c853','#fff'][i%5];d.style.animationDelay=Math.random()*.35+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),2300)}}
+window.addEventListener('keydown',e=>{
+  const tag=(e.target&&e.target.tagName||'').toLowerCase();
+  const isTyping=tag==='input'||tag==='textarea'||tag==='select'||e.target?.isContentEditable;
+  const configOpen=!document.body.classList.contains('presenter');
+  if(e.key==='Escape'){hideWinModal();return}
+  if(isTyping||configOpen) return;
+  if(e.code==='Space'){$('playBtn').click();e.preventDefault()}
+  if(e.key==='Enter'){$('stopBtn').click();e.preventDefault()}
+  if(e.key.toLowerCase()==='j'){$('startJingleBtn').click();e.preventDefault()}
+  if(e.key.toLowerCase()==='f'){$('endJingleBtn').click();e.preventDefault()}
+  if(e.key.toLowerCase()==='c'){$('modeToggleBtn').click();e.preventDefault()}
+});
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+</script>
+</body>
+</html>
