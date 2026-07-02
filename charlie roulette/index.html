@@ -62,6 +62,7 @@ body.fx-win .centerFace{animation:charlieHappy .72s ease-in-out infinite alterna
 @keyframes charlieHappy{from{transform:translateY(0) scale(1) rotate(-3deg)}to{transform:translateY(-10%) scale(1.1) rotate(3deg)}}
 .configSection{margin-top:14px;padding-top:14px;border-top:1px solid #ffffff18}.configSection:first-of-type{margin-top:0;padding-top:0;border-top:0}.configLabel{display:block;margin:0 0 6px;color:var(--muted);font-size:12px}.queueInput{min-height:92px;resize:vertical}.queueStatus{margin-top:8px;padding:9px 10px;border-radius:10px;background:#08050d;border:1px solid #ffd16622;color:#ffe28a;font-size:12px;font-weight:800}.toggleRow{display:flex;align-items:center;gap:9px;margin:8px 0;color:#fff7df;font-size:13px;font-weight:800}.toggleRow input{width:auto}.volumeControl{display:grid;grid-template-columns:1fr 52px;gap:8px;align-items:center;margin:8px 0}.volumeControl input{padding:0}.volumeValue{text-align:right;color:#ffe28a;font-size:12px;font-weight:900}.historyList{display:grid;gap:7px;max-height:240px;overflow:auto;margin:8px 0}.historyItem{padding:9px 10px;border-radius:11px;background:#08050d;border:1px solid #ffffff14;font-size:12px;line-height:1.35}.historyItem b{color:#ffe28a}.historyTime{display:block;color:var(--muted);font-size:10px;margin-top:2px}.emptyState{padding:12px;text-align:center;color:var(--muted);border:1px dashed #ffffff22;border-radius:11px;font-size:12px}.lotChance{grid-column:1/-1;color:#ffe28a;font-size:11px;font-weight:900;text-align:right}.topActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .btn:disabled{cursor:not-allowed;opacity:.42;filter:grayscale(.45);transform:none;box-shadow:none}.queueList{display:grid;gap:6px;max-height:230px;overflow:auto;margin-top:8px}.queueItem{display:grid;grid-template-columns:minmax(0,1fr) repeat(4,34px);gap:5px;align-items:center;padding:7px;border-radius:10px;background:#08050d;border:1px solid #ffffff14}.queueItem.active{border-color:#ffd166;box-shadow:0 0 14px #ffb70322}.queueItem.done{opacity:.48}.queueName{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:900}.queueItem button{min-width:34px;height:32px;padding:0;border-radius:8px;font-size:13px}.testNote{padding:8px 9px;margin-top:8px;border-radius:10px;background:#171022;border:1px solid #7b2cbf77;color:#d9c9f5;font-size:11px;line-height:1.35}.historyActions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.historyActions .wideAction{grid-column:1/-1}
+.charlieBubble{position:absolute;z-index:8;left:50%;bottom:25%;width:max-content;max-width:min(390px,76%);padding:12px 15px;border-radius:15px;background:#fff7df;color:#2a1600;border:3px solid #d69b22;box-shadow:0 10px 28px #0009,0 0 20px #ffd16666;font-size:clamp(13px,1.7vw,18px);font-weight:900;line-height:1.25;text-align:center;pointer-events:none;opacity:0;transform:translate(-50%,12px) scale(.92);transition:opacity .18s ease,transform .18s ease}.charlieBubble.show{opacity:1;transform:translate(-50%,0) scale(1)}.charlieBubble:after{content:"";position:absolute;left:50%;bottom:-15px;transform:translateX(-50%);border-left:13px solid transparent;border-right:13px solid transparent;border-top:16px solid #d69b22}.centerFace.charlie-impatient{animation:charlieImpatient .34s ease-in-out infinite alternate;filter:saturate(1.8) sepia(.5) hue-rotate(320deg) drop-shadow(0 0 16px #ff3030)}.centerFace.charlie-troll{animation:charlieTroll .55s ease-in-out 3}.rangeLine{display:grid;grid-template-columns:1fr 52px;gap:8px;align-items:center}.rangeLine input{padding:0}@keyframes charlieImpatient{from{transform:rotate(-4deg) translateX(-2%)}to{transform:rotate(4deg) translateX(2%) scale(1.04)}}@keyframes charlieTroll{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg) scale(1.08)}70%{transform:rotate(10deg) scale(1.08)}}
 
 @media(max-width:1180px){.grid{grid-template-columns:1fr}.roulette-wrap{min-height:auto}.lot{grid-template-columns:1fr 72px}.lot .wide{grid-column:1/3}.lot button{grid-column:1/3}}
 </style>
@@ -101,6 +102,12 @@ body.fx-win .centerFace{animation:charlieHappy .72s ease-in-out infinite alterna
     <label class="toggleRow"><input id="antiRepeatEnabled" type="checkbox"> Activer l’anti-répétition</label>
     <label class="configLabel" for="antiRepeatMode">Comportement</label>
     <select id="antiRepeatMode"><option value="last">Éviter seulement le dernier lot</option><option value="session">Un seul passage par lot</option></select>
+    <label class="toggleRow"><input id="charlieReactions" type="checkbox"> Activer les réactions de Charlie</label>
+    <label class="configLabel" for="charlieMood">Tempérament</label>
+    <select id="charlieMood"><option value="discret">Discret</option><option value="taquin">Taquin</option><option value="impatient">Impatient</option></select>
+    <label class="toggleRow"><input id="launchTrollEnabled" type="checkbox"> Autoriser les refus troll au lancement</label>
+    <label class="configLabel" for="launchTrollChance">Fréquence des refus</label>
+    <div class="rangeLine"><input id="launchTrollChance" type="range" min="0" max="25" value="8"><span class="volumeValue" id="launchTrollChanceValue">8%</span></div>
     <label class="configLabel" for="testForcedLot" style="margin-top:10px">Lot forcé pour un tirage test</label>
     <select id="testForcedLot"><option value="">Aléatoire selon les probabilités</option></select>
     <div class="testNote">Ce réglage fonctionne uniquement avec « Tirage test ». Il n’altère jamais un vrai tirage.</div>
@@ -122,7 +129,7 @@ body.fx-win .centerFace{animation:charlieHappy .72s ease-in-out infinite alterna
     <h2>Profils roulette</h2><div id="profiles" class="profiles"></div><br><input id="newProfile" class="field" placeholder="Nom du nouveau profil"><br><br><div class="row"><button class="btn" id="addProfileBtn">Créer</button><button class="btn red" id="delProfileBtn">Supprimer</button></div>
   </section>
 </aside>
-<section class="panel roulette-wrap"><div class="participantTitle" id="participantTitle"></div><div class="result" id="result"></div><div class="wheelBox" id="wheelBox"><div class="pointer"></div><canvas id="wheel" width="1000" height="1000"></canvas><div class="centerFace" id="centerFace"></div></div><div class="controls"><button class="btn" id="startJingleBtn">Jingle début</button><button class="btn green" id="playBtn">Lancer roulette</button><button class="btn dark" id="testBtn">Tirage test</button><button class="btn red" id="stopBtn">STOP</button><button class="btn dark" id="endJingleBtn">Jingle fin</button></div><p class="small">Espace = lancer · Entrée = stop</p></section>
+<section class="panel roulette-wrap"><div class="participantTitle" id="participantTitle"></div><div class="result" id="result"></div><div class="wheelBox" id="wheelBox"><div class="pointer"></div><canvas id="wheel" width="1000" height="1000"></canvas><div class="centerFace" id="centerFace"></div><div class="charlieBubble" id="charlieBubble" role="status" aria-live="polite"></div></div><div class="controls"><button class="btn" id="startJingleBtn">Jingle début</button><button class="btn green" id="playBtn">Lancer roulette</button><button class="btn dark" id="testBtn">Tirage test</button><button class="btn red" id="stopBtn">STOP</button><button class="btn dark" id="endJingleBtn">Jingle fin</button></div><p class="small">Espace = lancer · Entrée = stop</p></section>
 <aside class="panel configPanel"><h2>Lots & taux de drop</h2>
 <div class="editorBox">
   <h3>Éditeur visuel</h3>
@@ -154,7 +161,7 @@ const DEFAULT_LOTS=[
   {name:'CADEAU',rate:18,img:'',color:'#b7791f'}
 ];
 function cloneDefaultLots(){return DEFAULT_LOTS.map((l,i)=>({...l,textColor:'#fff7df',font:'system-ui',textSize:34,textRadius:285,textX:0,textY:0,textRot:0,imgSize:i===0?160:64,imgRadius:i===0?335:335,imgY:i===0?-32:-32,imgRot:0}))}
-function defaultSettings(){return {antiRepeatEnabled:false,antiRepeatMode:'last',forcedTestLot:'',mute:false,jingleVolume:90,spinVolume:90}}
+function defaultSettings(){return {antiRepeatEnabled:false,antiRepeatMode:'last',forcedTestLot:'',charlieReactions:true,charlieMood:'taquin',launchTrollEnabled:true,launchTrollChance:8,mute:false,jingleVolume:90,spinVolume:90}}
 function isCssColor(v){if(!v||typeof v!=='string')return false;let o=new Option().style;o.color=v;return !!o.color}
 function num(v,def,min,max){let n=parseFloat(String(v).replace(',','.'));if(!Number.isFinite(n))n=def;if(min!=null)n=Math.max(min,n);if(max!=null)n=Math.min(max,n);return n}
 function repairData(){
@@ -170,6 +177,8 @@ function repairData(){
     p.history=Array.isArray(p.history)?p.history.slice(0,100):[];
     p.settings={...defaultSettings(),...(p.settings||{})};
     p.settings.antiRepeatMode=p.settings.antiRepeatMode==='session'?'session':'last';
+    p.settings.charlieMood=['discret','taquin','impatient'].includes(p.settings.charlieMood)?p.settings.charlieMood:'taquin';
+    p.settings.launchTrollChance=num(p.settings.launchTrollChance,8,0,25);
     p.settings.jingleVolume=num(p.settings.jingleVolume,90,0,100);
     p.settings.spinVolume=num(p.settings.spinVolume,90,0,100);
     p.drawnLotIds=Array.isArray(p.drawnLotIds)?p.drawnLotIds:[];
@@ -211,7 +220,7 @@ Object.values(data.profiles).forEach(p=>{
     if(l.imgY==null)l.imgY=-32;
   });
 });
-let angle=0, velocity=0, spinning=false, stopping=false, currentDrawIsTest=false, antiResetBeforeDraw=null, raf=0, selected=null;
+let angle=0, velocity=0, spinning=false, stopping=false, presentingResult=false, currentDrawIsTest=false, antiResetBeforeDraw=null, raf=0, selected=null;
 const $=id=>document.getElementById(id), canvas=$('wheel'), ctx=canvas.getContext('2d');
 let audio={start:null,spin:null,end:null};
 let presenterMode=localStorage.getItem('charliePresenterMode')==='1';
@@ -223,8 +232,8 @@ function login(){ if($('pass').value.trim()===PASSWORD){sessionStorage.setItem('
 $('loginBtn').onclick=login; $('pass').onkeydown=e=>{if(e.key==='Enter')login()}; $('logoutBtn').onclick=()=>{sessionStorage.removeItem('charlieAccess');location.reload()}; $('modeToggleBtn').onclick=()=>{presenterMode=!presenterMode;localStorage.setItem('charliePresenterMode',presenterMode?'1':'0');applyPresenterMode();drawWheel()}; if(sessionStorage.getItem('charlieAccess')==='1')showApp();
 $('fullscreenBtn').onclick=async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){alert('Le plein écran n’est pas disponible dans ce navigateur.')}};
 document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent=document.fullscreenElement?'Quitter plein écran':'Plein écran'});
-function renderAll(){applyPresenterMode();renderProfiles();renderParticipant();renderQueue();renderSettings();renderHistory();renderLots();loadAudio();drawWheel();updateControlState();$('centerFace').style.backgroundImage='url("asset/charlie/charlie.png")'}
-function renderProfiles(){let box=$('profiles');box.innerHTML='';Object.keys(data.profiles).forEach(n=>{let d=document.createElement('div');d.className='profile '+(n===data.active?'active':'');d.innerHTML=`<b>${esc(n)}</b><button class="btn dark">Ouvrir</button>`;d.querySelector('button').onclick=()=>{data.active=n;save();renderAll()};box.appendChild(d)})}
+function renderAll(){applyPresenterMode();renderProfiles();renderParticipant();renderQueue();renderSettings();renderHistory();renderLots();loadAudio();drawWheel();updateControlState();resetIdleReactions();$('centerFace').style.backgroundImage='url("asset/charlie/charlie.png")'}
+function renderProfiles(){let box=$('profiles');box.innerHTML='';Object.keys(data.profiles).forEach(n=>{let d=document.createElement('div');d.className='profile '+(n===data.active?'active':'');d.innerHTML=`<b>${esc(n)}</b><button class="btn dark">Ouvrir</button>`;d.querySelector('button').onclick=()=>{if(spinning||presentingResult)return;data.active=n;save();renderAll()};box.appendChild(d)})}
 function renderParticipant(){let name=cur().participant||'';let input=$('participantName');if(input)input.value=name;$('participantTitle').textContent=name?'🎰 Roulette de '+name:'🎰 Charlie Roulette'}
 $('saveParticipantBtn').onclick=()=>{cur().participant=$('participantName').value.trim();save();renderParticipant()};
 $('clearParticipantBtn').onclick=()=>{cur().participant='';$('participantName').value='';$('result').textContent='';save();renderParticipant()};
@@ -237,9 +246,9 @@ function moveQueueItem(i,delta){let p=cur(),j=i+delta;if(j<0||j>=p.queue.length)
 function removeQueueItem(i){let p=cur(),current=p.queueIndex||0;p.queue.splice(i,1);if(!p.queue.length){p.queueIndex=0}else{if(i<current)current--;else if(i===current)current=Math.min(current,p.queue.length-1);p.queueIndex=Math.max(0,current);p.participant=p.queue[p.queueIndex]}save();renderParticipant();renderQueue()}
 $('saveQueueBtn').onclick=loadParticipantQueue;
 $('nextParticipantBtn').onclick=advanceParticipant;
-function renderSettings(){let p=cur(),s=p.settings||defaultSettings(),forced=$('testForcedLot');$('antiRepeatEnabled').checked=!!s.antiRepeatEnabled;$('antiRepeatMode').value=s.antiRepeatMode||'last';$('muteAll').checked=!!s.mute;$('jingleVolume').value=s.jingleVolume;$('spinVolume').value=s.spinVolume;$('jingleVolumeValue').textContent=s.jingleVolume+'%';$('spinVolumeValue').textContent=s.spinVolume+'%';$('antiRepeatMode').disabled=!s.antiRepeatEnabled;forced.innerHTML='<option value="">Aléatoire selon les probabilités</option>'+p.lots.map(l=>`<option value="${esc(l.id)}">${esc(l.name)}</option>`).join('');forced.value=p.lots.some(l=>l.id===s.forcedTestLot)?s.forcedTestLot:''}
-function updateSettings(){let s=cur().settings;s.antiRepeatEnabled=$('antiRepeatEnabled').checked;s.antiRepeatMode=$('antiRepeatMode').value;s.forcedTestLot=$('testForcedLot').value;s.mute=$('muteAll').checked;s.jingleVolume=+$('jingleVolume').value;s.spinVolume=+$('spinVolume').value;save();renderSettings();applyAudioSettings()}
-['antiRepeatEnabled','antiRepeatMode','testForcedLot','muteAll','jingleVolume','spinVolume'].forEach(id=>{$(id).oninput=updateSettings;$(id).onchange=updateSettings});
+function renderSettings(){let p=cur(),s=p.settings||defaultSettings(),forced=$('testForcedLot');$('antiRepeatEnabled').checked=!!s.antiRepeatEnabled;$('antiRepeatMode').value=s.antiRepeatMode||'last';$('charlieReactions').checked=!!s.charlieReactions;$('charlieMood').value=s.charlieMood||'taquin';$('launchTrollEnabled').checked=!!s.launchTrollEnabled;$('launchTrollChance').value=s.launchTrollChance;$('launchTrollChanceValue').textContent=s.launchTrollChance+'%';$('charlieMood').disabled=!s.charlieReactions;$('launchTrollEnabled').disabled=!s.charlieReactions;$('launchTrollChance').disabled=!s.charlieReactions||!s.launchTrollEnabled;$('muteAll').checked=!!s.mute;$('jingleVolume').value=s.jingleVolume;$('spinVolume').value=s.spinVolume;$('jingleVolumeValue').textContent=s.jingleVolume+'%';$('spinVolumeValue').textContent=s.spinVolume+'%';$('antiRepeatMode').disabled=!s.antiRepeatEnabled;forced.innerHTML='<option value="">Aléatoire selon les probabilités</option>'+p.lots.map(l=>`<option value="${esc(l.id)}">${esc(l.name)}</option>`).join('');forced.value=p.lots.some(l=>l.id===s.forcedTestLot)?s.forcedTestLot:''}
+function updateSettings(){let s=cur().settings;s.antiRepeatEnabled=$('antiRepeatEnabled').checked;s.antiRepeatMode=$('antiRepeatMode').value;s.forcedTestLot=$('testForcedLot').value;s.charlieReactions=$('charlieReactions').checked;s.charlieMood=$('charlieMood').value;s.launchTrollEnabled=$('launchTrollEnabled').checked;s.launchTrollChance=+$('launchTrollChance').value;s.mute=$('muteAll').checked;s.jingleVolume=+$('jingleVolume').value;s.spinVolume=+$('spinVolume').value;save();renderSettings();applyAudioSettings();resetIdleReactions()}
+['antiRepeatEnabled','antiRepeatMode','testForcedLot','charlieReactions','charlieMood','launchTrollEnabled','launchTrollChance','muteAll','jingleVolume','spinVolume'].forEach(id=>{$(id).oninput=updateSettings;$(id).onchange=updateSettings});
 function renderHistory(){let list=$('historyList'),items=cur().history||[];list.innerHTML=items.length?items.map(h=>`<div class="historyItem"><b>${esc(h.participant||'Sans participant')}</b> · ${esc(h.lot||'Lot')}<span class="historyTime">${esc(h.at||'')}</span></div>`).join(''):'<div class="emptyState">Aucun tirage enregistré.</div>';$('undoHistoryBtn').disabled=!items.length;$('exportHistoryBtn').disabled=!items.length}
 function addHistory(lot,antiBefore){let p=cur();p.history=p.history||[];p.history.unshift({participant:p.participant||'',lot:lot.name||'Lot',lotId:lot.id||'',at:new Date().toLocaleString('fr-FR'),profile:data.active,queueIndex:p.queueIndex||0,antiBefore});p.history=p.history.slice(0,100);save();renderHistory()}
 function undoLastHistory(){let p=cur(),entry=p.history?.shift();if(!entry)return;if(entry.antiBefore){p.lastLotId=entry.antiBefore.lastLotId||'';p.drawnLotIds=[...(entry.antiBefore.drawnLotIds||[])]}if(Number.isInteger(entry.queueIndex)&&p.queue?.[entry.queueIndex]){p.queueIndex=entry.queueIndex;p.participant=p.queue[entry.queueIndex]}else if(entry.participant)p.participant=entry.participant;save();renderParticipant();renderQueue();renderHistory();drawWheel()}
@@ -248,6 +257,24 @@ function exportHistory(){let items=cur().history||[];if(!items.length)return;let
 $('undoHistoryBtn').onclick=undoLastHistory;
 $('exportHistoryBtn').onclick=exportHistory;
 $('clearHistoryBtn').onclick=()=>{if(confirm('Effacer tout l’historique de ce profil ?')){cur().history=[];save();renderHistory()}};
+let charlieBubbleTimer=0,resultSequenceTimer=0,idleReactionTimers=[],spinReactionTimers=[],lastCharlieLines={};
+function charlieEnabled(){return !!cur()?.settings?.charlieReactions}
+function charlieName(){return cur()?.participant?.trim()||''}
+function pickCharlieLine(group,lines){let choices=lines.filter(line=>line!==lastCharlieLines[group]);if(!choices.length)choices=lines;let line=choices[Math.floor(Math.random()*choices.length)];lastCharlieLines[group]=line;return line}
+function clearCharlieBubble(){clearTimeout(charlieBubbleTimer);let bubble=$('charlieBubble'),face=$('centerFace');bubble.classList.remove('show');face.classList.remove('charlie-impatient','charlie-troll')}
+function showCharlieBubble(text,duration=4400,expression=''){if(!charlieEnabled()||!text)return;clearCharlieBubble();let bubble=$('charlieBubble'),face=$('centerFace');bubble.textContent=text;bubble.classList.add('show');if(expression)face.classList.add(expression);charlieBubbleTimer=setTimeout(clearCharlieBubble,duration)}
+function clearIdleReactions(){idleReactionTimers.forEach(clearTimeout);idleReactionTimers=[]}
+function resetIdleReactions(){clearIdleReactions();if(!charlieEnabled()||spinning||presentingResult||$('app').style.display!=='block')return;let mood=cur().settings.charlieMood||'taquin',delays=mood==='impatient'?[16000,35000]:mood==='discret'?[42000,85000]:[26000,58000];idleReactionTimers=delays.map((delay,index)=>setTimeout(()=>{if(spinning||presentingResult||$('winOverlay').classList.contains('show'))return;let name=charlieName(),lines=name?[`Alors ${name}, on hésite ?`,`La roue attend, ${name}. Moi aussi.`,`Tu comptes la lancer aujourd’hui, ${name} ?`]:['Quelqu’un compte lancer cette roulette ?','Je peux attendre longtemps. Mais je vais râler.','La roue ne va pas se lancer toute seule.'];showCharlieBubble(pickCharlieLine('idle'+index,lines),4500,index?'charlie-impatient':'')},delay))}
+function clearSpinReactions(){spinReactionTimers.forEach(clearTimeout);spinReactionTimers=[];$('centerFace').classList.remove('charlie-impatient')}
+function startSpinReactions(){clearIdleReactions();clearSpinReactions();if(!charlieEnabled())return;let mood=cur().settings.charlieMood||'taquin',delays=mood==='impatient'?[6500,12000,19000]:mood==='discret'?[15000,28000]:[9000,17000,26000];spinReactionTimers=delays.map((delay,index)=>setTimeout(()=>{if(!spinning||stopping)return;let name=charlieName(),lines=index===0?['Bon… c’est long.','Elle tourne bien. Elle pourrait aussi s’arrêter.']:(name?[`Le bouton STOP est juste là, ${name}.`,`Appuie sur STOP, ${name}, avant que je le fasse !`]:['Le bouton STOP existe. Je précise.','Quelqu’un peut arrêter cette roue ?']);showCharlieBubble(pickCharlieLine('spin'+index,lines),4300,index>0?'charlie-impatient':'')},delay))}
+function randomWeightedLot(){let lots=getLots(),total=lots.reduce((sum,l)=>sum+(+l.rate||0),0),roll=Math.random()*total;for(let lot of lots){roll-=+lot.rate;if(roll<=0)return lot}return lots[0]}
+function rareLot(){let lots=[...getLots()].sort((a,b)=>(+a.rate||0)-(+b.rate||0)),pool=lots.slice(0,Math.max(1,Math.ceil(lots.length/3)));return pool[Math.floor(Math.random()*pool.length)]}
+function commentOnJingle(){if(!charlieEnabled())return;let lot=rareLot();if(!lot)return;let name=charlieName(),lines=name?[`Ce serait bien que ${name} ne gagne pas « ${lot.name} ».`,`J’espère que ${name} ne vise pas « ${lot.name} »…`,`Tout sauf « ${lot.name} » pour ${name}.`]:[`J’espère que personne ne repart avec « ${lot.name} ».`,`Tout sauf « ${lot.name} », merci.`,`Je garde un œil sur « ${lot.name} ». Rien de suspect.`];showCharlieBubble(pickCharlieLine('jingle',lines),5200)}
+function maybeRefuseLaunch(){let s=cur().settings;if(!charlieEnabled()||!s.launchTrollEnabled||Math.random()*100>=s.launchTrollChance)return false;let lot=randomWeightedLot();if(!lot)return false;let name=charlieName(),target=name?name:'toi';showCharlieBubble(`Dommage ${target}, je refuse de lancer. Tu aurais gagné « ${lot.name} ». Enfin… peut-être.`,5800,'charlie-troll');resetIdleReactions();return true}
+function resultComment(lot){let lots=getLots(),maxRate=Math.max(...lots.map(l=>+l.rate||0)),rare=(+lot.rate||0)<=maxRate*.35,name=charlieName();if(currentDrawIsTest)return pickCharlieLine('result-test',['Ça ne compte pas. J’ai tout vu.','Un test. Donc personne ne repart avec quoi que ce soit.']);if(rare)return name?pickCharlieLine('result-rare',[`Oh non… ${name} a vraiment gagné « ${lot.name} ».`,`Bon. Là, ${name} a eu beaucoup trop de chance.`,`« ${lot.name} » pour ${name} ? Je demande un recomptage.`]):`Ça, c’était beaucoup trop chanceux : « ${lot.name} ». `;return name?pickCharlieLine('result-common',[`« ${lot.name} » pour ${name}. Classique.`,`Bravo ${name}. Enfin… je suppose.`,`La roue a choisi « ${lot.name} ». Ne me regarde pas comme ça.`]):pickCharlieLine('result-common',['Résultat parfaitement normal. Enfin, normalement.','La roue a parlé. Je décline toute responsabilité.'])}
+function presentResultAfterComment(lot,finalText){clearTimeout(resultSequenceTimer);presentingResult=true;updateControlState();clearSpinReactions();if(!charlieEnabled()){presentingResult=false;$('result').textContent=finalText;updateControlState();confetti();showWinModal(lot);resetIdleReactions();return}$('result').textContent='Charlie a quelque chose à dire…';showCharlieBubble(resultComment(lot),3000,currentDrawIsTest?'':'charlie-troll');resultSequenceTimer=setTimeout(()=>{clearCharlieBubble();$('result').textContent=finalText;presentingResult=false;updateControlState();confetti();showWinModal(lot);resetIdleReactions()},3200)}
+document.addEventListener('pointerdown',()=>{if(!spinning&&!presentingResult)resetIdleReactions()},{passive:true});
+document.addEventListener('keydown',()=>{if(!spinning&&!presentingResult)resetIdleReactions()},{passive:true});
 $('addProfileBtn').onclick=()=>{let n=$('newProfile').value.trim();if(!n||data.profiles[n])return;data.profiles[n]=structuredClone(cur());data.active=n;$('newProfile').value='';save();renderAll()};
 $('delProfileBtn').onclick=()=>{if(Object.keys(data.profiles).length<=1)return alert('Impossible : garde au moins un profil.');if(confirm('Supprimer le profil actuel ?')){delete data.profiles[data.active];data.active=Object.keys(data.profiles)[0];save();renderAll()}};
 function loadAudio(){
@@ -297,8 +324,8 @@ function stopFx(kind){
   if(kind)document.body.classList.remove('fx-'+kind);
   else document.body.classList.remove('fx-jingle','fx-spin','fx-win');
 }
-$('startJingleBtn').onclick=()=>playSound(audio.start,DEFAULT_AUDIO.start,'jingle');
-$('endJingleBtn').onclick=()=>playSound(audio.end,DEFAULT_AUDIO.end,'jingle');
+$('startJingleBtn').onclick=()=>{playSound(audio.start,DEFAULT_AUDIO.start,'jingle');commentOnJingle()};
+$('endJingleBtn').onclick=()=>{playSound(audio.end,DEFAULT_AUDIO.end,'jingle');commentOnJingle()};
 
 function normalizeLot(l,i){
   if(!l.id)l.id='lot-'+Date.now().toString(36)+'-'+i+'-'+Math.random().toString(36).slice(2,8);
@@ -400,8 +427,8 @@ canvas.addEventListener('wheel',e=>{if(!selectedEdit||spinning||presenterMode)re
 function pickWeightedIndex(testMode=false){let p=cur(),lots=getLots(),eligible=lots.map((lot,index)=>({lot,index})),s=p.settings||defaultSettings();antiResetBeforeDraw=null;if(testMode&&s.forcedTestLot){let forced=eligible.find(x=>x.lot.id===s.forcedTestLot);if(forced)return forced.index}if(!testMode&&s.antiRepeatEnabled&&eligible.length>1){if(s.antiRepeatMode==='session'){eligible=eligible.filter(x=>!p.drawnLotIds.includes(x.lot.id));if(!eligible.length){antiResetBeforeDraw=[...p.drawnLotIds];p.drawnLotIds=[];eligible=lots.map((lot,index)=>({lot,index}))}}else{let filtered=eligible.filter(x=>x.lot.id!==p.lastLotId);if(filtered.length)eligible=filtered}}let total=eligible.reduce((sum,x)=>sum+(+x.lot.rate||0),0),r=Math.random()*total;for(let x of eligible){r-=+x.lot.rate;if(r<=0)return x.index}return eligible[0]?.index||0}
 function markLotDrawn(lot){let p=cur();p.lastLotId=lot.id;p.drawnLotIds=p.drawnLotIds||[];if(!p.drawnLotIds.includes(lot.id))p.drawnLotIds.push(lot.id);save()}
 function targetAngleForIndex(idx){let lots=getLots(), total=lots.reduce((s,l)=>s+(+l.rate||0),0)||1;let a=-Math.PI/2;for(let i=0;i<lots.length;i++){let slice=(+lots[i].rate/total)*Math.PI*2;if(i===idx){let mid=a+slice/2;let base=(-Math.PI/2)-mid;let extra=Math.PI*2*(4+Math.floor(Math.random()*3));let target=base+extra;while(target<angle+Math.PI*2)target+=Math.PI*2;return target}a+=slice}return angle+Math.PI*8}
-function updateControlState(){$('playBtn').disabled=spinning;$('testBtn').disabled=spinning;$('stopBtn').disabled=!spinning||stopping}
-function startDraw(testMode=false){if(spinning)return;hideWinModal();selected=null;currentDrawIsTest=!!testMode;stopping=false;renderParticipant();$('result').textContent=testMode?'TIRAGE TEST':'';$('wheelBox').classList.add('flash');spinning=true;velocity=.42+Math.random()*.1;updateControlState();startFx('spin',0);playSound(audio.spin);loop()}
+function updateControlState(){$('playBtn').disabled=spinning||presentingResult;$('testBtn').disabled=spinning||presentingResult;$('stopBtn').disabled=!spinning||stopping||presentingResult}
+function startDraw(testMode=false){if(spinning||presentingResult)return;if(!testMode&&maybeRefuseLaunch())return;hideWinModal();clearCharlieBubble();selected=null;currentDrawIsTest=!!testMode;stopping=false;renderParticipant();$('result').textContent=testMode?'TIRAGE TEST':'';$('wheelBox').classList.add('flash');spinning=true;velocity=.42+Math.random()*.1;updateControlState();startSpinReactions();startFx('spin',0);playSound(audio.spin);loop()}
 $('playBtn').onclick=()=>startDraw(false);
 $('testBtn').onclick=()=>startDraw(true);
 function loop(){angle+=velocity;drawWheel();raf=requestAnimationFrame(loop)}
@@ -416,13 +443,13 @@ function showWinModal(lot){
   overlay.classList.add('show');overlay.setAttribute('aria-hidden','false');
   playSound(audio.end,src('end'),'win');
 }
-function hideWinModal(){let overlay=$('winOverlay');if(!overlay)return;stopEndJingle(true);overlay.classList.remove('show');overlay.setAttribute('aria-hidden','true');stopFx('win')}
+function hideWinModal(){let overlay=$('winOverlay');if(!overlay)return;stopEndJingle(true);overlay.classList.remove('show');overlay.setAttribute('aria-hidden','true');stopFx('win');resetIdleReactions()}
 function confirmWinResult(){let shouldAdvance=!currentDrawIsTest;hideWinModal();$('result').textContent='';if(shouldAdvance)advanceParticipant()}
 $('closeWinBtn').onclick=confirmWinResult;
 $('winOverlay').addEventListener('click',e=>{if(e.target.id==='winOverlay')hideWinModal()});
 $('stopBtn').onclick=()=>{
   if(!spinning||stopping)return;
-  stopping=true;updateControlState();
+  stopping=true;clearSpinReactions();updateControlState();
   let idx=pickWeightedIndex(currentDrawIsTest);selected=getLots()[idx];cancelAnimationFrame(raf);
   let start=angle,target=targetAngleForIndex(idx),dur=3600,t0=performance.now(),spinFadeStarted=false;
   function ease(t){return 1-Math.pow(1-t,4)}
@@ -430,10 +457,10 @@ $('stopBtn').onclick=()=>{
     let t=Math.min(1,(now-t0)/dur);angle=start+(target-start)*ease(t);drawWheel();
     if(t>.7&&!spinFadeStarted){spinFadeStarted=true;fadeOutAudio(audio.spin,900)}
     if(t<1){raf=requestAnimationFrame(anim);return}
-    spinning=false;stopping=false;velocity=0;cancelAudioFade(audio.spin);audio.spin.pause();audio.spin.currentTime=0;applyAudioSettings();updateControlState();stopFx('spin');$('wheelBox').classList.remove('flash');
-    let p=cur().participant||'',prefix=currentDrawIsTest?'TEST · ':'';$('result').textContent=prefix+(p ? (p+' remporte : '+selected.name) : ('Résultat : '+selected.name));
+    spinning=false;stopping=false;presentingResult=true;velocity=0;cancelAudioFade(audio.spin);audio.spin.pause();audio.spin.currentTime=0;applyAudioSettings();updateControlState();stopFx('spin');$('wheelBox').classList.remove('flash');
+    let p=cur().participant||'',prefix=currentDrawIsTest?'TEST · ':'',finalText=prefix+(p ? (p+' remporte : '+selected.name) : ('Résultat : '+selected.name));
     if(!currentDrawIsTest){let antiBefore={lastLotId:cur().lastLotId||'',drawnLotIds:antiResetBeforeDraw?[...antiResetBeforeDraw]:[...(cur().drawnLotIds||[])]};markLotDrawn(selected);addHistory(selected,antiBefore);antiResetBeforeDraw=null}
-    drawWheel();confetti();showWinModal(selected);
+    drawWheel();presentResultAfterComment(selected,finalText);
   }
   raf=requestAnimationFrame(anim)
 };
