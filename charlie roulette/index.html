@@ -61,6 +61,7 @@ body.fx-win .centerFace{animation:charlieHappy .72s ease-in-out infinite alterna
 @keyframes charlieDance{0%,100%{transform:translateY(0) rotate(-7deg) scale(1)}25%{transform:translateY(-9%) rotate(8deg) scale(1.06)}50%{transform:translateY(1%) rotate(-4deg) scale(.98)}75%{transform:translateY(-7%) rotate(7deg) scale(1.05)}}
 @keyframes charlieHappy{from{transform:translateY(0) scale(1) rotate(-3deg)}to{transform:translateY(-10%) scale(1.1) rotate(3deg)}}
 .configSection{margin-top:14px;padding-top:14px;border-top:1px solid #ffffff18}.configSection:first-of-type{margin-top:0;padding-top:0;border-top:0}.configLabel{display:block;margin:0 0 6px;color:var(--muted);font-size:12px}.queueInput{min-height:92px;resize:vertical}.queueStatus{margin-top:8px;padding:9px 10px;border-radius:10px;background:#08050d;border:1px solid #ffd16622;color:#ffe28a;font-size:12px;font-weight:800}.toggleRow{display:flex;align-items:center;gap:9px;margin:8px 0;color:#fff7df;font-size:13px;font-weight:800}.toggleRow input{width:auto}.volumeControl{display:grid;grid-template-columns:1fr 52px;gap:8px;align-items:center;margin:8px 0}.volumeControl input{padding:0}.volumeValue{text-align:right;color:#ffe28a;font-size:12px;font-weight:900}.historyList{display:grid;gap:7px;max-height:240px;overflow:auto;margin:8px 0}.historyItem{padding:9px 10px;border-radius:11px;background:#08050d;border:1px solid #ffffff14;font-size:12px;line-height:1.35}.historyItem b{color:#ffe28a}.historyTime{display:block;color:var(--muted);font-size:10px;margin-top:2px}.emptyState{padding:12px;text-align:center;color:var(--muted);border:1px dashed #ffffff22;border-radius:11px;font-size:12px}.lotChance{grid-column:1/-1;color:#ffe28a;font-size:11px;font-weight:900;text-align:right}.topActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn:disabled{cursor:not-allowed;opacity:.42;filter:grayscale(.45);transform:none;box-shadow:none}.queueList{display:grid;gap:6px;max-height:230px;overflow:auto;margin-top:8px}.queueItem{display:grid;grid-template-columns:minmax(0,1fr) repeat(4,34px);gap:5px;align-items:center;padding:7px;border-radius:10px;background:#08050d;border:1px solid #ffffff14}.queueItem.active{border-color:#ffd166;box-shadow:0 0 14px #ffb70322}.queueItem.done{opacity:.48}.queueName{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:900}.queueItem button{min-width:34px;height:32px;padding:0;border-radius:8px;font-size:13px}.testNote{padding:8px 9px;margin-top:8px;border-radius:10px;background:#171022;border:1px solid #7b2cbf77;color:#d9c9f5;font-size:11px;line-height:1.35}.historyActions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.historyActions .wideAction{grid-column:1/-1}
 
 @media(max-width:1180px){.grid{grid-template-columns:1fr}.roulette-wrap{min-height:auto}.lot{grid-template-columns:1fr 72px}.lot .wide{grid-column:1/3}.lot button{grid-column:1/3}}
 </style>
@@ -93,12 +94,16 @@ body.fx-win .centerFace{animation:charlieHappy .72s ease-in-out infinite alterna
     <textarea id="participantQueue" class="field queueInput" placeholder="Kephren&#10;Charlie&#10;Invité 3"></textarea>
     <div class="row" style="margin-top:8px"><button class="btn" id="saveQueueBtn">Charger la file</button><button class="btn dark" id="nextParticipantBtn">Suivant</button></div>
     <div class="queueStatus" id="queueStatus">Aucune file chargée</div>
+    <div class="queueList" id="queueList"></div>
   </section>
   <section class="configSection">
     <h3>Tirage</h3>
     <label class="toggleRow"><input id="antiRepeatEnabled" type="checkbox"> Activer l’anti-répétition</label>
     <label class="configLabel" for="antiRepeatMode">Comportement</label>
     <select id="antiRepeatMode"><option value="last">Éviter seulement le dernier lot</option><option value="session">Un seul passage par lot</option></select>
+    <label class="configLabel" for="testForcedLot" style="margin-top:10px">Lot forcé pour un tirage test</label>
+    <select id="testForcedLot"><option value="">Aléatoire selon les probabilités</option></select>
+    <div class="testNote">Ce réglage fonctionne uniquement avec « Tirage test ». Il n’altère jamais un vrai tirage.</div>
   </section>
   <section class="configSection">
     <h3>Son</h3>
@@ -111,13 +116,13 @@ body.fx-win .centerFace{animation:charlieHappy .72s ease-in-out infinite alterna
   <section class="configSection">
     <h3>Historique des tirages</h3>
     <div class="historyList" id="historyList"></div>
-    <button class="btn red" id="clearHistoryBtn">Effacer l’historique</button>
+    <div class="historyActions"><button class="btn dark" id="undoHistoryBtn">Annuler le dernier</button><button class="btn" id="exportHistoryBtn">Exporter CSV</button><button class="btn red wideAction" id="clearHistoryBtn">Effacer l’historique</button></div>
   </section>
   <section class="configSection">
     <h2>Profils roulette</h2><div id="profiles" class="profiles"></div><br><input id="newProfile" class="field" placeholder="Nom du nouveau profil"><br><br><div class="row"><button class="btn" id="addProfileBtn">Créer</button><button class="btn red" id="delProfileBtn">Supprimer</button></div>
   </section>
 </aside>
-<section class="panel roulette-wrap"><div class="participantTitle" id="participantTitle"></div><div class="result" id="result"></div><div class="wheelBox" id="wheelBox"><div class="pointer"></div><canvas id="wheel" width="1000" height="1000"></canvas><div class="centerFace" id="centerFace"></div></div><div class="controls"><button class="btn" id="startJingleBtn">Jingle début</button><button class="btn green" id="playBtn">Lancer roulette</button><button class="btn red" id="stopBtn">STOP</button><button class="btn dark" id="endJingleBtn">Jingle fin</button></div><p class="small">Espace = lancer · Entrée = stop</p></section>
+<section class="panel roulette-wrap"><div class="participantTitle" id="participantTitle"></div><div class="result" id="result"></div><div class="wheelBox" id="wheelBox"><div class="pointer"></div><canvas id="wheel" width="1000" height="1000"></canvas><div class="centerFace" id="centerFace"></div></div><div class="controls"><button class="btn" id="startJingleBtn">Jingle début</button><button class="btn green" id="playBtn">Lancer roulette</button><button class="btn dark" id="testBtn">Tirage test</button><button class="btn red" id="stopBtn">STOP</button><button class="btn dark" id="endJingleBtn">Jingle fin</button></div><p class="small">Espace = lancer · Entrée = stop</p></section>
 <aside class="panel configPanel"><h2>Lots & taux de drop</h2>
 <div class="editorBox">
   <h3>Éditeur visuel</h3>
@@ -149,7 +154,7 @@ const DEFAULT_LOTS=[
   {name:'CADEAU',rate:18,img:'',color:'#b7791f'}
 ];
 function cloneDefaultLots(){return DEFAULT_LOTS.map((l,i)=>({...l,textColor:'#fff7df',font:'system-ui',textSize:34,textRadius:285,textX:0,textY:0,textRot:0,imgSize:i===0?160:64,imgRadius:i===0?335:335,imgY:i===0?-32:-32,imgRot:0}))}
-function defaultSettings(){return {antiRepeatEnabled:false,antiRepeatMode:'last',mute:false,jingleVolume:90,spinVolume:90}}
+function defaultSettings(){return {antiRepeatEnabled:false,antiRepeatMode:'last',forcedTestLot:'',mute:false,jingleVolume:90,spinVolume:90}}
 function isCssColor(v){if(!v||typeof v!=='string')return false;let o=new Option().style;o.color=v;return !!o.color}
 function num(v,def,min,max){let n=parseFloat(String(v).replace(',','.'));if(!Number.isFinite(n))n=def;if(min!=null)n=Math.max(min,n);if(max!=null)n=Math.min(max,n);return n}
 function repairData(){
@@ -206,7 +211,7 @@ Object.values(data.profiles).forEach(p=>{
     if(l.imgY==null)l.imgY=-32;
   });
 });
-let angle=0, velocity=0, spinning=false, raf=0, selected=null;
+let angle=0, velocity=0, spinning=false, stopping=false, currentDrawIsTest=false, antiResetBeforeDraw=null, raf=0, selected=null;
 const $=id=>document.getElementById(id), canvas=$('wheel'), ctx=canvas.getContext('2d');
 let audio={start:null,spin:null,end:null};
 let presenterMode=localStorage.getItem('charliePresenterMode')==='1';
@@ -218,22 +223,30 @@ function login(){ if($('pass').value.trim()===PASSWORD){sessionStorage.setItem('
 $('loginBtn').onclick=login; $('pass').onkeydown=e=>{if(e.key==='Enter')login()}; $('logoutBtn').onclick=()=>{sessionStorage.removeItem('charlieAccess');location.reload()}; $('modeToggleBtn').onclick=()=>{presenterMode=!presenterMode;localStorage.setItem('charliePresenterMode',presenterMode?'1':'0');applyPresenterMode();drawWheel()}; if(sessionStorage.getItem('charlieAccess')==='1')showApp();
 $('fullscreenBtn').onclick=async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){alert('Le plein écran n’est pas disponible dans ce navigateur.')}};
 document.addEventListener('fullscreenchange',()=>{$('fullscreenBtn').textContent=document.fullscreenElement?'Quitter plein écran':'Plein écran'});
-function renderAll(){applyPresenterMode();renderProfiles();renderParticipant();renderQueue();renderSettings();renderHistory();renderLots();loadAudio();drawWheel();$('centerFace').style.backgroundImage='url("asset/charlie/charlie.png")'}
+function renderAll(){applyPresenterMode();renderProfiles();renderParticipant();renderQueue();renderSettings();renderHistory();renderLots();loadAudio();drawWheel();updateControlState();$('centerFace').style.backgroundImage='url("asset/charlie/charlie.png")'}
 function renderProfiles(){let box=$('profiles');box.innerHTML='';Object.keys(data.profiles).forEach(n=>{let d=document.createElement('div');d.className='profile '+(n===data.active?'active':'');d.innerHTML=`<b>${esc(n)}</b><button class="btn dark">Ouvrir</button>`;d.querySelector('button').onclick=()=>{data.active=n;save();renderAll()};box.appendChild(d)})}
 function renderParticipant(){let name=cur().participant||'';let input=$('participantName');if(input)input.value=name;$('participantTitle').textContent=name?'🎰 Roulette de '+name:'🎰 Charlie Roulette'}
 $('saveParticipantBtn').onclick=()=>{cur().participant=$('participantName').value.trim();save();renderParticipant()};
 $('clearParticipantBtn').onclick=()=>{cur().participant='';$('participantName').value='';$('result').textContent='';save();renderParticipant()};
 $('participantName').oninput=()=>{cur().participant=$('participantName').value.trim();save();renderParticipant()};
-function renderQueue(){let p=cur(),q=p.queue||[];$('participantQueue').value=q.join('\n');if(!q.length){$('queueStatus').textContent='Aucune file chargée';return}let pos=Math.min((p.queueIndex||0)+1,q.length);$('queueStatus').textContent=pos+' / '+q.length+' · Participant actuel : '+(q[pos-1]||'—')+(pos===q.length?' · dernier participant':'')}
+function renderQueue(){let p=cur(),q=p.queue||[],list=$('queueList');$('participantQueue').value=q.join('\n');list.innerHTML='';if(!q.length){$('queueStatus').textContent='Aucune file chargée';list.innerHTML='<div class="emptyState">Ajoutez un pseudo par ligne.</div>';return}let pos=Math.min(p.queueIndex||0,q.length-1);$('queueStatus').textContent=(pos+1)+' / '+q.length+' · '+(q.length-pos-1)+' participant(s) restant(s) après '+q[pos];q.forEach((name,i)=>{let row=document.createElement('div');row.className='queueItem'+(i===pos?' active':'')+(i<pos?' done':'');row.innerHTML=`<span class="queueName">${i+1}. ${esc(name)}</span><button class="btn dark" title="Monter">↑</button><button class="btn dark" title="Descendre">↓</button><button class="btn dark" title="Rejouer ce participant">↻</button><button class="btn red" title="Retirer">×</button>`;let buttons=row.querySelectorAll('button');buttons[0].disabled=i===0;buttons[1].disabled=i===q.length-1;buttons[0].onclick=()=>moveQueueItem(i,-1);buttons[1].onclick=()=>moveQueueItem(i,1);buttons[2].onclick=()=>selectQueueParticipant(i);buttons[3].onclick=()=>removeQueueItem(i);list.appendChild(row)})}
 function loadParticipantQueue(){let q=$('participantQueue').value.split(/\r?\n/).map(v=>v.trim()).filter(Boolean);cur().queue=q;cur().queueIndex=0;if(q.length)cur().participant=q[0];save();renderParticipant();renderQueue()}
 function advanceParticipant(){let p=cur(),q=p.queue||[];if(!q.length)return false;if((p.queueIndex||0)+1>=q.length){renderQueue();return false}p.queueIndex++;p.participant=q[p.queueIndex];save();renderParticipant();renderQueue();return true}
+function selectQueueParticipant(i){let p=cur();if(!p.queue[i])return;p.queueIndex=i;p.participant=p.queue[i];save();renderParticipant();renderQueue()}
+function moveQueueItem(i,delta){let p=cur(),j=i+delta;if(j<0||j>=p.queue.length)return;[p.queue[i],p.queue[j]]=[p.queue[j],p.queue[i]];if(p.queueIndex===i)p.queueIndex=j;else if(p.queueIndex===j)p.queueIndex=i;p.participant=p.queue[p.queueIndex]||p.participant;save();renderParticipant();renderQueue()}
+function removeQueueItem(i){let p=cur(),current=p.queueIndex||0;p.queue.splice(i,1);if(!p.queue.length){p.queueIndex=0}else{if(i<current)current--;else if(i===current)current=Math.min(current,p.queue.length-1);p.queueIndex=Math.max(0,current);p.participant=p.queue[p.queueIndex]}save();renderParticipant();renderQueue()}
 $('saveQueueBtn').onclick=loadParticipantQueue;
 $('nextParticipantBtn').onclick=advanceParticipant;
-function renderSettings(){let s=cur().settings||defaultSettings();$('antiRepeatEnabled').checked=!!s.antiRepeatEnabled;$('antiRepeatMode').value=s.antiRepeatMode||'last';$('muteAll').checked=!!s.mute;$('jingleVolume').value=s.jingleVolume;$('spinVolume').value=s.spinVolume;$('jingleVolumeValue').textContent=s.jingleVolume+'%';$('spinVolumeValue').textContent=s.spinVolume+'%';$('antiRepeatMode').disabled=!s.antiRepeatEnabled}
-function updateSettings(){let s=cur().settings;s.antiRepeatEnabled=$('antiRepeatEnabled').checked;s.antiRepeatMode=$('antiRepeatMode').value;s.mute=$('muteAll').checked;s.jingleVolume=+$('jingleVolume').value;s.spinVolume=+$('spinVolume').value;save();renderSettings();applyAudioSettings()}
-['antiRepeatEnabled','antiRepeatMode','muteAll','jingleVolume','spinVolume'].forEach(id=>{$(id).oninput=updateSettings;$(id).onchange=updateSettings});
-function renderHistory(){let list=$('historyList'),items=cur().history||[];list.innerHTML=items.length?items.map(h=>`<div class="historyItem"><b>${esc(h.participant||'Sans participant')}</b> · ${esc(h.lot||'Lot')}<span class="historyTime">${esc(h.at||'')}</span></div>`).join(''):'<div class="emptyState">Aucun tirage enregistré.</div>'}
-function addHistory(lot){let p=cur();p.history=p.history||[];p.history.unshift({participant:p.participant||'',lot:lot.name||'Lot',at:new Date().toLocaleString('fr-FR')});p.history=p.history.slice(0,100);save();renderHistory()}
+function renderSettings(){let p=cur(),s=p.settings||defaultSettings(),forced=$('testForcedLot');$('antiRepeatEnabled').checked=!!s.antiRepeatEnabled;$('antiRepeatMode').value=s.antiRepeatMode||'last';$('muteAll').checked=!!s.mute;$('jingleVolume').value=s.jingleVolume;$('spinVolume').value=s.spinVolume;$('jingleVolumeValue').textContent=s.jingleVolume+'%';$('spinVolumeValue').textContent=s.spinVolume+'%';$('antiRepeatMode').disabled=!s.antiRepeatEnabled;forced.innerHTML='<option value="">Aléatoire selon les probabilités</option>'+p.lots.map(l=>`<option value="${esc(l.id)}">${esc(l.name)}</option>`).join('');forced.value=p.lots.some(l=>l.id===s.forcedTestLot)?s.forcedTestLot:''}
+function updateSettings(){let s=cur().settings;s.antiRepeatEnabled=$('antiRepeatEnabled').checked;s.antiRepeatMode=$('antiRepeatMode').value;s.forcedTestLot=$('testForcedLot').value;s.mute=$('muteAll').checked;s.jingleVolume=+$('jingleVolume').value;s.spinVolume=+$('spinVolume').value;save();renderSettings();applyAudioSettings()}
+['antiRepeatEnabled','antiRepeatMode','testForcedLot','muteAll','jingleVolume','spinVolume'].forEach(id=>{$(id).oninput=updateSettings;$(id).onchange=updateSettings});
+function renderHistory(){let list=$('historyList'),items=cur().history||[];list.innerHTML=items.length?items.map(h=>`<div class="historyItem"><b>${esc(h.participant||'Sans participant')}</b> · ${esc(h.lot||'Lot')}<span class="historyTime">${esc(h.at||'')}</span></div>`).join(''):'<div class="emptyState">Aucun tirage enregistré.</div>';$('undoHistoryBtn').disabled=!items.length;$('exportHistoryBtn').disabled=!items.length}
+function addHistory(lot,antiBefore){let p=cur();p.history=p.history||[];p.history.unshift({participant:p.participant||'',lot:lot.name||'Lot',lotId:lot.id||'',at:new Date().toLocaleString('fr-FR'),profile:data.active,queueIndex:p.queueIndex||0,antiBefore});p.history=p.history.slice(0,100);save();renderHistory()}
+function undoLastHistory(){let p=cur(),entry=p.history?.shift();if(!entry)return;if(entry.antiBefore){p.lastLotId=entry.antiBefore.lastLotId||'';p.drawnLotIds=[...(entry.antiBefore.drawnLotIds||[])]}if(Number.isInteger(entry.queueIndex)&&p.queue?.[entry.queueIndex]){p.queueIndex=entry.queueIndex;p.participant=p.queue[entry.queueIndex]}else if(entry.participant)p.participant=entry.participant;save();renderParticipant();renderQueue();renderHistory();drawWheel()}
+function csvCell(value){return '"'+String(value??'').replaceAll('"','""')+'"'}
+function exportHistory(){let items=cur().history||[];if(!items.length)return;let rows=[['Participant','Lot','Date','Profil'],...items.map(h=>[h.participant,h.lot,h.at,h.profile||data.active])];let csv='\ufeff'+rows.map(row=>row.map(csvCell).join(';')).join('\r\n'),blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='charlie-roulette-historique-'+new Date().toISOString().slice(0,10)+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$('undoHistoryBtn').onclick=undoLastHistory;
+$('exportHistoryBtn').onclick=exportHistory;
 $('clearHistoryBtn').onclick=()=>{if(confirm('Effacer tout l’historique de ce profil ?')){cur().history=[];save();renderHistory()}};
 $('addProfileBtn').onclick=()=>{let n=$('newProfile').value.trim();if(!n||data.profiles[n])return;data.profiles[n]=structuredClone(cur());data.active=n;$('newProfile').value='';save();renderAll()};
 $('delProfileBtn').onclick=()=>{if(Object.keys(data.profiles).length<=1)return alert('Impossible : garde au moins un profil.');if(confirm('Supprimer le profil actuel ?')){delete data.profiles[data.active];data.active=Object.keys(data.profiles)[0];save();renderAll()}};
@@ -244,11 +257,16 @@ function loadAudio(){
   audio.spin.loop=true;
   applyAudioSettings();
 }
-function applyAudioSettings(){let s=cur()?.settings||defaultSettings(),muted=!!s.mute;if(audio.start){audio.start.volume=muted?0:s.jingleVolume/100;audio.start.muted=muted}if(audio.end){audio.end.volume=muted?0:s.jingleVolume/100;audio.end.muted=muted}if(audio.spin){audio.spin.volume=muted?0:s.spinVolume/100;audio.spin.muted=muted}}
-function stopEndJingle(){if(!audio.end)return;audio.end.pause();audio.end.currentTime=0;audio.end.onended=null;audio.end.onerror=null}
+const audioFadeFrames=new Map();
+function cancelAudioFade(a){let frame=audioFadeFrames.get(a);if(frame)cancelAnimationFrame(frame);audioFadeFrames.delete(a)}
+function fadeOutAudio(a,duration=650,onDone){if(!a)return;cancelAudioFade(a);let initial=a.volume,start=performance.now();function step(now){let progress=Math.min(1,(now-start)/duration);a.volume=initial*(1-progress);if(progress<1){audioFadeFrames.set(a,requestAnimationFrame(step))}else{audioFadeFrames.delete(a);a.pause();a.currentTime=0;applyAudioSettings();if(onDone)onDone()}}audioFadeFrames.set(a,requestAnimationFrame(step))}
+function applyAudioSettings(){let s=cur()?.settings||defaultSettings(),muted=!!s.mute;if(audio.start){cancelAudioFade(audio.start);audio.start.volume=muted?0:s.jingleVolume/100;audio.start.muted=muted}if(audio.end){cancelAudioFade(audio.end);audio.end.volume=muted?0:s.jingleVolume/100;audio.end.muted=muted}if(audio.spin){cancelAudioFade(audio.spin);audio.spin.volume=muted?0:s.spinVolume/100;audio.spin.muted=muted}}
+function stopEndJingle(useFade=false){if(!audio.end)return;audio.end.onended=null;audio.end.onerror=null;if(useFade&&!audio.end.paused)fadeOutAudio(audio.end,500);else{cancelAudioFade(audio.end);audio.end.pause();audio.end.currentTime=0;applyAudioSettings()}}
 function playSound(a,label,fxKind){
   try{
     if(!a)return;
+    cancelAudioFade(a);
+    applyAudioSettings();
     a.pause();
     a.currentTime=0;
 
@@ -283,6 +301,7 @@ $('startJingleBtn').onclick=()=>playSound(audio.start,DEFAULT_AUDIO.start,'jingl
 $('endJingleBtn').onclick=()=>playSound(audio.end,DEFAULT_AUDIO.end,'jingle');
 
 function normalizeLot(l,i){
+  if(!l.id)l.id='lot-'+Date.now().toString(36)+'-'+i+'-'+Math.random().toString(36).slice(2,8);
   if(!isCssColor(l.color))l.color=['#940b12','#11131a','#b7791f','#5a189a','#0f766e','#7f1d1d','#1f2937'][i%7];
   if(!isCssColor(l.textColor))l.textColor='#fff7df';
   if(!l.font)l.font='system-ui';
@@ -308,14 +327,14 @@ function renderLots(){
       <button class="btn red">X</button>
       <input class="wide" type="file" accept="image/png,image/*">
       <div class="lotChance" data-chance-index="${i}">Chance réelle : ${total>0?(((+l.rate||0)/total)*100).toFixed(2):'0.00'} %</div>`;
-    row.children[0].oninput=e=>{l.name=e.target.value;let option=$('editLot').querySelector(`option[value="${i}"]`);if(option)option.textContent=(i+1)+' · '+l.name;syncEditor();drawWheel()};
+    row.children[0].oninput=e=>{l.name=e.target.value;let option=$('editLot').querySelector(`option[value="${i}"]`);if(option)option.textContent=(i+1)+' · '+l.name;let forced=$('testForcedLot').querySelector(`option[value="${l.id}"]`);if(forced)forced.textContent=l.name;syncEditor();drawWheel()};
     row.children[1].oninput=e=>{l.rate=+e.target.value||0;$('totalRate').textContent='Total des poids : '+cur().lots.reduce((s,x)=>s+(+x.rate||0),0);updateLotChances();drawWheel()};
     row.children[2].oninput=e=>{l.img=e.target.value;drawWheel()};
     row.children[3].onclick=()=>{cur().lots.splice(i,1);selectedEdit=null;save();renderLots();drawWheel();syncEditor()};
     row.children[4].onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{l.img=r.result;save();renderLots();drawWheel()};r.readAsDataURL(f)};
     box.appendChild(row)
   });
-  syncEditor();
+  syncEditor();renderSettings();
 }
 function updateLotChances(){let total=cur().lots.reduce((s,l)=>s+(+l.rate||0),0);document.querySelectorAll('[data-chance-index]').forEach(el=>{let l=cur().lots[+el.dataset.chanceIndex],pct=total>0?(((+l.rate||0)/total)*100).toFixed(2):'0.00';el.textContent='Chance réelle : '+pct+' %'})}
 $('addLotBtn').onclick=()=>{cur().lots.push({name:'Nouveau lot',rate:10,img:'',color:'#940b12',textColor:'#fff7df',font:'system-ui',textSize:34,textRadius:285,textX:0,textY:0,textRot:0,imgSize:64,imgRadius:335,imgY:-32,imgRot:0});save();renderLots();drawWheel()};
@@ -378,27 +397,46 @@ canvas.addEventListener('mousedown',e=>{if(spinning||presenterMode)return;let p=
 window.addEventListener('mousemove',e=>{if(!draggingEdit||!selectedEdit)return;let p=screenToCanvas(e),dx=p.x-draggingEdit.last.x,dy=p.y-draggingEdit.last.y;draggingEdit.last=p;let l=cur().lots[selectedEdit.i],th=draggingEdit.theta;let lx=Math.cos(th)*dx+Math.sin(th)*dy, ly=-Math.sin(th)*dx+Math.cos(th)*dy;if(selectedEdit.type==='text'){l.textX=(+l.textX||0)+lx;l.textY=(+l.textY||0)+ly}else{l.imgRadius=(+l.imgRadius||335)+lx;l.imgY=(+l.imgY||-32)+ly}drawWheel()});
 window.addEventListener('mouseup',()=>{if(draggingEdit){draggingEdit=null;canvas.classList.remove('dragging');save();syncEditor()}});
 canvas.addEventListener('wheel',e=>{if(!selectedEdit||spinning||presenterMode)return;let l=cur().lots[selectedEdit.i];if(selectedEdit.type==='text')l.textSize=Math.max(12,Math.min(90,(+l.textSize||34)+(e.deltaY<0?2:-2)));else l.imgSize=Math.max(20,Math.min(220,(+l.imgSize||64)+(e.deltaY<0?4:-4)));save();syncEditor();drawWheel();e.preventDefault()},{passive:false});
-function pickWeightedIndex(){let p=cur(),lots=getLots(),eligible=lots.map((lot,index)=>({lot,index})),s=p.settings||defaultSettings();if(s.antiRepeatEnabled&&eligible.length>1){if(s.antiRepeatMode==='session'){eligible=eligible.filter(x=>!p.drawnLotIds.includes(x.lot.id));if(!eligible.length){p.drawnLotIds=[];eligible=lots.map((lot,index)=>({lot,index}))}}else{let filtered=eligible.filter(x=>x.lot.id!==p.lastLotId);if(filtered.length)eligible=filtered}}let total=eligible.reduce((sum,x)=>sum+(+x.lot.rate||0),0),r=Math.random()*total;for(let x of eligible){r-=+x.lot.rate;if(r<=0)return x.index}return eligible[0]?.index||0}
+function pickWeightedIndex(testMode=false){let p=cur(),lots=getLots(),eligible=lots.map((lot,index)=>({lot,index})),s=p.settings||defaultSettings();antiResetBeforeDraw=null;if(testMode&&s.forcedTestLot){let forced=eligible.find(x=>x.lot.id===s.forcedTestLot);if(forced)return forced.index}if(!testMode&&s.antiRepeatEnabled&&eligible.length>1){if(s.antiRepeatMode==='session'){eligible=eligible.filter(x=>!p.drawnLotIds.includes(x.lot.id));if(!eligible.length){antiResetBeforeDraw=[...p.drawnLotIds];p.drawnLotIds=[];eligible=lots.map((lot,index)=>({lot,index}))}}else{let filtered=eligible.filter(x=>x.lot.id!==p.lastLotId);if(filtered.length)eligible=filtered}}let total=eligible.reduce((sum,x)=>sum+(+x.lot.rate||0),0),r=Math.random()*total;for(let x of eligible){r-=+x.lot.rate;if(r<=0)return x.index}return eligible[0]?.index||0}
 function markLotDrawn(lot){let p=cur();p.lastLotId=lot.id;p.drawnLotIds=p.drawnLotIds||[];if(!p.drawnLotIds.includes(lot.id))p.drawnLotIds.push(lot.id);save()}
 function targetAngleForIndex(idx){let lots=getLots(), total=lots.reduce((s,l)=>s+(+l.rate||0),0)||1;let a=-Math.PI/2;for(let i=0;i<lots.length;i++){let slice=(+lots[i].rate/total)*Math.PI*2;if(i===idx){let mid=a+slice/2;let base=(-Math.PI/2)-mid;let extra=Math.PI*2*(4+Math.floor(Math.random()*3));let target=base+extra;while(target<angle+Math.PI*2)target+=Math.PI*2;return target}a+=slice}return angle+Math.PI*8}
-$('playBtn').onclick=()=>{if(spinning)return;hideWinModal();selected=null;renderParticipant();$('result').textContent='';$('wheelBox').classList.add('flash');spinning=true;velocity=.42+Math.random()*.1;startFx('spin',0);playSound(audio.spin);loop()};
+function updateControlState(){$('playBtn').disabled=spinning;$('testBtn').disabled=spinning;$('stopBtn').disabled=!spinning||stopping}
+function startDraw(testMode=false){if(spinning)return;hideWinModal();selected=null;currentDrawIsTest=!!testMode;stopping=false;renderParticipant();$('result').textContent=testMode?'TIRAGE TEST':'';$('wheelBox').classList.add('flash');spinning=true;velocity=.42+Math.random()*.1;updateControlState();startFx('spin',0);playSound(audio.spin);loop()}
+$('playBtn').onclick=()=>startDraw(false);
+$('testBtn').onclick=()=>startDraw(true);
 function loop(){angle+=velocity;drawWheel();raf=requestAnimationFrame(loop)}
 
 function showWinModal(lot){
   let overlay=$('winOverlay'), title=$('winTitle'), kicker=$('winKicker'), img=$('winImg');
   if(!overlay||!lot)return;
   let p=cur().participant||'';
-  kicker.textContent=p ? (p+' remporte') : 'Lot remporté';
+  kicker.textContent=currentDrawIsTest?(p?'Tirage test pour '+p:'Tirage test'):(p ? (p+' remporte') : 'Lot remporté');
   title.textContent=lot.name||'Lot';
   if(lot.img){img.src=lot.img;img.style.display='block'}else{img.removeAttribute('src');img.style.display='none'}
   overlay.classList.add('show');overlay.setAttribute('aria-hidden','false');
   playSound(audio.end,src('end'),'win');
 }
-function hideWinModal(){let overlay=$('winOverlay');if(!overlay)return;stopEndJingle();overlay.classList.remove('show');overlay.setAttribute('aria-hidden','true');stopFx('win')}
-function confirmWinResult(){hideWinModal();$('result').textContent='';advanceParticipant()}
+function hideWinModal(){let overlay=$('winOverlay');if(!overlay)return;stopEndJingle(true);overlay.classList.remove('show');overlay.setAttribute('aria-hidden','true');stopFx('win')}
+function confirmWinResult(){let shouldAdvance=!currentDrawIsTest;hideWinModal();$('result').textContent='';if(shouldAdvance)advanceParticipant()}
 $('closeWinBtn').onclick=confirmWinResult;
 $('winOverlay').addEventListener('click',e=>{if(e.target.id==='winOverlay')hideWinModal()});
-$('stopBtn').onclick=()=>{if(!spinning)return;let idx=pickWeightedIndex();selected=getLots()[idx];cancelAnimationFrame(raf);let start=angle,target=targetAngleForIndex(idx),dur=3600,t0=performance.now();function ease(t){return 1-Math.pow(1-t,4)}function anim(now){let t=Math.min(1,(now-t0)/dur);angle=start+(target-start)*ease(t);drawWheel();if(t<1){raf=requestAnimationFrame(anim)}else{spinning=false;velocity=0;audio.spin.pause();audio.spin.currentTime=0;stopFx('spin');$('wheelBox').classList.remove('flash');let p=cur().participant||'';$('result').textContent=p ? (p+' remporte : '+selected.name) : ('Résultat : '+selected.name);markLotDrawn(selected);addHistory(selected);drawWheel();confetti();showWinModal(selected);}}raf=requestAnimationFrame(anim)};
+$('stopBtn').onclick=()=>{
+  if(!spinning||stopping)return;
+  stopping=true;updateControlState();
+  let idx=pickWeightedIndex(currentDrawIsTest);selected=getLots()[idx];cancelAnimationFrame(raf);
+  let start=angle,target=targetAngleForIndex(idx),dur=3600,t0=performance.now(),spinFadeStarted=false;
+  function ease(t){return 1-Math.pow(1-t,4)}
+  function anim(now){
+    let t=Math.min(1,(now-t0)/dur);angle=start+(target-start)*ease(t);drawWheel();
+    if(t>.7&&!spinFadeStarted){spinFadeStarted=true;fadeOutAudio(audio.spin,900)}
+    if(t<1){raf=requestAnimationFrame(anim);return}
+    spinning=false;stopping=false;velocity=0;cancelAudioFade(audio.spin);audio.spin.pause();audio.spin.currentTime=0;applyAudioSettings();updateControlState();stopFx('spin');$('wheelBox').classList.remove('flash');
+    let p=cur().participant||'',prefix=currentDrawIsTest?'TEST · ':'';$('result').textContent=prefix+(p ? (p+' remporte : '+selected.name) : ('Résultat : '+selected.name));
+    if(!currentDrawIsTest){let antiBefore={lastLotId:cur().lastLotId||'',drawnLotIds:antiResetBeforeDraw?[...antiResetBeforeDraw]:[...(cur().drawnLotIds||[])]};markLotDrawn(selected);addHistory(selected,antiBefore);antiResetBeforeDraw=null}
+    drawWheel();confetti();showWinModal(selected);
+  }
+  raf=requestAnimationFrame(anim)
+};
 function confetti(){for(let i=0;i<80;i++){let d=document.createElement('div');d.className='confetti';d.style.left=Math.random()*100+'vw';d.style.background=['#ffd166','#d90429','#7b2cbf','#00c853','#fff'][i%5];d.style.animationDelay=Math.random()*.35+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),2300)}}
 window.addEventListener('keydown',e=>{
   const tag=(e.target&&e.target.tagName||'').toLowerCase();
