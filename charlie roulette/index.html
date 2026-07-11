@@ -120,11 +120,16 @@ body.presenter .stage{padding:132px 28px 112px}body.presenter .top{right:24px;to
 .remoteControls{display:none}.detachedHint{display:none}.targetCandidateHint{margin-top:5px;color:#c8b890;font-size:10px;line-height:1.35}.detachedState{grid-column:1/-1;padding:9px 11px;border:1px solid #ffd16633;border-radius:10px;background:#0a0710;color:#d8caad;font-size:11px;font-weight:800}.detachedState.connected{color:#9cf1b7;border-color:#38d47755}.detachedState.busy{color:#ffe28a;border-color:#ffd16666}
 body.detached-control{overflow:auto;background:radial-gradient(circle at 50% 0,#3d163c 0,#15081b 42%,#050207 100%)}body.detached-control .app{width:min(1100px,calc(100% - 28px));max-width:1100px;min-height:calc(100vh - 28px);margin:14px auto;padding:18px}body.detached-control .top{position:static;margin:0 0 10px}body.detached-control .top .title{font-size:clamp(24px,4vw,38px)}body.detached-control .statusBar{margin:0 0 12px}body.detached-control .studioShell{display:block;margin:0}body.detached-control .controlDeck{position:static;width:100%;max-height:none;padding:18px}body.detached-control .tabViewport{max-height:none}body.detached-control .stage{display:none}body.detached-control #fullscreenBtn,body.detached-control #modeToggleBtn{display:none}body.detached-control #detachControlBtn{background:#b91c2a}body.detached-control .remoteControls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;padding:12px 0 14px;border-bottom:1px solid #ffffff14}body.detached-control .remoteControls .btn{min-width:0;padding-inline:8px}body.detached-control .detachedHint{display:block;margin:8px 0 0;color:#c8b890;font-size:11px}body.detached-control .deckHeader{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}body.detached-control .deckHeader p{grid-column:1/-1}
 @media(max-width:720px){body.detached-control .remoteControls{grid-template-columns:repeat(2,minmax(0,1fr))}body.detached-control .app{width:100%;margin:0;border-radius:0;padding:10px}body.detached-control .controlDeck{padding:12px}}
-/* Mode scene publique : rien d'administratif dans la zone capturable */
+/* Mode scene publique : scene propre au repos, regie accessible au survol */
 body.presenter{overflow:hidden}
-body.presenter .top,body.presenter .showToolbar,body.presenter .controls,body.presenter .shortcutHint{display:none!important}
+body.presenter .shortcutHint{display:none!important}
 body.presenter .app{height:100vh;padding:0}
 body.presenter .stage{min-height:100vh;height:100vh;border:0;border-radius:0;padding:58px 34px 34px;background:radial-gradient(circle at 50% 48%,#741c446e 0 17%,#260b2f 40%,#050208 78%)}
+body.presenter .top{display:flex!important;position:fixed;z-index:40;right:16px;top:12px;max-width:min(760px,calc(100vw - 32px));padding:8px;border:1px solid #ffd16642;border-radius:15px;background:#07030bd6;backdrop-filter:blur(10px);box-shadow:0 14px 32px #0008;opacity:.07;transform:translateY(calc(-100% + 16px));transition:opacity .18s ease,transform .18s ease}
+body.presenter .top:before{content:"REGIE";position:absolute;right:18px;bottom:-17px;padding:3px 9px;border:1px solid #ffd16642;border-top:0;border-radius:0 0 9px 9px;background:#07030bd6;color:#ffe28a;font-size:9px;font-weight:1000;letter-spacing:.8px}
+body.presenter .top:hover,body.presenter .top:focus-within,body.presenter.regie-peek .top{opacity:1;transform:none}
+body.presenter .top .topActions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+body.presenter .top .btn{min-height:38px;padding:9px 12px;font-size:11px}
 body.presenter .stageHeader{inset:18px 24px auto;width:auto;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);opacity:.86}
 body.presenter .stageLabel{font-size:9px;color:#bda981}
 body.presenter .stageValue{font-size:clamp(14px,1.65vw,24px)}
@@ -133,7 +138,11 @@ body.presenter .roulette-wrap{min-height:calc(100vh - 92px);align-content:center
 body.presenter .wheelBox{width:min(820px,75vh,78vw)}
 body.presenter .result{top:78px;width:min(840px,82vw);font-size:clamp(25px,3.4vw,54px);text-align:center}
 body.presenter .showScene{inset:92px 30px 30px}
-@media(max-width:820px){body.presenter .stage{padding:76px 12px 20px}body.presenter .stageHeader{grid-template-columns:1fr;gap:5px;text-align:center}body.presenter .stageIdentity.right{text-align:center}body.presenter .stageCounter{justify-self:center}body.presenter .roulette-wrap{min-height:calc(100vh - 120px)}body.presenter .wheelBox{width:min(92vw,62vh)}body.presenter .result{top:138px;width:92vw;font-size:clamp(22px,7vw,36px)}}
+body.presenter .showToolbar,body.presenter .controls{display:flex!important;opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+body.presenter .showToolbar{position:absolute;z-index:28;left:50%;top:72px;transform:translate(-50%,-10px);width:max-content;max-width:calc(100vw - 32px);padding:8px 10px;margin:0;background:#07030bd6;border:1px solid #ffd16642;border-radius:14px;backdrop-filter:blur(10px);box-shadow:0 14px 32px #0008}
+body.presenter .controls{position:absolute;z-index:28;left:50%;bottom:18px;transform:translate(-50%,10px);width:max-content;max-width:calc(100vw - 32px);border:1px solid #ffd1662e;background:#07030bd6;border-radius:16px;padding:9px;backdrop-filter:blur(10px);box-shadow:0 14px 32px #0008}
+body.presenter.regie-peek .showToolbar,body.presenter.regie-peek .controls,body.presenter .showToolbar:hover,body.presenter .showToolbar:focus-within,body.presenter .controls:hover,body.presenter .controls:focus-within{opacity:1;pointer-events:auto;transform:translateX(-50%)}
+@media(max-width:820px){body.presenter .stage{padding:76px 12px 20px}body.presenter .top{left:10px;right:10px;max-width:none}body.presenter .stageHeader{grid-template-columns:1fr;gap:5px;text-align:center}body.presenter .stageIdentity.right{text-align:center}body.presenter .stageCounter{justify-self:center}body.presenter .roulette-wrap{min-height:calc(100vh - 120px)}body.presenter .wheelBox{width:min(92vw,62vh)}body.presenter .result{top:138px;width:92vw;font-size:clamp(22px,7vw,36px)}body.presenter .showToolbar{top:118px}body.presenter .showToolbar,body.presenter .controls{width:calc(100vw - 24px);justify-content:center}}
 </style>
 </head>
 <body>
@@ -420,8 +429,21 @@ async function deleteShowAudio(id){let db=await openShowAudioDb();return new Pro
 async function showAudioUrl(id){if(!id)return '';let db=await openShowAudioDb();let blob=await new Promise((resolve,reject)=>{let tx=db.transaction(SHOW_AUDIO_STORE,'readonly'),request=tx.objectStore(SHOW_AUDIO_STORE).get(id);request.onsuccess=()=>resolve(request.result||null);request.onerror=()=>reject(request.error)});db.close();if(!blob)return '';let url=URL.createObjectURL(blob);audioObjectUrls.push(url);return url}
 function revokeShowAudioUrls(){audioObjectUrls.forEach(URL.revokeObjectURL);audioObjectUrls=[]}
 let presenterMode=localStorage.getItem('charliePresenterMode')==='1';
+let presenterPeekTimer=0,presenterPeekBound=false;
+function setPresenterPeek(open){clearTimeout(presenterPeekTimer);document.body.classList.toggle('regie-peek',!!open)}
+function schedulePresenterPeekClose(){clearTimeout(presenterPeekTimer);presenterPeekTimer=setTimeout(()=>document.body.classList.remove('regie-peek'),1200)}
+function bindPresenterPeek(){
+  if(presenterPeekBound)return;presenterPeekBound=true;
+  ['.top','.showToolbar','.controls'].forEach(selector=>{
+    let node=document.querySelector(selector);if(!node)return;
+    node.addEventListener('mouseenter',()=>setPresenterPeek(true));
+    node.addEventListener('focusin',()=>setPresenterPeek(true));
+    node.addEventListener('mouseleave',schedulePresenterPeekClose);
+    node.addEventListener('focusout',schedulePresenterPeekClose);
+  });
+}
 function applyPresenterMode(){let stageOnly=presenterMode&&!detachedControlMode;document.body.classList.toggle('presenter',stageOnly);let b=$('modeToggleBtn');if(b)b.textContent=stageOnly?'Afficher configuration':'Mode Discord';if(stageOnly){selectedEdit=null;draggingEdit=null;canvas&&canvas.classList.remove('dragging')}else{stopFx()}if(canvas)canvas.classList.toggle('editing',!stageOnly);}
-window.addEventListener('load',applyPresenterMode);
+window.addEventListener('load',()=>{applyPresenterMode();bindPresenterPeek()});
 function showSaveFeedback(message='Modifications enregistrées'){if(!saveFeedbackReady)return;clearTimeout(saveFeedbackDelay);clearTimeout(saveFeedbackHide);saveFeedbackDelay=setTimeout(()=>{let toast=$('saveToast');if(!toast)return;toast.textContent=message;toast.classList.add('show');saveFeedbackHide=setTimeout(()=>toast.classList.remove('show'),1500)},260)}
 function save(){localStorage.setItem(LS,JSON.stringify(data));showSaveFeedback()} function cur(){return data.profiles[data.active]} function src(kind){return DEFAULT_AUDIO[kind]}
 function showApp(){ $('loginScreen').style.display='none'; $('app').style.display='block'; renderAll();saveFeedbackReady=true;if(detachedControlMode){postControlMessage({type:'control-ready'});try{if(window.opener&&!window.opener.closed&&typeof window.opener.publishRuntimeState==='function')window.opener.publishRuntimeState()}catch{}}else publishRuntimeState() }
