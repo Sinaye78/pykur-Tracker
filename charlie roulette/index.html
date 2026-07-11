@@ -220,6 +220,36 @@ body.presenter .top .btn[data-icon]{padding-left:9px!important;padding-right:11p
 body.presenter .showToolbar .btn[data-icon],body.presenter .controls .btn[data-icon]{justify-content:flex-start;text-align:left}
 body.presenter .controls .btn[data-icon]:before{width:24px;min-width:24px;height:24px;border-radius:9px}
 @media(max-width:900px){body.presenter .showToolbar .btn[data-icon],body.presenter .controls .btn[data-icon]{justify-content:center;text-align:center}}
+/* Regie V4 : hierarchie plus calme et actions plus scannables */
+.controlDeck{padding:12px!important}
+.controlDeck .deckHeader{padding:0 0 9px!important;gap:8px!important}
+.deckHeader h2{font-size:17px!important}.deckHeader p{font-size:11px!important;line-height:1.35!important}
+.controlDeck .deckHeader .statusChip{min-height:28px;padding:5px 9px;font-size:10px}
+.quickControlDock{gap:7px!important;margin-bottom:10px!important;padding:8px!important;border-color:#ffd16626!important;background:#0b0610cc!important;box-shadow:none!important}
+.quickCurrent{grid-template-columns:minmax(0,1fr) 42px!important;gap:6px!important}
+.quickCurrent label{font-size:8px!important;letter-spacing:.35px!important}
+.quickCurrent input{min-height:34px!important;border-radius:10px!important}
+.quickCurrent .btn{min-width:42px!important;min-height:34px!important;padding:6px!important;border-radius:10px!important}
+.quickActions{gap:6px!important}
+.quickActions .btn{min-height:34px!important;border-radius:10px!important;box-shadow:none!important}
+.quickHistory{padding:6px 7px!important;border:0!important;border-top:1px solid #ffffff12!important;border-radius:0!important;background:transparent!important}
+.quickHistory span{font-size:8px!important}.quickHistory b{font-size:10px!important}.quickHistory small{font-size:9px!important;color:#8e806e!important}
+.controlDeck .tabNav{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:4px!important;padding:5px!important;border-color:#ffffff0d!important;border-radius:12px!important;background:#07040bcc!important}
+.controlDeck .tabButton{min-height:30px!important;padding:6px 5px!important;border-radius:8px!important;font-size:9px!important;color:#b9a98c!important;box-shadow:none!important}
+.controlDeck .tabButton.active{background:#651534!important;color:#ffe899!important;box-shadow:inset 0 0 0 1px #ffd16648!important}
+.tabButton[data-icon]{gap:4px!important}.tabButton[data-icon]:before{font-size:1em!important}
+.controlDeck .tabViewport{margin-top:10px!important;padding-right:2px!important}
+.controlIntro{margin:0 0 8px!important;padding:0 0 8px!important;border-bottom:1px solid #ffffff10!important}
+.controlIntro b{font-size:14px!important}.controlIntro span{display:none!important}
+.controlTab .configSection{margin-bottom:9px!important;padding:10px!important;border-color:#ffffff0c!important;border-radius:12px!important;background:#ffffff04!important}
+.controlTab .configSection>h2,.controlTab .configSection>h3{font-size:14px!important;margin-bottom:8px!important}
+.historyList{max-height:240px!important;margin:8px 0 9px!important}
+.historyActions{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
+.historyActions .wideAction{grid-column:auto!important}
+.historyActions .btn{min-height:38px!important;padding:8px 7px!important;border-radius:10px!important;font-size:9px!important;line-height:1.1!important;box-shadow:none!important}
+.historyActions .btn.red{background:#8d1220!important}
+.emptyState{min-height:68px!important;padding:14px!important;font-size:11px!important}
+.btn[data-icon]:before{border-radius:7px!important}
 </style>
 </head>
 <body>
@@ -401,6 +431,8 @@ function closeWheelStudio(){const studio=document.getElementById('wheelStudio'),
 function updateWorkflowState(state){let order=['presentation','candidate','draw','result','next'],active=state;if(state==='ready')active=cur()?.participant?'candidate':'presentation';if(state==='spinning'||state==='jingle')active='draw';if(state==='scene')active=activeSceneTrigger==='presentation'?'presentation':activeSceneTrigger==='next'?'next':activeSceneTrigger==='finale'?'result':'candidate';let activeIndex=Math.max(0,order.indexOf(active));document.querySelectorAll('[data-workflow]').forEach(step=>{let index=order.indexOf(step.dataset.workflow);step.classList.toggle('active',index===activeIndex);step.classList.toggle('done',index<activeIndex)})}
 function decorateButtonIcons(){
   const icons={fullscreenBtn:'⛶',modeToggleBtn:'⚙',detachControlBtn:'⇱',logoutBtn:'⏻',saveQueueBtn:'⇣',nextParticipantBtn:'→',quickLaunch:'▶',quickStop:'■',quickNextParticipant:'→',playBtn:'▶',testBtn:'◇',stopBtn:'■',startJingleBtn:'♪',endJingleBtn:'♫',stageJingleBtn:'♪',presentCandidatesBtn:'☷',callNextBtn:'→',finaleShowBtn:'★',skipShowBtn:'×',undoHistoryBtn:'↶',exportHistoryBtn:'⇩',clearHistoryBtn:'×',saveParticipantBtn:'✓',clearParticipantBtn:'×',quickSaveParticipant:'✓'};
+  const compactLabels={undoHistoryBtn:'Annuler',exportHistoryBtn:'Exporter',clearHistoryBtn:'Effacer',saveQueueBtn:'Charger',nextParticipantBtn:'Suivant',saveParticipantBtn:'OK',clearParticipantBtn:'Effacer'};
+  Object.entries(compactLabels).forEach(([id,label])=>{let button=document.getElementById(id);if(button)button.textContent=label});
   Object.entries(icons).forEach(([id,icon])=>{let button=document.getElementById(id);if(button){button.dataset.icon=icon;button.title=button.title||button.textContent.trim()}});
   document.querySelectorAll('[data-remote-command]').forEach(button=>{let map={presentation:'☷',jingle:'♪',draw:'▶',stop:'■',test:'◇',next:'→',finale:'★'};button.dataset.icon=map[button.dataset.remoteCommand]||'•';button.title=button.title||button.textContent.trim()});
   document.querySelectorAll('[data-control-tab]').forEach(button=>{let map={session:'●',participants:'☷',lots:'◇',show:'★',appearance:'⚙',audio:'♪',history:'◴'};button.dataset.icon=map[button.dataset.controlTab]||'•'});
