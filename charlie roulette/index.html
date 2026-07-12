@@ -308,6 +308,17 @@ body.presenter .showToolbar .btn[data-shortcut-label]:after,body.presenter .cont
 .controlDeck.live-simple .quickControlDock{margin-bottom:0!important}
 .controlDeck.live-simple .deckHeader{border-bottom:1px solid #ffffff10!important;margin-bottom:8px!important}
 .controlDeck.live-simple{max-height:none!important}
+.controlDeck:not(.live-simple){overflow:hidden!important}
+.controlDeck:not(.live-simple) .quickControlDock{flex:0 0 auto!important;gap:5px!important;margin-bottom:8px!important}
+.controlDeck:not(.live-simple) .liveStatePill{min-height:36px!important;padding:7px 9px!important;border-radius:10px!important}
+.controlDeck:not(.live-simple) .liveStatePill:before{width:14px!important;height:14px!important}
+.controlDeck:not(.live-simple) .liveStateText{font-size:13px!important}
+.controlDeck:not(.live-simple) .liveStateHint{display:none!important}
+.controlDeck:not(.live-simple) .quickCurrent input,.controlDeck:not(.live-simple) .quickCurrent .btn,.controlDeck:not(.live-simple) .quickActions .btn{min-height:30px!important}
+.controlDeck:not(.live-simple) .quickHistory{display:none!important}
+.controlDeck:not(.live-simple) .dialoguePilot,.controlDeck:not(.live-simple) .rehearsalPanel,.controlDeck:not(.live-simple) .liveAlerts{display:none!important}
+.controlDeck:not(.live-simple) .tabNav{flex:0 0 auto!important}
+.controlDeck:not(.live-simple) .tabViewport{flex:1 1 auto!important;min-height:0!important;overflow:auto!important}
 .controlDeck .tabNav{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:4px!important;padding:5px!important;border-color:#ffffff0d!important;border-radius:12px!important;background:#07040bcc!important}
 .controlDeck .tabButton{min-height:30px!important;padding:6px 5px!important;border-radius:8px!important;font-size:9px!important;color:#b9a98c!important;box-shadow:none!important}
 .controlDeck .tabButton.active{background:#651534!important;color:#ffe899!important;box-shadow:inset 0 0 0 1px #ffd16648!important}
