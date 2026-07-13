@@ -652,6 +652,7 @@ function applyHelpTooltips(){
   Object.entries(help).forEach(([id,text])=>{let el=document.getElementById(id);if(el)el.dataset.help=text});
   document.querySelectorAll('[data-remote-command]').forEach(button=>{let map={presentation:'Lance la présentation depuis la régie séparée.',jingle:'Joue le jingle de début.',draw:'Lance un tirage réel sur la scène.',stop:'Arrête la roue à distance.',test:'Lance un tirage test sans conséquence.',next:'Passe au candidat suivant.',finale:'Lance la scène finale.'};button.dataset.help=map[button.dataset.remoteCommand]||''});
   document.querySelectorAll('.wheelStudioLauncher .btn').forEach(button=>button.dataset.help='Ouvre le studio pour modifier lots, stocks, images et design de la roue.');
+  document.querySelectorAll('[data-help]').forEach(el=>{if(el.title){el.dataset.nativeTitle=el.title;el.removeAttribute('title')}});
 }
 buildRegieLayout();
 decorateButtonIcons();
