@@ -43,51 +43,57 @@
   ],
   "features": [
     {
+      "id": "dialogue_audio",
+      "keywords": ["son dialogue", "audio dialogue", "mp3 dialogue", "bruitage dialogue", "son replique", "audio replique", "mp3 replique", "bruitage replique"],
+      "answer": "Oui, tu peux mettre un son MP3/WAV/OGG sur une replique. Va dans Reglages > Scenes > Ouvrir le studio, selectionne ou cree la replique, puis dans le panneau de droite utilise le champ Bruitage / Son de la replique. Si le son n'existe pas encore, importe-le d'abord dans la bibliotheque audio de la section Scenes, puis reviens sur la replique pour l'assigner.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
       "id": "dialogues",
       "keywords": ["dialogue", "replique", "victoria", "charlie", "emote", "effet", "scenario", "scene"],
-      "answer": "Pour ajouter ou modifier une replique, ouvre Reglages > Scenes > Studio de scenarios. Choisis l'etape a gauche, ecris la replique a droite, puis Ajoute la replique. Tu peux choisir le personnage, le ciblage, une emote et un effet special.",
+      "answer": "Les dialogues servent a piloter ce que Charlie ou Victoria disent selon le moment du live : presentation, roue, resultat, candidat suivant ou finale. Pour en ajouter un, ouvre Reglages > Scenes > Studio de scenarios, choisis l'etape a gauche, ecris la replique a droite, puis Ajoute la replique. Tu peux aussi me demander directement d'ajouter une replique si tu me donnes le texte.",
       "actions": ["open_scenario_studio"]
     },
     {
       "id": "lots",
       "keywords": ["lot", "probabilite", "drop", "roue", "stock", "indisponible", "png", "image"],
-      "answer": "Pour regler les lots, ouvre le Studio de la roulette. Dans Lots & probabilites tu changes le nom, le poids, l'activation et le stock. Dans Design & PNG tu ajustes les textes et images directement sur la roue.",
+      "answer": "Les lots sont les cases de la roue. Le poids regle la chance relative de tomber dessus, le stock permet de rendre un lot indisponible quand il est epuise, et l'activation masque un lot sans le supprimer. Dans le Studio de la roulette, Lots & probabilites gere les valeurs, Design & PNG gere l'affichage.",
       "actions": ["open_wheel_studio_lots", "open_wheel_studio_design"]
     },
     {
       "id": "participants",
       "keywords": ["participant", "candidat", "file", "suivant", "lancer", "lancers", "passage"],
-      "answer": "Les participants se gerent dans Preparer. Mets un pseudo par ligne dans la file, charge la file, puis utilise Suivant. Le nombre de lancers par participant se regle dans la liste complete de la file.",
+      "answer": "Les participants sont la file de passage du live. Dans Preparer, mets un pseudo par ligne, charge la file, puis utilise Suivant pour avancer. Le nombre de lancers par participant se regle dans la liste complete : pratique si un candidat a plusieurs tickets ou tentatives.",
       "actions": ["open_prepare"]
     },
     {
       "id": "shortcuts",
       "keywords": ["raccourci", "touche", "clavier", "espace", "entree", "keyboard"],
-      "answer": "Les raccourcis se reglent dans Preparer > Raccourcis. Clique un champ, appuie sur la touche voulue, puis les boutons affichent la touche entre parentheses.",
+      "answer": "Les raccourcis clavier servent a piloter vite sans chercher les boutons pendant le live : lancer, stop, test, jingles, presenter, candidat, finale et mode Discord. Ils reduisent les erreurs quand tu regardes OBS/Discord ou que tu animes en meme temps. Tu peux les modifier dans Preparer > Raccourcis : clique un champ, appuie sur la touche voulue, puis la touche apparait entre parentheses sur les boutons.",
       "actions": ["open_shortcuts"]
     },
     {
       "id": "audio",
       "keywords": ["son", "audio", "jingle", "volume", "mute", "musique", "bruitage"],
-      "answer": "Les sons se reglent dans Sons. Tu peux couper tous les sons, regler les volumes, tester les jingles et assigner des pistes aux scenes.",
+      "answer": "La section Sons controle l'ambiance du live : mute global, volume des jingles, volume de la roulette, jingles de debut/fin et sons de scenes. C'est utile pour tester le niveau avant Discord/OBS et eviter qu'un son couvre la voix.",
       "actions": ["open_audio"]
     },
     {
       "id": "history",
       "keywords": ["historique", "gagnant", "export", "csv", "corriger", "annuler", "profil", "sauvegarde"],
-      "answer": "L'historique est dans Sauvegarde. Tu peux voir le dernier gagnant, corriger le dernier tirage, annuler le dernier tirage et exporter en CSV. L'import/export de profil complet est aussi dans cette zone.",
+      "answer": "L'historique sert de journal d'animation : dernier gagnant, total des tirages, gagnants par participant, correction du dernier tirage et export CSV. Dans Sauvegarde, tu peux aussi exporter/importer un profil complet pour garder participants, lots, sons, dialogues et stocks.",
       "actions": ["open_data"]
     },
     {
       "id": "discord",
       "keywords": ["discord", "obs", "capture", "scene propre", "plein ecran", "regie", "detacher"],
-      "answer": "Pour une capture propre, utilise Mode Discord pour cacher la regie. Si tu veux garder le controle pendant le live, utilise Detacher la regie : la scene reste propre et la regie pilote dans une autre fenetre.",
+      "answer": "Mode Discord cache la regie pour que la capture OBS/Discord ne montre que la scene publique. Si tu veux garder le controle sans polluer la capture, utilise Detacher la regie : la fenetre principale reste propre et la regie pilote dans une autre fenetre.",
       "actions": ["highlight_discord", "detach_control"]
     },
     {
       "id": "simulation",
       "keywords": ["simulation", "repetition", "test", "simuler", "checklist"],
-      "answer": "Pour tester le rythme sans toucher aux stocks ni a l'historique, utilise Simuler un passage dans la regie. La checklist pre-live indique aussi si participants, stocks, son et scene sont prets.",
+      "answer": "La simulation sert a repeter un passage complet sans consommer de stock ni remplir l'historique. La checklist pre-live verifie les points essentiels avant de lancer : participants, lots disponibles, stocks OK, son actif, scene propre et raccourcis configures.",
       "actions": ["highlight_rehearsal"]
     }
   ],

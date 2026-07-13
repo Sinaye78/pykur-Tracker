@@ -1997,10 +1997,25 @@ function parseKephCommand(message, context = {}) {
   const asksLot = /\blot\b|\bpoid\b|\bpoids\b|\bprobabilit/.test(normalized);
   if (asksLot) {
     const rateMatch = normalized.match(/\b(?:poid|poids|ponderation|probabilite|proba|taux)\b.*?\b(?:a|de|sur)?\s*(\d{1,4})\b/) || normalized.match(/\b(\d{1,4})\b.*?\b(?:poid|poids|ponderation|probabilite|proba|taux)\b/);
-    const lotNameMatch = raw.match(/lot\s+(.+?)(?:\s+(?:et|puis|avec|à|a|au|en|pour|met|mets|mettre|modifie|modifier|change|changer|poids|pondération|probabilité|proba|taux)\b|[?.!,]|$)/i)
-      || raw.match(/(?:modifie|modifier|change|changer|mettre|mets|met)\s+(.+?)(?:\s+(?:et|puis|avec|à|a|au|en|pour|poids|pondération|probabilité|proba|taux)\b|[?.!,]|$)/i);
+    const renameMatch = raw.match(/\b(?:renomme|renommer|renomé|renome|ronomme|renommer|appelle|nomme)\b.*?\ben\s+(.+?)(?:[?.!]|$)/i);
+    const lotNameMatch = raw.match(/lot\s+(.+?)(?:\s+(?:et|puis|avec|à|a|au|en|pour|met|mets|mettre|modifie|modifier|change|changer|renomme|renommer|renome|ronomme|appelle|nomme|poids|pondération|probabilité|proba|taux)\b|[?.!,]|$)/i)
+      || raw.match(/(?:modifie|modifier|change|changer|mettre|mets|met|renomme|renommer|renome|ronomme)\s+(.+?)(?:\s+(?:et|puis|avec|à|a|au|en|pour|poids|pondération|probabilité|proba|taux)\b|[?.!,]|$)/i);
     const inferredName = lotNameMatch?.[1] || lots.map((lot) => lot.name).find((name) => normalized.includes(normalizeKephText(name)));
     const target = findKephLot(lots, inferredName);
+    if (renameMatch && target) {
+      const nextName = renameMatch[1].trim().slice(0, 80);
+      if (nextName) {
+        return {
+          answer: `Je peux renommer le lot « ${target.name} » en « ${nextName} ». Cliquez sur Appliquer pour confirmer.`,
+          actions: [
+            { id: "apply_update_lot_name", type: "update_lot_name", label: "Appliquer le renommage", payload: { lotName: target.name, lotIndex: target.index, name: nextName } },
+            { id: "open_wheel_studio_lots", label: "Ouvrir les lots" }
+          ],
+          source: "command",
+          intent: "update_lot_name"
+        };
+      }
+    }
     if (rateMatch && target) {
       const rate = Math.max(0, Math.min(9999, Number(rateMatch[1])));
       return {
@@ -2014,16 +2029,45 @@ function parseKephCommand(message, context = {}) {
       };
     }
   }
+  const asksDialogueAction = /\b(?:ajoute|ajouter|cree|creer|crée|modifier|modifie)\b/.test(normalized) && /\b(?:dialogue|replique|phrase)\b/.test(normalized);
+  if (asksDialogueAction) {
+    const quoted = raw.match(/[«"“](.+?)[»"”]/)?.[1];
+    const afterColon = raw.match(/[:：]\s*(.+)$/)?.[1];
+    const text = String(quoted || afterColon || "").trim().slice(0, 600);
+    if (text) {
+      const trigger = /\bfinale\b/.test(normalized) ? "finale"
+        : /\b(?:resultat|gagnant|lot obtenu)\b/.test(normalized) ? "result"
+        : /\b(?:roue|tirage|rotation)\b/.test(normalized) ? "spin"
+        : /\b(?:suivant|prochain candidat)\b/.test(normalized) ? "next"
+        : /\bjingle\b/.test(normalized) ? "jingle"
+        : "presentation";
+      const speaker = /\bvictoria\b/.test(normalized) ? "victoria" : "charlie";
+      return {
+        answer: `Je peux ajouter cette réplique dans l’étape « ${trigger} » pour ${speaker === "victoria" ? "Victoria" : "Charlie"}. Cliquez sur Appliquer pour confirmer.`,
+        actions: [
+          { id: "apply_add_dialogue", type: "add_dialogue", label: "Appliquer la réplique", payload: { trigger, speaker, text } },
+          { id: "open_scenario_studio", label: "Ouvrir le studio" }
+        ],
+        source: "command",
+        intent: "add_dialogue"
+      };
+    }
+  }
   return null;
 }
 
 function fallbackKephAnswer(message, context = {}) {
   const knowledge = charlieKephKnowledge();
-  const text = String(message || "").toLowerCase();
+  const text = normalizeKephText(message);
+  const keywordScore = (keyword) => {
+    const parts = normalizeKephText(keyword).split(" ").filter(Boolean);
+    if (!parts.length) return 0;
+    return parts.every((part) => text.includes(part)) ? parts.length : 0;
+  };
   const scored = (knowledge.features || [])
     .map((feature) => ({
       feature,
-      score: (feature.keywords || []).reduce((sum, keyword) => sum + (text.includes(String(keyword).toLowerCase()) ? 1 : 0), 0)
+      score: (feature.keywords || []).reduce((sum, keyword) => sum + keywordScore(keyword), 0)
     }))
     .sort((a, b) => b.score - a.score);
   const best = scored.find((item) => item.score > 0);
