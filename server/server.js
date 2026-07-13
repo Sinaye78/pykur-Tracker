@@ -20,6 +20,7 @@ const APP_PUBLIC_URL = process.env.APP_PUBLIC_URL || CLIENT_ORIGIN;
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://127.0.0.1:11434";
 const KEPH_MODEL = process.env.KEPH_MODEL || "qwen2.5:1.5b";
 const KEPH_AI_TIMEOUT_MS = Number(process.env.KEPH_AI_TIMEOUT_MS || 4500);
+const KEPH_REMOTE_TIMEOUT_MS = Number(process.env.KEPH_REMOTE_TIMEOUT_MS || 7000);
 const ROLE_ORDER = { user: 1, moderator: 2, admin: 3 };
 const PUBLIC_DEPLOYMENT = !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(APP_PUBLIC_URL);
 
@@ -2804,7 +2805,45 @@ function parseKephCommand(message, context = {}) {
 function directKephAnswer(message) {
   const text = normalizeKephText(message);
   const yesNo = /\b(?:est ce que|peut on|on peut|possible|je peux|peux)\b/.test(text);
+  const wantsHow = /\b(?:comment|comment faire|ou|ou est|ou aller|je veux|pour)\b/.test(text);
+  const wantsPurpose = /\b(?:a quoi sert|sert a quoi|pourquoi|c est quoi|c quoi|utilite)\b/.test(text);
+  const stageLabel = /\bjingle\b/.test(text) ? "Jingle"
+    : /\b(?:resultat|gagnant|lot obtenu)\b/.test(text) ? "Resultat"
+      : /\b(?:roue|tirage|pendant)\b/.test(text) ? "Pendant la roue"
+        : /\b(?:suivant|prochain candidat)\b/.test(text) ? "Candidat suivant"
+          : /\bfinale\b/.test(text) ? "Finale"
+            : "Presentation";
   const directAnswers = [
+    {
+      intent: "create_dialogue",
+      test: () => /\b(?:creer|cree|ajouter|ajoute|faire|nouveau|nouvelle)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text),
+      answer: `Pour creer un dialogue, ouvre Reglages > Scenes > Studio de scenarios. A gauche, choisis l'etape ou la replique doit se jouer, par exemple ${stageLabel}. A droite, choisis Charlie ou Victoria, ecris le texte, regle si besoin le ciblage, l'emote, l'effet special ou le bruitage, puis clique sur Ajouter la replique. Si tu me donnes directement le texte entre guillemets, je peux aussi preparer l'action a confirmer.`,
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "dialogue_targeting",
+      test: () => /\b(?:ciblage|cibler|candidat cible|participant cible|tous les candidats|candidat actuel)\b/.test(text) && /\b(?:dialogue|replique|candidat|participant)\b/.test(text),
+      answer: "Le ciblage decide pour qui une replique peut sortir. Tous les candidats = phrase generale. Candidat actuel = la phrase suit la personne qui passe maintenant. Candidat cible = la phrase ne sort que pour un pseudo precis. C'est utile pour preparer une blague ou une annonce speciale sans qu'elle apparaisse pour tout le monde.",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "charlie_show_option",
+      test: () => /\bcharlie show\b/.test(text) && wantsPurpose,
+      answer: "Charlie Show active les interventions de Charlie et Victoria pendant le live. Si c'est actif, les scenes peuvent jouer des dialogues, emotes, effets et reactions; si c'est coupe, la roulette reste beaucoup plus sobre. C'est l'interrupteur principal du cote spectacle, pas un reglage de lots ou de probabilites.",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "default_dialogues_option",
+      test: () => /\b(?:dialogues inclus|dialogue inclus|dialogues par defaut|dialogue par defaut)\b/.test(text) && wantsPurpose,
+      answer: "Dialogues inclus autorise les repliques fournies par defaut avec le site. Garde-le actif si tu veux que Charlie/Victoria parlent meme quand tu n'as pas encore tout personnalise. Coupe-le si tu veux que seules tes repliques du Studio de scenarios soient utilisees.",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "auto_next_candidate_option",
+      test: () => /\b(?:annoncer automatiquement|annonce automatique|candidat suivant automatique|automatiquement le candidat suivant)\b/.test(text),
+      answer: "Annoncer automatiquement le candidat suivant lance une annonce apres un tirage valide pour enchainer vers la personne suivante. C'est pratique si tu veux un rythme fluide sans cliquer une scene a chaque fois. Si tu preferes garder la main en live, laisse l'option coupee et utilise le bouton Suivant ou Annoncer le candidat quand tu es pret.",
+      actions: ["open_scenario_studio"]
+    },
     {
       intent: "edit_presentation_dialogues",
       test: () => /\b(?:modifier|modifie|changer|editer|edit|personnaliser)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && /\b(?:presenter|presentation|candidats)\b/.test(text),
@@ -2967,6 +3006,12 @@ function directKephAnswer(message) {
       test: () => /\b(?:raccourci|raccourcis|touche|clavier|espace|entree)\b/.test(text),
       answer: "Les raccourcis servent a piloter la regie sans viser les boutons a la souris pendant le live. Espace peut lancer, Entree peut stopper, et les touches affichees entre parentheses declenchent les actions comme Presenter, Jingle ou Finale. Tu peux les modifier dans Preparer > Raccourcis.",
       actions: ["open_shortcuts"]
+    },
+    {
+      intent: "explain_effects_only",
+      test: () => wantsPurpose && /\b(?:effet|effets|fx|speciaux|special|confetti|flash)\b/.test(text) && !/\bemote\b/.test(text),
+      answer: "Les effets speciaux sont des animations de scene lancees par une replique ou une action : confettis, feu d'artifice, flash plateau, coupure lumiere, projecteurs, spotlight, shake leger, glitch, pluie d'etoiles, fumee, vague doree et alerte rouge. Ils servent a marquer les moments forts, pas a changer le resultat de la roue.",
+      actions: ["open_scenario_studio"]
     },
     {
       intent: "explain_dialogue_audio",
@@ -3245,6 +3290,136 @@ function kephSystemPrompt() {
   ].join("\n");
 }
 
+function safeParseKephAiJson(content) {
+  const text = String(content || "").trim();
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    try {
+      return JSON.parse(match[0]);
+    } catch {
+      return null;
+    }
+  }
+}
+
+function kephRemoteConfig() {
+  const forced = normalizeKephText(process.env.KEPH_REMOTE_PROVIDER || "");
+  if ((forced === "groq" || (!forced && process.env.GROQ_API_KEY)) && process.env.GROQ_API_KEY) {
+    return {
+      provider: "groq",
+      model: process.env.GROQ_MODEL || process.env.KEPH_REMOTE_MODEL || "llama-3.1-8b-instant",
+      url: "https://api.groq.com/openai/v1/chat/completions",
+      key: process.env.GROQ_API_KEY
+    };
+  }
+  if ((forced === "gemini" || (!forced && process.env.GEMINI_API_KEY)) && process.env.GEMINI_API_KEY) {
+    return {
+      provider: "gemini",
+      model: process.env.GEMINI_MODEL || process.env.KEPH_REMOTE_MODEL || "gemini-2.5-flash-lite",
+      key: process.env.GEMINI_API_KEY
+    };
+  }
+  if ((forced === "openrouter" || (!forced && process.env.OPENROUTER_API_KEY)) && process.env.OPENROUTER_API_KEY) {
+    return {
+      provider: "openrouter",
+      model: process.env.OPENROUTER_MODEL || process.env.KEPH_REMOTE_MODEL || "openrouter/free",
+      url: "https://openrouter.ai/api/v1/chat/completions",
+      key: process.env.OPENROUTER_API_KEY
+    };
+  }
+  return null;
+}
+
+function kephRemotePrompt() {
+  return [
+    "Tu es Keph, assistant de regie de Charlie Roulette.",
+    "Reponds en francais naturel, precis, court et directement a la question.",
+    "Utilise la documentation fournie comme source de verite. N'invente pas de fonction.",
+    "Si la question demande comment faire, donne des etapes courtes.",
+    "Si elle demande a quoi ca sert, explique l'usage live et les consequences.",
+    "Le candidat actuel n'est pas la personne qui te parle.",
+    "Reponds uniquement en JSON valide: {\"answer\":\"...\",\"actions\":[{\"id\":\"...\",\"label\":\"...\"}]}"
+  ].join("\n");
+}
+
+function kephRemotePayload(message, context, guidance) {
+  return {
+    question: String(message || "").slice(0, 800),
+    contexte: kephAiContext(message, context),
+    documentation: (guidance?.docs || kephDocumentationSearch(message, context)).slice(0, 3).map((doc) => ({
+      id: doc.id,
+      title: doc.title,
+      content: String(doc.answer || doc.content || "").slice(0, 900),
+      actions: doc.actions || []
+    })),
+    reponse_attendue: String(guidance?.expectedAnswer || guidance?.answer || "").slice(0, 900),
+    actions_autorisees: (charlieKephKnowledge().actions || []).map((action) => ({ id: action.id, label: action.label }))
+  };
+}
+
+async function askRemoteKeph(message, context, guidance = null, timeoutMs = KEPH_REMOTE_TIMEOUT_MS) {
+  const config = kephRemoteConfig();
+  if (!config) return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const prompt = kephRemotePrompt();
+    const payload = kephRemotePayload(message, context, guidance);
+    if (config.provider === "gemini") {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent?key=${encodeURIComponent(config.key)}`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: `${prompt}\n\n${JSON.stringify(payload)}` }] }],
+          generationConfig: { temperature: 0.25, maxOutputTokens: 260, responseMimeType: "application/json" }
+        })
+      });
+      if (!response.ok) throw new Error(`Gemini HTTP ${response.status}`);
+      const json = await response.json();
+      const content = json?.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("") || "";
+      const parsed = safeParseKephAiJson(content);
+      if (!parsed) throw new Error("Gemini JSON invalide");
+      return { ...parsed, provider: config.provider, model: config.model };
+    }
+    const headers = {
+      "content-type": "application/json",
+      authorization: `Bearer ${config.key}`
+    };
+    if (config.provider === "openrouter") {
+      headers["HTTP-Referer"] = APP_PUBLIC_URL;
+      headers["X-Title"] = "Charlie Roulette Keph";
+    }
+    const response = await fetch(config.url, {
+      method: "POST",
+      headers,
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: config.model,
+        messages: [
+          { role: "system", content: prompt },
+          { role: "user", content: JSON.stringify(payload) }
+        ],
+        temperature: 0.25,
+        max_tokens: 260,
+        response_format: { type: "json_object" }
+      })
+    });
+    if (!response.ok) throw new Error(`${config.provider} HTTP ${response.status}`);
+    const json = await response.json();
+    const content = json?.choices?.[0]?.message?.content || "";
+    const parsed = safeParseKephAiJson(content);
+    if (!parsed) throw new Error(`${config.provider} JSON invalide`);
+    return { ...parsed, provider: config.provider, model: config.model };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function askOllamaKeph(message, context, guidance = null, timeoutMs = 35000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -3351,12 +3526,14 @@ app.get("/api/charlie-keph/avatar", (req, res) => {
 
 app.get("/api/charlie-keph/status", asyncRoute(async (req, res) => {
   const ollamaReady = await ollamaKephStatus();
+  const remote = kephRemoteConfig();
   res.json({
-    ok: ollamaReady,
+    ok: !!remote || ollamaReady,
     api: true,
+    remote: remote ? { provider: remote.provider, model: remote.model, configured: true } : null,
     ollama: ollamaReady,
     model: KEPH_MODEL,
-    mode: ollamaReady ? "ollama" : "guide",
+    mode: remote ? remote.provider : ollamaReady ? "ollama" : "guide",
     avatarUrl: kephPublicAvatar()
   });
 }));
@@ -3375,6 +3552,25 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   if (guide.matched && guide.source === "diagnostic") return res.json({ ...guide, source: "guide", avatarUrl: kephPublicAvatar() });
   if (guide.matched && ["command", "conversation", "direct", "ui_map", "doc"].includes(guide.source)) {
     return res.json({ ...guide, source: "guide", grounded: true, avatarUrl: kephPublicAvatar() });
+  }
+  try {
+    const remote = await askRemoteKeph(message, context, guide.matched ? guide : null, KEPH_REMOTE_TIMEOUT_MS);
+    if (remote) {
+      const answer = String(remote?.answer || "").trim();
+      if (!answer) throw new Error("Reponse distante vide");
+      const actions = guide.matched ? guide.actions : normalizedKephActions(remote?.actions, knowledge);
+      return res.json({
+        answer: answer.slice(0, 1400),
+        actions: actions.length ? actions : (guide.matched ? guide.actions : []),
+        source: remote.provider || "remote",
+        intent: guide.intent || String(remote?.intent || "").slice(0, 80) || null,
+        grounded: !!guide.matched,
+        model: remote.model || null,
+        avatarUrl: kephPublicAvatar()
+      });
+    }
+  } catch (error) {
+    console.warn("[keph] API distante indisponible.", error.message);
   }
   try {
     const ai = await askOllamaKeph(message, context, guide.matched ? guide : null, KEPH_AI_TIMEOUT_MS);
