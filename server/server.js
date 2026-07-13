@@ -2155,7 +2155,11 @@ function kephDocumentation(context = {}) {
   const structuredDocuments = Array.isArray(docs.documents) ? docs.documents : [];
   if (structuredDocuments.length) {
     return [
-      ...structuredDocuments,
+      ...structuredDocuments.map((doc) => ({
+        ...doc,
+        content: doc.content || doc.answer || "",
+        examples: Array.isArray(doc.examples) ? doc.examples : []
+      })),
       {
         id: "context",
         title: "Contexte actuel de la regie",
@@ -2327,13 +2331,18 @@ function kephDocumentationSearch(message, context = {}) {
   const tokens = new Set(text.split(" ").filter((part) => part.length > 2));
   return kephDocumentation(context)
     .map((doc) => {
-      const haystack = normalizeKephText(`${doc.title} ${(doc.keywords || []).join(" ")} ${doc.content}`);
+      const haystack = normalizeKephText(`${doc.title} ${(doc.keywords || []).join(" ")} ${doc.content || ""} ${doc.answer || ""} ${(doc.examples || []).join(" ")}`);
       let score = 0;
       tokens.forEach((token) => { if (haystack.includes(token)) score += 1; });
       (doc.keywords || []).forEach((keyword) => {
         const normalizedKeyword = normalizeKephText(keyword);
         if (!normalizedKeyword) return;
         if (text.includes(normalizedKeyword)) score += normalizedKeyword.includes(" ") ? 18 : 4;
+      });
+      (doc.examples || []).forEach((example) => {
+        const normalizedExample = normalizeKephText(example);
+        if (!normalizedExample) return;
+        if (text.includes(normalizedExample) || (text.length > 8 && normalizedExample.includes(text))) score += 24;
       });
       if (doc.id === "context" && context?.activeSection) score += 1;
       return { ...doc, score };
@@ -3052,7 +3061,7 @@ function fallbackKephAnswer(message, context = {}) {
   const best = scored.find((item) => item.score > 0);
   const picked = best?.feature || null;
   const docs = siteQuestion ? kephDocumentationSearch(message, context) : [];
-  const instantDoc = docs.find((doc) => doc.instant && Number(doc.score || 0) >= 18);
+  const instantDoc = docs.find((doc) => doc.instant && Number(doc.score || 0) >= 8);
   if (instantDoc) {
     return {
       answer: instantDoc.answer || instantDoc.content || "",
