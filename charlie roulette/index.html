@@ -507,6 +507,7 @@ body.config-fullscreen .showLibrary{grid-column:1/-1!important}
 @media(max-width:1080px){body.config-fullscreen .controlTab.active{grid-template-columns:1fr!important;max-width:820px!important}}
 @media(max-width:920px){body.config-fullscreen .studioShell{grid-template-columns:1fr!important}body.config-fullscreen .stage{display:none!important}body.config-fullscreen .controlDeck{grid-template-columns:1fr!important;grid-template-rows:auto auto minmax(0,1fr)!important}body.config-fullscreen .controlDeck .tabNav{grid-column:1!important;grid-row:2!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;border-right:0!important;border-bottom:1px solid #ffffff12!important}body.config-fullscreen .controlDeck .tabViewport{grid-column:1!important;grid-row:3!important}}
 @media(max-width:420px){.scenePresetBar{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.kephAssistant{display:grid;gap:8px;margin-top:9px;padding:9px;border:1px solid #6bbcff44;border-radius:14px;background:linear-gradient(145deg,#092032cc,#08050ddd);box-shadow:0 12px 28px #0006}.kephHead{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:9px;align-items:center}.kephAvatar{width:40px;height:40px;border-radius:50%;object-fit:cover;background:radial-gradient(circle,#ffe28a,#7b1840);border:1px solid #ffd16677;box-shadow:0 0 18px #67c7ff44}.kephName{color:#e7f6ff;font-weight:1000;text-transform:uppercase}.kephState{color:#8fb8cc;font-size:10px;font-weight:800}.kephMiniBtn{min-height:28px!important;padding:5px 8px!important;font-size:9px!important;box-shadow:none!important}.kephMessages{display:grid;gap:7px;max-height:185px;overflow:auto;padding-right:4px;scrollbar-color:#34789d #06050b}.kephMsg{display:grid;gap:5px;max-width:96%;padding:8px 9px;border:1px solid #ffffff12;border-radius:12px;background:#0a0710;color:#f7efd7;font-size:11px;line-height:1.35}.kephMsg.user{justify-self:end;background:#24162f}.kephMsg.assistant{justify-self:start;background:#07151f;border-color:#6bbcff33}.kephActions{display:flex;flex-wrap:wrap;gap:5px}.kephAction{min-height:28px!important;padding:5px 8px!important;font-size:9px!important;border-radius:9px!important}.kephForm{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}.kephForm input{min-height:34px;padding:7px 9px;font-size:12px}.kephForm .btn{min-height:34px;padding:7px 10px;font-size:10px}.kephSuggestions{display:flex;gap:5px;flex-wrap:wrap}.kephSuggestion{border:1px solid #ffffff14;border-radius:999px;background:#ffffff08;color:#d5ecff;padding:5px 8px;font-size:9px;font-weight:900;cursor:pointer}.kephTargetFlash{animation:kephTargetFlash 1.5s ease 2}@keyframes kephTargetFlash{0%,100%{outline:0;filter:none}40%{outline:3px solid #6bd6ff;outline-offset:3px;filter:drop-shadow(0 0 14px #6bd6ff)}}body.presenter .kephAssistant{display:none}
 </style>
 </head>
 <body>
@@ -621,6 +622,7 @@ function buildRegieLayout(){
   quickDock.querySelector('.dialoguePilotActions').insertAdjacentHTML('beforeend','<button class="btn dark" id="dialogueClearBtn" type="button">Vider</button>');
   quickDock.querySelector('.quickHistory').insertAdjacentHTML('afterend','<div class="liveAlerts" id="liveAlerts" aria-live="polite"></div>');
   quickDock.querySelector('.dialoguePilot').insertAdjacentHTML('afterend','<div class="rehearsalPanel" aria-label="Préparation live"><button class="btn dark" id="rehearsalBtn" type="button">Simuler un passage</button><div class="preliveChecklist" id="preliveChecklist" aria-live="polite"></div></div>');
+  quickDock.querySelector('.rehearsalPanel').insertAdjacentHTML('afterend','<section class="kephAssistant" id="kephAssistant" aria-label="Assistant Keph"><div class="kephHead"><img class="kephAvatar" id="kephAvatar" src="asset/keph/keph.png" alt=""><div><div class="kephName">Keph</div><div class="kephState" id="kephState">Assistant de régie</div></div><button class="btn dark kephMiniBtn" id="kephResetBtn" type="button">Reset</button></div><div class="kephMessages" id="kephMessages" aria-live="polite"></div><form class="kephForm" id="kephForm"><input id="kephInput" class="field" maxlength="800" placeholder="Demander à Keph..."><button class="btn" type="submit">Ask</button></form><div class="kephSuggestions"><button class="kephSuggestion" type="button" data-keph-question="Comment ajouter un dialogue ?">Dialogue</button><button class="kephSuggestion" type="button" data-keph-question="Comment régler les stocks des lots ?">Stocks</button><button class="kephSuggestion" type="button" data-keph-question="Comment faire une scène Discord propre ?">Discord</button></div></section>');
   const panelInfo={before:['Préparer le live','Participants, file, tirage, checklist et raccourcis.'],wheel:['Configurer la roue','Lots, probabilités, stocks, images et apparence.'],show:['Piloter les scènes','Dialogues, personnages, presets et studio de scénarios.'],audio:['Régler les sons','Jingles, volumes et sons de scène.'],data:['Sauvegarder','Historique, profils, import et export.']};
   function panel(id,nodes){const section=document.createElement('section'),info=panelInfo[id]||[id,''];section.className='controlTab'+(id==='before'?' active':'');section.dataset.controlPanel=id;section.setAttribute('role','tabpanel');section.setAttribute('aria-label',info[0]);section.innerHTML=`<header class="controlIntro"><b>${info[0]}</b><span>${info[1]}</span></header>`;nodes.filter(Boolean).forEach(node=>section.appendChild(node));viewport.appendChild(section);return section}
   participantSection.querySelector('h3').textContent='Participant actuel';
@@ -940,6 +942,87 @@ function bindPresenterPeek(){
   });
 }
 let quickControlsBound=false;
+let kephMessagesState=[];
+let kephBusy=false;
+let kephAvatarLoaded=false;
+function kephApi(path){return (location.protocol==='file:'?'https://familier-tracker.fr':'')+path}
+function kephContext(){
+  let p=cur?.()||{},q=p.queue||[],pos=Math.min(p.queueIndex||0,Math.max(0,q.length-1)),history=p.history||[],lots=p.lots||[],settings=p.settings||{};
+  return {
+    profile:data?.active||'',
+    participant:p.participant||q[pos]||'',
+    nextParticipant:q[pos+1]||'',
+    queueTotal:q.length,
+    queueRemaining:Math.max(0,q.length-pos-1),
+    stage:document.querySelector('.stage')?.dataset.state||'ready',
+    modeDiscord:!!presenterMode,
+    detachedControl:!!detachedControlMode,
+    soundMuted:!!settings.mute,
+    lots:lots.map(lot=>({name:lot.name,enabled:lot.enabled!==false,stockEnabled:!!lot.stockEnabled,stock:Number(lot.stock||0),available:lot.enabled!==false&&(!lot.stockEnabled||Number(lot.stock||0)>0)})).slice(0,20),
+    lastDraw:history[0]?{participant:history[0].participant,lot:history[0].lot,at:history[0].at}:null
+  }
+}
+function setKephState(text){let el=$('kephState');if(el)el.textContent=text}
+function renderKephMessages(){
+  let box=$('kephMessages');if(!box)return;
+  if(!kephMessagesState.length)kephMessagesState=[{role:'assistant',text:'Salut, je suis Keph. Demande-moi comment préparer un dialogue, régler les stocks, gérer la scène Discord ou retrouver un menu.'}];
+  box.innerHTML=kephMessagesState.slice(-8).map(msg=>`<div class="kephMsg ${msg.role}"><div>${esc(msg.text)}</div>${msg.actions?.length?`<div class="kephActions">${msg.actions.map(action=>`<button class="btn dark kephAction" type="button" data-keph-action="${esc(action.id)}">${esc(action.label||action.id)}</button>`).join('')}</div>`:''}</div>`).join('');
+  box.querySelectorAll('[data-keph-action]').forEach(button=>button.onclick=()=>runKephAction(button.dataset.kephAction));
+  box.scrollTop=box.scrollHeight;
+}
+function flashKephTarget(el){if(!el)return;el.classList.remove('kephTargetFlash');void el.offsetWidth;el.classList.add('kephTargetFlash');setTimeout(()=>el.classList.remove('kephTargetFlash'),3100)}
+function openKephConfigTab(tab){setConfigFullscreen(true);openControlTab(tab);setTimeout(()=>flashKephTarget(document.querySelector(`[data-control-panel="${tab}"]`)||document.querySelector(`[data-control-tab="${tab}"]`)),80)}
+function runKephAction(id){
+  const actions={
+    open_prepare:()=>openKephConfigTab('before'),
+    open_shortcuts:()=>{openKephConfigTab('before');setTimeout(()=>flashKephTarget(document.querySelector('.shortcutGrid')||$('resetShortcutsBtn')),120)},
+    open_wheel_studio_lots:()=>{setConfigFullscreen(true);openControlTab('wheel');setTimeout(()=>openWheelStudio('lots'),120)},
+    open_wheel_studio_design:()=>{setConfigFullscreen(true);openControlTab('wheel');setTimeout(()=>openWheelStudio('appearance'),120)},
+    open_scenario_studio:()=>{setConfigFullscreen(true);openControlTab('show');setTimeout(()=>openScenarioStudio(),120)},
+    open_audio:()=>openKephConfigTab('audio'),
+    open_data:()=>openKephConfigTab('data'),
+    highlight_discord:()=>flashKephTarget($('modeToggleBtn')),
+    detach_control:()=>flashKephTarget($('detachControlBtn')),
+    highlight_rehearsal:()=>flashKephTarget($('rehearsalBtn'))
+  };
+  actions[id]?.();
+}
+async function askKeph(question){
+  question=String(question||'').trim();if(!question||kephBusy)return;
+  kephBusy=true;setKephState('Keph réfléchit...');
+  kephMessagesState.push({role:'user',text:question});renderKephMessages();
+  let input=$('kephInput'),submit=document.querySelector('#kephForm .btn');if(input)input.value='';if(submit)submit.disabled=true;
+  try{
+    let response=await fetch(kephApi('/api/charlie-keph/ask'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({message:question,context:kephContext()})});
+    if(!response.ok)throw new Error('Keph indisponible');
+    let payload=await response.json();
+    if(payload.avatarUrl)applyKephAvatar(payload.avatarUrl);
+    kephMessagesState.push({role:'assistant',text:payload.answer||'Je ne suis pas sûr, mais je peux ouvrir la configuration pour vérifier.',actions:payload.actions||[]});
+    setKephState(payload.source==='ollama'?'Réponse IA locale':'Guide local');
+  }catch(error){
+    kephMessagesState.push({role:'assistant',text:'Je n’arrive pas à joindre l’assistance pour l’instant. Tu peux quand même ouvrir Préparer, la Roulette, les Scènes, Sons ou Sauvegarde depuis les réglages.',actions:[{id:'open_prepare',label:'Ouvrir Préparer'},{id:'open_scenario_studio',label:'Studio scénarios'}]});
+    setKephState('Mode secours');
+  }finally{
+    kephBusy=false;if(submit)submit.disabled=false;renderKephMessages();
+  }
+}
+function applyKephAvatar(url){
+  let img=$('kephAvatar');if(!img||!url)return;
+  img.src=url;kephAvatarLoaded=true;
+}
+async function loadKephAvatar(){
+  if(kephAvatarLoaded)return;
+  let img=$('kephAvatar');if(!img)return;
+  img.onerror=()=>{img.removeAttribute('src');img.style.display='block'};
+  try{let response=await fetch(kephApi('/api/charlie-keph/avatar'));if(response.ok){let payload=await response.json();if(payload.avatarUrl)applyKephAvatar(payload.avatarUrl)}}catch{}
+}
+function bindKephAssistant(){
+  let form=$('kephForm');if(!form)return;
+  form.onsubmit=e=>{e.preventDefault();askKeph($('kephInput')?.value)};
+  $('kephResetBtn').onclick=()=>{kephMessagesState=[];renderKephMessages();setKephState('Assistant de régie')};
+  document.querySelectorAll('[data-keph-question]').forEach(button=>button.onclick=()=>askKeph(button.dataset.kephQuestion));
+  loadKephAvatar();renderKephMessages();
+}
 function setQuickParticipant(){
   let input=$('quickParticipant');if(!input||!cur())return;
   cur().participant=input.value.trim();let main=$('participantName');if(main)main.value=cur().participant;save();renderParticipant();renderQueue();syncQuickControls();
@@ -964,6 +1047,7 @@ function bindQuickControls(){
   if(exportBtn)exportBtn.onclick=exportCurrentProfile;
   if(importBtn&&importFile){importBtn.onclick=()=>importFile.click();importFile.onchange=importProfileFromFile}
   let configBtn=$('configFullscreenBtn');if(configBtn)configBtn.onclick=()=>setConfigFullscreen(!document.body.classList.contains('config-fullscreen'));
+  bindKephAssistant();
 }
 function syncQuickControls(){
   if(!cur())return;let participant=$('quickParticipant');if(!participant)return;

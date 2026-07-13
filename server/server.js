@@ -17,6 +17,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev-only-change-me";
 const DB_PATH = process.env.DB_PATH ? path.resolve(__dirname, process.env.DB_PATH) : path.join(__dirname, "data", "pykur.sqlite");
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://127.0.0.1:8765";
 const APP_PUBLIC_URL = process.env.APP_PUBLIC_URL || CLIENT_ORIGIN;
+const OLLAMA_URL = process.env.OLLAMA_URL || "http://127.0.0.1:11434";
+const KEPH_MODEL = process.env.KEPH_MODEL || "qwen2.5:3b";
 const ROLE_ORDER = { user: 1, moderator: 2, admin: 3 };
 const PUBLIC_DEPLOYMENT = !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(APP_PUBLIC_URL);
 
@@ -487,6 +489,13 @@ const socialReportLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req) => `user:${req.user.id}`,
   message: { error: "Trop de signalements envoyes. Reessayez plus tard.", code: "REPORT_RATE_LIMITED" }
+});
+const kephLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Keph recoit trop de questions. Reessayez dans quelques secondes.", code: "KEPH_RATE_LIMITED" }
 });
 
 const DEFAULT_ACCOUNT_PREFERENCES = {
@@ -1921,6 +1930,98 @@ function verificationLink(token, client) {
   return url.toString();
 }
 
+const charlieKephKnowledgePath = path.join(__dirname, "charlie-keph-knowledge.json");
+let charlieKephKnowledgeCache = null;
+
+function charlieKephKnowledge() {
+  if (charlieKephKnowledgeCache) return charlieKephKnowledgeCache;
+  try {
+    charlieKephKnowledgeCache = JSON.parse(fs.readFileSync(charlieKephKnowledgePath, "utf8"));
+  } catch (error) {
+    console.warn("[keph] Base de connaissance indisponible.", error.message);
+    charlieKephKnowledgeCache = { features: [], actions: [], principles: [] };
+  }
+  return charlieKephKnowledgeCache;
+}
+
+function kephPublicAvatar() {
+  try {
+    const row = db.prepare("SELECT avatar_url FROM users WHERE lower(pseudo) = lower(?) LIMIT 1").get("Sinaye");
+    return row?.avatar_url || "";
+  } catch {
+    return "";
+  }
+}
+
+function normalizedKephActions(actions, knowledge) {
+  const allowed = new Map((knowledge.actions || []).map((action) => [action.id, action]));
+  return (Array.isArray(actions) ? actions : [])
+    .map((action) => typeof action === "string" ? { id: action } : action)
+    .filter((action) => action && allowed.has(action.id))
+    .slice(0, 4)
+    .map((action) => ({ id: action.id, label: action.label || allowed.get(action.id).label || action.id }));
+}
+
+function fallbackKephAnswer(message, context = {}) {
+  const knowledge = charlieKephKnowledge();
+  const text = String(message || "").toLowerCase();
+  const scored = (knowledge.features || [])
+    .map((feature) => ({
+      feature,
+      score: (feature.keywords || []).reduce((sum, keyword) => sum + (text.includes(String(keyword).toLowerCase()) ? 1 : 0), 0)
+    }))
+    .sort((a, b) => b.score - a.score);
+  const picked = scored.find((item) => item.score > 0)?.feature || knowledge.features?.[0];
+  const participant = context?.participant ? ` Participant actuel : ${context.participant}.` : "";
+  return {
+    answer: (picked?.answer || "Je peux vous guider sur les participants, lots, dialogues, sons, historique et mode Discord. Dites-moi ce que vous voulez faire.") + participant,
+    actions: normalizedKephActions(picked?.actions || ["open_prepare"], knowledge),
+    source: "fallback"
+  };
+}
+
+function kephSystemPrompt() {
+  const knowledge = charlieKephKnowledge();
+  return [
+    "Tu es Keph, assistant de regie de Charlie Roulette.",
+    "Tu aides l'organisateur pendant un live. Reponds en francais, en 2 a 5 phrases maximum.",
+    "Utilise seulement les fonctions presentes dans cette base de connaissance.",
+    "Quand c'est utile, propose des actions dans un tableau actions. N'invente jamais d'id d'action.",
+    "Tu ne modifies jamais les donnees a la place de l'utilisateur.",
+    "Reponds uniquement en JSON valide: {\"answer\":\"...\",\"actions\":[{\"id\":\"...\",\"label\":\"...\"}]}",
+    "Base de connaissance:",
+    JSON.stringify(knowledge)
+  ].join("\n");
+}
+
+async function askOllamaKeph(message, context) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 18000);
+  try {
+    const response = await fetch(`${OLLAMA_URL.replace(/\/+$/, "")}/api/chat`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: KEPH_MODEL,
+        stream: false,
+        format: "json",
+        messages: [
+          { role: "system", content: kephSystemPrompt() },
+          { role: "user", content: JSON.stringify({ question: String(message || "").slice(0, 800), contexte_live: context || {} }) }
+        ],
+        options: { temperature: 0.2, num_ctx: 4096 }
+      })
+    });
+    if (!response.ok) throw new Error(`Ollama HTTP ${response.status}`);
+    const payload = await response.json();
+    const content = payload?.message?.content || payload?.response || "";
+    return JSON.parse(content);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function mailTransport() {
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) return null;
   return nodemailer.createTransport({
@@ -1969,6 +2070,32 @@ async function sendEmailVerificationEmail(user, link) {
 app.get("/api/health", (req, res) => {
   res.json({ ok: true, service: "pykur-tracker", version: "1.6.0" });
 });
+
+app.get("/api/charlie-keph/avatar", (req, res) => {
+  res.json({ avatarUrl: kephPublicAvatar() });
+});
+
+app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
+  const message = String(req.body?.message || "").trim().slice(0, 800);
+  const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
+  if (!message) return res.status(400).json({ error: "Question vide.", code: "KEPH_EMPTY_MESSAGE" });
+  const knowledge = charlieKephKnowledge();
+  try {
+    const ai = await askOllamaKeph(message, context);
+    const answer = String(ai?.answer || "").trim();
+    if (!answer) throw new Error("Reponse vide");
+    res.json({
+      answer: answer.slice(0, 1400),
+      actions: normalizedKephActions(ai?.actions, knowledge),
+      source: "ollama",
+      model: KEPH_MODEL,
+      avatarUrl: kephPublicAvatar()
+    });
+  } catch (error) {
+    const fallback = fallbackKephAnswer(message, context);
+    res.json({ ...fallback, avatarUrl: kephPublicAvatar(), warning: "ollama_unavailable" });
+  }
+}));
 
 app.get("/api/events/living", (req, res) => {
   res.setHeader("Cache-Control", "no-store");

@@ -1,0 +1,106 @@
+{
+  "app": "Charlie Roulette",
+  "assistant": "Keph",
+  "purpose": "Assistant de regie pour guider l'organisateur pendant la preparation et le live.",
+  "principles": [
+    "Repondre en francais, court et actionnable.",
+    "Utiliser les vrais noms de boutons et de menus visibles dans le site.",
+    "Proposer des boutons d'action quand une zone du site peut etre ouverte directement.",
+    "Ne jamais inventer de fonction qui n'existe pas.",
+    "Ne jamais modifier les participants, lots, stocks, sons, historiques ou dialogues sans action explicite de l'utilisateur dans l'interface."
+  ],
+  "sections": [
+    {
+      "id": "before",
+      "title": "Preparer",
+      "description": "Participant actuel, file de participants, nombre de lancers par participant, anti-repetition, checklist et raccourcis.",
+      "actions": ["open_prepare", "open_shortcuts"]
+    },
+    {
+      "id": "wheel",
+      "title": "Lots & roue",
+      "description": "Studio de la roulette pour gerer lots, probabilites, stocks, indisponibilite, images, textes et PNG.",
+      "actions": ["open_wheel_studio_lots", "open_wheel_studio_design"]
+    },
+    {
+      "id": "show",
+      "title": "Scenes",
+      "description": "Scenes Charlie/Victoria, presets, dialogues, emotes, effets speciaux, ciblage et timeline.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "audio",
+      "title": "Sons",
+      "description": "Mute global, volumes, jingles, sons de roulette et sons de scenes.",
+      "actions": ["open_audio"]
+    },
+    {
+      "id": "data",
+      "title": "Sauvegarde",
+      "description": "Historique, correction du dernier tirage, export CSV, profils, import/export de profil complet.",
+      "actions": ["open_data"]
+    }
+  ],
+  "features": [
+    {
+      "id": "dialogues",
+      "keywords": ["dialogue", "replique", "victoria", "charlie", "emote", "effet", "scenario", "scene"],
+      "answer": "Pour ajouter ou modifier une replique, ouvre Reglages > Scenes > Studio de scenarios. Choisis l'etape a gauche, ecris la replique a droite, puis Ajoute la replique. Tu peux choisir le personnage, le ciblage, une emote et un effet special.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "lots",
+      "keywords": ["lot", "probabilite", "drop", "roue", "stock", "indisponible", "png", "image"],
+      "answer": "Pour regler les lots, ouvre le Studio de la roulette. Dans Lots & probabilites tu changes le nom, le poids, l'activation et le stock. Dans Design & PNG tu ajustes les textes et images directement sur la roue.",
+      "actions": ["open_wheel_studio_lots", "open_wheel_studio_design"]
+    },
+    {
+      "id": "participants",
+      "keywords": ["participant", "candidat", "file", "suivant", "lancer", "lancers", "passage"],
+      "answer": "Les participants se gerent dans Preparer. Mets un pseudo par ligne dans la file, charge la file, puis utilise Suivant. Le nombre de lancers par participant se regle dans la liste complete de la file.",
+      "actions": ["open_prepare"]
+    },
+    {
+      "id": "shortcuts",
+      "keywords": ["raccourci", "touche", "clavier", "espace", "entree", "keyboard"],
+      "answer": "Les raccourcis se reglent dans Preparer > Raccourcis. Clique un champ, appuie sur la touche voulue, puis les boutons affichent la touche entre parentheses.",
+      "actions": ["open_shortcuts"]
+    },
+    {
+      "id": "audio",
+      "keywords": ["son", "audio", "jingle", "volume", "mute", "musique", "bruitage"],
+      "answer": "Les sons se reglent dans Sons. Tu peux couper tous les sons, regler les volumes, tester les jingles et assigner des pistes aux scenes.",
+      "actions": ["open_audio"]
+    },
+    {
+      "id": "history",
+      "keywords": ["historique", "gagnant", "export", "csv", "corriger", "annuler", "profil", "sauvegarde"],
+      "answer": "L'historique est dans Sauvegarde. Tu peux voir le dernier gagnant, corriger le dernier tirage, annuler le dernier tirage et exporter en CSV. L'import/export de profil complet est aussi dans cette zone.",
+      "actions": ["open_data"]
+    },
+    {
+      "id": "discord",
+      "keywords": ["discord", "obs", "capture", "scene propre", "plein ecran", "regie", "detacher"],
+      "answer": "Pour une capture propre, utilise Mode Discord pour cacher la regie. Si tu veux garder le controle pendant le live, utilise Detacher la regie : la scene reste propre et la regie pilote dans une autre fenetre.",
+      "actions": ["highlight_discord", "detach_control"]
+    },
+    {
+      "id": "simulation",
+      "keywords": ["simulation", "repetition", "test", "simuler", "checklist"],
+      "answer": "Pour tester le rythme sans toucher aux stocks ni a l'historique, utilise Simuler un passage dans la regie. La checklist pre-live indique aussi si participants, stocks, son et scene sont prets.",
+      "actions": ["highlight_rehearsal"]
+    }
+  ],
+  "actions": [
+    { "id": "open_prepare", "label": "Ouvrir Preparer" },
+    { "id": "open_shortcuts", "label": "Voir les raccourcis" },
+    { "id": "open_wheel_studio_lots", "label": "Ouvrir les lots" },
+    { "id": "open_wheel_studio_design", "label": "Ouvrir le design de roue" },
+    { "id": "open_scenario_studio", "label": "Ouvrir le studio de scenarios" },
+    { "id": "open_audio", "label": "Ouvrir Sons" },
+    { "id": "open_data", "label": "Ouvrir Sauvegarde" },
+    { "id": "highlight_discord", "label": "Montrer Mode Discord" },
+    { "id": "detach_control", "label": "Detacher la regie" },
+    { "id": "highlight_rehearsal", "label": "Montrer Simulation" }
+  ]
+}
