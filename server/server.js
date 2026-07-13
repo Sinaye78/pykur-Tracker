@@ -2505,11 +2505,11 @@ function parseKephCommand(message, context = {}) {
             : "presentation";
   const controlledCommands = [];
   const addControlled = (command) => { if (command && kephCommandAllowed(command) && !controlledCommands.includes(command)) controlledCommands.push(command); };
-  const participantNames = [
+  const participantNames = [...new Set([
     ...(Array.isArray(context.queue) ? context.queue : []),
     context.currentCandidate,
     context.nextParticipant
-  ].map(cleanKephName).filter(Boolean);
+  ].map(cleanKephName).filter(Boolean))];
   const lotNames = Array.isArray(context.lots) ? context.lots.map((lot) => String(lot.name || "")).filter(Boolean) : [];
   const directRename = raw.match(/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s+(?:en|vers)\s+(.+?)(?:[?.!]|$)/i);
   if (directRename) addControlled(`rename_lot ${quoteCommandArg(findKephBestName(lotNames, cleanKephName(directRename[1])) || cleanKephName(directRename[1]))} ${quoteCommandArg(cleanKephName(directRename[2]))}`);
@@ -2520,7 +2520,7 @@ function parseKephCommand(message, context = {}) {
   const parsedQueueNames = explicitQueue ? kephNamesFromListText(explicitQueue[1]) : orderedQueue ? kephNamesFromListText(raw) : [];
   if (parsedQueueNames.length) {
     const normalizedQueueNames = [...new Set(parsedQueueNames.map((name) => findKephBestName(participantNames, name) || name))];
-    const rest = participantNames.filter((name) => !normalizedQueueNames.some((item) => normalizeKephText(item) === normalizeKephText(name)));
+    const rest = explicitQueue ? [] : participantNames.filter((name) => !normalizedQueueNames.some((item) => normalizeKephText(item) === normalizeKephText(name)));
     addControlled(`set_queue ${[...normalizedQueueNames, ...rest].map(quoteCommandArg).join(" ")}`);
   }
   if (/\b(?:discord|obs|scene propre|mode capture)\b/.test(normalized) && /\b(?:active|activer|mets|mode|passe|passer)\b/.test(normalized)) addControlled("discordmode");
@@ -3669,11 +3669,11 @@ function kephCommandPlanFromRules(message, context = {}) {
   const text = normalizeKephText(raw);
   const commands = [];
   const add = (command) => { if (command && kephCommandAllowed(command) && !commands.includes(command)) commands.push(command); };
-  const participantNames = [
+  const participantNames = [...new Set([
     ...(Array.isArray(context.queue) ? context.queue : []),
     context.currentCandidate,
     context.nextParticipant
-  ].map(cleanKephName).filter(Boolean);
+  ].map(cleanKephName).filter(Boolean))];
   const clearQueueRequested = /\b(?:supprime|supprimer|vide|vider|efface|effacer|retire|retirer)\b/.test(text)
     && /\b(?:file|liste|queue|attente|candidats|participants)\b/.test(text);
   if (clearQueueRequested) add("clear_queue");
@@ -3683,7 +3683,7 @@ function kephCommandPlanFromRules(message, context = {}) {
   const queueNames = explicitQueueMatch ? kephNamesFromListText(explicitQueueMatch[1]) : orderQueueRequested ? kephNamesFromListText(raw) : [];
   if (queueNames.length >= 1) {
     const normalizedQueueNames = [...new Set(queueNames.map((name) => findKephBestName(participantNames, name) || name))];
-    const rest = participantNames.filter((name) => !normalizedQueueNames.some((item) => normalizeKephText(item) === normalizeKephText(name)));
+    const rest = explicitQueueMatch ? [] : participantNames.filter((name) => !normalizedQueueNames.some((item) => normalizeKephText(item) === normalizeKephText(name)));
     add(`set_queue ${[...normalizedQueueNames, ...rest].map(quoteCommandArg).join(" ")}`);
   }
   const allLanceMatch = raw.match(/\b(?:mets|met|mettre|donne|change|modifie|modifier|regle|règle)\s+(?:tous|toutes)\s+(?:les\s+)?(?:candidats|participants|joueurs)\s+(?:a|à|sur|avec)\s*(\d{1,2})\s+(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\b/i)
