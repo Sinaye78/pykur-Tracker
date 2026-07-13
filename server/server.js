@@ -3554,7 +3554,7 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
     if (remote) {
       const answer = String(remote?.answer || "").trim();
       if (!answer) throw new Error("Reponse distante vide");
-      const actions = guide.matched ? guide.actions : normalizedKephActions(remote?.actions, knowledge);
+      const actions = guide.matched ? guide.actions : isKephSiteQuestion(message) ? normalizedKephActions(remote?.actions, knowledge) : [];
       return res.json({
         answer: answer.slice(0, 1400),
         actions: actions.length ? actions : (guide.matched ? guide.actions : []),
