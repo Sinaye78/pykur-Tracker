@@ -228,6 +228,18 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_keph_feedback_created ON keph_feedback(created_at);
   CREATE INDEX IF NOT EXISTS idx_keph_feedback_vote ON keph_feedback(vote, created_at);
+
+  CREATE TABLE IF NOT EXISTS keph_command_rejections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    command TEXT NOT NULL,
+    reason TEXT,
+    question TEXT,
+    context_json TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ip_address TEXT,
+    user_agent TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_keph_command_rejections_created ON keph_command_rejections(created_at);
   CREATE TABLE IF NOT EXISTS living_event_schedule (
     id INTEGER PRIMARY KEY CHECK(id = 1),
     sequence INTEGER NOT NULL DEFAULT 0,
@@ -2538,11 +2550,20 @@ function parseKephCommand(message, context = {}) {
     const lines = dialogues.slice(0, 8).map((cue, index) => {
       const who = cue.speaker === "victoria" ? "Victoria" : "Charlie";
       const kind = cue.kind === "me" ? "indication" : "dialogue";
-      return `${index + 1}. ${who} (${kind}) : ${String(cue.text || "").slice(0, 120)}`;
+      return `${index + 1}. id=${cue.id || "sans-id"} · ${who} (${kind}) : ${String(cue.text || "").slice(0, 120)}`;
     });
+    const quickActions = [{ id: "open_scenario_studio", label: "Ouvrir le studio" }];
+    if (trigger === "presentation") {
+      quickActions.push({
+        id: "apply_keph_command_batch",
+        type: "command_batch",
+        label: "Lancer la présentation",
+        payload: { commands: ["startpresentation"] }
+      });
+    }
     return {
-      answer: `Voici les dialogues de l'etape ${label} que je vois dans la regie :\n${lines.join("\n")}${dialogues.length > 8 ? `\n... et ${dialogues.length - 8} autre(s).` : ""}`,
-      actions: [{ id: "open_scenario_studio", label: "Ouvrir le studio" }],
+      answer: `Voici les dialogues de l'etape ${label} que je vois dans la regie, avec leurs ids pour pouvoir les modifier ou les supprimer :\n${lines.join("\n")}${dialogues.length > 8 ? `\n... et ${dialogues.length - 8} autre(s).` : ""}`,
+      actions: quickActions,
       source: "command",
       intent: "list_dialogues"
     };
@@ -3490,6 +3511,229 @@ async function askRemoteKeph(message, context, guidance = null, timeoutMs = KEPH
   }
 }
 
+const KEPH_EDIT_COMMANDS = [
+  { name: "setlance", syntax: 'setlance "participant" nombre', purpose: "Changer le nombre de lancers/tickets d'un participant." },
+  { name: "add_player", syntax: 'add_player "participant" [lancers]', purpose: "Ajouter un participant a la fin de la file." },
+  { name: "setstock", syntax: 'setstock "lot" nombre', purpose: "Changer le stock d'un lot et activer son suivi de stock." },
+  { name: "setpoids", syntax: 'setpoids "lot" nombre', purpose: "Changer le poids/probabilite relative d'un lot." },
+  { name: "rename_lot", syntax: 'rename_lot "ancien lot" "nouveau nom"', purpose: "Renommer un lot existant." },
+  { name: "enable_lot", syntax: 'enable_lot "lot"', purpose: "Activer un lot." },
+  { name: "disable_lot", syntax: 'disable_lot "lot"', purpose: "Desactiver un lot." },
+  { name: "add_lot", syntax: 'add_lot "nom" poids [stock]', purpose: "Creer un nouveau lot simple." },
+  { name: "add_dialogue", syntax: 'add_dialogue "etape" "personnage" "texte" [--emote "..."] [--fx "..."]', purpose: "Ajouter une replique au Studio de scenarios." },
+  { name: "delete_dialogue", syntax: 'delete_dialogue "id"', purpose: "Supprimer une replique par id." },
+  { name: "testeffect", syntax: 'testeffect "effet"', purpose: "Jouer un effet special en apercu sans modifier la sauvegarde." },
+  { name: "testemote", syntax: 'testemote "emote"', purpose: "Afficher une emote de test dans une bulle de dialogue." },
+  { name: "startjingle", syntax: "startjingle", purpose: "Lancer le jingle de debut." },
+  { name: "startpresentation", syntax: "startpresentation", purpose: "Lancer la presentation des candidats." },
+  { name: "startnext", syntax: "startnext", purpose: "Lancer l'annonce du candidat actuel/suivant." },
+  { name: "startfinale", syntax: "startfinale", purpose: "Lancer la scene finale." },
+  { name: "starttestdraw", syntax: "starttestdraw", purpose: "Lancer un tirage test sans stock ni historique." },
+  { name: "startrehearsal", syntax: "startrehearsal", purpose: "Lancer la simulation live complete sans toucher aux stocks." },
+  { name: "startdraw", syntax: "startdraw", purpose: "Lancer un vrai tirage, avec stocks et historique, apres confirmation." },
+  { name: "stopdraw", syntax: "stopdraw", purpose: "Appuyer sur STOP si la roue tourne." },
+  { name: "nextparticipant", syntax: "nextparticipant", purpose: "Passer au participant suivant dans la file." },
+  { name: "discordmode", syntax: "discordmode", purpose: "Basculer en mode scene Discord propre." },
+  { name: "fullscreen", syntax: "fullscreen", purpose: "Basculer l'affichage du navigateur en plein ecran." },
+  { name: "config_fullscreen", syntax: "config_fullscreen", purpose: "Ouvrir la configuration en plein ecran." },
+  { name: "detach_control", syntax: "detach_control", purpose: "Detacher la regie dans une autre fenetre." },
+  { name: "open", syntax: 'open "preparer|roulette|scenarios|sons|donnees"', purpose: "Ouvrir un espace de reglage sans modifier la sauvegarde." }
+];
+
+function isKephEditRequest(message = "") {
+  const text = normalizeKephText(message);
+  if (/\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment fonctionne|que fait|ca sert a quoi)\b/.test(text)) return false;
+  return /\b(?:mets|met|mettre|change|changer|modifie|modifier|ajoute|ajouter|cree|creer|supprime|supprimer|desactive|desactiver|active|activer|renomme|renommer|prepare|preparer|fais moi|faire|genere|generer|test|teste|tester|lance|lancer|joue|jouer|demarre|demarrer|passe|passer|stop|arrete|arret|ouvre|ouvrir|mode)\b/.test(text)
+    && /\b(?:lancer|lance|participant|candidat|joueur|lot|stock|poids|poid|roue|dialogue|replique|jingle|presentation|scenario|scene finale|finale|emote|effet|effets|fx|tirage test|suivant|repetition|simulation|discord|obs|regie|studio|configuration|plein ecran|pleine ecran|fullscreen|detache|detacher)\b/.test(text);
+}
+
+function cleanKephName(value = "") {
+  return String(value || "").trim().replace(/\s+/g, " ").replace(/[.,!?;:]+$/g, "").slice(0, 80);
+}
+
+function quoteCommandArg(value = "") {
+  return `"${String(value || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
+function kephTokenScore(needle = "", candidate = "") {
+  const wanted = normalizeKephText(needle).split(" ").filter((part) => part.length > 1);
+  const hay = normalizeKephText(candidate);
+  if (!wanted.length || !hay) return 0;
+  if (hay === normalizeKephText(needle)) return 100;
+  if (hay.includes(normalizeKephText(needle))) return 80 + wanted.length;
+  const hits = wanted.filter((part) => hay.includes(part)).length;
+  return hits ? hits / wanted.length * 60 + hits : 0;
+}
+
+function findKephBestName(candidates = [], requested = "") {
+  const scored = candidates
+    .map((name) => ({ name, score: kephTokenScore(requested, name) }))
+    .sort((a, b) => b.score - a.score);
+  return scored[0]?.score >= 35 ? scored[0].name : "";
+}
+
+function kephCommandAllowed(command = "") {
+  const name = normalizeKephText(String(command).split(/\s+/)[0] || "");
+  return KEPH_EDIT_COMMANDS.some((entry) => entry.name === name);
+}
+
+function kephCommandPlanFromRules(message, context = {}) {
+  const raw = String(message || "");
+  const text = normalizeKephText(raw);
+  const commands = [];
+  const add = (command) => { if (command && kephCommandAllowed(command)) commands.push(command); };
+  const participantNames = [
+    ...(Array.isArray(context.queue) ? context.queue : []),
+    context.currentCandidate,
+    context.nextParticipant
+  ].map(cleanKephName).filter(Boolean);
+  const lanceMatch = raw.match(/\b(?:mets|met|mettre|donne|change|modifie|modifier|regle|règle)\s+(\d{1,2})\s+(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\s+(?:a|à|pour|de)?\s*([A-Za-z0-9À-ÿ _-]{2,40})\b/i)
+    || raw.match(/\b(?:mets|met|mettre|change|modifie|modifier|regle|règle)\s+([A-Za-z0-9À-ÿ _-]{2,40})\s+(?:a|à|sur|avec)?\s*(\d{1,2})\s+(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\b/i)
+    || raw.match(/\b(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\s+(?:de|pour)\s+([A-Za-z0-9À-ÿ _-]{2,40})\s+(?:a|à|sur|avec)?\s*(\d{1,2})\b/i);
+  if (lanceMatch) {
+    const firstIsNumber = /^\d+$/.test(lanceMatch[1]);
+    const requestedName = cleanKephName(firstIsNumber ? lanceMatch[2] : lanceMatch[1]);
+    const amount = Number(firstIsNumber ? lanceMatch[1] : lanceMatch[2]);
+    const targetName = findKephBestName(participantNames, requestedName) || requestedName;
+    add(`setlance ${quoteCommandArg(targetName)} ${Math.max(1, Math.min(20, amount))}`);
+  }
+  const addPlayerMatch = raw.match(/\b(?:ajoute|ajouter)\s+(?:le\s+)?(?:candidat|participant|joueur)?\s*([A-Za-z0-9À-ÿ _-]{2,40})(?:\s+(?:avec|a|à)\s+(\d{1,2})\s+(?:lancer|lancers|tickets?))?/i);
+  if (!commands.length && addPlayerMatch && /\b(?:file|liste|participant|candidat|joueur)\b/.test(text)) {
+    add(`add_player ${quoteCommandArg(cleanKephName(addPlayerMatch[1]))} ${Math.max(1, Math.min(20, Number(addPlayerMatch[2] || 1)))}`);
+  }
+  const lotNames = Array.isArray(context.lots) ? context.lots.map((lot) => String(lot.name || "")).filter(Boolean) : [];
+  const mentionedLot = lotNames.find((name) => text.includes(normalizeKephText(name)))
+    || findKephBestName(lotNames, raw);
+  const numberMatch = raw.match(/\b(\d{1,4})\b/);
+  const effectAliases = [
+    ["confetti", /\bconfettis?\b/],
+    ["fireworks", /\b(?:feu artifice|feu d artifice|artifice)\b/],
+    ["flash", /\bflash\b/],
+    ["blackout", /\b(?:blackout|coupure|coupure lumiere)\b/],
+    ["spotlights", /\b(?:projecteurs?|spotlights?)\b/],
+    ["spotlight", /\bspotlight\b/],
+    ["shake", /\bshake\b/],
+    ["glitch", /\bglitch\b/],
+    ["stars", /\b(?:etoiles?|stars?)\b/],
+    ["smoke", /\b(?:fumee|smoke)\b/],
+    ["goldwave", /\b(?:vague doree|goldwave)\b/],
+    ["alert", /\b(?:alerte|rouge)\b/]
+  ];
+  const fx = effectAliases.find(([, regex]) => regex.test(text))?.[0];
+  if (/\b(?:test|teste|tester|joue|jouer|montre|lance|lancer)\b/.test(text) && /\b(?:effet|effets|fx|confetti|flash|etoile|star|fumee|glitch|projecteur|spotlight|shake|alerte)\b/.test(text)) {
+    add(`testeffect ${quoteCommandArg(fx || "stars")}`);
+  }
+  const emoteMatch = raw.match(/\b(?:emote|émote)\s+([A-Za-z0-9À-ÿ _-]{2,30})/i) || raw.match(/\b(?:rire|sourire|coeur|surpris|choque|triste|question)\b/i);
+  if (/\b(?:test|teste|tester|montre|affiche|joue|jouer)\b/.test(text) && /\b(?:emote|rire|sourire|coeur|surpris|choque|triste|question)\b/.test(text)) {
+    add(`testemote ${quoteCommandArg(cleanKephName(emoteMatch?.[1] || emoteMatch?.[0] || "rire"))}`);
+  }
+  if (/\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\bjingle\b/.test(text)) add("startjingle");
+  if (/\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\b(?:presentation|presenter les candidats|presente les candidats|la totale)\b/.test(text)) add("startpresentation");
+  if (/\b(?:lance|lancer|joue|jouer|demarre|demarrer|annonce|annoncer|start)\b/.test(text) && /\b(?:candidat suivant|suivant|prochain candidat|la totale)\b/.test(text)) add("startnext");
+  if (/\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\bfinale\b/.test(text)) add("startfinale");
+  if (/\b(?:lance|lancer|joue|jouer|demarre|demarrer|start|test)\b/.test(text) && /\b(?:tirage test|test roue|test roulette)\b/.test(text)) add("starttestdraw");
+  if (/\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\b(?:simulation|repetition|passage complet|la totale)\b/.test(text)) add("startrehearsal");
+  if (/\b(?:lance|lancer|demarre|demarrer|start)\b/.test(text) && /\b(?:vrai tirage|tirage reel|la roue)\b/.test(text) && !/\btest\b/.test(text)) add("startdraw");
+  if (/\b(?:stop|arrete|arreter|arret)\b/.test(text) && /\b(?:roue|tirage)\b/.test(text)) add("stopdraw");
+  if (/\b(?:passe|passer|charge|charger)\b/.test(text) && /\b(?:participant suivant|candidat suivant|suivant)\b/.test(text)) add("nextparticipant");
+  if (/\b(?:discord|obs|scene propre|mode capture)\b/.test(text) && /\b(?:active|activer|mets|mode|passe|passer)\b/.test(text)) add("discordmode");
+  if (/\b(?:plein ecran|pleine ecran|fullscreen)\b/.test(text) && /\b(?:active|activer|mets|passe|passer|ouvre|ouvrir)\b/.test(text) && !/\b(?:configuration|reglages|reglage|config)\b/.test(text)) add("fullscreen");
+  if (/\b(?:configuration|reglages|reglage)\b/.test(text) && /\b(?:plein ecran|pleine ecran|grand|grande)\b/.test(text) && /\b(?:ouvre|ouvrir|active|activer|mets|passe|passer)\b/.test(text)) add("config_fullscreen");
+  if (/\b(?:detache|detacher|separe|separer|ouvre)\b/.test(text) && /\b(?:regie|panneau de controle|controle)\b/.test(text)) add("detach_control");
+  if (/\b(?:ouvre|ouvrir)\b/.test(text) && /\b(?:preparer|avant live)\b/.test(text)) add('open "preparer"');
+  if (/\b(?:ouvre|ouvrir)\b/.test(text) && /\b(?:roulette|roue|lots?)\b/.test(text)) add('open "roulette"');
+  if (/\b(?:ouvre|ouvrir)\b/.test(text) && /\b(?:scenario|scenarios|dialogue|dialogues|replique|repliques)\b/.test(text)) add('open "scenarios"');
+  if (/\b(?:ouvre|ouvrir)\b/.test(text) && /\b(?:son|sons|audio)\b/.test(text)) add('open "sons"');
+  if (/\b(?:ouvre|ouvrir)\b/.test(text) && /\b(?:donnees|historique|sauvegarde)\b/.test(text)) add('open "donnees"');
+  if (mentionedLot && numberMatch && /\b(?:stock)\b/.test(text)) add(`setstock ${quoteCommandArg(mentionedLot)} ${Math.max(0, Math.min(9999, Number(numberMatch[1])))}`);
+  if (mentionedLot && numberMatch && /\b(?:poids|poid|probabilite|proba|chance)\b/.test(text)) add(`setpoids ${quoteCommandArg(mentionedLot)} ${Math.max(0, Math.min(9999, Number(numberMatch[1])))}`);
+  const renameMatch = raw.match(/\b(?:renomme|renommer|appelle|nomme)\b.*?\b(?:en|vers)\s+(.+?)(?:[?.!]|$)/i);
+  if (mentionedLot && renameMatch) add(`rename_lot ${quoteCommandArg(mentionedLot)} ${quoteCommandArg(cleanKephName(renameMatch[1]))}`);
+  if (mentionedLot && /\b(?:desactive|desactiver|coupe|retire)\b/.test(text)) add(`disable_lot ${quoteCommandArg(mentionedLot)}`);
+  if (mentionedLot && /\b(?:active|activer|reactive|reactiver)\b/.test(text)) add(`enable_lot ${quoteCommandArg(mentionedLot)}`);
+  if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && /\b(?:jingle|presentation|finale|resultat|roue|candidat suivant)\b/.test(text) && /\b(?:plusieurs|quelques|3|trois|4|quatre|5|cinq|fais|prepare|genere)\b/.test(text)) {
+    const trigger = /\bfinale\b/.test(text) ? "finale" : /\bresultat\b/.test(text) ? "result" : /\b(?:roue|tirage)\b/.test(text) ? "spin" : /\b(?:suivant|candidat suivant)\b/.test(text) ? "next" : /\bjingle\b/.test(text) ? "jingle" : "presentation";
+    const candidatesPart = raw.split(/(?:candidats?|participants?)\s*:?\s*/i).pop() || "";
+    const names = candidatesPart.split(/,|\bet\b|\n|\r/).map(cleanKephName).filter((name) => /^[A-Za-z0-9À-ÿ _-]{2,40}$/.test(name)).slice(0, 6);
+    const candidates = names.length ? names : (Array.isArray(context.queue) ? context.queue.slice(0, 4) : []);
+    const list = candidates.length ? candidates.join(", ") : "les candidats";
+    add(`add_dialogue ${quoteCommandArg(trigger)} "charlie" ${quoteCommandArg(`Le jingle démarre, ${list} entrent dans la Charlie Roulette.`)} --emote "spark" --fx "spotlights"`);
+    add(`add_dialogue ${quoteCommandArg(trigger)} "victoria" ${quoteCommandArg(`Ce soir, ${list} vont tenter leur chance. Que la roue choisisse avec panache.`)} --emote "smile" --fx "goldwave"`);
+    add(`add_dialogue ${quoteCommandArg(trigger)} "charlie" ${quoteCommandArg("Les règles sont simples : la roue tourne, les lots tombent, et moi je nie toute responsabilité.")} --emote "wink"`);
+    add(`add_dialogue ${quoteCommandArg(trigger)} "victoria" ${quoteCommandArg("Installez-vous, le show commence maintenant.")} --emote "heart" --fx "confetti"`);
+  }
+  if (!commands.length) return null;
+  return {
+    answer: `Je peux preparer ${commands.length} commande${commands.length > 1 ? "s" : ""} controlee${commands.length > 1 ? "s" : ""}. Verifie l'aperçu, puis applique seulement si tout est bon.`,
+    commands
+  };
+}
+
+async function askRemoteKephCommandPlan(message, context = {}, timeoutMs = 7000) {
+  const config = kephRemoteConfig();
+  if (!config) return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const payload = {
+    demande: String(message || "").slice(0, 800),
+    contexte: {
+      participant_actuel: context.currentCandidate || "",
+      file: Array.isArray(context.queue) ? context.queue.slice(0, 20) : [],
+      lots: Array.isArray(context.lots) ? context.lots.slice(0, 20) : [],
+      dialogues: Array.isArray(context.dialogues) ? context.dialogues.slice(0, 30) : []
+    },
+    commandes_autorisees: KEPH_EDIT_COMMANDS
+  };
+  const prompt = [
+    "Tu traduis une demande de l'organisateur Charlie Roulette en commandes internes strictes.",
+    "Tu ne dois jamais inventer une commande hors catalogue.",
+    "Si la demande est creative, genere plusieurs commandes add_dialogue pertinentes.",
+    "Etapes valides add_dialogue: presentation, jingle, idle, spin, result, next, finale.",
+    "Personnages valides: charlie, victoria.",
+    "Effets valides: confetti, fireworks, flash, blackout, spotlights, spotlight, shake, glitch, stars, smoke, goldwave, alert.",
+    "Pour tester un effet, utilise testeffect. Pour tester une emote, utilise testemote.",
+    "Pour piloter le spectacle, utilise startjingle, startpresentation, startnext, startfinale, starttestdraw, startrehearsal, startdraw, stopdraw, nextparticipant, discordmode, fullscreen, config_fullscreen, detach_control.",
+    "Reponds uniquement en JSON: {\"answer\":\"resume court\",\"commands\":[\"commande 1\",\"commande 2\"]}.",
+    JSON.stringify(payload)
+  ].join("\n");
+  try {
+    const body = config.provider === "gemini"
+      ? { contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { temperature: 0.55, maxOutputTokens: 900, responseMimeType: "application/json" } }
+      : { model: config.model, temperature: 0.45, max_tokens: 900, response_format: { type: "json_object" }, messages: [{ role: "user", content: prompt }] };
+    const url = config.provider === "gemini"
+      ? `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent?key=${encodeURIComponent(config.key)}`
+      : config.url;
+    const headers = config.provider === "gemini"
+      ? { "content-type": "application/json" }
+      : { "content-type": "application/json", authorization: `Bearer ${config.key}` };
+    const response = await fetch(url, { method: "POST", headers, signal: controller.signal, body: JSON.stringify(body) });
+    if (!response.ok) throw new Error(`Command API HTTP ${response.status}`);
+    const json = await response.json();
+    const content = config.provider === "gemini"
+      ? json?.candidates?.[0]?.content?.parts?.[0]?.text
+      : json?.choices?.[0]?.message?.content;
+    const parsed = JSON.parse(content || "{}");
+    const commands = (Array.isArray(parsed.commands) ? parsed.commands : [])
+      .map((command) => String(command || "").trim())
+      .filter((command) => command.length <= 900 && kephCommandAllowed(command))
+      .slice(0, 12);
+    if (!commands.length) return null;
+    return { answer: String(parsed.answer || "Je peux preparer ces commandes controlees.").slice(0, 500), commands };
+  } catch (error) {
+    console.warn("[keph] Plan commandes distant indisponible.", error.message);
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function kephCommandPlan(message, context = {}) {
+  if (!isKephEditRequest(message)) return null;
+  const local = kephCommandPlanFromRules(message, context);
+  if (local) return local;
+  return askRemoteKephCommandPlan(message, context);
+}
+
 async function askOllamaKeph(message, context, guidance = null, timeoutMs = 35000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -3609,6 +3853,25 @@ app.get("/api/charlie-keph/status", asyncRoute(async (req, res) => {
 }));
 
 async function resolveKephReply(message, context = {}) {
+  const commandPlan = await kephCommandPlan(message, context);
+  if (commandPlan?.commands?.length) {
+    const commands = commandPlan.commands.slice(0, 12);
+    return {
+      answer: `${commandPlan.answer}\n\n${commands.map((command) => `/${command}`).join("\n")}`,
+      actions: [
+        {
+          id: "apply_keph_command_batch",
+          type: "command_batch",
+          label: `Prévisualiser ${commands.length} commande${commands.length > 1 ? "s" : ""}`,
+          payload: { commands, question: message }
+        }
+      ],
+      source: "command",
+      intent: "command_batch",
+      grounded: true,
+      avatarUrl: kephPublicAvatar()
+    };
+  }
   const knowledge = charlieKephKnowledge();
   const command = parseKephCommand(message, context);
   const commandNeedsConfirmation = command?.source === "command" && Array.isArray(command.actions) && command.actions.some((action) => action?.type);
@@ -3754,6 +4017,32 @@ app.post("/api/charlie-keph/feedback", kephLimiter, asyncRoute(async (req, res) 
     String(req.get("user-agent") || "").slice(0, 300)
   );
   res.json({ ok: true, category, trainingCase, docSuggestion });
+}));
+
+app.post("/api/charlie-keph/command-rejections", kephLimiter, asyncRoute(async (req, res) => {
+  const items = Array.isArray(req.body?.items) ? req.body.items.slice(0, 20) : [];
+  const question = String(req.body?.question || "").trim().slice(0, 1000);
+  const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
+  const stmt = db.prepare(`
+    INSERT INTO keph_command_rejections(command, reason, question, context_json, ip_address, user_agent)
+    VALUES(?,?,?,?,?,?)
+  `);
+  const insertMany = db.transaction((rows) => {
+    rows.forEach((item) => {
+      const command = String(item?.command || "").trim().slice(0, 1000);
+      if (!command) return;
+      stmt.run(
+        command,
+        String(item?.reason || "").trim().slice(0, 500) || null,
+        question || null,
+        JSON.stringify(context).slice(0, 4000),
+        req.ip || null,
+        String(req.get("user-agent") || "").slice(0, 300)
+      );
+    });
+  });
+  insertMany(items);
+  res.json({ ok: true, logged: items.length });
 }));
 
 function classifyKephFeedback(row = {}) {

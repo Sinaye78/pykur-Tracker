@@ -959,6 +959,7 @@ function kephContext(){
     queueTotal:q.length,
     queueRemaining:Math.max(0,q.length-pos-1),
     queuePosition:pos,
+    queue:q.slice(0,30),
     stage:document.querySelector('.stage')?.dataset.state||'ready',
     modeDiscord:!!presenterMode,
     detachedControl:!!detachedControlMode,
@@ -1052,6 +1053,8 @@ function runKephAction(action){
   if(action.type==='play_event_rehearsal')return applyKephEventRehearsal(action);
   if(action.type==='start_test_draw')return applyKephStartTestDraw(action);
   if(action.type==='show_feedback_test_case')return applyKephShowFeedbackTestCase(action);
+  if(action.type==='command_batch')return previewKephCommandBatch(action);
+  if(action.type==='undo_profile_snapshot')return applyKephUndoSnapshot(action);
   if(action.type==='update_feedback_task')return applyKephFeedbackTask(action);
   const actions={
     open_prepare:()=>openKephConfigTab('before'),
@@ -1126,6 +1129,115 @@ function applyKephShowFeedbackTestCase(action){
   if(doc.title)lines.push(`Fiche doc suggeree : ${doc.title}`);
   if(doc.gap)lines.push(`A corriger : ${doc.gap}`);
   kephMessagesState.push({role:'assistant',text:lines.join('\n')});
+  renderKephMessages();
+}
+function tokenizeKephCommand(command){
+  let tokens=[],re=/"((?:\\.|[^"])*)"|'((?:\\.|[^'])*)'|(\S+)/g,match;
+  while((match=re.exec(command)))tokens.push((match[1]??match[2]??match[3]??'').replace(/\\"/g,'"').replace(/\\'/g,"'"));
+  return tokens;
+}
+function kephNorm(value){return String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim()}
+function kephTokenScore(needle,candidate){let wanted=kephNorm(needle).split(' ').filter(part=>part.length>1),hay=kephNorm(candidate);if(!wanted.length||!hay)return 0;if(hay===kephNorm(needle))return 100;if(hay.includes(kephNorm(needle)))return 80+wanted.length;let hits=wanted.filter(part=>hay.includes(part)).length;return hits?hits/wanted.length*60+hits:0}
+function kephFindLotByName(name){let exact=findKephLotTarget({lotName:name});if(exact)return exact;let lots=cur()?.lots||[],best=lots.map((lot,index)=>({lot,index,score:kephTokenScore(name,lot.name)})).sort((a,b)=>b.score-a.score)[0];return best&&best.score>=35?{lot:best.lot,index:best.index}:null}
+function kephFindParticipantName(name){let p=cur(),names=[...(p?.queue||[]),p?.participant].filter(Boolean),wanted=participantDrawKey(name);let exact=names.find(n=>participantDrawKey(n)===wanted);if(exact)return exact;let best=names.map(n=>({name:n,score:kephTokenScore(name,n)})).sort((a,b)=>b.score-a.score)[0];return best&&best.score>=35?best.name:''}
+function kephCommandPreview(command){
+  let tokens=tokenizeKephCommand(command),name=String(tokens.shift()||'').toLowerCase(),p=cur();
+  let fail=reason=>({ok:false,command,label:`/${command}\n  [ERREUR] ${reason}`});
+  if(!p)return fail('Aucun profil actif.');
+  if(name==='setlance'){
+    let requestedPlayer=tokens[0],player=kephFindParticipantName(requestedPlayer),value=Math.max(1,Math.min(20,Math.floor(Number(tokens[1]))));
+    if(!requestedPlayer||!Number.isFinite(value))return fail('Syntaxe attendue: setlance "participant" nombre');
+    if(!player)return fail(`Participant introuvable: ${requestedPlayer}`);
+    let before=participantDrawTarget(player),correction=player!==requestedPlayer?` (corrigé depuis ${requestedPlayer})`:'';
+    return {ok:true,command,label:`${player}: ${before} lancer(s) -> ${value}${correction}`,apply:()=>setParticipantDrawTarget(player,value)};
+  }
+  if(name==='add_player'){
+    let player=tokens[0],draws=Math.max(1,Math.min(20,Math.floor(Number(tokens[1]||1))));
+    if(!player)return fail('Syntaxe attendue: add_player "participant" [lancers]');
+    return {ok:true,command,label:`Ajouter ${player} à la fin de la file (${draws} lancer(s))`,apply:()=>{p.queue=Array.isArray(p.queue)?p.queue:[];p.queue.push(player);ensureQueueDrawSettings(p.queue);setParticipantDrawTarget(player,draws);if(p.queue.length===1){p.queueIndex=0;p.participant=player}}};
+  }
+  if(name==='setstock'||name==='setpoids'||name==='rename_lot'||name==='enable_lot'||name==='disable_lot'){
+    let lotName=tokens[0],target=kephFindLotByName(lotName);
+    if(!target)return fail(`Lot introuvable: ${lotName||'vide'}`);
+    if(name==='setstock'){
+      let value=Math.max(0,Math.min(9999,Math.floor(Number(tokens[1]))));if(!Number.isFinite(value))return fail('Stock invalide.');
+      return {ok:true,command,label:`${target.lot.name}: stock ${target.lot.stockEnabled?target.lot.stock:'non suivi'} -> ${value}`,apply:()=>{target.lot.stockEnabled=true;target.lot.stock=value}};
+    }
+    if(name==='setpoids'){
+      let value=Math.max(0,Math.min(9999,Math.floor(Number(tokens[1]))));if(!Number.isFinite(value))return fail('Poids invalide.');
+      return {ok:true,command,label:`${target.lot.name}: poids ${target.lot.rate||0} -> ${value}`,apply:()=>{target.lot.rate=value;selectedEdit={type:'text',i:target.index}}};
+    }
+    if(name==='rename_lot'){
+      let next=String(tokens[1]||'').trim().slice(0,80);if(!next)return fail('Nouveau nom vide.');
+      return {ok:true,command,label:`Renommer ${target.lot.name} -> ${next}`,apply:()=>{target.lot.name=next;selectedEdit={type:'text',i:target.index}}};
+    }
+    if(name==='enable_lot')return {ok:true,command,label:`Activer le lot ${target.lot.name}`,apply:()=>{target.lot.enabled=true}};
+    if(name==='disable_lot')return {ok:true,command,label:`Désactiver le lot ${target.lot.name}`,apply:()=>{target.lot.enabled=false}};
+  }
+  if(name==='add_lot'){
+    let lotName=tokens[0],rate=Math.max(0,Math.min(9999,Math.floor(Number(tokens[1]||1)))),stockRaw=tokens[2];
+    if(!lotName)return fail('Syntaxe attendue: add_lot "nom" poids [stock]');
+    return {ok:true,command,label:`Créer le lot ${lotName} (poids ${rate}${stockRaw!=null?`, stock ${stockRaw}`:''})`,apply:()=>{p.lots=p.lots||[];p.lots.push({id:'lot-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),name:lotName,rate,enabled:true,stockEnabled:stockRaw!=null,stock:Math.max(0,Math.floor(Number(stockRaw||0))),img:'',color:'#b20d1e',textSize:34,textRadius:280,textAngle:0,imgSize:70,imgRadius:170,imgAngle:0})}};
+  }
+  if(name==='add_dialogue'){
+    let trigger=tokens[0],speaker=String(tokens[1]||'').toLowerCase(),dialogueText=tokens[2];
+    if(!SHOW_TRIGGERS.includes(trigger))return fail(`Étape invalide: ${trigger}`);
+    if(!['charlie','victoria'].includes(speaker))return fail(`Personnage invalide: ${speaker}`);
+    if(!dialogueText)return fail('Texte de réplique vide.');
+    let emote='',fx='',target='all',targetName='';
+    for(let i=3;i<tokens.length;i++){if(tokens[i]==='--emote')emote=tokens[++i]||'';else if(tokens[i]==='--fx')fx=tokens[++i]||'';else if(tokens[i]==='--target'){target='name';targetName=tokens[++i]||''}}
+    if(fx&&!SHOW_EFFECTS[fx])return fail(`Effet inconnu: ${fx}`);
+    return {ok:true,command,label:`Ajouter dialogue ${SHOW_TRIGGER_LABELS[trigger]||trigger} · ${speaker}: ${dialogueText.slice(0,80)}`,apply:()=>{p.customDialogues=p.customDialogues||[];p.customDialogues.push({id:'dialogue-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),enabled:true,kind:'dialogue',speaker,trigger,text:dialogueText.slice(0,600),target,targetName,emote,fx,action:'',condition:'auto',audioId:'',meDuration:5,variant:'principale'});activeCueTrigger=trigger}};
+  }
+  if(name==='delete_dialogue'){
+    let id=tokens[0],item=(p.customDialogues||[]).find(cue=>cue.id===id);
+    if(!item)return fail(`Réplique introuvable: ${id}`);
+    return {ok:true,command,label:`Supprimer la réplique ${id}: ${String(item.text||'').slice(0,80)}`,apply:()=>{p.customDialogues=(p.customDialogues||[]).filter(cue=>cue.id!==id)}};
+  }
+  if(name==='testeffect'){
+    let fx=String(tokens[0]||'stars').toLowerCase();
+    if(!SHOW_EFFECTS[fx])return fail(`Effet inconnu: ${fx}`);
+    return {ok:true,command,label:`Tester l'effet ${SHOW_EFFECTS[fx]}`,apply:()=>playSpecialEffect(fx,'charlie')};
+  }
+  if(name==='testemote'){
+    let emote=String(tokens[0]||'smile').trim();
+    return {ok:true,command,label:`Tester l'emote ${emote}`,apply:()=>displayWheelCue({speaker:'charlie',text:`Test emote : ${emote}`,emote},'idle')};
+  }
+  if(name==='startjingle')return {ok:true,command,label:'Lancer le jingle de début',apply:()=>playIntroJingle()};
+  if(name==='startpresentation')return {ok:true,command,label:'Lancer la présentation des candidats',apply:()=>presentCandidates()};
+  if(name==='startnext')return {ok:true,command,label:'Annoncer le candidat actuel/suivant',apply:()=>callNextCandidate()};
+  if(name==='startfinale')return {ok:true,command,label:'Lancer la scène finale',apply:()=>presentFinale()};
+  if(name==='starttestdraw')return {ok:true,command,label:'Lancer un tirage test',apply:()=>startDraw(true)};
+  if(name==='startrehearsal')return {ok:true,command,label:'Lancer la simulation live complète',apply:()=>startLiveRehearsal()};
+  if(name==='startdraw')return {ok:true,command,label:'Lancer un vrai tirage',apply:()=>startDraw(false)};
+  if(name==='stopdraw')return {ok:true,command,label:'Appuyer sur STOP',apply:()=>$('stopBtn')?.click()};
+  if(name==='nextparticipant')return {ok:true,command,label:'Passer au participant suivant',apply:()=>advanceParticipant()};
+  if(name==='discordmode')return {ok:true,command,label:'Activer le mode Discord/OBS',apply:()=>{if(!presenterMode){interruptExperience();presenterMode=true;localStorage.setItem('charliePresenterMode','1');applyPresenterMode();drawWheel()}}};
+  if(name==='fullscreen')return {ok:true,command,label:'Basculer le plein écran',apply:()=>$('fullscreenBtn')?.click()};
+  if(name==='config_fullscreen')return {ok:true,command,label:'Ouvrir la configuration en grand',apply:()=>setConfigFullscreen(true)};
+  if(name==='detach_control')return {ok:true,command,label:'Détacher la régie dans une autre fenêtre',apply:()=>{if(!detachedControlMode)openDetachedControl()}};
+  if(name==='open'){
+    let target=String(tokens[0]||'').toLowerCase();
+    return {ok:true,command,label:`Ouvrir ${target}`,apply:()=>{({preparer:()=>openKephConfigTab('before'),roulette:()=>{setConfigFullscreen(true);openControlTab('wheel')},scenarios:()=>{setConfigFullscreen(true);openControlTab('show');setTimeout(()=>openScenarioStudio(),80)},sons:()=>openKephConfigTab('audio'),donnees:()=>openKephConfigTab('data')})[target]?.()}};
+  }
+  return fail(`Commande inconnue: ${name}`);
+}
+function refreshAfterKephCommands(){save();renderParticipant();renderQueue();renderLots();renderSettings();renderCueSectionNav();renderCustomDialogues();renderHistory();syncQuickControls();syncEditor();drawWheel();renderStudioStatus?.()}
+async function logKephCommandRejections(items,action){
+  try{await fetch(kephApi('/api/charlie-keph/command-rejections'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({items:items.map(item=>({command:item.command,reason:item.label})),question:action?.payload?.question||'',context:kephContext()})})}catch{}
+}
+function previewKephCommandBatch(action){
+  let commands=(action?.payload?.commands||[]).map(String).filter(Boolean).slice(0,20),previews=commands.map(kephCommandPreview),bad=previews.filter(item=>!item.ok),good=previews.filter(item=>item.ok);
+  let text=['Keph propose ces commandes:',...previews.map(item=>(item.ok?'[OK] ':'[ERREUR] ')+item.label)].join('\n');
+  if(!good.length){kephMessagesState.push({role:'assistant',text:`Je bloque ces commandes :\n${text}`});renderKephMessages();return}
+  if(!confirm(`${text}\n\nAppliquer ${good.length} modification(s) ?${bad.length?'\nLes lignes en erreur seront ignorées.':''}`))return;
+  let snapshot=JSON.stringify(cur());
+  good.forEach(item=>item.apply());refreshAfterKephCommands();
+  kephMessagesState.push({role:'assistant',text:`C'est appliqué : ${good.length} commande(s).`,actions:[{type:'undo_profile_snapshot',id:'undo-keph-commands',label:'Annuler ces commandes',payload:{snapshot}}]});
+  renderKephMessages();
+}
+function applyKephUndoSnapshot(action){
+  try{let restored=JSON.parse(action?.payload?.snapshot||'');if(!restored)throw new Error('snapshot');data.profiles[data.active]=restored;refreshAfterKephCommands();kephMessagesState.push({role:'assistant',text:'C’est annulé : la sauvegarde est revenue à l’état précédent.'})}catch{kephMessagesState.push({role:'assistant',text:'Je n’ai pas réussi à restaurer l’état précédent.'})}
   renderKephMessages();
 }
 function applyKephStartTestDraw(){

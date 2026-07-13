@@ -14,135 +14,351 @@
       "id": "before",
       "title": "Preparer",
       "description": "Participant actuel, file de participants, nombre de lancers par participant, anti-repetition, checklist et raccourcis.",
-      "actions": ["open_prepare", "open_shortcuts"]
+      "actions": [
+        "open_prepare",
+        "open_shortcuts"
+      ]
     },
     {
       "id": "wheel",
       "title": "Lots & roue",
       "description": "Studio de la roulette pour gerer lots, probabilites, stocks, indisponibilite, images, textes et PNG.",
-      "actions": ["open_wheel_studio_lots", "open_wheel_studio_design"]
+      "actions": [
+        "open_wheel_studio_lots",
+        "open_wheel_studio_design"
+      ]
     },
     {
       "id": "show",
       "title": "Scenes",
       "description": "Scenes Charlie/Victoria, presets, dialogues, emotes, effets speciaux, ciblage et timeline.",
-      "actions": ["open_scenario_studio"]
+      "actions": [
+        "open_scenario_studio"
+      ]
     },
     {
       "id": "audio",
       "title": "Sons",
       "description": "Mute global, volumes, jingles, sons de roulette et sons de scenes.",
-      "actions": ["open_audio"]
+      "actions": [
+        "open_audio"
+      ]
     },
     {
       "id": "data",
       "title": "Sauvegarde",
       "description": "Historique, correction du dernier tirage, export CSV, profils, import/export de profil complet.",
-      "actions": ["open_data"]
+      "actions": [
+        "open_data"
+      ]
     }
   ],
   "features": [
     {
       "id": "first_live_steps",
-      "keywords": ["par quoi commencer", "commencer avant live", "premier live", "je suis perdu", "preparer live", "avant live"],
+      "keywords": [
+        "par quoi commencer",
+        "commencer avant live",
+        "premier live",
+        "je suis perdu",
+        "preparer live",
+        "avant live"
+      ],
       "answer": "Commence par Preparer : charge la file de participants, verifie le participant actuel et les lancers. Ensuite verifie Lots & roue pour les poids, stocks et lots disponibles, puis teste Sons et Scenes avec Simuler un passage. Quand la checklist est verte, passe en scene Discord/OBS propre.",
-      "actions": ["open_prepare", "highlight_rehearsal"]
+      "actions": [
+        "open_prepare",
+        "highlight_rehearsal"
+      ]
     },
     {
       "id": "edit_presentation_dialogues",
-      "keywords": ["modifier dialogue presentation", "modifier dialogues presentation", "dialogue presenter candidats", "dialogues presenter candidats", "replique presentation"],
+      "keywords": [
+        "modifier dialogue presentation",
+        "modifier dialogues presentation",
+        "dialogue presenter candidats",
+        "dialogues presenter candidats",
+        "replique presentation"
+      ],
       "answer": "Oui, les dialogues joues par Presenter les candidats sont modifiables. Va dans Reglages > Scenes > Studio de scenarios, choisis l'etape Presentation, puis modifie les repliques existantes ou ajoute-en de nouvelles. Tu peux regler Charlie/Victoria, l'emote, l'effet special et le bruitage. Ca change uniquement l'intro spectacle, pas les stocks ni l'historique.",
-      "actions": ["open_scenario_studio"]
+      "actions": [
+        "open_scenario_studio"
+      ]
     },
     {
       "id": "present_candidates",
-      "keywords": ["presenter candidats", "presentation candidats", "bouton presenter", "presenter les candidats", "a quoi sert presenter"],
+      "keywords": [
+        "presenter candidats",
+        "presentation candidats",
+        "bouton presenter",
+        "presenter les candidats",
+        "a quoi sert presenter"
+      ],
       "answer": "Le bouton Presenter les candidats lance une scene d'introduction avant le tirage. Il sert a afficher/annoncer les candidats, donner du rythme au live et faire intervenir Charlie/Victoria avant de passer au candidat courant. C'est une action de spectacle : elle ne touche pas aux stocks, aux lots ni a l'historique.",
-      "actions": ["open_scenario_studio"]
+      "actions": [
+        "open_scenario_studio"
+      ]
     },
     {
       "id": "live_controls",
-      "keywords": ["lancer", "stop", "tirage test", "bouton stop", "bouton lancer", "bouton suivant", "dernier tirage"],
+      "keywords": [
+        "lancer",
+        "stop",
+        "tirage test",
+        "bouton stop",
+        "bouton lancer",
+        "bouton suivant",
+        "dernier tirage"
+      ],
       "answer": "Les boutons de regie servent au pilotage rapide du live. Lancer demarre un vrai tirage avec stock et historique, Stop arrete la roue quand il devient disponible, Tirage test simule sans consequence, Suivant passe au candidat suivant, et Dernier tirage rappelle le dernier resultat utile en animation.",
-      "actions": ["open_prepare"]
+      "actions": [
+        "open_prepare"
+      ]
     },
     {
       "id": "scene_presets",
-      "keywords": ["preset", "presets", "tirage normal", "pause", "annonce candidat", "scene finale", "resultat"],
+      "keywords": [
+        "preset",
+        "presets",
+        "tirage normal",
+        "pause",
+        "annonce candidat",
+        "scene finale",
+        "resultat"
+      ],
       "answer": "Les presets de scene preparent rapidement l'ambiance : Tirage remet la scene en mode roue, Annonce lance le candidat courant, Pause nettoie la scene, Resultat remet en avant le dernier gagnant, Finale lance la cloture. Ils evitent de chercher plusieurs options pendant le live.",
-      "actions": ["open_scenario_studio"]
+      "actions": [
+        "open_scenario_studio"
+      ]
     },
     {
       "id": "dialogue_audio",
-      "keywords": ["son dialogue", "audio dialogue", "mp3 dialogue", "bruitage dialogue", "son replique", "audio replique", "mp3 replique", "bruitage replique", "mp3", "bibliotheque audio"],
+      "keywords": [
+        "son dialogue",
+        "audio dialogue",
+        "mp3 dialogue",
+        "bruitage dialogue",
+        "son replique",
+        "audio replique",
+        "mp3 replique",
+        "bruitage replique",
+        "mp3",
+        "bibliotheque audio"
+      ],
       "answer": "Oui, tu peux mettre un son MP3/WAV/OGG sur une replique. Va dans Reglages > Scenes > Ouvrir le studio, selectionne ou cree la replique, puis utilise le champ Bruitage dans le panneau de droite. Si le son n'existe pas encore, clique Importer juste a cote du champ Bruitage, choisis ton MP3/WAV/OGG, puis enregistre la replique.",
-      "actions": ["open_scenario_studio"]
+      "actions": [
+        "open_scenario_studio"
+      ]
     },
     {
       "id": "dialogues",
-      "keywords": ["dialogue", "replique", "victoria", "charlie", "emote", "effet", "scenario", "scene"],
+      "keywords": [
+        "dialogue",
+        "replique",
+        "victoria",
+        "charlie",
+        "emote",
+        "effet",
+        "scenario",
+        "scene"
+      ],
       "answer": "Les dialogues servent a piloter ce que Charlie ou Victoria disent selon le moment du live : presentation, roue, resultat, candidat suivant ou finale. Pour en ajouter un, ouvre Reglages > Scenes > Studio de scenarios, choisis l'etape a gauche, ecris la replique a droite, puis Ajoute la replique. Tu peux aussi me demander directement d'ajouter une replique si tu me donnes le texte.",
-      "actions": ["open_scenario_studio"]
+      "actions": [
+        "open_scenario_studio"
+      ]
     },
     {
       "id": "show_options",
-      "keywords": ["charlie show", "dialogues inclus", "dialogues par defaut", "annoncer automatiquement", "option cochable", "candidat suivant automatique"],
+      "keywords": [
+        "charlie show",
+        "dialogues inclus",
+        "dialogues par defaut",
+        "annoncer automatiquement",
+        "option cochable",
+        "candidat suivant automatique"
+      ],
       "answer": "Charlie Show autorise les interventions de Charlie/Victoria pendant le live. Dialogues inclus active les repliques par defaut du site; sans cette option, tu relies surtout tes repliques personnalisees. Annoncer automatiquement le candidat suivant lance l'annonce apres un tirage valide.",
-      "actions": ["open_scenario_studio"]
+      "actions": [
+        "open_scenario_studio"
+      ]
     },
     {
       "id": "lots",
-      "keywords": ["lot", "probabilite", "drop", "roue", "stock", "indisponible", "png", "image"],
+      "keywords": [
+        "lot",
+        "probabilite",
+        "drop",
+        "roue",
+        "stock",
+        "indisponible",
+        "png",
+        "image"
+      ],
       "answer": "Les lots sont les cases de la roue. Le poids regle la chance relative de tomber dessus, le stock permet de rendre un lot indisponible quand il est epuise, et l'activation masque un lot sans le supprimer. Dans le Studio de la roulette, Lots & probabilites gere les valeurs, Design & PNG gere l'affichage.",
-      "actions": ["open_wheel_studio_lots", "open_wheel_studio_design"]
+      "actions": [
+        "open_wheel_studio_lots",
+        "open_wheel_studio_design"
+      ]
     },
     {
       "id": "participants",
-      "keywords": ["participant", "candidat", "file", "suivant", "lancer", "lancers", "passage"],
+      "keywords": [
+        "participant",
+        "candidat",
+        "file",
+        "suivant",
+        "lancer",
+        "lancers",
+        "passage"
+      ],
       "answer": "Les participants sont la file de passage du live. Dans Preparer, mets un pseudo par ligne, charge la file, puis utilise Suivant pour avancer. Le nombre de lancers par participant se regle dans la liste complete : pratique si un candidat a plusieurs tickets ou tentatives.",
-      "actions": ["open_prepare"]
+      "actions": [
+        "open_prepare"
+      ]
     },
     {
       "id": "shortcuts",
-      "keywords": ["raccourci", "touche", "clavier", "espace", "entree", "keyboard"],
+      "keywords": [
+        "raccourci",
+        "touche",
+        "clavier",
+        "espace",
+        "entree",
+        "keyboard"
+      ],
       "answer": "Les raccourcis clavier servent a piloter vite sans chercher les boutons pendant le live : lancer, stop, test, jingles, presenter, candidat, finale et mode Discord. Ils reduisent les erreurs quand tu regardes OBS/Discord ou que tu animes en meme temps. Tu peux les modifier dans Preparer > Raccourcis : clique un champ, appuie sur la touche voulue, puis la touche apparait entre parentheses sur les boutons.",
-      "actions": ["open_shortcuts"]
+      "actions": [
+        "open_shortcuts"
+      ]
     },
     {
       "id": "audio",
-      "keywords": ["son", "audio", "jingle", "volume", "mute", "musique", "bruitage"],
+      "keywords": [
+        "son",
+        "audio",
+        "jingle",
+        "volume",
+        "mute",
+        "musique",
+        "bruitage"
+      ],
       "answer": "La section Sons controle l'ambiance du live : mute global, volume des jingles, volume de la roulette, jingles de debut/fin et sons de scenes. C'est utile pour tester le niveau avant Discord/OBS et eviter qu'un son couvre la voix.",
-      "actions": ["open_audio"]
+      "actions": [
+        "open_audio"
+      ]
     },
     {
       "id": "history",
-      "keywords": ["historique", "gagnant", "export", "csv", "corriger", "annuler", "profil", "sauvegarde"],
+      "keywords": [
+        "historique",
+        "gagnant",
+        "export",
+        "csv",
+        "corriger",
+        "annuler",
+        "profil",
+        "sauvegarde"
+      ],
       "answer": "L'historique sert de journal d'animation : dernier gagnant, total des tirages, gagnants par participant, correction du dernier tirage et export CSV. Dans Sauvegarde, tu peux aussi exporter/importer un profil complet pour garder participants, lots, sons, dialogues et stocks.",
-      "actions": ["open_data"]
+      "actions": [
+        "open_data"
+      ]
     },
     {
       "id": "discord",
-      "keywords": ["discord", "obs", "capture", "scene propre", "plein ecran", "regie", "detacher"],
+      "keywords": [
+        "discord",
+        "obs",
+        "capture",
+        "scene propre",
+        "plein ecran",
+        "regie",
+        "detacher"
+      ],
       "answer": "Mode Discord cache la regie pour que la capture OBS/Discord ne montre que la scene publique. Si tu veux garder le controle sans polluer la capture, utilise Detacher la regie : la fenetre principale reste propre et la regie pilote dans une autre fenetre.",
-      "actions": ["highlight_discord", "detach_control"]
+      "actions": [
+        "highlight_discord",
+        "detach_control"
+      ]
     },
     {
       "id": "simulation",
-      "keywords": ["simulation", "repetition", "test", "simuler", "passage", "checklist"],
+      "keywords": [
+        "simulation",
+        "repetition",
+        "test",
+        "simuler",
+        "passage",
+        "checklist"
+      ],
       "answer": "La simulation sert a repeter un passage complet sans consommer de stock ni remplir l'historique. La checklist pre-live verifie les points essentiels avant de lancer : participants, lots disponibles, stocks OK, son actif, scene propre et raccourcis configures.",
-      "actions": ["highlight_rehearsal"]
+      "actions": [
+        "highlight_rehearsal"
+      ]
+    },
+    {
+      "id": "keph_commands",
+      "keywords": [
+        "commande keph",
+        "setlance",
+        "setstock",
+        "setpoids",
+        "add_dialogue",
+        "testeffect",
+        "testemote",
+        "startjingle",
+        "startpresentation",
+        "startnext",
+        "startfinale",
+        "fullscreen",
+        "detach_control",
+        "modifier avec keph"
+      ],
+      "answer": "Keph peut preparer des commandes controlees pour modifier ou piloter la regie. Chaque commande est previsualisee et doit etre confirmee avant application. Les commandes couvrent participants, lancers, lots, stocks, poids, dialogues, effets, emotes, jingle, presentation, candidat suivant, finale, simulation, Discord, plein ecran, configuration plein ecran, regie detachee et ouverture de menus.",
+      "actions": [
+        "open_prepare"
+      ]
     }
   ],
   "actions": [
-    { "id": "open_prepare", "label": "Ouvrir Preparer" },
-    { "id": "open_shortcuts", "label": "Voir les raccourcis" },
-    { "id": "open_wheel_studio_lots", "label": "Ouvrir les lots" },
-    { "id": "open_wheel_studio_design", "label": "Ouvrir le design de roue" },
-    { "id": "open_scenario_studio", "label": "Ouvrir le studio de scenarios" },
-    { "id": "open_audio", "label": "Ouvrir Sons" },
-    { "id": "open_data", "label": "Ouvrir Sauvegarde" },
-    { "id": "highlight_discord", "label": "Montrer Mode Discord" },
-    { "id": "detach_control", "label": "Detacher la regie" },
-    { "id": "highlight_rehearsal", "label": "Montrer Simulation" }
+    {
+      "id": "open_prepare",
+      "label": "Ouvrir Preparer"
+    },
+    {
+      "id": "open_shortcuts",
+      "label": "Voir les raccourcis"
+    },
+    {
+      "id": "open_wheel_studio_lots",
+      "label": "Ouvrir les lots"
+    },
+    {
+      "id": "open_wheel_studio_design",
+      "label": "Ouvrir le design de roue"
+    },
+    {
+      "id": "open_scenario_studio",
+      "label": "Ouvrir le studio de scenarios"
+    },
+    {
+      "id": "open_audio",
+      "label": "Ouvrir Sons"
+    },
+    {
+      "id": "open_data",
+      "label": "Ouvrir Sauvegarde"
+    },
+    {
+      "id": "highlight_discord",
+      "label": "Montrer Mode Discord"
+    },
+    {
+      "id": "detach_control",
+      "label": "Detacher la regie"
+    },
+    {
+      "id": "highlight_rehearsal",
+      "label": "Montrer Simulation"
+    }
   ]
 }
