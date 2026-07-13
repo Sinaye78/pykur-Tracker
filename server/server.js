@@ -1971,12 +1971,14 @@ function fallbackKephAnswer(message, context = {}) {
       score: (feature.keywords || []).reduce((sum, keyword) => sum + (text.includes(String(keyword).toLowerCase()) ? 1 : 0), 0)
     }))
     .sort((a, b) => b.score - a.score);
-  const picked = scored.find((item) => item.score > 0)?.feature || knowledge.features?.[0];
+  const best = scored.find((item) => item.score > 0);
+  const picked = best?.feature || knowledge.features?.[0];
   const participant = context?.participant ? ` Participant actuel : ${context.participant}.` : "";
   return {
     answer: (picked?.answer || "Je peux vous guider sur les participants, lots, dialogues, sons, historique et mode Discord. Dites-moi ce que vous voulez faire.") + participant,
     actions: normalizedKephActions(picked?.actions || ["open_prepare"], knowledge),
-    source: "fallback"
+    source: "fallback",
+    matched: !!best
   };
 }
 
@@ -2080,22 +2082,22 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
   if (!message) return res.status(400).json({ error: "Question vide.", code: "KEPH_EMPTY_MESSAGE" });
   const knowledge = charlieKephKnowledge();
+  const guide = fallbackKephAnswer(message, context);
+  if (guide.matched) return res.json({ ...guide, source: "guide", avatarUrl: kephPublicAvatar() });
   try {
     const ai = await askOllamaKeph(message, context);
     const answer = String(ai?.answer || "").trim();
     if (!answer) throw new Error("Reponse vide");
-    const fallback = fallbackKephAnswer(message, context);
     const actions = normalizedKephActions(ai?.actions, knowledge);
     res.json({
       answer: answer.slice(0, 1400),
-      actions: actions.length ? actions : fallback.actions,
+      actions: actions.length ? actions : guide.actions,
       source: "ollama",
       model: KEPH_MODEL,
       avatarUrl: kephPublicAvatar()
     });
   } catch (error) {
-    const fallback = fallbackKephAnswer(message, context);
-    res.json({ ...fallback, avatarUrl: kephPublicAvatar(), warning: "ollama_unavailable" });
+    res.json({ ...guide, avatarUrl: kephPublicAvatar(), warning: "ollama_unavailable" });
   }
 }));
 
