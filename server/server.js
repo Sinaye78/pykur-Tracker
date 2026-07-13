@@ -3994,7 +3994,7 @@ async function askRemoteKephCommandPlan(message, context = {}, timeoutMs = 7000)
     const commands = (Array.isArray(parsed.commands) ? parsed.commands : [])
       .map((command) => String(command || "").trim())
       .filter((command) => command.length <= 900 && kephCommandAllowed(command))
-      .slice(0, 12);
+      .slice(0, 20);
     if (!commands.length) return null;
     return { answer: String(parsed.answer || "Je peux preparer ces commandes controlees.").slice(0, 500), commands };
   } catch (error) {
@@ -4133,7 +4133,7 @@ app.get("/api/charlie-keph/status", asyncRoute(async (req, res) => {
 async function resolveKephReply(message, context = {}) {
   const commandPlan = await kephCommandPlan(message, context);
   if (commandPlan?.commands?.length) {
-    const commands = commandPlan.commands.slice(0, 12);
+    const commands = commandPlan.commands.slice(0, 20);
     return {
       answer: `${commandPlan.answer}\n\n${commands.map((command) => `/${command}`).join("\n")}`,
       actions: [
