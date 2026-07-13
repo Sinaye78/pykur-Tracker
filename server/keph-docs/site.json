@@ -43,7 +43,7 @@
       "instant": true,
       "answer": "Charlie Roulette sert a animer un tirage en live comme une petite emission. Tu prepares des participants, des lots, des stocks, des sons et des dialogues, puis tu pilotes une scene publique propre pour Discord/OBS. La regie controle le live; les reglages preparent la roue et le spectacle.",
       "actions": ["open_prepare"],
-      "examples": ["a quoi sert le site ?", "c est quoi Charlie Roulette ?"]
+      "examples": ["a quoi sert le site ?", "a quoi sert l application ?", "c est quoi Charlie Roulette ?"]
     },
     {
       "id": "first_live_steps",
@@ -53,7 +53,7 @@
       "instant": true,
       "answer": "Commence par Preparer : charge la file de participants, verifie le participant actuel et les lancers. Ensuite verifie Lots & roue pour les poids, stocks et lots disponibles, puis teste Sons et Scenes avec Simuler un passage. Quand la checklist est verte, passe en scene Discord/OBS propre.",
       "actions": ["open_prepare", "highlight_rehearsal"],
-      "examples": ["par quoi je commence ?", "quoi verifier avant un live ?"]
+      "examples": ["par quoi je commence ?", "par quoi je dois commencer avant un live ?", "quoi verifier avant un live ?"]
     },
     {
       "id": "live_controls",
@@ -167,6 +167,16 @@
       "instant": true,
       "answer": "Les effets speciaux disponibles sont : confettis, feu d'artifice, flash plateau, coupure lumiere, projecteurs, spotlight, shake leger, glitch, pluie d'etoiles, fumee, vague doree et alerte rouge. Ils se reglent sur une replique dans le Studio de scenarios.",
       "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "make_show_lively",
+      "section": "show",
+      "title": "Rendre le show plus vivant",
+      "keywords": ["show vivant", "rendre le show vivant", "plus vivant", "ambiance", "rythme", "mettre de la vie", "spectacle vivant", "dynamique"],
+      "instant": true,
+      "answer": "Pour rendre le show plus vivant, travaille surtout trois leviers : des dialogues courts par etape, une emote adaptee sur les phrases importantes, et un effet special ou bruitage seulement sur les moments forts. Le plus propre est de partir du Studio de scenarios : Presentation pour poser l'ambiance, Pendant la roue pour le suspense, Resultat pour la reaction, puis Finale pour conclure.",
+      "actions": ["open_scenario_studio"],
+      "examples": ["comment rendre le show plus vivant ?", "comment mettre plus d ambiance ?"]
     },
     {
       "id": "show_options",

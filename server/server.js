@@ -2355,7 +2355,7 @@ function kephDocumentationSearch(message, context = {}) {
 
 function isKephSiteQuestion(message) {
   const text = normalizeKephText(message);
-  return /\b(?:charlie|victoria|roulette|regie|roue|lot|lots|stock|poids|participant|candidat|dialogue|replique|scenario|scene|jingle|son|audio|discord|obs|historique|profil|raccourci|lancer|stop|tirage|configuration|keph|emote|effet|ciblage)\b/.test(text);
+  return /\b(?:site|application|bouton|option|live|preparer|studio|show|charlie|victoria|roulette|regie|roue|lot|lots|stock|poids|participant|candidat|dialogue|replique|scenario|scene|jingle|son|audio|bruitage|mp3|discord|obs|historique|profil|sauvegarde|raccourci|lancer|stop|tirage|configuration|keph|emote|effet|ciblage)\b/.test(text);
 }
 
 function kephDiagnostics(message, context = {}) {
@@ -3316,7 +3316,7 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   const command = parseKephCommand(message, context);
   if (command?.source === "command") return res.json({ ...command, avatarUrl: kephPublicAvatar() });
   const guide = command || fallbackKephAnswer(message, context);
-  if (guide.matched && ["direct", "ui_map", "diagnostic", "doc"].includes(guide.source)) return res.json({ ...guide, source: guide.source === "doc" ? "doc" : "guide", avatarUrl: kephPublicAvatar() });
+  if (guide.matched && ["direct", "ui_map", "diagnostic", "doc", "conversation"].includes(guide.source)) return res.json({ ...guide, source: guide.source === "doc" ? "doc" : "guide", avatarUrl: kephPublicAvatar() });
   try {
     const ai = await askOllamaKeph(message, context, guide.matched ? guide : null);
     const answer = String(ai?.answer || "").trim();
