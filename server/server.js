@@ -2392,6 +2392,62 @@ function parseKephCommand(message, context = {}) {
         : /\b(?:roue|tirage|rotation|pendant)\b/.test(normalized) ? "spin"
           : /\bjingle\b/.test(normalized) ? "jingle"
             : "presentation";
+  if (/\bcharlie show\b/.test(normalized)) {
+    return {
+      answer: "Charlie Show active les interventions de Charlie/Victoria pendant le live. Si c'est coupe, la roue peut rester plus sobre et les scenes parlent moins. Si c'est active, tes dialogues, emotes, effets et reactions peuvent donner de la vie au tirage.",
+      actions: [{ id: "open_scenario_studio", label: "Ouvrir le studio" }],
+      source: "command",
+      intent: "explain_charlie_show"
+    };
+  }
+  if (/\b(?:dialogues inclus|dialogue inclus|dialogues par defaut|dialogue par defaut)\b/.test(normalized)) {
+    return {
+      answer: "Dialogues inclus active les repliques par defaut fournies avec le site. Si tu le laisses active, Charlie/Victoria peuvent parler meme si tu n'as pas encore tout personnalise. Si tu le coupes, le show utilisera surtout tes dialogues personnalises du Studio de scenarios.",
+      actions: [{ id: "open_scenario_studio", label: "Ouvrir le studio" }],
+      source: "command",
+      intent: "explain_default_dialogues"
+    };
+  }
+  if (/\b(?:dialogue parle|indication scenique|slash me|\/me)\b/.test(normalized)) {
+    return {
+      answer: "Dialogue parle affiche une vraie bulle de parole pour Charlie ou Victoria. Indication scenique est plus discrete : elle decrit une action de scene, comme un /me, par exemple Charlie observe la roue. Utilise Dialogue parle pour un texte important, et Indication scenique pour donner de la vie sans couper le rythme.",
+      actions: [{ id: "open_scenario_studio", label: "Ouvrir le studio" }],
+      source: "command",
+      intent: "explain_dialogue_types"
+    };
+  }
+  if (/\b(?:liste|lister|quels sont|c est quoi|donne moi)\b/.test(normalized) && /\b(?:effet|effets|fx|speciaux|spÃ©ciaux)\b/.test(normalized)) {
+    return {
+      answer: "Les effets speciaux disponibles sont : confettis, feu d'artifice, flash plateau, coupure lumiere, projecteurs, spotlight, shake leger, glitch, pluie d'etoiles, fumee, vague doree et alerte rouge. Ils se reglent sur une replique dans le Studio de scenarios.",
+      actions: [{ id: "open_scenario_studio", label: "Ouvrir le studio" }],
+      source: "command",
+      intent: "list_effects"
+    };
+  }
+  if (/\b(?:liste|lister|affiche|afficher|montre|montrer|donne moi|quels sont)\b/.test(normalized) && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(normalized)) {
+    const trigger = triggerFromText();
+    const dialogues = (Array.isArray(context.dialogues) ? context.dialogues : []).filter((cue) => String(cue.trigger || "") === trigger);
+    const label = triggerLabels[trigger] || trigger;
+    if (!dialogues.length) {
+      return {
+        answer: `Je ne vois aucun dialogue personnalise dans l'etape ${label} avec le contexte actuel. Ouvre le Studio de scenarios pour verifier l'etape ou en ajouter.`,
+        actions: [{ id: "open_scenario_studio", label: "Ouvrir le studio" }],
+        source: "command",
+        intent: "list_dialogues_empty"
+      };
+    }
+    const lines = dialogues.slice(0, 8).map((cue, index) => {
+      const who = cue.speaker === "victoria" ? "Victoria" : "Charlie";
+      const kind = cue.kind === "me" ? "indication" : "dialogue";
+      return `${index + 1}. ${who} (${kind}) : ${String(cue.text || "").slice(0, 120)}`;
+    });
+    return {
+      answer: `Voici les dialogues de l'etape ${label} que je vois dans la regie :\n${lines.join("\n")}${dialogues.length > 8 ? `\n... et ${dialogues.length - 8} autre(s).` : ""}`,
+      actions: [{ id: "open_scenario_studio", label: "Ouvrir le studio" }],
+      source: "command",
+      intent: "list_dialogues"
+    };
+  }
   const greetingOnly = /^(?:bonjour|salut|coucou|hello|yo|hey)(?:\s+(?:ca va|ça va|cv|comment ca va|comment vas tu|tu vas bien))?\s*\??$/.test(normalized);
   if (greetingOnly || /^(?:ca va|comment ca va|comment vas tu|tu vas bien)\s*\??$/.test(normalized)) {
     return {
