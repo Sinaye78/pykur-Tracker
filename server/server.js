@@ -19,7 +19,7 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://127.0.0.1:8765";
 const APP_PUBLIC_URL = process.env.APP_PUBLIC_URL || CLIENT_ORIGIN;
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://127.0.0.1:11434";
 const KEPH_MODEL = process.env.KEPH_MODEL || "qwen2.5:1.5b";
-const KEPH_AI_TIMEOUT_MS = Number(process.env.KEPH_AI_TIMEOUT_MS || 3000);
+const KEPH_AI_TIMEOUT_MS = Number(process.env.KEPH_AI_TIMEOUT_MS || 4500);
 const ROLE_ORDER = { user: 1, moderator: 2, admin: 3 };
 const PUBLIC_DEPLOYMENT = !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(APP_PUBLIC_URL);
 
@@ -3257,6 +3257,7 @@ async function askOllamaKeph(message, context, guidance = null, timeoutMs = 3500
         model: KEPH_MODEL,
         stream: false,
         format: "json",
+        keep_alive: "30m",
         messages: [
           { role: "system", content: kephSystemPrompt() },
           { role: "user", content: JSON.stringify({
@@ -3268,7 +3269,7 @@ async function askOllamaKeph(message, context, guidance = null, timeoutMs = 3500
             bonnes_reponses_likees: recentKephPositiveExamples(message)
           }) }
         ],
-        options: { temperature: 0.35, num_ctx: 1536, num_predict: 110 }
+        options: { temperature: 0.25, num_ctx: 1024, num_predict: 75 }
       })
     });
     if (!response.ok) throw new Error(`Ollama HTTP ${response.status}`);
