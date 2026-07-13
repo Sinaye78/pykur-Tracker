@@ -2553,6 +2553,36 @@ function parseKephCommand(message, context = {}) {
     const rest = explicitQueue ? [] : participantNames.filter((name) => !normalizedQueueNames.some((item) => normalizeKephText(item) === normalizeKephText(name)));
     addControlled(`set_queue ${[...normalizedQueueNames, ...rest].map(quoteCommandArg).join(" ")}`);
   }
+  if (/\b(?:file|liste|queue|candidats|participants)\b/.test(normalized) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(normalized)) {
+    const names = kephNamesFromListText(raw.split(/:|avec|pour/i).pop() || raw);
+    const picked = names.length >= 2 ? names : ["Mira", "Grobid", "Tofu-Royal"];
+    addControlled(`set_queue ${picked.slice(0, 6).map(quoteCommandArg).join(" ")}`);
+  }
+  if (/\b(?:roue|roulette|lots?)\b/.test(normalized) && /\b(?:complete|6|six|cree|creer|genere|generer)\b/.test(normalized)) {
+    const lots = [
+      ["Ticket VIP du Chaos", 26, 4, "#c1121f"],
+      ["Bourse qui clignote 200.000k", 18, 3, "#023e8a"],
+      ["Relance du Destin", 16, 2, "#ffd60a"],
+      ["Cadeau mystere suspect", 14, 2, "#2dc653"],
+      ["Malus: compliment a Charlie", 12, 5, "#6f2dbd"],
+      ["Jackpot des Kamavores", 6, 1, "#f77f00"]
+    ];
+    addControlled("clear_lots");
+    lots.forEach(([name, weight, stock, color]) => {
+      addControlled(`add_lot ${quoteCommandArg(name)} ${weight} ${stock}`);
+      addControlled(`set_lot_color ${quoteCommandArg(name)} ${quoteCommandArg(color)}`);
+    });
+  }
+  if (/\b(?:regle|regler|configure|configurer)\b/.test(normalized) && /\b(?:show|profil|dynamique|anti repetition|humeur|dialogues)\b/.test(normalized)) {
+    addControlled('set_setting "antiRepeatEnabled" "true"');
+    addControlled('set_setting "antiRepeatMode" "session"');
+    addControlled('set_setting "defaultDialoguesEnabled" "false"');
+    addControlled('set_setting "showFrequency" "normal"');
+    addControlled('set_setting "dialogueMode" "timed"');
+    addControlled('set_setting "dialogueDuration" "7"');
+    addControlled('set_setting "charlieMood" "taquin"');
+    addControlled('set_setting "launchTrollChance" "12"');
+  }
   if (/\b(?:discord|obs|scene propre|mode capture)\b/.test(normalized) && /\b(?:active|activer|mets|mode|passe|passer)\b/.test(normalized)) addControlled("discordmode");
   if (/\b(?:detache|detacher|separe|separer)\b/.test(normalized) && /\b(?:regie|controle|panneau)\b/.test(normalized)) addControlled("detach_control");
   if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(normalized) && /\b(?:jingle|presentation|finale|resultat|roue|candidat suivant)\b/.test(normalized) && /\b(?:plusieurs|quelques|3|trois|4|quatre|5|cinq|fais|faire|prepare|preparer|genere|generer)\b/.test(normalized)) {
@@ -3862,7 +3892,7 @@ function kephCommandPlanFromRules(message, context = {}) {
   if (mentionedLot && /\b(?:desactive|desactiver|coupe|retire)\b/.test(text)) add(`disable_lot ${quoteCommandArg(mentionedLot)}`);
   if (mentionedLot && /\b(?:active|activer|reactive|reactiver)\b/.test(text)) add(`enable_lot ${quoteCommandArg(mentionedLot)}`);
   if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && /\b(?:jingle|presentation|finale|resultat|roue|candidat suivant|suivant|idle|temps mort)\b/.test(text) && /\b(?:plusieurs|quelques|3|trois|4|quatre|5|cinq|fais|faire|ecris|ecrire|redige|rediger|prepare|preparer|genere|generer)\b/.test(text)) {
-    const trigger = /\bfinale\b/.test(text) ? "finale" : /\bresultat\b/.test(text) ? "result" : /\b(?:roue|tirage)\b/.test(text) ? "spin" : /\b(?:suivant|candidat suivant)\b/.test(text) ? "next" : /\bjingle\b/.test(text) ? "jingle" : "presentation";
+    const trigger = /\b(?:idle|temps mort|attend trop)\b/.test(text) ? "idle" : /\bfinale\b/.test(text) ? "finale" : /\bresultat\b/.test(text) ? "result" : /\b(?:roue|tirage)\b/.test(text) ? "spin" : /\b(?:suivant|candidat suivant)\b/.test(text) ? "next" : /\bjingle\b/.test(text) ? "jingle" : "presentation";
     const candidatesPart = raw.split(/(?:candidats?|participants?)\s*:?\s*/i).pop() || "";
     const names = candidatesPart.split(/,|\bet\b|\n|\r/).map(cleanKephName).filter((name) => /^[A-Za-z0-9À-ÿ _-]{2,40}$/.test(name)).slice(0, 6);
     const candidates = names.length ? names : (Array.isArray(context.queue) ? context.queue.slice(0, 4) : []);
