@@ -2071,7 +2071,7 @@ function directKephAnswer(message) {
     {
       intent: "explain_lot_weight",
       test: () => /\b(?:poid|poids|probabilite|proba|chance|taux)\b/.test(text) && /\b(?:case|lot|roue)\b/.test(text),
-      answer: `${yesNo ? "Oui. " : ""}Le poids d'une case se modifie dans Reglages > Lots & roue > Ouvrir le studio de la roulette, onglet Lots & probabilites. Plus le poids est haut, plus le lot a de chances de sortir par rapport aux autres lots. Exemple simple : si un lot est a 10 et un autre a 20, le deuxieme sort environ deux fois plus souvent. Tu peux aussi me demander "mets le poids du lot X a 10" et je te preparerai une action a confirmer.`,
+      answer: `${yesNo ? "Oui, c'est exactement fait pour ca. " : ""}Dans Reglages > Lots & roue > Ouvrir le studio de la roulette, onglet Lots & probabilites, tu peux changer le poids de chaque case. Le poids, c'est sa chance relative : un lot a 20 sort environ deux fois plus souvent qu'un lot a 10. Tu peux aussi me demander "mets le poids du lot X a 10" et je te preparerai le bouton Appliquer.`,
       actions: ["open_wheel_studio_lots"]
     },
     {
@@ -2094,7 +2094,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "explain_dialogue_audio",
-      test: () => /\b(?:son|audio|mp3|wav|ogg|bruitage)\b/.test(text) && /\b(?:dialogue|replique|phrase)\b/.test(text),
+      test: () => /\b(?:son|audio|mp3|wav|ogg|bruitage)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text),
       answer: "Oui, une replique peut avoir son propre son. Ouvre le Studio de scenarios, selectionne la replique, puis utilise le champ de bruitage/son de replique dans son edition. Si ton fichier n'apparait pas, importe d'abord le MP3/WAV/OGG dans la bibliotheque audio des scenes.",
       actions: ["open_scenario_studio"]
     },
