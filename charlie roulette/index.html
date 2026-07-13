@@ -1018,6 +1018,8 @@ function runKephAction(action){
   if(action.type==='preview_cue_section')return applyKephPreviewCueSection(action);
   if(action.type==='play_jingle')return applyKephPlayJingle(action);
   if(action.type==='play_event_rehearsal')return applyKephEventRehearsal(action);
+  if(action.type==='start_test_draw')return applyKephStartTestDraw(action);
+  if(action.type==='show_feedback_test_case')return applyKephShowFeedbackTestCase(action);
   if(action.type==='update_feedback_task')return applyKephFeedbackTask(action);
   const actions={
     open_prepare:()=>openKephConfigTab('before'),
@@ -1058,8 +1060,9 @@ async function loadKephLearningLog(){
     if(payload.avatarUrl)applyKephAvatar(payload.avatarUrl);
     let counts=Object.entries(payload.counts||{}).map(([name,count])=>`${name}: ${count}`).join(' · ')||'aucun dislike récent';
     let items=(payload.recent||[]).slice(0,5);
-    let recent=items.map(item=>`#${item.id} [${item.status||'open'}] ${item.category} : ${item.question||'question vide'}${item.reason?` (${item.reason})`:''}`).join('\n');
+    let recent=items.map(item=>`#${item.id} [${item.status||'open'}] ${item.category} : ${item.question||'question vide'}${item.reason?` (${item.reason})`:''}${item.trainingCase?' -> cas test pret':''}`).join('\n');
     let actions=items.flatMap(item=>[
+      {type:'show_feedback_test_case',id:'feedback-test-'+item.id,label:`Test #${item.id}`,payload:{id:item.id,trainingCase:item.trainingCase,docSuggestion:item.docSuggestion}},
       {type:'update_feedback_task',id:'feedback-doc-'+item.id,label:`Doc #${item.id}`,payload:{id:item.id,status:'doc_added'}},
       {type:'update_feedback_task',id:'feedback-fixed-'+item.id,label:`Corrigé #${item.id}`,payload:{id:item.id,status:'fixed'}}
     ]);
@@ -1082,7 +1085,33 @@ async function applyKephFeedbackTask(action){
     kephMessagesState.push({role:'assistant',text:`Je n'ai pas réussi à mettre à jour le feedback #${id}.`});
   }
   renderKephMessages();
-}function applyKephLotRate(action){
+}
+function applyKephShowFeedbackTestCase(action){
+  let payload=action?.payload||{},test=payload.trainingCase||{},doc=payload.docSuggestion||{};
+  let lines=[`Feedback #${payload.id||'?'} transforme en piste d'amelioration.`];
+  if(test.question)lines.push(`Question test : ${test.question}`);
+  if(test.expected)lines.push(`Attendu : ${test.expected}`);
+  if(doc.title)lines.push(`Fiche doc suggeree : ${doc.title}`);
+  if(doc.gap)lines.push(`A corriger : ${doc.gap}`);
+  kephMessagesState.push({role:'assistant',text:lines.join('\n')});
+  renderKephMessages();
+}
+function applyKephStartTestDraw(){
+  if(startingDraw||spinning||presentingResult||$('showScene')?.classList.contains('active')){
+    kephMessagesState.push({role:'assistant',text:'Je ne lance pas le tirage test maintenant : une roue, un resultat ou une scene est deja en cours.'});
+    renderKephMessages();
+    return;
+  }
+  if(!getLots().length){
+    kephMessagesState.push({role:'assistant',text:'Je ne peux pas lancer le tirage test : aucun lot disponible. Verifie les lots actifs et les stocks dans le studio de la roulette.',actions:[{id:'open_wheel_studio_lots',label:'Ouvrir les lots'}]});
+    renderKephMessages();
+    return;
+  }
+  kephMessagesState.push({role:'assistant',text:'Je lance un tirage test. Aucun stock, historique ou lancer reel ne sera modifie.'});
+  renderKephMessages();
+  startDraw(true);
+}
+function applyKephLotRate(action){
   let payload=action.payload||{},lots=cur()?.lots||[],target=null;
   if(Number.isInteger(payload.lotIndex)&&lots[payload.lotIndex]&&(!payload.lotName||lots[payload.lotIndex].name===payload.lotName))target={lot:lots[payload.lotIndex],index:payload.lotIndex};
   if(!target&&payload.lotName){

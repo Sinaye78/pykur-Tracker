@@ -341,6 +341,9 @@ ensureColumn("message_reports", "context_snapshot", "TEXT");
 ensureColumn("message_reports", "updated_at", "TEXT");
 ensureColumn("keph_feedback", "task_status", "TEXT NOT NULL DEFAULT 'open'");
 ensureColumn("keph_feedback", "task_note", "TEXT");
+ensureColumn("keph_feedback", "category", "TEXT");
+ensureColumn("keph_feedback", "training_case_json", "TEXT");
+ensureColumn("keph_feedback", "doc_suggestion_json", "TEXT");
 ensureColumn("keph_feedback", "updated_at", "TEXT");
 db.prepare("INSERT OR IGNORE INTO chat_settings(id,locked,slow_mode_seconds) VALUES(1,0,0)").run();
 db.prepare("INSERT OR IGNORE INTO security_settings(id) VALUES(1)").run();
@@ -2553,6 +2556,22 @@ function parseKephCommand(message, context = {}) {
       intent: "greeting"
     };
   }
+  if (/\b(?:demande pas si moi ca va|tu me demandes pas si moi ca va|tu me demande pas si moi ca va|et moi ca va|et moi alors)\b/.test(normalized)) {
+    return {
+      answer: "Tu as raison, j'aurais du te le demander. Et toi, ca va ? Si tu es en plein reglage, dis-moi aussi ce qui coince et je t'aide sans te renvoyer une fiche technique.",
+      actions: [],
+      source: "conversation",
+      intent: "greeting_followup"
+    };
+  }
+  if (/^(?:ca|cela|ce truc|c est|cest)?\s*(?:se trouve|est)?\s*ou\s*\??$/.test(normalized) || /^ou\s*\??$/.test(normalized)) {
+    return {
+      answer: "Je peux te guider, mais il me manque le nom du bouton ou de l'option. Dis-moi par exemple : \"ou se trouve le bruitage d'une replique ?\", \"ou modifier le poids d'un lot ?\" ou \"ou est le mode Discord ?\".",
+      actions: [],
+      source: "conversation",
+      intent: "ambiguous_location"
+    };
+  }
   if (/\b(?:modifier|changer|regler|mettre|augmenter|baisser|possible|peut on|on peut)\b/.test(normalized) && /\b(?:poids|poid|probabilite|chance)\b/.test(normalized) && /\b(?:case|lot|roue)\b/.test(normalized)) {
     return {
       answer: "Oui, tu peux modifier le poids d'une case. Dans Lots & roue > Studio de la roulette > Lots & probabilites, change le poids du lot : plus le nombre est haut, plus la case a de chances de tomber. Tu peux aussi me demander « mets le poids du lot X a 10 » et je te proposerai une confirmation.",
@@ -2682,8 +2701,27 @@ function parseKephCommand(message, context = {}) {
       intent: "thanks"
     };
   }
+  if (/\b(?:comment|comment faire pour|je veux)\b/.test(normalized) && /\b(?:lancer|demarrer)\b/.test(normalized) && /\b(?:roue|roulette|tirage)\b/.test(normalized)) {
+    return {
+      answer: "Pour lancer la roue, verifie d'abord qu'un participant est charge et qu'au moins un lot est disponible, puis clique sur Lancer dans la regie. C'est un vrai tirage : il peut consommer un stock, ajouter une ligne a l'historique et retirer un lancer au participant. Pour tester sans risque, utilise Tirage test.",
+      actions: [{ id: "open_prepare", label: "Ouvrir Preparer" }],
+      source: "command",
+      intent: "how_to_launch_wheel"
+    };
+  }
   const previewBlockedByProblem = /\b(?:pourquoi|probleme|problème|impossible|marche pas|peux pas|peut pas|bloque|bloqué|bloquee|bloquée|bug)\b/.test(normalized);
   const asksPreview = !previewBlockedByProblem && /\b(?:joue|jouer|lance|lancer|test|tester|previsualise|previsualiser|prévisualise|prévisualiser|montre|montrer|aperçu|apercu)\b/.test(normalized);
+  if (asksPreview && /\b(?:tirage test|test roulette|test roue)\b/.test(normalized)) {
+    return {
+      answer: "Je peux lancer un tirage test sans toucher aux stocks, a l'historique ni aux lancers restants. Clique sur Appliquer pour confirmer.",
+      actions: [
+        { id: "apply_start_test_draw", type: "start_test_draw", label: "Lancer le tirage test", payload: {} },
+        { id: "open_prepare", label: "Ouvrir Preparer" }
+      ],
+      source: "command",
+      intent: "start_test_draw"
+    };
+  }
   if (asksPreview && /\b(?:tout l evenement|tout evenement|evenement complet|événement complet|tout le live|deroule complet|déroulé complet|show complet|simulation complete|simulation complète)\b/.test(normalized)) {
     return {
       answer: "Je peux lancer une simulation complète : présentation, jingle, annonce candidat, tirage test, annonce suivant et finale. Ça sert à voir le rythme sans toucher aux stocks ni à l'historique réel.",
@@ -2828,7 +2866,7 @@ function directKephAnswer(message) {
   const text = normalizeKephText(message);
   const yesNo = /\b(?:est ce que|peut on|on peut|possible|je peux|peux)\b/.test(text);
   const wantsHow = /\b(?:comment|comment faire|ou|ou est|ou aller|je veux|pour)\b/.test(text);
-  const wantsPurpose = /\b(?:a quoi sert|sert a quoi|pourquoi|c est quoi|c quoi|utilite)\b/.test(text);
+  const wantsPurpose = /\b(?:a quoi sert|a quoi ca sert|ca sert a quoi|sert a quoi|pourquoi|c est quoi|c quoi|utilite)\b/.test(text);
   const stageLabel = /\bjingle\b/.test(text) ? "Jingle"
     : /\b(?:resultat|gagnant|lot obtenu)\b/.test(text) ? "Resultat"
       : /\b(?:roue|tirage|pendant)\b/.test(text) ? "Pendant la roue"
@@ -2838,9 +2876,15 @@ function directKephAnswer(message) {
   const directAnswers = [
     {
       intent: "create_dialogue",
-      test: () => /\b(?:creer|cree|ajouter|ajoute|faire|nouveau|nouvelle)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text),
+      test: () => /\b(?:creer|cree|ajouter|ajoute|faire|mettre|met|mets|nouveau|nouvelle)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text),
       answer: `Pour creer un dialogue, ouvre Reglages > Scenes > Studio de scenarios. A gauche, choisis l'etape ou la replique doit se jouer, par exemple ${stageLabel}. A droite, choisis Charlie ou Victoria, ecris le texte, regle si besoin le ciblage, l'emote, l'effet special ou le bruitage, puis clique sur Ajouter la replique. Si tu me donnes directement le texte entre guillemets, je peux aussi preparer l'action a confirmer.`,
       actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "jingle_purpose",
+      test: () => wantsPurpose && /\bjingle\b/.test(text),
+      answer: "Le jingle sert a marquer un moment de spectacle, surtout l'ouverture ou une transition. Il lance l'ambiance sonore sans lancer la roue et sans modifier les stocks, les lancers ou l'historique. Les repliques de l'etape Jingle se reglent dans le Studio de scenarios; le fichier son et les volumes se reglent dans Sons.",
+      actions: ["open_scenario_studio", "open_audio"]
     },
     {
       intent: "dialogue_targeting",
@@ -3580,6 +3624,9 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   if (!siteQuestion && guide.matched && ["command", "conversation", "direct"].includes(guide.source)) {
     return res.json({ ...guide, source: "guide", grounded: false, avatarUrl: kephPublicAvatar() });
   }
+  if (siteQuestion && guide.matched && ["command", "direct", "ui_map", "doc", "diagnostic"].includes(guide.source)) {
+    return res.json({ ...guide, source: "guide", grounded: true, avatarUrl: kephPublicAvatar() });
+  }
   if (siteQuestion && !command && guide.intent === "retrieval" && !verifiedDocs.length) {
     return res.json({
       answer: "Je ne vois pas cette fonction dans la documentation du site. Donne-moi le nom exact du bouton, du menu ou de l'option, et je te dirai si elle existe dans Charlie Roulette.",
@@ -3640,9 +3687,13 @@ app.post("/api/charlie-keph/feedback", kephLimiter, asyncRoute(async (req, res) 
   const intent = String(req.body?.intent || "").trim().slice(0, 80);
   const actions = Array.isArray(req.body?.actions) ? req.body.actions.slice(0, 8) : [];
   const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
+  const feedbackRow = { vote, reason, question, answer, source, intent };
+  const category = vote === "dislike" ? classifyKephFeedback(feedbackRow) : null;
+  const trainingCase = vote === "dislike" ? kephFeedbackTrainingCase({ ...feedbackRow, category }) : null;
+  const docSuggestion = vote === "dislike" ? kephFeedbackDocSuggestion({ ...feedbackRow, category }) : null;
   db.prepare(`
-    INSERT INTO keph_feedback(message_id,vote,reason,question,answer,source,intent,actions_json,context_json,ip_address,user_agent)
-    VALUES(?,?,?,?,?,?,?,?,?,?,?)
+    INSERT INTO keph_feedback(message_id,vote,reason,question,answer,source,intent,actions_json,context_json,category,training_case_json,doc_suggestion_json,ip_address,user_agent)
+    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `).run(
     messageId || null,
     vote,
@@ -3653,10 +3704,13 @@ app.post("/api/charlie-keph/feedback", kephLimiter, asyncRoute(async (req, res) 
     intent || null,
     JSON.stringify(actions),
     JSON.stringify(context).slice(0, 4000),
+    category,
+    trainingCase ? JSON.stringify(trainingCase) : null,
+    docSuggestion ? JSON.stringify(docSuggestion) : null,
     req.ip || null,
     String(req.get("user-agent") || "").slice(0, 300)
   );
-  res.json({ ok: true });
+  res.json({ ok: true, category, trainingCase, docSuggestion });
 }));
 
 function classifyKephFeedback(row = {}) {
@@ -3669,9 +3723,59 @@ function classifyKephFeedback(row = {}) {
   return "a verifier";
 }
 
+function kephFeedbackTrainingCase(row = {}) {
+  const category = row.category || classifyKephFeedback(row);
+  const question = String(row.question || "").trim();
+  const reason = String(row.reason || "").trim();
+  const answer = String(row.answer || "").trim();
+  const expected = [];
+  const forbidden = [];
+  const actions = [];
+  if (category === "hors sujet") forbidden.push("réponse générique", "sujet différent");
+  if (category === "trop vague") expected.push("réponse précise", "étapes concrètes");
+  if (category === "faux") forbidden.push("fonction inventée", "information non vérifiée");
+  if (category === "action manquante") {
+    expected.push("proposer une action à confirmer ou expliquer pourquoi impossible");
+    actions.push("action_required");
+  }
+  if (category === "mauvaise cible") forbidden.push("confondre candidat actuel et organisateur");
+  return {
+    question,
+    category,
+    reason,
+    expected,
+    forbidden,
+    actions,
+    bad_answer_excerpt: answer.slice(0, 260)
+  };
+}
+
+function kephFeedbackDocSuggestion(row = {}) {
+  const category = row.category || classifyKephFeedback(row);
+  return {
+    category,
+    source_question: String(row.question || "").trim(),
+    problem: String(row.reason || "").trim(),
+    suggested_fix: category === "action manquante"
+      ? "Ajouter ou corriger une action Keph pour cette demande."
+      : category === "faux"
+        ? "Ajouter une fiche doc vérifiée ou empêcher Keph d'inventer cette fonction."
+        : "Ajouter une fiche ou un exemple pour mieux cibler cette intention."
+  };
+}
+
+function parseKephJsonField(value, fallback) {
+  if (!value) return fallback;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
 app.get("/api/charlie-keph/feedback/summary", kephLimiter, asyncRoute(async (req, res) => {
   const rows = db.prepare(`
-    SELECT id, vote, reason, question, answer, source, intent, task_status, task_note, created_at
+    SELECT id, vote, reason, question, answer, source, intent, category, training_case_json, doc_suggestion_json, task_status, task_note, created_at
     FROM keph_feedback
     WHERE vote = 'dislike'
     ORDER BY id DESC
@@ -3679,12 +3783,14 @@ app.get("/api/charlie-keph/feedback/summary", kephLimiter, asyncRoute(async (req
   `).all();
   const recent = rows.slice(0, 12).map((row) => ({
     id: row.id,
-    category: classifyKephFeedback(row),
+    category: row.category || classifyKephFeedback(row),
     reason: row.reason || "",
     question: row.question || "",
     answer: row.answer || "",
     source: row.source || "",
     intent: row.intent || "",
+    trainingCase: parseKephJsonField(row.training_case_json, kephFeedbackTrainingCase(row)),
+    docSuggestion: parseKephJsonField(row.doc_suggestion_json, kephFeedbackDocSuggestion(row)),
     status: row.task_status || "open",
     note: row.task_note || "",
     at: row.created_at || ""
