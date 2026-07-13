@@ -2889,6 +2889,12 @@ function directKephAnswer(message) {
       actions: ["open_prepare"]
     },
     {
+      intent: "studios_purpose",
+      test: () => /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique)\b/.test(text) && /\bstudio\b/.test(text) && !/\b(?:scenario|scenarios|scÃ©nario|scÃ©narios|roulette|roue)\b/.test(text),
+      answer: "Quand tu dis le studio, il y en a surtout deux. Le Studio de la roulette sert a regler les lots, poids, stocks, textes et PNG de la roue. Le Studio de scenarios sert a regler les repliques de Charlie/Victoria, les emotes, effets speciaux, bruitages et etapes de scene. En live tu pilotes avec la regie ; hors live tu prepares dans les studios.",
+      actions: ["open_wheel_studio_lots", "open_scenario_studio"]
+    },
+    {
       intent: "wheel_purpose",
       test: () => /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi)\b/.test(text) && /\b(?:roue|roulette)\b/.test(text),
       answer: "La roue est la scène centrale du tirage : elle affiche les lots, choisit le résultat et donne le moment fort du live. Ses chances viennent des poids des lots, et ses cases peuvent devenir indisponibles si les stocks sont épuisés.",
