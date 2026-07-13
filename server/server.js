@@ -3082,6 +3082,8 @@ function fallbackKephAnswer(message, context = {}) {
   const text = normalizeKephText(message);
   const direct = directKephAnswer(message);
   const uiMap = kephUiMapAnswer(message);
+  if (direct) return direct;
+  if (uiMap) return uiMap;
   const siteQuestion = isKephSiteQuestion(message);
   const keywordScore = (keyword) => {
     const parts = normalizeKephText(keyword).split(" ").filter(Boolean);
