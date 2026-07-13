@@ -2154,7 +2154,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "explain_dialogue_queue",
-      test: () => /\b(?:file de dialogue|file dialogues|dialogue suivant|passer|rejouer|auto|manuel|manual)\b/.test(text),
+      test: () => /\b(?:file de dialogue|file de dialogues|file dialogues|dialogue suivant|passer|rejouer|auto|manuel|manual)\b/.test(text),
       answer: "La file de dialogues sert a controler ce que Charlie/Victoria vont dire ensuite. Suivant joue la prochaine replique, Passer la saute, Rejouer relance la replique actuelle, Vider nettoie la file. En auto, le site enchaine selon la scene ; en manuel, tu gardes la main.",
       actions: ["open_scenario_studio"]
     },
