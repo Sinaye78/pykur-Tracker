@@ -1,4 +1,4 @@
-const fs = require("fs");
+﻿const fs = require("fs");
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 const express = require("express");
@@ -2540,6 +2540,36 @@ function parseKephCommand(message, context = {}) {
     addControlled('set_setting "charlieMood" "taquin"');
     addControlled('set_setting "launchTrollChance" "12"');
   }
+  if (!creativeWriting && /\b(?:file|liste|queue|candidats|participants)\b/.test(text) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(text)) {
+    const names = candidateListMatch ? kephNamesFromListText(candidateListMatch[1]) : kephNamesFromListText(raw.split(/:|avec|pour/i).pop() || raw);
+    const picked = names.length >= 2 ? names : ["Mira", "Grobid", "Tofu-Royal"];
+    add(`set_queue ${picked.slice(0, 6).map(quoteCommandArg).join(" ")}`);
+  }
+  if (/\b(?:roue|roulette|lots?)\b/.test(text) && /\b(?:complete|6|six|cree|creer|genere|generer)\b/.test(text)) {
+    const lots = [
+      ["Ticket VIP du Chaos", 26, 4, "#c1121f"],
+      ["Bourse qui clignote 200.000k", 18, 3, "#023e8a"],
+      ["Relance du Destin", 16, 2, "#ffd60a"],
+      ["Cadeau mystere suspect", 14, 2, "#2dc653"],
+      ["Malus: compliment a Charlie", 12, 5, "#6f2dbd"],
+      ["Jackpot des Kamavores", 6, 1, "#f77f00"]
+    ];
+    add("clear_lots");
+    lots.forEach(([name, weight, stock, color]) => {
+      add(`add_lot ${quoteCommandArg(name)} ${weight} ${stock}`);
+      add(`set_lot_color ${quoteCommandArg(name)} ${quoteCommandArg(color)}`);
+    });
+  }
+  if (/\b(?:regle|regler|configure|configurer)\b/.test(text) && /\b(?:spectacle|show|profil|dynamique|anti repetition|humeur|dialogues|live fluide)\b/.test(text)) {
+    add('set_setting "antiRepeatEnabled" "true"');
+    add('set_setting "antiRepeatMode" "session"');
+    add('set_setting "defaultDialoguesEnabled" "false"');
+    add('set_setting "showFrequency" "normal"');
+    add('set_setting "dialogueMode" "timed"');
+    add('set_setting "dialogueDuration" "7"');
+    add('set_setting "charlieMood" "taquin"');
+    add('set_setting "launchTrollChance" "12"');
+  }
   const lotNames = Array.isArray(context.lots) ? context.lots.map((lot) => String(lot.name || "")).filter(Boolean) : [];
   const directRename = raw.match(/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s+(?:en|vers)\s+(.+?)(?:[?.!]|$)/i);
   if (directRename) addControlled(`rename_lot ${quoteCommandArg(findKephBestName(lotNames, cleanKephName(directRename[1])) || cleanKephName(directRename[1]))} ${quoteCommandArg(cleanKephName(directRename[2]))}`);
@@ -3715,6 +3745,7 @@ function findKephBestName(candidates = [], requested = "") {
 
 function kephNamesFromListText(value = "") {
   return String(value || "")
+    .replace(/\b(?:charge|charger|mets|mettre)\s+(?:la\s+)?(?:file|liste|queue|liste d'attente|file d'attente).*$/i, "")
     .split(/,|\bet\b|\bpuis\b|\n|\r|;/i)
     .map((name) => cleanKephName(name
       .replace(/^\s*(?:mets|met|mettre|place|placer|charge|charger)\s+/i, "")
@@ -3782,6 +3813,8 @@ function kephCommandPlanFromRules(message, context = {}) {
   const text = normalizeKephText(raw);
   const commands = [];
   const add = (command) => { if (command && kephCommandAllowed(command) && !commands.includes(command)) commands.push(command); };
+  const creativeWriting = /\b(?:ecris|ecrire|redige|rediger|fais|faire|prepare|preparer|genere|generer)\b/.test(text)
+    && /\b(?:dialogue|dialogues|replique|repliques|presentation|jingle|finale|scene finale|resultat|roue|tirage|candidat suivant|suivant|idle|temps mort)\b/.test(text);
   const participantNames = [...new Set([
     ...(Array.isArray(context.queue) ? context.queue : []),
     context.currentCandidate,
@@ -3791,10 +3824,11 @@ function kephCommandPlanFromRules(message, context = {}) {
     && /\b(?:file|liste|queue|attente|candidats|participants)\b/.test(text);
   if (clearQueueRequested) add("clear_queue");
   const explicitQueueMatch = raw.match(/\b(?:charge|charger|remplace|remplacer|mets|mettre)\s+(?:la\s+)?(?:file|liste|queue|liste d'attente|file d'attente)\s*(?:avec|par|:)?\s*(.+)$/i);
+  const candidateListMatch = raw.match(/\b(?:candidats?|participants?)\b[^:]*:\s*([^.!?]+)/i);
   const orderQueueRequested = /\b(?:tete de liste|tête de liste|en tete|en tête|premier|deux|deuxieme|deuxième|trois|troisieme|troisième)\b/.test(text)
     && /\b(?:liste|file|queue|ordre|candidats|participants)\b/.test(text);
-  const queueNames = explicitQueueMatch ? kephNamesFromListText(explicitQueueMatch[1]) : orderQueueRequested ? kephNamesFromListText(raw) : [];
-  if (queueNames.length >= 1) {
+  const queueNames = creativeWriting ? [] : candidateListMatch ? kephNamesFromListText(candidateListMatch[1]) : explicitQueueMatch ? kephNamesFromListText(explicitQueueMatch[1]) : orderQueueRequested ? kephNamesFromListText(raw) : [];
+  if (queueNames.length >= 1 && !creativeWriting) {
     const normalizedQueueNames = [...new Set(queueNames.map((name) => findKephBestName(participantNames, name) || name))];
     const rest = explicitQueueMatch ? [] : participantNames.filter((name) => !normalizedQueueNames.some((item) => normalizeKephText(item) === normalizeKephText(name)));
     add(`set_queue ${[...normalizedQueueNames, ...rest].map(quoteCommandArg).join(" ")}`);
@@ -3858,23 +3892,23 @@ function kephCommandPlanFromRules(message, context = {}) {
   if (/\btestemote\b/.test(text) || (/\b(?:test|teste|tester|montre|affiche|joue|jouer)\b/.test(text) && /\b(?:emote|rire|sourire|coeur|surpris|choque|triste|question)\b/.test(text))) {
     add(`testemote ${quoteCommandArg(cleanKephName(emoteMatch?.[1] || emoteMatch?.[0] || "rire"))}`);
   }
-  if (/\bstartjingle\b/.test(text)) add("startjingle");
-  if (/\bstartpresentation\b/.test(text)) add("startpresentation");
-  if (/\bstartnext\b/.test(text)) add("startnext");
-  if (/\bstartfinale\b/.test(text)) add("startfinale");
-  if (/\bstarttestdraw\b/.test(text)) add("starttestdraw");
-  if (/\bstartrehearsal\b/.test(text)) add("startrehearsal");
-  if (/\bstartdraw\b/.test(text)) add("startdraw");
-  if (/\bstopdraw\b/.test(text)) add("stopdraw");
-  if (/\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\bjingle\b/.test(text)) add("startjingle");
-  if (/\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\b(?:presentation|presenter les candidats|presente les candidats|la totale)\b/.test(text)) add("startpresentation");
-  if (/\b(?:lance|lancer|joue|jouer|demarre|demarrer|annonce|annoncer|start)\b/.test(text) && /\b(?:candidat suivant|suivant|prochain candidat|la totale)\b/.test(text)) add("startnext");
-  if (/\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\bfinale\b/.test(text)) add("startfinale");
-  if (/\b(?:lance|lancer|joue|jouer|demarre|demarrer|start|test)\b/.test(text) && /\b(?:tirage test|test roue|test roulette)\b/.test(text)) add("starttestdraw");
-  if (/\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\b(?:simulation|repetition|passage complet|la totale)\b/.test(text)) add("startrehearsal");
-  if (/\b(?:lance|lancer|demarre|demarrer|start)\b/.test(text) && /\b(?:vrai tirage|tirage reel|la roue)\b/.test(text) && !/\btest\b/.test(text)) add("startdraw");
-  if (/\b(?:stop|arrete|arreter|arret)\b/.test(text) && /\b(?:roue|tirage)\b/.test(text)) add("stopdraw");
-  if (/\b(?:passe|passer|charge|charger)\b/.test(text) && /\b(?:participant suivant|candidat suivant|suivant)\b/.test(text)) add("nextparticipant");
+  if (!creativeWriting && /\bstartjingle\b/.test(text)) add("startjingle");
+  if (!creativeWriting && /\bstartpresentation\b/.test(text)) add("startpresentation");
+  if (!creativeWriting && /\bstartnext\b/.test(text)) add("startnext");
+  if (!creativeWriting && /\bstartfinale\b/.test(text)) add("startfinale");
+  if (!creativeWriting && /\bstarttestdraw\b/.test(text)) add("starttestdraw");
+  if (!creativeWriting && /\bstartrehearsal\b/.test(text)) add("startrehearsal");
+  if (!creativeWriting && /\bstartdraw\b/.test(text)) add("startdraw");
+  if (!creativeWriting && /\bstopdraw\b/.test(text)) add("stopdraw");
+  if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\bjingle\b/.test(text)) add("startjingle");
+  if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\b(?:presentation|presenter les candidats|presente les candidats|la totale)\b/.test(text)) add("startpresentation");
+  if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|annonce|annoncer|start)\b/.test(text) && /\b(?:candidat suivant|suivant|prochain candidat|la totale)\b/.test(text)) add("startnext");
+  if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\bfinale\b/.test(text)) add("startfinale");
+  if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start|test)\b/.test(text) && /\b(?:tirage test|test roue|test roulette)\b/.test(text)) add("starttestdraw");
+  if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\b(?:simulation|repetition|passage complet|la totale)\b/.test(text)) add("startrehearsal");
+  if (!creativeWriting && /\b(?:lance|lancer|demarre|demarrer|start)\b/.test(text) && /\b(?:vrai tirage|tirage reel|la roue)\b/.test(text) && !/\btest\b/.test(text)) add("startdraw");
+  if (!creativeWriting && /\b(?:stop|arrete|arreter|arret)\b/.test(text) && /\b(?:roue|tirage)\b/.test(text)) add("stopdraw");
+  if (!creativeWriting && /\b(?:passe|passer|charge|charger)\b/.test(text) && /\b(?:participant suivant|candidat suivant|suivant)\b/.test(text)) add("nextparticipant");
   if (/\b(?:discord|obs|scene propre|mode capture)\b/.test(text) && /\b(?:active|activer|mets|mode|passe|passer)\b/.test(text)) add("discordmode");
   if (/\b(?:detache|detacher|separe|separer)\b/.test(text) && /\b(?:regie|controle|panneau)\b/.test(text)) add("detach_control");
   if (/\b(?:plein ecran|pleine ecran|fullscreen)\b/.test(text) && /\b(?:active|activer|mets|passe|passer|ouvre|ouvrir)\b/.test(text) && !/\b(?:configuration|reglages|reglage|config)\b/.test(text)) add("fullscreen");
@@ -3891,10 +3925,9 @@ function kephCommandPlanFromRules(message, context = {}) {
   if (mentionedLot && renameMatch) add(`rename_lot ${quoteCommandArg(mentionedLot)} ${quoteCommandArg(cleanKephName(renameMatch[1]))}`);
   if (mentionedLot && /\b(?:desactive|desactiver|coupe|retire)\b/.test(text)) add(`disable_lot ${quoteCommandArg(mentionedLot)}`);
   if (mentionedLot && /\b(?:active|activer|reactive|reactiver)\b/.test(text)) add(`enable_lot ${quoteCommandArg(mentionedLot)}`);
-  if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && /\b(?:jingle|presentation|finale|resultat|roue|candidat suivant|suivant|idle|temps mort)\b/.test(text) && /\b(?:plusieurs|quelques|3|trois|4|quatre|5|cinq|fais|faire|ecris|ecrire|redige|rediger|prepare|preparer|genere|generer)\b/.test(text)) {
+  if (creativeWriting) {
     const trigger = /\b(?:idle|temps mort|attend trop)\b/.test(text) ? "idle" : /\bfinale\b/.test(text) ? "finale" : /\bresultat\b/.test(text) ? "result" : /\b(?:roue|tirage)\b/.test(text) ? "spin" : /\b(?:suivant|candidat suivant)\b/.test(text) ? "next" : /\bjingle\b/.test(text) ? "jingle" : "presentation";
-    const candidatesPart = raw.split(/(?:candidats?|participants?)\s*:?\s*/i).pop() || "";
-    const names = candidatesPart.split(/,|\bet\b|\n|\r/).map(cleanKephName).filter((name) => /^[A-Za-z0-9À-ÿ _-]{2,40}$/.test(name)).slice(0, 6);
+    const names = candidateListMatch ? kephNamesFromListText(candidateListMatch[1]) : [];
     const candidates = names.length ? names : (Array.isArray(context.queue) ? context.queue.slice(0, 4) : []);
     kephScenarioDialogueCommands(trigger, candidates).forEach(add);
   }
