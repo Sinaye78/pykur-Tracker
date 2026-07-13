@@ -2027,7 +2027,7 @@ function parseKephCommand(message, context = {}) {
       intent: "assistant_identity"
     };
   }
-  if (/\b(?:tu t appelles comment|comment tu t appelles|c est quoi ton nom|ton nom|qui es tu|t es qui)\b/.test(normalized)) {
+  if (/\b(?:tu t appelles comment|tu t appels comment|comment tu t appelles|comment tu t appels|c est quoi ton nom|ton nom|qui es tu|t es qui)\b/.test(normalized)) {
     return {
       answer: "Je m'appelle Keph. Je suis l'assistant de régie de Charlie Roulette : je peux t'aider à comprendre un bouton, préparer le live, retrouver un menu ou proposer une action à confirmer.",
       actions: [],
@@ -2443,6 +2443,7 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   const command = parseKephCommand(message, context);
   if (command) return res.json({ ...command, avatarUrl: kephPublicAvatar() });
   const guide = fallbackKephAnswer(message, context);
+  if (guide.matched && guide.source === "direct") return res.json({ ...guide, source: "guide", avatarUrl: kephPublicAvatar() });
   try {
     const ai = await askOllamaKeph(message, context, guide.matched ? guide : null);
     const answer = String(ai?.answer || "").trim();
