@@ -306,21 +306,10 @@ body.presenter .showToolbar .btn[data-shortcut-label]:after,body.presenter .cont
 .presetBtn:hover{background:#ffffff12;color:#fff2c7}.presetBtn.active{background:#4b2e0f;color:#ffe28a;box-shadow:inset 0 0 0 1px #ffd16645}
 .presetBtn[data-icon]:before{content:attr(data-icon);display:block;margin-bottom:2px;color:#ffe28a;font-size:12px;line-height:1}
 .presetBtn:focus-visible{outline:3px solid #ffe28a;outline-offset:2px}
-.controlDeck.live-simple .tabNav,.controlDeck.live-simple .tabViewport{display:none!important}
-.controlDeck.live-simple .quickControlDock{margin-bottom:0!important}
-.controlDeck.live-simple .deckHeader{border-bottom:1px solid #ffffff10!important;margin-bottom:8px!important}
-.controlDeck.live-simple{max-height:none!important}
-.controlDeck:not(.live-simple){overflow:hidden!important}
-.controlDeck:not(.live-simple) .quickControlDock{flex:0 0 auto!important;gap:5px!important;margin-bottom:8px!important}
-.controlDeck:not(.live-simple) .liveStatePill{min-height:36px!important;padding:7px 9px!important;border-radius:10px!important}
-.controlDeck:not(.live-simple) .liveStatePill:before{width:14px!important;height:14px!important}
-.controlDeck:not(.live-simple) .liveStateText{font-size:13px!important}
-.controlDeck:not(.live-simple) .liveStateHint{display:none!important}
-.controlDeck:not(.live-simple) .quickCurrent input,.controlDeck:not(.live-simple) .quickCurrent .btn,.controlDeck:not(.live-simple) .quickActions .btn{min-height:30px!important}
-.controlDeck:not(.live-simple) .quickHistory{display:none!important}
-.controlDeck:not(.live-simple) .dialoguePilot,.controlDeck:not(.live-simple) .rehearsalPanel,.controlDeck:not(.live-simple) .liveAlerts{display:none!important}
-.controlDeck:not(.live-simple) .tabNav{flex:0 0 auto!important}
-.controlDeck:not(.live-simple) .tabViewport{flex:1 1 auto!important;min-height:0!important;overflow:auto!important}
+.controlDeck .tabNav,.controlDeck .tabViewport{display:none!important}
+.controlDeck .quickControlDock{margin-bottom:0!important}
+.controlDeck .deckHeader{border-bottom:1px solid #ffffff10!important;margin-bottom:8px!important}
+.controlDeck{max-height:none!important}
 body.config-fullscreen{overflow:hidden!important}
 body.config-fullscreen .top,body.config-fullscreen .statusBar{opacity:0!important;pointer-events:none!important}
 body.config-fullscreen .studioShell{position:fixed!important;z-index:86!important;inset:12px!important;display:grid!important;grid-template-columns:minmax(460px,620px) minmax(0,1fr)!important;gap:14px!important;margin:0!important;padding:0!important;border:1px solid #ffd16650!important;border-radius:20px!important;background:linear-gradient(145deg,#150a1b,#050308 62%,#1a0b20)!important;box-shadow:0 28px 90px #000e!important;overflow:hidden!important}
@@ -393,7 +382,7 @@ body.config-fullscreen .controlDeck .tabButton{justify-content:flex-start!import
 body.config-fullscreen .controlDeck .tabButton.active{background:linear-gradient(180deg,#6e1737,#3a1028)!important;border-color:#ffd16655!important;color:#ffe899!important}
 body.config-fullscreen .tabButton[data-icon]{gap:9px!important}
 body.config-fullscreen .tabButton[data-icon]:before{width:20px!important;min-width:20px!important;font-size:14px!important}
-body.config-fullscreen .controlDeck .tabViewport{grid-column:2!important;grid-row:2!important;margin:0!important;padding:26px 30px!important;overflow:auto!important;background:linear-gradient(180deg,#100817,#09050e)!important}
+body.config-fullscreen .controlDeck .tabViewport{display:block!important;grid-column:2!important;grid-row:2!important;margin:0!important;padding:26px 30px!important;overflow:auto!important;background:linear-gradient(180deg,#100817,#09050e)!important}
 body.config-fullscreen .controlTab.active{display:grid!important;grid-template-columns:repeat(2,minmax(360px,1fr))!important;gap:18px!important;align-content:start!important;align-items:start!important;width:min(1180px,100%)!important;margin:0 auto!important}
 body.config-fullscreen .controlIntro{grid-column:1/-1!important;margin:0!important;padding:0 0 14px!important}
 body.config-fullscreen .controlIntro b{font-size:22px!important}
@@ -591,11 +580,12 @@ function buildRegieLayout(){
   deck.querySelectorAll('[data-control-tab]').forEach(button=>button.addEventListener('click',()=>openControlTab(button.dataset.controlTab)));
   deck.querySelectorAll('[data-control-mode]').forEach(button=>button.addEventListener('click',()=>setControlMode(button.dataset.controlMode)));
   deck.querySelectorAll('[data-scene-preset]').forEach(button=>button.addEventListener('click',()=>applyScenePreset(button.dataset.scenePreset)));
-  setControlMode(localStorage.getItem('charlieControlMode')||'simple');
+  setControlMode('simple');
 }
 function openControlTab(name){const aliases={session:'before',participants:'before',lots:'wheel',appearance:'wheel',history:'data'},valid=['before','wheel','show','audio','data'];name=aliases[name]||name;if(!valid.includes(name))name='before';document.querySelectorAll('[data-control-tab]').forEach(button=>{let active=button.dataset.controlTab===name;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active))});document.querySelectorAll('[data-control-panel]').forEach(panel=>panel.classList.toggle('active',panel.dataset.controlPanel===name));let viewport=document.querySelector('.tabViewport');if(viewport)viewport.scrollTop=0;localStorage.setItem('charlieControlTab',name)}
-function setControlMode(mode){mode=mode==='full'?'full':'simple';let deck=document.querySelector('.controlDeck');if(!deck)return;deck.classList.toggle('live-simple',mode==='simple');document.querySelectorAll('[data-control-mode]').forEach(button=>{let active=button.dataset.controlMode===mode;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active))});localStorage.setItem('charlieControlMode',mode)}
-function setConfigFullscreen(open){document.body.classList.toggle('config-fullscreen',!!open);let button=$('configFullscreenBtn');if(button)button.textContent=open?'Fermer configuration':'Ouvrir configuration';if(open){setControlMode('full');drawWheel()}}
+function updateControlModeButtons(mode){document.querySelectorAll('[data-control-mode]').forEach(button=>{let active=button.dataset.controlMode===mode;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active))})}
+function setControlMode(mode){let deck=document.querySelector('.controlDeck');if(!deck)return;if(mode==='full'){setConfigFullscreen(true);return}deck.classList.add('live-simple');updateControlModeButtons('simple');localStorage.setItem('charlieControlMode','simple')}
+function setConfigFullscreen(open){document.body.classList.toggle('config-fullscreen',!!open);let button=$('configFullscreenBtn');if(button)button.textContent=open?'Fermer configuration':'Ouvrir configuration';updateControlModeButtons(open?'full':'simple');if(open)drawWheel();else setControlMode('simple')}
 function markScenePreset(name){document.querySelectorAll('[data-scene-preset]').forEach(button=>button.classList.toggle('active',button.dataset.scenePreset===name))}
 function applyScenePreset(name){
   if(startingDraw||spinning||stopping)return;
