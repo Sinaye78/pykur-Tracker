@@ -2024,6 +2024,21 @@ async function askOllamaKeph(message, context) {
   }
 }
 
+async function ollamaKephStatus() {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 2500);
+  try {
+    const response = await fetch(`${OLLAMA_URL.replace(/\/+$/, "")}/api/tags`, { signal: controller.signal });
+    if (!response.ok) return false;
+    const payload = await response.json();
+    return Array.isArray(payload?.models) && payload.models.some((model) => model.name === KEPH_MODEL);
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function mailTransport() {
   if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) return null;
   return nodemailer.createTransport({
@@ -2076,6 +2091,18 @@ app.get("/api/health", (req, res) => {
 app.get("/api/charlie-keph/avatar", (req, res) => {
   res.json({ avatarUrl: kephPublicAvatar() });
 });
+
+app.get("/api/charlie-keph/status", asyncRoute(async (req, res) => {
+  const ollamaReady = await ollamaKephStatus();
+  res.json({
+    ok: ollamaReady,
+    api: true,
+    ollama: ollamaReady,
+    model: KEPH_MODEL,
+    mode: ollamaReady ? "ollama" : "guide",
+    avatarUrl: kephPublicAvatar()
+  });
+}));
 
 app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   const message = String(req.body?.message || "").trim().slice(0, 800);
