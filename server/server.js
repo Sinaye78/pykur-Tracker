@@ -2457,6 +2457,46 @@ function parseKephCommand(message, context = {}) {
       intent: "greeting"
     };
   }
+  if (/\b(?:modifier|changer|regler|mettre|augmenter|baisser|possible|peut on|on peut)\b/.test(normalized) && /\b(?:poids|poid|probabilite|chance)\b/.test(normalized) && /\b(?:case|lot|roue)\b/.test(normalized)) {
+    return {
+      answer: "Oui, tu peux modifier le poids d'une case. Dans Lots & roue > Studio de la roulette > Lots & probabilites, change le poids du lot : plus le nombre est haut, plus la case a de chances de tomber. Tu peux aussi me demander « mets le poids du lot X a 10 » et je te proposerai une confirmation.",
+      actions: [{ id: "open_wheel_studio_lots", label: "Ouvrir les lots" }],
+      source: "command",
+      intent: "explain_lot_weight"
+    };
+  }
+  if (/\b(?:indisponible|epuise|epuisee|gris|grise|grisee)\b/.test(normalized) && /\b(?:lot|case|stock)\b/.test(normalized)) {
+    return {
+      answer: "Un lot devient indisponible s'il est desactive ou si son stock est active et tombe a zero. Dans ce cas, la case est grisee et la roue ne peut plus tomber dessus pour les prochains candidats. Remets du stock ou reactive le lot dans Lots & roue si tu veux le rendre disponible.",
+      actions: [{ id: "open_wheel_studio_lots", label: "Ouvrir les lots" }],
+      source: "command",
+      intent: "explain_lot_unavailable"
+    };
+  }
+  if (/\b(?:nombre de lancers|nombre de lancer|lancers de|participations de|tickets de|tentatives de)\b/.test(normalized)) {
+    return {
+      answer: "Le nombre de lancers d'un participant se regle dans Preparer, dans la liste de participants. Chaque pseudo a un compteur de lancers : augmente-le si le candidat a plusieurs tickets, puis charge ou recharge la file. A chaque vrai tirage, le compteur restant descend d'un cran.",
+      actions: [{ id: "open_prepare", label: "Ouvrir Preparer" }],
+      source: "command",
+      intent: "explain_participant_draws"
+    };
+  }
+  if (/\b(?:detacher la regie|detacher regie|pourquoi detacher|regie separee|autre fenetre)\b/.test(normalized)) {
+    return {
+      answer: "Detacher la regie sert a piloter dans une fenetre separee pendant que la fenetre principale reste propre pour Discord/OBS. C'est pratique en live : le public voit la scene, toi tu gardes Lancer, Stop, Suivant et les reglages hors capture.",
+      actions: [{ id: "detach_control", label: "Detacher la regie" }],
+      source: "command",
+      intent: "explain_detach_control"
+    };
+  }
+  if (/\b(?:ocean le plus grand|plus grand ocean)\b/.test(normalized)) {
+    return {
+      answer: "Le plus grand ocean du monde est l'ocean Pacifique.",
+      actions: [],
+      source: "command",
+      intent: "general_largest_ocean"
+    };
+  }
   if (/^(?:t as quel age|tu as quel age|quel age as tu|age)\s*\??$/.test(normalized)) {
     return {
       answer: "Je n'ai pas vraiment d'âge, je suis l'assistant Keph de la roulette. Le plus utile à retenir : je suis là pour guider l'organisateur et éviter de chercher les boutons pendant le live.",
