@@ -1161,6 +1161,16 @@ function kephCommandPreview(command){
     if(!player)return fail('Syntaxe attendue: add_player "participant" [lancers]');
     return {ok:true,command,label:`Ajouter ${player} à la fin de la file (${draws} lancer(s))`,apply:()=>{p.queue=Array.isArray(p.queue)?p.queue:[];p.queue.push(player);ensureQueueDrawSettings(p.queue);setParticipantDrawTarget(player,draws);if(p.queue.length===1){p.queueIndex=0;p.participant=player}}};
   }
+  if(name==='clear_queue'){
+    let count=(p.queue||[]).length;
+    return {ok:true,command,label:`Vider la file d'attente (${count} candidat(s))`,apply:()=>{p.queue=[];p.queueIndex=0;p.participant='';p.queueDrawSettings={}}};
+  }
+  if(name==='set_queue'){
+    let names=tokens.map(item=>String(item||'').trim()).filter(Boolean);
+    if(!names.length)return fail('Syntaxe attendue: set_queue "participant 1" "participant 2"');
+    let unique=[...new Set(names)];
+    return {ok:true,command,label:`Charger la file: ${unique.join(' > ')}`,apply:()=>{p.queue=unique;p.queueIndex=0;p.participant=unique[0]||'';ensureQueueDrawSettings(p.queue)}};
+  }
   if(name==='setstock'||name==='setpoids'||name==='rename_lot'||name==='enable_lot'||name==='disable_lot'){
     let lotName=tokens[0],target=kephFindLotByName(lotName);
     if(!target)return fail(`Lot introuvable: ${lotName||'vide'}`);

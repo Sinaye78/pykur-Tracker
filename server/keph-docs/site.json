@@ -596,6 +596,8 @@
         "commande keph",
         "commandes",
         "setlance",
+        "clear_queue",
+        "set_queue",
         "setstock",
         "setpoids",
         "add_dialogue",
@@ -612,7 +614,7 @@
         "keph peut modifier"
       ],
       "instant": true,
-      "answer": "Keph peut traduire une demande en commandes internes controlees. Le site ne fait jamais confiance au texte libre: il parse les commandes autorisees, affiche un apercu avant/apres, puis applique seulement apres confirmation. Commandes utiles: setlance participant nombre, add_player, setstock, setpoids, rename_lot, enable_lot, disable_lot, add_lot, add_dialogue, delete_dialogue, testeffect, testemote, startjingle, startpresentation, startnext, startfinale, starttestdraw, startrehearsal, startdraw, stopdraw, nextparticipant, discordmode, fullscreen, config_fullscreen, detach_control et open.",
+      "answer": "Keph peut traduire une demande en commandes internes controlees. Le site ne fait jamais confiance au texte libre: il parse les commandes autorisees, affiche un apercu avant/apres, puis applique seulement apres confirmation. Commandes utiles: setlance participant nombre, add_player, clear_queue, set_queue, setstock, setpoids, rename_lot, enable_lot, disable_lot, add_lot, add_dialogue, delete_dialogue, testeffect, testemote, startjingle, startpresentation, startnext, startfinale, starttestdraw, startrehearsal, startdraw, stopdraw, nextparticipant, discordmode, fullscreen, config_fullscreen, detach_control et open.",
       "actions": [
         "open_prepare"
       ],

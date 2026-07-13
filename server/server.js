@@ -2505,9 +2505,24 @@ function parseKephCommand(message, context = {}) {
             : "presentation";
   const controlledCommands = [];
   const addControlled = (command) => { if (command && kephCommandAllowed(command) && !controlledCommands.includes(command)) controlledCommands.push(command); };
+  const participantNames = [
+    ...(Array.isArray(context.queue) ? context.queue : []),
+    context.currentCandidate,
+    context.nextParticipant
+  ].map(cleanKephName).filter(Boolean);
   const lotNames = Array.isArray(context.lots) ? context.lots.map((lot) => String(lot.name || "")).filter(Boolean) : [];
   const directRename = raw.match(/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s+(?:en|vers)\s+(.+?)(?:[?.!]|$)/i);
   if (directRename) addControlled(`rename_lot ${quoteCommandArg(findKephBestName(lotNames, cleanKephName(directRename[1])) || cleanKephName(directRename[1]))} ${quoteCommandArg(cleanKephName(directRename[2]))}`);
+  if (/\b(?:supprime|supprimer|vide|vider|efface|effacer|retire|retirer)\b/.test(normalized) && /\b(?:file|liste|queue|attente|candidats|participants)\b/.test(normalized)) addControlled("clear_queue");
+  const explicitQueue = raw.match(/\b(?:charge|charger|remplace|remplacer|mets|mettre)\s+(?:la\s+)?(?:file|liste|queue|liste d'attente|file d'attente)\s*(?:avec|par|:)?\s*(.+)$/i);
+  const orderedQueue = /\b(?:tete de liste|tête de liste|en tete|en tête|premier|deux|deuxieme|deuxième|trois|troisieme|troisième)\b/.test(normalized)
+    && /\b(?:liste|file|queue|ordre|candidats|participants)\b/.test(normalized);
+  const parsedQueueNames = explicitQueue ? kephNamesFromListText(explicitQueue[1]) : orderedQueue ? kephNamesFromListText(raw) : [];
+  if (parsedQueueNames.length) {
+    const normalizedQueueNames = [...new Set(parsedQueueNames.map((name) => findKephBestName(participantNames, name) || name))];
+    const rest = participantNames.filter((name) => !normalizedQueueNames.some((item) => normalizeKephText(item) === normalizeKephText(name)));
+    addControlled(`set_queue ${[...normalizedQueueNames, ...rest].map(quoteCommandArg).join(" ")}`);
+  }
   if (/\b(?:discord|obs|scene propre|mode capture)\b/.test(normalized) && /\b(?:active|activer|mets|mode|passe|passer)\b/.test(normalized)) addControlled("discordmode");
   if (/\b(?:detache|detacher|separe|separer)\b/.test(normalized) && /\b(?:regie|controle|panneau)\b/.test(normalized)) addControlled("detach_control");
   if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(normalized) && /\b(?:jingle|presentation|finale|resultat|roue|candidat suivant)\b/.test(normalized) && /\b(?:plusieurs|quelques|3|trois|4|quatre|5|cinq|fais|faire|prepare|preparer|genere|generer)\b/.test(normalized)) {
@@ -3539,6 +3554,8 @@ async function askRemoteKeph(message, context, guidance = null, timeoutMs = KEPH
 const KEPH_EDIT_COMMANDS = [
   { name: "setlance", syntax: 'setlance "participant" nombre', purpose: "Changer le nombre de lancers/tickets d'un participant." },
   { name: "add_player", syntax: 'add_player "participant" [lancers]', purpose: "Ajouter un participant a la fin de la file." },
+  { name: "clear_queue", syntax: "clear_queue", purpose: "Vider la file d'attente des participants apres confirmation." },
+  { name: "set_queue", syntax: 'set_queue "participant 1" "participant 2" ...', purpose: "Charger ou reorganiser la file d'attente dans un ordre precis." },
   { name: "setstock", syntax: 'setstock "lot" nombre', purpose: "Changer le stock d'un lot et activer son suivi de stock." },
   { name: "setpoids", syntax: 'setpoids "lot" nombre', purpose: "Changer le poids/probabilite relative d'un lot." },
   { name: "rename_lot", syntax: 'rename_lot "ancien lot" "nouveau nom"', purpose: "Renommer un lot existant." },
@@ -3569,6 +3586,7 @@ function isKephEditRequest(message = "") {
   const text = normalizeKephText(message);
   if (/\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment fonctionne|que fait|ca sert a quoi)\b/.test(text)) return false;
   if (/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\b/.test(text)) return true;
+  if (/\b(?:supprime|supprimer|vide|vider|efface|effacer|retire|retirer|charge|charger|reorganise|reorganiser|ordre|tete de liste)\b/.test(text) && /\b(?:file|liste|queue|attente|candidats|participants|premier|deux|trois)\b/.test(text)) return true;
   if (/\b(?:relance|relances|lancer|lancers|participation|participations)\b/.test(text) && /\b\d{1,2}\b/.test(text)) return true;
   if (/\b(?:testeffect|testemote|startjingle|startpresentation|startnext|startfinale|starttestdraw|startrehearsal|startdraw|stopdraw)\b/.test(text)) return true;
   if (/\b(?:detache|detacher|separe|separer)\b/.test(text) && /\b(?:regie|controle|panneau)\b/.test(text)) return true;
@@ -3630,6 +3648,17 @@ function findKephBestName(candidates = [], requested = "") {
   return scored[0]?.score >= 35 ? scored[0].name : "";
 }
 
+function kephNamesFromListText(value = "") {
+  return String(value || "")
+    .split(/,|\bet\b|\bpuis\b|\n|\r|;/i)
+    .map((name) => cleanKephName(name
+      .replace(/^\s*(?:mets|met|mettre|place|placer|charge|charger)\s+/i, "")
+      .replace(/\b(?:en|a|à)\s+(?:tete|tête|premier|premiere|première|deux|deuxieme|deuxième|trois|troisieme|troisième|position\s*\d+)\b/gi, "")
+      .replace(/\b(?:de\s+)?(?:liste|file|queue|attente)\b/gi, "")))
+    .filter((name) => /^[A-Za-z0-9À-ÿ _-]{2,40}$/.test(name))
+    .slice(0, 30);
+}
+
 function kephCommandAllowed(command = "") {
   const name = String(command).split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9_]/g, "") || "";
   return KEPH_EDIT_COMMANDS.some((entry) => entry.name === name);
@@ -3645,6 +3674,18 @@ function kephCommandPlanFromRules(message, context = {}) {
     context.currentCandidate,
     context.nextParticipant
   ].map(cleanKephName).filter(Boolean);
+  const clearQueueRequested = /\b(?:supprime|supprimer|vide|vider|efface|effacer|retire|retirer)\b/.test(text)
+    && /\b(?:file|liste|queue|attente|candidats|participants)\b/.test(text);
+  if (clearQueueRequested) add("clear_queue");
+  const explicitQueueMatch = raw.match(/\b(?:charge|charger|remplace|remplacer|mets|mettre)\s+(?:la\s+)?(?:file|liste|queue|liste d'attente|file d'attente)\s*(?:avec|par|:)?\s*(.+)$/i);
+  const orderQueueRequested = /\b(?:tete de liste|tête de liste|en tete|en tête|premier|deux|deuxieme|deuxième|trois|troisieme|troisième)\b/.test(text)
+    && /\b(?:liste|file|queue|ordre|candidats|participants)\b/.test(text);
+  const queueNames = explicitQueueMatch ? kephNamesFromListText(explicitQueueMatch[1]) : orderQueueRequested ? kephNamesFromListText(raw) : [];
+  if (queueNames.length >= 1) {
+    const normalizedQueueNames = [...new Set(queueNames.map((name) => findKephBestName(participantNames, name) || name))];
+    const rest = participantNames.filter((name) => !normalizedQueueNames.some((item) => normalizeKephText(item) === normalizeKephText(name)));
+    add(`set_queue ${[...normalizedQueueNames, ...rest].map(quoteCommandArg).join(" ")}`);
+  }
   const allLanceMatch = raw.match(/\b(?:mets|met|mettre|donne|change|modifie|modifier|regle|règle)\s+(?:tous|toutes)\s+(?:les\s+)?(?:candidats|participants|joueurs)\s+(?:a|à|sur|avec)\s*(\d{1,2})\s+(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\b/i)
     || raw.match(/\b(?:mets|met|mettre|donne|change|modifie|modifier|regle|règle)\s+(?:a|à|sur|avec)\s*(\d{1,2})\s+(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\s+(?:pour\s+)?(?:tous|toutes)\s+(?:les\s+)?(?:candidats|participants|joueurs)\b/i)
     || raw.match(/\b(?:tous|toutes)\s+(?:les\s+)?(?:candidats|participants|joueurs)\s+(?:a|à|sur|avec)\s*(\d{1,2})\s+(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\b/i);
@@ -3784,6 +3825,7 @@ async function askRemoteKephCommandPlan(message, context = {}, timeoutMs = 7000)
     "Personnages valides: charlie, victoria.",
     "Effets valides: confetti, fireworks, flash, blackout, spotlights, spotlight, shake, glitch, stars, smoke, goldwave, alert.",
     "Pour tester un effet, utilise testeffect. Pour tester une emote, utilise testemote.",
+    "Pour gerer la file, utilise add_player, clear_queue ou set_queue.",
     "Pour piloter le spectacle, utilise startjingle, startpresentation, startnext, startfinale, starttestdraw, startrehearsal, startdraw, stopdraw, nextparticipant, discordmode, fullscreen, config_fullscreen, detach_control.",
     "Reponds uniquement en JSON: {\"answer\":\"resume court\",\"commands\":[\"commande 1\",\"commande 2\"]}.",
     JSON.stringify(payload)

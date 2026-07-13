@@ -300,6 +300,8 @@
       "keywords": [
         "commande keph",
         "setlance",
+        "clear_queue",
+        "set_queue",
         "setstock",
         "setpoids",
         "add_dialogue",
@@ -313,7 +315,7 @@
         "detach_control",
         "modifier avec keph"
       ],
-      "answer": "Keph peut preparer des commandes controlees pour modifier ou piloter la regie. Chaque commande est previsualisee et doit etre confirmee avant application. Les commandes couvrent participants, lancers, lots, stocks, poids, dialogues, effets, emotes, jingle, presentation, candidat suivant, finale, simulation, Discord, plein ecran, configuration plein ecran, regie detachee et ouverture de menus.",
+      "answer": "Keph peut preparer des commandes controlees pour modifier ou piloter la regie. Chaque commande est previsualisee et doit etre confirmee avant application. Les commandes couvrent participants, file d'attente, lancers, lots, stocks, poids, dialogues, effets, emotes, jingle, presentation, candidat suivant, finale, simulation, Discord, plein ecran, configuration plein ecran, regie detachee et ouverture de menus.",
       "actions": [
         "open_prepare"
       ]
