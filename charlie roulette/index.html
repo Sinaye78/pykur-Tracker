@@ -508,7 +508,7 @@ body.config-fullscreen .showLibrary{grid-column:1/-1!important}
 @media(max-width:920px){body.config-fullscreen .studioShell{grid-template-columns:1fr!important}body.config-fullscreen .stage{display:none!important}body.config-fullscreen .controlDeck{grid-template-columns:1fr!important;grid-template-rows:auto auto minmax(0,1fr)!important}body.config-fullscreen .controlDeck .tabNav{grid-column:1!important;grid-row:2!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;border-right:0!important;border-bottom:1px solid #ffffff12!important}body.config-fullscreen .controlDeck .tabViewport{grid-column:1!important;grid-row:3!important}}
 @media(max-width:420px){.scenePresetBar{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .kephAssistant{display:grid;gap:8px;margin-top:9px;padding:9px;border:1px solid #6bbcff44;border-radius:14px;background:linear-gradient(145deg,#092032cc,#08050ddd);box-shadow:0 12px 28px #0006}.kephHead{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:9px;align-items:center}.kephAvatar{width:40px;height:40px;border-radius:50%;object-fit:cover;background:radial-gradient(circle,#ffe28a,#7b1840);border:1px solid #ffd16677;box-shadow:0 0 18px #67c7ff44}.kephName{color:#e7f6ff;font-weight:1000;text-transform:uppercase}.kephStateLine{display:flex;align-items:center;gap:5px;min-width:0}.kephHealthDot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#f59e0b;box-shadow:0 0 10px #f59e0b}.kephHealthDot.ok{background:#38d477;box-shadow:0 0 10px #38d477}.kephHealthDot.fail{background:#ff4458;box-shadow:0 0 10px #ff4458}.kephState{min-width:0;color:#8fb8cc;font-size:10px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.kephAssistant.keph-ok{border-color:#38d47755}.kephAssistant.keph-fail{border-color:#ff445866}.kephHeadActions{display:flex;gap:5px}.kephMiniBtn{min-height:28px!important;padding:5px 8px!important;font-size:9px!important;box-shadow:none!important}.kephMessages{display:grid;gap:7px;max-height:185px;overflow:auto;padding-right:4px;scrollbar-color:#34789d #06050b}.kephMsg{display:grid;gap:5px;max-width:96%;padding:8px 9px;border:1px solid #ffffff12;border-radius:12px;background:#0a0710;color:#f7efd7;font-size:11px;line-height:1.35}.kephMsg.user{justify-self:end;background:#24162f}.kephMsg.assistant{justify-self:start;background:#07151f;border-color:#6bbcff33}.kephActions,.kephFeedback{display:flex;flex-wrap:wrap;gap:5px}.kephFeedback{align-items:center;color:#8fb8cc;font-size:9px}.kephVote{min-height:24px!important;min-width:30px!important;padding:3px 7px!important;border-radius:999px!important;font-size:12px!important;box-shadow:none!important}.kephVote.active{border-color:#6bd6ff!important;background:#16354a!important}.kephAction{min-height:28px!important;padding:5px 8px!important;font-size:9px!important;border-radius:9px!important}.kephForm{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}.kephForm input{min-height:34px;padding:7px 9px;font-size:12px}.kephForm .btn{min-height:34px;padding:7px 10px;font-size:10px}.kephSuggestions{display:flex;gap:5px;flex-wrap:wrap}.kephSuggestion{border:1px solid #ffffff14;border-radius:999px;background:#ffffff08;color:#d5ecff;padding:5px 8px;font-size:9px;font-weight:900;cursor:pointer}.kephTargetFlash{animation:kephTargetFlash 1.5s ease 2}@keyframes kephTargetFlash{0%,100%{outline:0;filter:none}40%{outline:3px solid #6bd6ff;outline-offset:3px;filter:drop-shadow(0 0 14px #6bd6ff)}}body.presenter .kephAssistant{display:none}
-</style>
+.kephAssistant{position:relative}.kephMsg.typing .kephText:after{content:"";display:inline-block;width:2px;height:1em;margin-left:3px;background:#9ee8ff;vertical-align:-.12em;animation:kephCaret .75s steps(1) infinite}.kephReaction{position:absolute;z-index:4;left:23px;top:-9px;font-size:25px;pointer-events:none;filter:drop-shadow(0 6px 8px #0008);animation:kephReactFloat 1.15s ease-out forwards}.kephReaction.cry{animation-name:kephReactCry}@keyframes kephCaret{50%{opacity:0}}@keyframes kephReactFloat{0%{opacity:0;transform:translateY(10px) scale(.55) rotate(-8deg)}18%{opacity:1;transform:translateY(0) scale(1.15) rotate(6deg)}100%{opacity:0;transform:translateY(-42px) scale(.9) rotate(-5deg)}}@keyframes kephReactCry{0%{opacity:0;transform:translateY(7px) scale(.6)}20%{opacity:1;transform:translateY(0) scale(1.12)}55%{transform:translateY(-16px) translateX(-4px) scale(1) rotate(-8deg)}100%{opacity:0;transform:translateY(-35px) translateX(5px) scale(.85) rotate(8deg)}}</style>
 </head>
 <body>
 <section class="login" id="loginScreen"><div class="box"><h1>Charlie Roulette</h1><p class="small">Acc√®s priv√© ¬∑ mot de passe par d√©faut : <b>charlie</b></p><input id="pass" type="password" placeholder="Mot de passe"><br><br><button class="btn" id="loginBtn">Entrer</button><p id="loginErr" class="small"></p></div></section>
@@ -1000,12 +1000,44 @@ function renderKephMessages(){
   let box=$('kephMessages');if(!box)return;
   if(!kephMessagesState.length)kephMessagesState=[{role:'assistant',text:'Salut, je suis Keph. Demande-moi comment pr√©parer un dialogue, r√©gler les stocks, g√©rer la sc√®ne Discord ou retrouver un menu.'}];
   kephRenderedActions=[];kephRenderedFeedback=[];
-  box.innerHTML=kephMessagesState.slice(-8).map(msg=>`<div class="kephMsg ${msg.role}"><div>${esc(msg.text)}</div>${msg.actions?.length?`<div class="kephActions">${msg.actions.map(action=>{let index=kephRenderedActions.push(action)-1;return `<button class="btn dark kephAction" type="button" data-keph-action-index="${index}">${esc(action.label||action.id)}</button>`}).join('')}</div>`:''}${msg.role==='assistant'&&msg.feedbackable?`<div class="kephFeedback"><span>R√©ponse utile ?</span><button class="btn dark kephVote ${msg.feedback==='like'?'active':''}" type="button" data-keph-feedback-index="${kephRenderedFeedback.push({msg,vote:'like'})-1}" title="Utile">üëç</button><button class="btn dark kephVote ${msg.feedback==='dislike'?'active':''}" type="button" data-keph-feedback-index="${kephRenderedFeedback.push({msg,vote:'dislike'})-1}" title="Pas utile">üëé</button>${msg.feedbackSent?'<span>not√©</span>':''}</div>`:''}</div>`).join('');
+  box.innerHTML=kephMessagesState.slice(-8).map(msg=>`<div class="kephMsg ${msg.role} ${msg.typing?'typing':''}"><div class="kephText">${esc(msg.text)}</div>${msg.actions?.length?`<div class="kephActions">${msg.actions.map(action=>{let index=kephRenderedActions.push(action)-1;return `<button class="btn dark kephAction" type="button" data-keph-action-index="${index}">${esc(action.label||action.id)}</button>`}).join('')}</div>`:''}${msg.role==='assistant'&&msg.feedbackable?`<div class="kephFeedback"><span>R√©ponse utile ?</span><button class="btn dark kephVote ${msg.feedback==='like'?'active':''}" type="button" data-keph-feedback-index="${kephRenderedFeedback.push({msg,vote:'like'})-1}" title="Utile">üëç</button><button class="btn dark kephVote ${msg.feedback==='dislike'?'active':''}" type="button" data-keph-feedback-index="${kephRenderedFeedback.push({msg,vote:'dislike'})-1}" title="Pas utile">üëé</button>${msg.feedbackSent?'<span>not√©</span>':''}</div>`:''}</div>`).join('');
   box.querySelectorAll('[data-keph-action-index]').forEach(button=>button.onclick=()=>runKephAction(kephRenderedActions[Number(button.dataset.kephActionIndex)]));
   box.querySelectorAll('[data-keph-feedback-index]').forEach(button=>button.onclick=()=>sendKephFeedback(kephRenderedFeedback[Number(button.dataset.kephFeedbackIndex)]));
   box.scrollTop=box.scrollHeight;
 }
 function flashKephTarget(el){if(!el)return;el.classList.remove('kephTargetFlash');void el.offsetWidth;el.classList.add('kephTargetFlash');setTimeout(()=>el.classList.remove('kephTargetFlash'),3100)}
+function kephAvatarReaction(kind){
+  let shell=$('kephAssistant');if(!shell)return;
+  let bubble=document.createElement('div');
+  bubble.className='kephReaction '+(kind==='dislike'?'cry':'love');
+  bubble.textContent=kind==='dislike'?'\uD83D\uDE22':'\uD83D\uDC96';
+  shell.appendChild(bubble);
+  setTimeout(()=>bubble.remove(),1250);
+}
+async function readKephStream(response,msg){
+  if(!response.body)throw new Error('stream indisponible');
+  let reader=response.body.getReader(),decoder=new TextDecoder(),buffer='',finalPayload=null;
+  while(true){
+    let {value,done}=await reader.read();
+    if(done)break;
+    buffer+=decoder.decode(value,{stream:true});
+    let parts=buffer.split('\n\n');buffer=parts.pop()||'';
+    for(let packet of parts){
+      let event='message',data='';
+      packet.split('\n').forEach(line=>{if(line.startsWith('event:'))event=line.slice(6).trim();if(line.startsWith('data:'))data+=line.slice(5).trim()});
+      if(!data)continue;
+      let payload=JSON.parse(data);
+      if(event==='meta'){
+        msg.actions=payload.actions||[];msg.source=payload.source||'';msg.intent=payload.intent||'';if(payload.avatarUrl)applyKephAvatar(payload.avatarUrl);
+      }else if(event==='chunk'){
+        msg.text+=(payload.text||'');renderKephMessages();
+      }else if(event==='done'){
+        finalPayload=payload;
+      }
+    }
+  }
+  return finalPayload||{};
+}
 function openKephConfigTab(tab){setConfigFullscreen(true);openControlTab(tab);setTimeout(()=>flashKephTarget(document.querySelector(`[data-control-panel="${tab}"]`)||document.querySelector(`[data-control-tab="${tab}"]`)),80)}
 function runKephAction(action){
   if(!action)return;
@@ -1044,7 +1076,7 @@ async function sendKephFeedback(entry){
     reason=String(reason||'').trim();
     if(!reason){alert('Ajoute une petite raison pour que le dislike soit utile.');return}
   }
-  msg.feedback=vote;msg.feedbackSent=true;renderKephMessages();
+  msg.feedback=vote;msg.feedbackSent=true;kephAvatarReaction(vote);renderKephMessages();
   try{
     await fetch(kephApi('/api/charlie-keph/feedback'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({messageId:msg.id||'',vote,reason,question:msg.question||'',answer:msg.text||'',source:msg.source||'',intent:msg.intent||'',actions:msg.actions||[],context:msg.context||{}})});
   }catch{
@@ -1194,18 +1226,25 @@ function applyKephEventRehearsal(){
 }
 async function askKeph(question){
   question=String(question||'').trim();if(!question||kephBusy)return;
-  kephBusy=true;setKephState('Keph r√©fl√©chit...');
-  kephMessagesState.push({role:'user',text:question});renderKephMessages();
+  kephBusy=true;setKephState('Keph Ècrit...');
+  let context=kephContext();
+  kephMessagesState.push({role:'user',text:question});
+  let assistantMsg={id:'keph-'+Date.now()+'-'+Math.random().toString(16).slice(2),role:'assistant',text:'',actions:[],feedbackable:false,typing:true,question,source:'',intent:'',context};
+  kephMessagesState.push(assistantMsg);renderKephMessages();
   let input=$('kephInput'),submit=document.querySelector('#kephForm .btn');if(input)input.value='';if(submit)submit.disabled=true;
   try{
-    let response=await fetch(kephApi('/api/charlie-keph/ask'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({message:question,context:kephContext()})});
+    let response=await fetch(kephApi('/api/charlie-keph/ask-stream'),{method:'POST',headers:{'content-type':'application/json','accept':'text/event-stream'},body:JSON.stringify({message:question,context})});
     if(!response.ok)throw new Error('Keph indisponible');
-    let payload=await response.json();
+    let payload=await readKephStream(response,assistantMsg);
     if(payload.avatarUrl)applyKephAvatar(payload.avatarUrl);
-    kephMessagesState.push({id:'keph-'+Date.now()+'-'+Math.random().toString(16).slice(2),role:'assistant',text:payload.answer||'Je ne suis pas s√ªr, mais je peux ouvrir la configuration pour v√©rifier.',actions:payload.actions||[],feedbackable:true,question,source:payload.source||'',intent:payload.intent||'',context:kephContext()});
-    setKephHealth(true,payload.source==='ollama'?'Op√©rationnel ¬∑ IA locale':'Op√©rationnel ¬∑ Guide');
+    assistantMsg.text=assistantMsg.text||payload.answer||'Je ne suis pas s˚r, mais je peux ouvrir la configuration pour vÈrifier.';
+    assistantMsg.actions=payload.actions||assistantMsg.actions||[];
+    assistantMsg.source=payload.source||assistantMsg.source||'';
+    assistantMsg.intent=payload.intent||assistantMsg.intent||'';
+    assistantMsg.feedbackable=true;assistantMsg.typing=false;
+    setKephHealth(true,payload.source==='ollama'?'OpÈrationnel ∑ IA locale':payload.source==='groq'?'OpÈrationnel ∑ IA distante':'OpÈrationnel ∑ Guide');
   }catch(error){
-    kephMessagesState.push({role:'assistant',text:'Je n‚Äôarrive pas √† joindre l‚Äôassistance pour l‚Äôinstant. Tu peux quand m√™me ouvrir Pr√©parer, la Roulette, les Sc√®nes, Sons ou Sauvegarde depuis les r√©glages.',actions:[{id:'open_prepare',label:'Ouvrir Pr√©parer'},{id:'open_scenario_studio',label:'Studio sc√©narios'}]});
+    assistantMsg.typing=false;assistantMsg.feedbackable=false;assistantMsg.text='Je níarrive pas ‡ joindre líassistance pour líinstant. Tu peux quand mÍme ouvrir PrÈparer, la Roulette, les ScËnes, Sons ou Sauvegarde depuis les rÈglages.';assistantMsg.actions=[{id:'open_prepare',label:'Ouvrir PrÈparer'},{id:'open_scenario_studio',label:'Studio scÈnarios'}];
     setKephHealth(false,'Hors ligne');
   }finally{
     kephBusy=false;if(submit)submit.disabled=false;renderKephMessages();

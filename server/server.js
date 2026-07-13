@@ -3608,34 +3608,31 @@ app.get("/api/charlie-keph/status", asyncRoute(async (req, res) => {
   });
 }));
 
-app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
-  const message = String(req.body?.message || "").trim().slice(0, 800);
-  const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
-  if (!message) return res.status(400).json({ error: "Question vide.", code: "KEPH_EMPTY_MESSAGE" });
+async function resolveKephReply(message, context = {}) {
   const knowledge = charlieKephKnowledge();
   const command = parseKephCommand(message, context);
   const commandNeedsConfirmation = command?.source === "command" && Array.isArray(command.actions) && command.actions.some((action) => action?.type);
-  if (commandNeedsConfirmation) return res.json({ ...command, avatarUrl: kephPublicAvatar() });
+  if (commandNeedsConfirmation) return { ...command, avatarUrl: kephPublicAvatar() };
   const guide = command
     ? { ...command, matched: true, expectedAnswer: command.answer || "", docs: kephDocumentationSearch(message, context) }
     : fallbackKephAnswer(message, context);
   const siteQuestion = isKephSiteQuestion(message);
   const verifiedDocs = kephVerifiedDocs(message, context);
   if (!siteQuestion && guide.matched && ["command", "conversation", "direct"].includes(guide.source)) {
-    return res.json({ ...guide, source: "guide", grounded: false, avatarUrl: kephPublicAvatar() });
+    return { ...guide, source: "guide", grounded: false, avatarUrl: kephPublicAvatar() };
   }
   if (siteQuestion && guide.matched && ["command", "direct", "ui_map", "doc", "diagnostic"].includes(guide.source)) {
-    return res.json({ ...guide, source: "guide", grounded: true, avatarUrl: kephPublicAvatar() });
+    return { ...guide, source: "guide", grounded: true, avatarUrl: kephPublicAvatar() };
   }
   if (siteQuestion && !command && guide.intent === "retrieval" && !verifiedDocs.length) {
-    return res.json({
+    return {
       answer: "Je ne vois pas cette fonction dans la documentation du site. Donne-moi le nom exact du bouton, du menu ou de l'option, et je te dirai si elle existe dans Charlie Roulette.",
       actions: normalizedKephActions(["open_prepare"], knowledge),
       source: "verified",
       intent: "unverified_site_question",
       grounded: false,
       avatarUrl: kephPublicAvatar()
-    });
+    };
   }
   try {
     const remote = await askRemoteKeph(message, context, guide.matched ? guide : null, KEPH_REMOTE_TIMEOUT_MS);
@@ -3643,7 +3640,7 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
       const answer = String(remote?.answer || "").trim();
       if (!answer) throw new Error("Reponse distante vide");
       const actions = guide.matched ? guide.actions : isKephSiteQuestion(message) ? normalizedKephActions(remote?.actions, knowledge) : [];
-      return res.json({
+      return {
         answer: answer.slice(0, 1400),
         actions: actions.length ? actions : (guide.matched ? guide.actions : []),
         source: remote.provider || "remote",
@@ -3651,7 +3648,7 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
         grounded: !!guide.matched,
         model: remote.model || null,
         avatarUrl: kephPublicAvatar()
-      });
+      };
     }
   } catch (error) {
     console.warn("[keph] API distante indisponible.", error.message);
@@ -3661,7 +3658,7 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
     const answer = String(ai?.answer || "").trim();
     if (!answer) throw new Error("Reponse vide");
     const actions = guide.matched ? guide.actions : normalizedKephActions(ai?.actions, knowledge);
-    res.json({
+    return {
       answer: answer.slice(0, 1400),
       actions: actions.length ? actions : (guide.matched ? guide.actions : []),
       source: "ollama",
@@ -3669,10 +3666,56 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
       grounded: !!guide.matched,
       model: KEPH_MODEL,
       avatarUrl: kephPublicAvatar()
-    });
+    };
   } catch (error) {
-    res.json({ ...guide, source: guide.matched ? "guide" : "fallback", avatarUrl: kephPublicAvatar(), warning: "ollama_unavailable" });
+    return { ...guide, source: guide.matched ? "guide" : "fallback", avatarUrl: kephPublicAvatar(), warning: "ollama_unavailable" };
   }
+}
+
+function kephStreamChunks(text) {
+  const value = String(text || "");
+  const chunks = [];
+  let buffer = "";
+  for (const part of value.split(/(\s+)/)) {
+    buffer += part;
+    if (buffer.length >= 18 || /[.!?]\s*$/.test(buffer)) {
+      chunks.push(buffer);
+      buffer = "";
+    }
+  }
+  if (buffer) chunks.push(buffer);
+  return chunks.length ? chunks : [value];
+}
+
+function writeKephSse(res, event, payload) {
+  res.write(`event: ${event}\n`);
+  res.write(`data: ${JSON.stringify(payload)}\n\n`);
+}
+
+app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
+  const message = String(req.body?.message || "").trim().slice(0, 800);
+  const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
+  if (!message) return res.status(400).json({ error: "Question vide.", code: "KEPH_EMPTY_MESSAGE" });
+  res.json(await resolveKephReply(message, context));
+}));
+
+app.post("/api/charlie-keph/ask-stream", kephLimiter, asyncRoute(async (req, res) => {
+  const message = String(req.body?.message || "").trim().slice(0, 800);
+  const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
+  if (!message) return res.status(400).json({ error: "Question vide.", code: "KEPH_EMPTY_MESSAGE" });
+  res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders?.();
+  const payload = await resolveKephReply(message, context);
+  const answer = String(payload.answer || "Je ne suis pas sur, mais je peux ouvrir la configuration pour verifier.");
+  writeKephSse(res, "meta", { ...payload, answer: "" });
+  for (const chunk of kephStreamChunks(answer)) {
+    writeKephSse(res, "chunk", { text: chunk });
+    await new Promise((resolve) => setTimeout(resolve, 28));
+  }
+  writeKephSse(res, "done", payload);
+  res.end();
 }));
 
 app.post("/api/charlie-keph/feedback", kephLimiter, asyncRoute(async (req, res) => {
