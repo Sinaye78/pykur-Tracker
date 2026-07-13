@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const BASE_URL = process.env.KEPH_TEST_BASE_URL || "https://familier-tracker.fr";
 const MAX_FAST_MS = Number(process.env.KEPH_MAX_FAST_MS || 900);
+const REQUEST_TIMEOUT_MS = Number(process.env.KEPH_TEST_TIMEOUT_MS || 9000);
 
 const context = {
   currentCandidate: "Kinza",
@@ -83,11 +84,14 @@ const normalize = (value) => String(value || "")
 
 async function ask(question) {
   const started = Date.now();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   const response = await fetch(`${BASE_URL.replace(/\/$/, "")}/api/charlie-keph/ask`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ message: question, context })
-  });
+    body: JSON.stringify({ message: question, context }),
+    signal: controller.signal
+  }).finally(() => clearTimeout(timer));
   const elapsed = Date.now() - started;
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   return { elapsed, payload: await response.json() };

@@ -1955,8 +1955,10 @@ function verificationLink(token, client) {
 
 const charlieKephKnowledgePath = path.join(__dirname, "charlie-keph-knowledge.json");
 const kephSiteDocsPath = path.join(__dirname, "keph-docs", "site.json");
+const kephSiteManualPath = path.join(__dirname, "keph-docs", "site-manual.md");
 let charlieKephKnowledgeCache = null;
 let kephSiteDocsCache = null;
+let kephSiteManualCache = null;
 
 function charlieKephKnowledge() {
   if (charlieKephKnowledgeCache) return charlieKephKnowledgeCache;
@@ -1978,6 +1980,32 @@ function kephSiteDocs() {
     kephSiteDocsCache = { sections: [], documents: [], generalFacts: [] };
   }
   return kephSiteDocsCache;
+}
+
+function kephSiteManualDocs() {
+  if (kephSiteManualCache) return kephSiteManualCache;
+  try {
+    const markdown = fs.readFileSync(kephSiteManualPath, "utf8");
+    const chunks = [];
+    const blocks = markdown.split(/\n(?=##\s+)/g);
+    blocks.forEach((block, index) => {
+      const title = (block.match(/^##\s+(.+)$/m) || block.match(/^#\s+(.+)$/m) || [null, `Manuel Keph ${index + 1}`])[1];
+      const content = block.replace(/^#+\s+.+$/m, "").trim();
+      if (!content) return;
+      chunks.push({
+        id: `manual_${normalizeKephText(title).replace(/\s+/g, "_").slice(0, 64) || index}`,
+        title: `Manuel - ${title}`,
+        keywords: normalizeKephText(title).split(" ").filter((part) => part.length > 2),
+        content,
+        actions: []
+      });
+    });
+    kephSiteManualCache = chunks;
+  } catch (error) {
+    console.warn("[keph] Manuel complet indisponible.", error.message);
+    kephSiteManualCache = [];
+  }
+  return kephSiteManualCache;
 }
 
 function kephPublicAvatar() {
@@ -2159,6 +2187,7 @@ function kephDocumentation(context = {}) {
   const activeSection = String(context?.activeSection || "").trim();
   const docs = kephSiteDocs();
   const structuredDocuments = Array.isArray(docs.documents) ? docs.documents : [];
+  const manualDocuments = kephSiteManualDocs();
   if (structuredDocuments.length) {
     return [
       ...structuredDocuments.map((doc) => ({
@@ -2166,6 +2195,7 @@ function kephDocumentation(context = {}) {
         content: doc.content || doc.answer || "",
         examples: Array.isArray(doc.examples) ? doc.examples : []
       })),
+      ...manualDocuments,
       {
         id: "context",
         title: "Contexte actuel de la regie",
