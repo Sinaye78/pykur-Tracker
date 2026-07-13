@@ -469,8 +469,9 @@ function buildRegieLayout(){
   if(!app||!top||!grid||app.querySelector('.studioShell'))return;
   const panels=grid.querySelectorAll(':scope > .panel'),left=panels[0],wheel=panels[1],right=panels[2];
   if(!left||!wheel||!right)return;
-  const leftSections=[...left.querySelectorAll(':scope > .configSection')];
-  const [participantSection,queueSection,drawSection,audioSection,historySection,profilesSection]=leftSections;
+  const sectionOf=id=>document.getElementById(id)?.closest('.configSection');
+  const participantSection=sectionOf('participantName'),queueSection=sectionOf('participantQueue'),drawSection=sectionOf('antiRepeatEnabled'),audioSection=sectionOf('muteAll'),historySection=sectionOf('historyList'),profilesSection=sectionOf('profiles');
+  if(!participantSection||!queueSection||!drawSection||!audioSection||!historySection||!profilesSection)return;
   top.querySelector('.small').textContent='Régie de tirage et scène Discord';
   document.getElementById('fullscreenBtn').textContent='Plein écran';document.getElementById('logoutBtn').textContent='Déconnexion';
   const detachButton=document.createElement('button');detachButton.className='btn dark';detachButton.id='detachControlBtn';detachButton.type='button';detachButton.textContent=detachedControlMode?'Fermer la régie':'Détacher la régie';top.querySelector('.topActions').insertBefore(detachButton,document.getElementById('logoutBtn'));
@@ -497,8 +498,8 @@ function buildRegieLayout(){
   panel('before',[participantSection,queueSection,drawSection,shortcutsSection]);
   queueSection.querySelector('h3').textContent='File de participants';
   const summary=document.createElement('div');summary.className='queueSummary';summary.innerHTML='<div class="queueSummaryCard"><span>Actuel</span><b id="queueCurrentSummary">—</b></div><div class="queueSummaryCard"><span>Suivant</span><b id="queueNextSummary">—</b></div>';
-  const queueStatus=document.getElementById('queueStatus'),queueList=document.getElementById('queueList');queueStatus.before(summary);
-  const queueDetails=document.createElement('details');queueDetails.open=true;queueDetails.innerHTML='<summary class="configLabel">Liste complète et réorganisation</summary>';queueDetails.appendChild(queueList);queueSection.appendChild(queueDetails);
+  const queueStatus=document.getElementById('queueStatus'),queueList=document.getElementById('queueList');if(queueStatus)queueStatus.before(summary);
+  const queueDetails=document.createElement('details');queueDetails.open=true;queueDetails.innerHTML='<summary class="configLabel">Liste complète et réorganisation</summary>';if(queueList)queueDetails.appendChild(queueList);queueSection.appendChild(queueDetails);
   const lotsSection=document.createElement('section');lotsSection.className='configSection';lotsSection.innerHTML='<h3>Lots et probabilités</h3>';
   const total=document.getElementById('totalRate'),lots=document.getElementById('lots'),lotActions=right.querySelector(':scope > .row');lotsSection.append(total,lots,lotActions);lotActions.className='deckActions';
   const lotHint=right.querySelector(':scope > p.small');if(lotHint){lotHint.textContent='Le poids calcule la probabilité réelle. Désactivez un lot sans le supprimer.';lotsSection.appendChild(lotHint)}const wheelPanel=panel('wheel',[]);
