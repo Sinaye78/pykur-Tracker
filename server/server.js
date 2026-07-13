@@ -3314,7 +3314,7 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   if (!message) return res.status(400).json({ error: "Question vide.", code: "KEPH_EMPTY_MESSAGE" });
   const knowledge = charlieKephKnowledge();
   const command = parseKephCommand(message, context);
-  if (command?.source === "command") return res.json({ ...command, avatarUrl: kephPublicAvatar() });
+  if (command?.source === "command" || command?.source === "conversation") return res.json({ ...command, source: command.source === "conversation" ? "guide" : command.source, avatarUrl: kephPublicAvatar() });
   const guide = command || fallbackKephAnswer(message, context);
   if (guide.matched && ["direct", "ui_map", "diagnostic", "doc", "conversation"].includes(guide.source)) return res.json({ ...guide, source: guide.source === "doc" ? "doc" : "guide", avatarUrl: kephPublicAvatar() });
   try {
