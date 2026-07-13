@@ -43,6 +43,8 @@ Chaque participant peut avoir un nombre de lancers. Si Kinza a 5 lancers, les vr
 
 Quand un participant n'a plus de lancer, l'organisateur peut passer au suivant.
 
+La file d'attente ou file de participants se gere dans Preparer. L'organisateur saisit les pseudos, charge la liste, puis utilise Suivant pour avancer. Dans la liste complete, il peut modifier le nombre de lancers, monter ou descendre un candidat, rejouer un participant ou le retirer.
+
 ## Lots et roue
 
 Les lots sont les cases de la roue. Chaque lot peut avoir un nom, un poids, une activation, un stock, un texte, une couleur et parfois une image PNG.

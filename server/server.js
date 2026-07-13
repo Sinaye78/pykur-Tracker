@@ -2853,6 +2853,12 @@ function directKephAnswer(message) {
       actions: ["open_prepare"]
     },
     {
+      intent: "participant_queue",
+      test: () => /\b(?:file|fil|queue|liste)\b/.test(text) && /\b(?:attente|participant|participants|candidat|candidats)\b/.test(text) && !/\b(?:dialogue|dialogues|replique|repliques)\b/.test(text),
+      answer: "La file d'attente sert a faire passer les candidats dans l'ordre. Dans Preparer, tu mets un pseudo par ligne puis tu charges la file. Le participant actuel est celui qui passe maintenant, Suivant charge le prochain, et chaque ligne peut avoir son nombre de lancers. Tu peux aussi monter, descendre, rejouer ou retirer un candidat dans la liste.",
+      actions: ["open_prepare"]
+    },
+    {
       intent: "detach_control",
       test: () => /\b(?:detacher la regie|detacher regie|regie separee|autre onglet|autre fenetre)\b/.test(text),
       answer: "Détacher la régie ouvre les contrôles dans une fenêtre séparée. C’est pratique pour OBS/Discord : la fenêtre capturée reste propre pour le public, pendant que toi tu gardes Lancer, Stop, Suivant et les réglages sous la main ailleurs.",

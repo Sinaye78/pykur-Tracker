@@ -88,10 +88,11 @@
       "id": "participants_draws",
       "section": "before",
       "title": "Participants et nombre de lancers",
-      "keywords": ["participant", "candidat", "file", "queue", "lancers", "nombre de lancers", "tickets", "participations", "tentatives"],
+      "keywords": ["participant", "candidat", "file", "queue", "file attente", "fil attente", "liste attente", "lancers", "nombre de lancers", "tickets", "participations", "tentatives"],
       "instant": true,
       "answer": "Dans Preparer, tu charges la file de participants avec un pseudo par ligne. Chaque participant peut avoir un nombre de lancers/tickets : augmente-le si le candidat a plusieurs chances. A chaque vrai tirage, le compteur restant descend; quand il arrive a zero, tu peux passer au suivant.",
-      "actions": ["open_prepare"]
+      "actions": ["open_prepare"],
+      "examples": ["comment se servir de la file d attente ?", "comment marche la file de participants ?", "comment utiliser la fil d attente ?"]
     },
     {
       "id": "keyboard_shortcuts",
@@ -167,7 +168,7 @@
       "id": "dialogue_queue",
       "section": "show",
       "title": "Pilotage et file de dialogues",
-      "keywords": ["file dialogue", "file dialogues", "suivant dialogue", "passer dialogue", "rejouer dialogue", "auto manuel", "manuel"],
+      "keywords": ["file dialogue", "file dialogues", "file attente dialogue", "fil attente dialogue", "suivant dialogue", "passer dialogue", "rejouer dialogue", "auto manuel", "manuel"],
       "answer": "La file de dialogues permet de garder la main sur ce que Charlie/Victoria vont dire. Suivant joue la prochaine replique, Passer la saute, Rejouer relance la replique actuelle, Vider nettoie la file. En Auto, le site enchaine selon la scene; en Manuel, l'organisateur controle le rythme.",
       "actions": ["open_scenario_studio"]
     },
