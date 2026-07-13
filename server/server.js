@@ -206,6 +206,23 @@ db.exec(`
     slow_mode_seconds INTEGER NOT NULL DEFAULT 0,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
+  CREATE TABLE IF NOT EXISTS keph_feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    message_id TEXT,
+    vote TEXT NOT NULL CHECK(vote IN ('like','dislike')),
+    reason TEXT,
+    question TEXT,
+    answer TEXT,
+    source TEXT,
+    intent TEXT,
+    actions_json TEXT,
+    context_json TEXT,
+    ip_address TEXT,
+    user_agent TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE INDEX IF NOT EXISTS idx_keph_feedback_created ON keph_feedback(created_at);
+  CREATE INDEX IF NOT EXISTS idx_keph_feedback_vote ON keph_feedback(vote, created_at);
   CREATE TABLE IF NOT EXISTS living_event_schedule (
     id INTEGER PRIMARY KEY CHECK(id = 1),
     sequence INTEGER NOT NULL DEFAULT 0,
@@ -1993,12 +2010,29 @@ function findKephLot(lots, rawName) {
 function parseKephCommand(message, context = {}) {
   const raw = String(message || "").trim();
   const normalized = normalizeKephText(raw);
-  if (/\b(?:bonjour|salut|coucou|hello|yo)\b/.test(normalized)) {
+  const greetingOnly = /^(?:bonjour|salut|coucou|hello|yo|hey)(?:\s+(?:ca va|ça va|cv|comment ca va|comment vas tu|tu vas bien))?\s*\??$/.test(normalized);
+  if (greetingOnly || /^(?:ca va|comment ca va|comment vas tu|tu vas bien)\s*\??$/.test(normalized)) {
     return {
-      answer: "Salut, je suis là. Je peux t'expliquer une fonction de la roulette ou préparer une action à confirmer, comme renommer un lot, changer un poids ou ajouter une réplique.",
+      answer: "Salut, ça va bien, merci. Je suis prêt pour t'aider sur la régie, mais on peut aussi commencer simple : dis-moi ce que tu veux préparer ou ce qui te bloque.",
       actions: [],
       source: "conversation",
       intent: "greeting"
+    };
+  }
+  if (/^(?:t as quel age|tu as quel age|quel age as tu|age)\s*\??$/.test(normalized)) {
+    return {
+      answer: "Je n'ai pas vraiment d'âge, je suis l'assistant Keph de la roulette. Le plus utile à retenir : je suis là pour guider l'organisateur et éviter de chercher les boutons pendant le live.",
+      actions: [],
+      source: "conversation",
+      intent: "assistant_identity"
+    };
+  }
+  if (/\b(?:ocean le plus grand|plus grand ocean)\b/.test(normalized)) {
+    return {
+      answer: "Le plus grand océan du monde est l'océan Pacifique. Et si tu veux, je peux aussi revenir sur la roulette : lots, participants, sons, dialogues ou scène Discord.",
+      actions: [],
+      source: "conversation",
+      intent: "general_answer"
     };
   }
   const lots = Array.isArray(context.lots) ? context.lots : [];
@@ -2034,6 +2068,21 @@ function parseKephCommand(message, context = {}) {
         ],
         source: "command",
         intent: "update_lot_rate"
+      };
+    }
+  }
+  const addParticipantMatch = raw.match(/\b(?:ajoute|ajouter|mets|mettre)\b\s+(?:le\s+)?(?:candidat|participant)?\s*([A-Za-z0-9À-ÿ _-]{2,40})\s+(?:a|à)\s+la\s+fin\s+(?:de\s+)?(?:la\s+)?(?:liste|file|queue)\b/i);
+  if (addParticipantMatch) {
+    const name = addParticipantMatch[1].trim().replace(/\s+/g, " ").slice(0, 40);
+    if (name) {
+      return {
+        answer: `Je peux ajouter « ${name} » à la fin de la file des participants. Clique sur Appliquer pour confirmer, comme ça je ne modifie pas la régie sans ton accord.`,
+        actions: [
+          { id: "apply_add_participant", type: "add_participant", label: "Ajouter à la file", payload: { name } },
+          { id: "open_prepare", label: "Ouvrir Préparer" }
+        ],
+        source: "command",
+        intent: "add_participant"
       };
     }
   }
@@ -2206,7 +2255,7 @@ function fallbackKephAnswer(message, context = {}) {
     }))
     .sort((a, b) => b.score - a.score);
   const best = scored.find((item) => item.score > 0);
-  const picked = best?.feature || knowledge.features?.[0];
+  const picked = best?.feature || null;
   return {
     answer: picked?.answer || "Je peux t'aider sur la regie, la roue, les lots, les dialogues, les sons, l'historique, Discord et les actions a confirmer. Dis-moi ce que tu veux comprendre ou modifier.",
     actions: normalizedKephActions(picked?.actions || ["open_prepare"], knowledge),
@@ -2219,9 +2268,11 @@ function kephSystemPrompt() {
   const knowledge = charlieKephKnowledge();
   return [
     "Tu es Keph, assistant de regie de Charlie Roulette.",
-    "Tu aides l'organisateur pendant un live. Reponds en francais, en 2 a 5 phrases maximum.",
+    "Tu aides l'organisateur pendant un live. Reponds en francais naturel, en 2 a 5 phrases maximum.",
+    "Reponds vraiment a la question posee. Ne recite pas une fiche si la question demande un oui/non, une explication courte ou une etape precise.",
     "Le champ currentCandidate designe le candidat affiche sur la roue, pas la personne qui te parle. Ne salue jamais l'organisateur avec le nom du candidat.",
-    "Utilise seulement les fonctions presentes dans cette base de connaissance.",
+    "Pour Charlie Roulette, utilise seulement les fonctions presentes dans cette base de connaissance et dans aide_ciblee si elle est fournie.",
+    "Tu peux repondre aux petites questions generales simples, mais ramene doucement vers la roulette si c'est utile.",
     "Quand c'est utile, propose des actions dans un tableau actions. N'invente jamais d'id d'action.",
     "Tu ne modifies jamais les donnees a la place de l'utilisateur.",
     "Reponds uniquement en JSON valide: {\"answer\":\"...\",\"actions\":[{\"id\":\"...\",\"label\":\"...\"}]}",
@@ -2230,9 +2281,9 @@ function kephSystemPrompt() {
   ].join("\n");
 }
 
-async function askOllamaKeph(message, context) {
+async function askOllamaKeph(message, context, guidance = null) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 45000);
+  const timer = setTimeout(() => controller.abort(), 22000);
   try {
     const response = await fetch(`${OLLAMA_URL.replace(/\/+$/, "")}/api/chat`, {
       method: "POST",
@@ -2244,9 +2295,9 @@ async function askOllamaKeph(message, context) {
         format: "json",
         messages: [
           { role: "system", content: kephSystemPrompt() },
-          { role: "user", content: JSON.stringify({ question: String(message || "").slice(0, 800), contexte_live: context || {} }) }
+          { role: "user", content: JSON.stringify({ question: String(message || "").slice(0, 800), contexte_live: context || {}, aide_ciblee: guidance ? { answer: guidance.answer, actions: guidance.actions || [], intent: guidance.intent || "" } : null }) }
         ],
-        options: { temperature: 0.2, num_ctx: 4096, num_predict: 260 }
+        options: { temperature: 0.45, num_ctx: 4096, num_predict: 300 }
       })
     });
     if (!response.ok) throw new Error(`Ollama HTTP ${response.status}`);
@@ -2346,22 +2397,54 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   const command = parseKephCommand(message, context);
   if (command) return res.json({ ...command, avatarUrl: kephPublicAvatar() });
   const guide = fallbackKephAnswer(message, context);
-  if (guide.matched) return res.json({ ...guide, source: "guide", avatarUrl: kephPublicAvatar() });
   try {
-    const ai = await askOllamaKeph(message, context);
+    const ai = await askOllamaKeph(message, context, guide.matched ? guide : null);
     const answer = String(ai?.answer || "").trim();
     if (!answer) throw new Error("Reponse vide");
-    const actions = normalizedKephActions(ai?.actions, knowledge);
+    const actions = guide.matched ? guide.actions : normalizedKephActions(ai?.actions, knowledge);
     res.json({
       answer: answer.slice(0, 1400),
       actions: actions.length ? actions : guide.actions,
       source: "ollama",
+      intent: guide.intent || String(ai?.intent || "").slice(0, 80) || null,
+      grounded: !!guide.matched,
       model: KEPH_MODEL,
       avatarUrl: kephPublicAvatar()
     });
   } catch (error) {
-    res.json({ ...guide, avatarUrl: kephPublicAvatar(), warning: "ollama_unavailable" });
+    res.json({ ...guide, source: guide.matched ? "guide" : "fallback", avatarUrl: kephPublicAvatar(), warning: "ollama_unavailable" });
   }
+}));
+
+app.post("/api/charlie-keph/feedback", kephLimiter, asyncRoute(async (req, res) => {
+  const vote = String(req.body?.vote || "").trim();
+  if (!["like", "dislike"].includes(vote)) return res.status(400).json({ error: "Vote invalide.", code: "KEPH_BAD_VOTE" });
+  const reason = String(req.body?.reason || "").trim().slice(0, 800);
+  if (vote === "dislike" && reason.length < 2) return res.status(400).json({ error: "Raison requise.", code: "KEPH_REASON_REQUIRED" });
+  const messageId = String(req.body?.messageId || "").trim().slice(0, 80);
+  const question = String(req.body?.question || "").trim().slice(0, 1000);
+  const answer = String(req.body?.answer || "").trim().slice(0, 2000);
+  const source = String(req.body?.source || "").trim().slice(0, 40);
+  const intent = String(req.body?.intent || "").trim().slice(0, 80);
+  const actions = Array.isArray(req.body?.actions) ? req.body.actions.slice(0, 8) : [];
+  const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
+  db.prepare(`
+    INSERT INTO keph_feedback(message_id,vote,reason,question,answer,source,intent,actions_json,context_json,ip_address,user_agent)
+    VALUES(?,?,?,?,?,?,?,?,?,?,?)
+  `).run(
+    messageId || null,
+    vote,
+    reason || null,
+    question || null,
+    answer || null,
+    source || null,
+    intent || null,
+    JSON.stringify(actions),
+    JSON.stringify(context).slice(0, 4000),
+    req.ip || null,
+    String(req.get("user-agent") || "").slice(0, 300)
+  );
+  res.json({ ok: true });
 }));
 
 app.get("/api/events/living", (req, res) => {
