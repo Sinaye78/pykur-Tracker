@@ -394,6 +394,11 @@ body.detached-control #configFullscreenBtn{display:none!important}
 .remoteControls [data-remote-command="stop"]{background:linear-gradient(180deg,#ff6670,#a90e1a)!important;color:#fff!important}
 .remoteControls [data-remote-command="next"],.remoteControls [data-remote-command="presentation"]{background:#2b1c3b!important;color:#fff4c4!important}
 .remoteControls .btn:disabled{background:#201723!important;color:#776c7f!important;border-color:#ffffff0f!important;box-shadow:none!important}
+.helpTooltip{position:fixed;z-index:120;max-width:min(280px,calc(100vw - 28px));padding:9px 11px;border:1px solid #ffd16655;border-radius:10px;background:#09050ff2;color:#fff4d8;box-shadow:0 12px 32px #000b,0 0 16px #ffb70322;font-size:11px;font-weight:800;line-height:1.35;opacity:0;transform:translate(-50%,6px);pointer-events:none;transition:opacity .16s ease,transform .16s ease}
+.helpTooltip.show{opacity:1;transform:translate(-50%,0)}
+.helpTooltip:after{content:"";position:absolute;left:50%;bottom:-6px;width:10px;height:10px;background:#09050ff2;border-right:1px solid #ffd16655;border-bottom:1px solid #ffd16655;transform:translateX(-50%) rotate(45deg)}
+.helpTooltip.below:after{top:-6px;bottom:auto;transform:translateX(-50%) rotate(225deg)}
+@media(pointer:coarse){.helpTooltip{display:none!important}}
 .showConfigGrid{display:grid;gap:10px}
 .showConfigCard{display:grid;gap:9px;padding:12px;border:1px solid #ffffff12;border-radius:13px;background:#09050f}
 .showConfigCard>b{color:#ffe28a;font-size:13px}
@@ -642,8 +647,15 @@ function decorateButtonIcons(){
   document.querySelectorAll('[data-control-tab]').forEach(button=>{let map={before:'☷',wheel:'◇',show:'★',audio:'♪',data:'◴'};button.dataset.icon=map[button.dataset.controlTab]||'•'});
   document.querySelectorAll('[data-scene-preset]').forEach(button=>{let map={draw:'▶',next:'→',pause:'Ⅱ',result:'◴',finale:'★'},titles={draw:'Préparer un tirage normal',next:'Annoncer le candidat actuel',pause:'Nettoyer la scène et garder un état calme',result:'Afficher le dernier résultat',finale:'Lancer la scène finale'};button.dataset.icon=map[button.dataset.scenePreset]||'•';button.title=titles[button.dataset.scenePreset]||button.textContent.trim()});
 }
+function applyHelpTooltips(){
+  const help={quickLaunch:'Lance un tirage réel et l’enregistre dans l’historique.',quickStop:'Arrête la roue dès que le STOP devient disponible.',quickNextParticipant:'Passe au participant suivant dans la file.',quickSaveParticipant:'Valide le participant affiché pour le prochain tirage.',configFullscreenBtn:'Ouvre la configuration complète en grand.',modeToggleBtn:'Cache la régie pour capturer uniquement la scène.',detachControlBtn:'Ouvre une régie séparée pour piloter sans polluer la scène.',fullscreenBtn:'Passe l’affichage en plein écran.',testBtn:'Simule un tirage sans stock ni historique.',playBtn:'Lance un vrai tirage avec stock et historique.',stopBtn:'Arrête la roue et affiche le résultat.',presentCandidatesBtn:'Lance la présentation des candidats.',callNextBtn:'Annonce le candidat actuel sur la scène.',finaleShowBtn:'Lance la scène finale.',openScenarioStudioBtn:'Prépare les dialogues et scènes Charlie/Victoria.',rehearsalBtn:'Simule un passage complet sans toucher aux stocks.',dialogueForceBtn:'Ajoute cette réplique en tête de file.',dialogueClearBtn:'Vide la file de dialogues en attente.'};
+  Object.entries(help).forEach(([id,text])=>{let el=document.getElementById(id);if(el)el.dataset.help=text});
+  document.querySelectorAll('[data-remote-command]').forEach(button=>{let map={presentation:'Lance la présentation depuis la régie séparée.',jingle:'Joue le jingle de début.',draw:'Lance un tirage réel sur la scène.',stop:'Arrête la roue à distance.',test:'Lance un tirage test sans conséquence.',next:'Passe au candidat suivant.',finale:'Lance la scène finale.'};button.dataset.help=map[button.dataset.remoteCommand]||''});
+  document.querySelectorAll('.wheelStudioLauncher .btn').forEach(button=>button.dataset.help='Ouvre le studio pour modifier lots, stocks, images et design de la roue.');
+}
 buildRegieLayout();
 decorateButtonIcons();
+applyHelpTooltips();
 const PASSWORD='charlie', LS='charlieRouletteV2';
 const DEFAULT_AUDIO={start:'asset/jingle-debut/charlie-roulette.mp3',spin:'asset/son-roulette/roulette.wav',end:'asset/jingle-fin/fin.mp3'};
 const DEFAULT_LOTS=[
@@ -762,6 +774,68 @@ Object.values(data.profiles).forEach(p=>{
 });
 let angle=0, velocity=0, spinning=false, stopping=false, startingDraw=false, presentingResult=false, currentDrawIsTest=false, antiResetBeforeDraw=null, raf=0, selected=null, draggedQueueIndex=null;
 const $=id=>document.getElementById(id), canvas=$('wheel'), ctx=canvas.getContext('2d');
+let helpTooltipTimer=null, helpTooltipTarget=null;
+function helpTooltipEl(){
+  let el=$('helpTooltip');
+  if(!el){
+    el=document.createElement('div');
+    el.id='helpTooltip';
+    el.className='helpTooltip';
+    el.setAttribute('role','tooltip');
+    document.body.appendChild(el);
+  }
+  return el;
+}
+function hideHelpTooltip(){
+  clearTimeout(helpTooltipTimer);
+  helpTooltipTimer=null;
+  helpTooltipTarget=null;
+  let el=$('helpTooltip');
+  if(el)el.classList.remove('show','below');
+}
+function positionHelpTooltip(target){
+  let el=helpTooltipEl(),r=target.getBoundingClientRect(),margin=12,top=r.top-el.offsetHeight-margin,below=false;
+  if(top<10){top=r.bottom+margin;below=true}
+  let left=Math.min(window.innerWidth-14,Math.max(14,r.left+r.width/2));
+  el.style.left=left+'px';
+  el.style.top=top+'px';
+  el.classList.toggle('below',below);
+}
+function showHelpTooltip(target){
+  let text=target?.dataset?.help;
+  if(!text||target.disabled)return;
+  let el=helpTooltipEl();
+  el.textContent=text;
+  helpTooltipTarget=target;
+  positionHelpTooltip(target);
+  el.classList.add('show');
+}
+function bindHelpTooltips(){
+  document.addEventListener('mouseover',e=>{
+    let target=e.target.closest?.('[data-help]');
+    if(!target||target===helpTooltipTarget)return;
+    clearTimeout(helpTooltipTimer);
+    helpTooltipTimer=setTimeout(()=>showHelpTooltip(target),1400);
+  });
+  document.addEventListener('mouseout',e=>{
+    let target=e.target.closest?.('[data-help]');
+    if(target&&!target.contains(e.relatedTarget))hideHelpTooltip();
+  });
+  document.addEventListener('focusin',e=>{
+    let target=e.target.closest?.('[data-help]');
+    if(!target)return;
+    clearTimeout(helpTooltipTimer);
+    helpTooltipTimer=setTimeout(()=>showHelpTooltip(target),900);
+  });
+  document.addEventListener('focusout',e=>{
+    if(e.target.closest?.('[data-help]'))hideHelpTooltip();
+  });
+  window.addEventListener('scroll',hideHelpTooltip,true);
+  window.addEventListener('resize',()=>{
+    let el=$('helpTooltip');
+    if(helpTooltipTarget&&el?.classList.contains('show'))positionHelpTooltip(helpTooltipTarget);
+  });
+}
 let audio={start:null,spin:null,end:null},stageAudio=null,cueAudio=null,previewAudio=null,audioObjectUrls=[],audioLoadGeneration=0,experienceGeneration=0;
 const transitionTimers=new Set();
 const controlBus=typeof BroadcastChannel==='function'?new BroadcastChannel('charlie-roulette-control'):null;
@@ -835,7 +909,7 @@ function syncQuickControls(){
   renderPreliveChecklist();
 }
 function applyPresenterMode(){let stageOnly=presenterMode&&!detachedControlMode;document.body.classList.toggle('presenter',stageOnly);let b=$('modeToggleBtn');if(b)b.textContent=stageOnly?'Afficher configuration':'Mode Discord';if(stageOnly){selectedEdit=null;draggingEdit=null;canvas&&canvas.classList.remove('dragging')}else{stopFx()}if(canvas)canvas.classList.toggle('editing',!stageOnly);}
-window.addEventListener('load',()=>{applyPresenterMode();bindPresenterPeek();bindQuickControls();syncQuickControls()});
+window.addEventListener('load',()=>{applyPresenterMode();bindPresenterPeek();bindQuickControls();bindHelpTooltips();syncQuickControls()});
 function showSaveFeedback(message='Modifications enregistrées'){if(!saveFeedbackReady)return;clearTimeout(saveFeedbackDelay);clearTimeout(saveFeedbackHide);saveFeedbackDelay=setTimeout(()=>{let toast=$('saveToast');if(!toast)return;toast.textContent=message;toast.classList.add('show');saveFeedbackHide=setTimeout(()=>toast.classList.remove('show'),1500)},260)}
 function save(){localStorage.setItem(LS,JSON.stringify(data));showSaveFeedback()} function cur(){return data.profiles[data.active]} function src(kind){return DEFAULT_AUDIO[kind]}
 function rememberAccess(){try{sessionStorage.setItem('charlieAccess','1')}catch{}}
