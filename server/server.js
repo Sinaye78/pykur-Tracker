@@ -2007,6 +2007,194 @@ function findKephLot(lots, rawName) {
   return best?.score ? best : null;
 }
 
+const KEPH_UI_MAP = [
+  {
+    id: "launch",
+    names: ["lancer", "bouton lancer", "demarrer la roue", "lancer la roue"],
+    answer: "Lancer démarre un vrai tirage pour le participant actuel. Il peut consommer un stock, écrire dans l'historique et retirer un lancer au participant. À utiliser seulement quand tu es prêt à valider un vrai passage live.",
+    danger: "Impact réel : stocks, historique et lancers participant.",
+    actions: ["open_prepare"]
+  },
+  {
+    id: "stop",
+    names: ["stop", "bouton stop", "arreter la roue", "arrêter la roue"],
+    answer: "Stop sert à arrêter la roue pendant un tirage. Il devient utile seulement quand la roue est en cours et que l'arrêt est autorisé. S'il est gris, c'est souvent parce qu'aucun vrai tirage n'est lancé ou que la scène n'est pas au bon état.",
+    danger: "À utiliser pendant le tirage, pas pendant la préparation.",
+    actions: ["open_prepare"]
+  },
+  {
+    id: "test_draw",
+    names: ["tirage test", "bouton tirage test", "test roulette", "test roue"],
+    answer: "Tirage test sert à vérifier la roue sans conséquence. Il peut montrer un résultat fictif, tester l'ambiance et les sons, mais ne consomme pas les stocks, ne touche pas à l'historique et ne retire pas de lancer.",
+    actions: ["open_prepare"]
+  },
+  {
+    id: "next",
+    names: ["suivant", "bouton suivant", "prochain", "candidat suivant"],
+    answer: "Suivant charge le prochain candidat de la file. Utilise-le après un résultat validé ou si tu veux passer quelqu'un. Il change le participant affiché sur la scène et le contexte des dialogues.",
+    actions: ["open_prepare"]
+  },
+  {
+    id: "present",
+    names: ["presenter les candidats", "présenter les candidats", "bouton presenter", "presentation candidats"],
+    answer: "Présenter les candidats lance une intro de spectacle : Charlie/Victoria peuvent annoncer les participants et installer l'ambiance. Ça ne lance pas la roue, ne consomme aucun stock et n'écrit rien dans l'historique.",
+    actions: ["open_scenario_studio"]
+  },
+  {
+    id: "jingle_start",
+    names: ["jingle debut", "jingle début", "bouton jingle", "jingle"],
+    answer: "Jingle début déclenche le moment sonore/visuel d'ouverture prévu pour la scène. Les sons associés se règlent dans Sons, et les dialogues qui se jouent à ce moment se règlent dans l'étape Jingle du Studio de scénarios.",
+    actions: ["open_scenario_studio", "open_audio"]
+  },
+  {
+    id: "announce_candidate",
+    names: ["annoncer le candidat", "annonce candidat", "bouton annonce"],
+    answer: "Annoncer le candidat sert à mettre en avant le participant actuel avant son tirage. C'est une action de mise en scène : elle prépare le passage sans toucher aux lots, stocks ou historique.",
+    actions: ["open_scenario_studio"]
+  },
+  {
+    id: "finale",
+    names: ["scene finale", "scène finale", "finale"],
+    answer: "Scène finale lance la clôture du show. C'est prévu pour remercier les candidats, finir proprement et jouer les dialogues/effets de fin configurés dans le Studio de scénarios.",
+    actions: ["open_scenario_studio"]
+  },
+  {
+    id: "wheel_studio_lots",
+    names: ["lots et roue", "studio roulette", "lots probabilites", "lots probabilités", "poids des lots", "stocks des lots"],
+    answer: "Lots & roue ouvre le studio de la roulette. L'onglet Lots & probabilités sert à modifier les noms, poids, stocks, activation et disponibilité des lots. C'est là que tu règles ce qui peut tomber et avec quelle chance.",
+    danger: "Peut changer les chances de tirage et la disponibilité des lots.",
+    actions: ["open_wheel_studio_lots"]
+  },
+  {
+    id: "wheel_studio_design",
+    names: ["design png", "design et png", "apparence roue", "taille texte lot", "image lot", "png lot"],
+    answer: "Design & PNG règle uniquement l'affichage de la roue : taille du texte, position, images, couleurs et lisibilité des cases. Ça ne change pas les probabilités ni les stocks.",
+    actions: ["open_wheel_studio_design"]
+  },
+  {
+    id: "scenario_studio",
+    names: ["studio scenarios", "studio de scenarios", "studio scénarios", "dialogues", "repliques", "répliques"],
+    answer: "Le Studio de scénarios sert à organiser les répliques de Charlie/Victoria par étape : présentation, jingle, pendant la roue, résultat, candidat suivant et finale. Tu peux y régler personnage, ciblage, emote, effet spécial et bruitage.",
+    actions: ["open_scenario_studio"]
+  },
+  {
+    id: "audio",
+    names: ["sons", "audio", "volume", "mute", "couper les sons"],
+    answer: "Sons sert à contrôler l'audio global : mute, volume des jingles, volume de la roulette et sons de scène. Les bruitages précis d'une réplique se règlent plutôt dans le Studio de scénarios, champ Bruitage.",
+    actions: ["open_audio"]
+  },
+  {
+    id: "save_data",
+    names: ["sauvegarde", "historique", "export profil", "import profil", "csv"],
+    answer: "Sauvegarde regroupe l'historique des vrais tirages, la correction du dernier tirage, l'export CSV et l'import/export du profil complet. C'est la zone sécurité pour garder ou restaurer une configuration.",
+    actions: ["open_data"]
+  },
+  {
+    id: "discord_mode",
+    names: ["mode discord", "scene propre", "scène propre", "obs", "capture"],
+    answer: "Le mode Discord/OBS sert à garder une scène publique propre pour la capture : roue, participant, résultat et dialogues, sans les boutons de régie. Pour piloter en même temps, utilise la régie détachée.",
+    actions: ["highlight_discord", "detach_control"]
+  },
+  {
+    id: "rehearsal",
+    names: ["simulation", "simuler un passage", "mode repetition", "répétition"],
+    answer: "Simuler un passage enchaîne un passage fictif pour régler le rythme avant le live. Ça ne touche pas aux stocks, ne remplit pas l'historique et ne retire pas de lancer.",
+    actions: ["highlight_rehearsal"]
+  }
+];
+
+function findKephUiEntry(message) {
+  const text = normalizeKephText(message);
+  const best = KEPH_UI_MAP
+    .map((entry) => ({
+      entry,
+      score: entry.names.reduce((sum, name) => {
+        const norm = normalizeKephText(name);
+        if (!norm) return sum;
+        if (text.includes(norm)) return sum + norm.split(" ").length + 2;
+        const parts = norm.split(" ").filter((part) => part.length > 2);
+        return sum + parts.filter((part) => text.includes(part)).length;
+      }, 0)
+    }))
+    .sort((a, b) => b.score - a.score)[0];
+  return best?.score > 1 ? best.entry : null;
+}
+
+function kephUiMapAnswer(message) {
+  const text = normalizeKephText(message);
+  if (!/\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|bouton|ou est|ou trouver|comment utiliser)\b/.test(text)) return null;
+  const entry = findKephUiEntry(message);
+  if (!entry) return null;
+  const knowledge = charlieKephKnowledge();
+  return {
+    answer: entry.danger ? `${entry.answer} ${entry.danger}` : entry.answer,
+    actions: normalizedKephActions(entry.actions, knowledge),
+    source: "ui_map",
+    matched: true,
+    intent: `ui_${entry.id}`
+  };
+}
+
+function kephDiagnostics(message, context = {}) {
+  const text = normalizeKephText(message);
+  const asksProblem = /\b(?:pourquoi|probleme|bug|impossible|marche pas|peux pas|peut pas|bloque|bloquee|bloqué|bloquée|gris|grise|grisé|grisee|erreur)\b/.test(text);
+  const asksReady = /\b(?:pret|prêt|check|diagnostic|verifier|vérifier|avant live|tout va bien|je peux lancer)\b/.test(text);
+  if (!asksProblem && !asksReady) return null;
+
+  const lots = Array.isArray(context.lots) ? context.lots : [];
+  const unavailableNames = Array.isArray(context.unavailableLots)
+    ? context.unavailableLots.filter(Boolean).slice(0, 5)
+    : lots.filter((lot) => !lot.available).map((lot) => lot.name).slice(0, 5);
+  const availableLots = Number.isFinite(Number(context.availableLots))
+    ? Number(context.availableLots)
+    : lots.filter((lot) => lot.available).length;
+  const currentCandidate = String(context.currentCandidate || "").trim();
+  const queueRemaining = Number(context.queueRemaining || 0);
+  const stage = String(context.stage || "ready");
+  const blockers = [];
+  const warnings = [];
+
+  if (!currentCandidate) blockers.push("aucun participant actuel n'est défini");
+  if (!availableLots) blockers.push("aucun lot disponible n'est actif dans la roue");
+  else if (unavailableNames.length) warnings.push(`${unavailableNames.length} lot(s) indisponible(s) : ${unavailableNames.join(", ")}`);
+  if (context.soundMuted) warnings.push("le son global est coupé");
+  if (queueRemaining <= 0 && /\b(?:suivant|file|queue|prochain)\b/.test(text)) warnings.push("la file semble arrivée à la fin");
+  if (stage === "spinning" && /\b(?:lancer|roue|tirage)\b/.test(text)) blockers.push("la roue est déjà en cours");
+  if (stage !== "spinning" && /\bstop\b/.test(text)) blockers.push("Stop est normalement indisponible tant qu'un vrai tirage n'est pas en cours");
+
+  const actionIds = new Set(["open_prepare"]);
+  if (!availableLots || unavailableNames.length) actionIds.add("open_wheel_studio_lots");
+  if (context.soundMuted) actionIds.add("open_audio");
+
+  if (!blockers.length && !warnings.length) {
+    return {
+      answer: `Diagnostic rapide : je ne vois pas de blocage évident. Participant actuel : ${currentCandidate || "non renseigné"}, lots disponibles : ${availableLots}, état scène : ${stage}. Si un bouton reste bloqué, ouvre la zone concernée et vérifie l'étape actuelle du live.`,
+      actions: normalizedKephActions([...actionIds], charlieKephKnowledge()),
+      source: "diagnostic",
+      matched: true,
+      intent: "diagnostic_ok"
+    };
+  }
+
+  if (!blockers.length) {
+    return {
+      answer: `Tu peux lancer, mais attention : ${warnings.join("; ")}. Ce n'est pas forcément bloquant, simplement à vérifier avant le live.`,
+      actions: normalizedKephActions([...actionIds], charlieKephKnowledge()),
+      source: "diagnostic",
+      matched: true,
+      intent: "diagnostic_warning"
+    };
+  }
+
+  return {
+    answer: `Diagnostic rapide : ${blockers.join("; ")}${warnings.length ? `. À vérifier aussi : ${warnings.join("; ")}` : ""}. Corrige ces points avant de lancer un vrai tirage, surtout si tu es en live.`,
+    actions: normalizedKephActions([...actionIds], charlieKephKnowledge()),
+    source: "diagnostic",
+    matched: true,
+    intent: "diagnostic_warning"
+  };
+}
+
 function parseKephCommand(message, context = {}) {
   const raw = String(message || "").trim();
   const normalized = normalizeKephText(raw);
@@ -2106,6 +2294,70 @@ function parseKephCommand(message, context = {}) {
       actions: [],
       source: "conversation",
       intent: "thanks"
+    };
+  }
+  const previewBlockedByProblem = /\b(?:pourquoi|probleme|problème|impossible|marche pas|peux pas|peut pas|bloque|bloqué|bloquee|bloquée|bug)\b/.test(normalized);
+  const asksPreview = !previewBlockedByProblem && /\b(?:joue|jouer|lance|lancer|test|tester|previsualise|previsualiser|prévisualise|prévisualiser|montre|montrer|aperçu|apercu)\b/.test(normalized);
+  if (asksPreview && /\b(?:tout l evenement|tout evenement|evenement complet|événement complet|tout le live|deroule complet|déroulé complet|show complet|simulation complete|simulation complète)\b/.test(normalized)) {
+    return {
+      answer: "Je peux lancer une simulation complète : présentation, jingle, annonce candidat, tirage test, annonce suivant et finale. Ça sert à voir le rythme sans toucher aux stocks ni à l'historique réel.",
+      actions: [
+        { id: "apply_play_event_rehearsal", type: "play_event_rehearsal", label: "Simuler tout l'événement", payload: {} }
+      ],
+      source: "command",
+      intent: "play_event_rehearsal"
+    };
+  }
+  if (asksPreview && /\b(?:effet|fx|confetti|confettis|feu|artifice|flash|fumee|fumée|glitch|etoiles|étoiles|projecteur|projecteurs|spotlight|blackout|coupure|lumiere|lumière|shake|alerte)\b/.test(normalized)) {
+    const effectAliases = [
+      ["confetti", /\bconfettis?\b/],
+      ["fireworks", /\b(?:feu artifice|feu d artifice|artifice)\b/],
+      ["flash", /\bflash\b/],
+      ["blackout", /\b(?:blackout|coupure|coupure lumiere|coupure lumière)\b/],
+      ["spotlights", /\b(?:projecteurs?|spotlights?)\b/],
+      ["spotlight", /\bspotlight\b/],
+      ["shake", /\bshake\b/],
+      ["glitch", /\bglitch\b/],
+      ["stars", /\b(?:etoiles|étoiles|stars?)\b/],
+      ["smoke", /\b(?:fumee|fumée|smoke)\b/],
+      ["goldwave", /\b(?:vague doree|vague dorée|goldwave)\b/],
+      ["alert", /\b(?:alerte|rouge)\b/]
+    ];
+    const fx = effectAliases.find(([, regex]) => regex.test(normalized))?.[0] || "confetti";
+    return {
+      answer: `Je peux jouer l'effet ${fx} directement sur la scène pour voir le rendu.`,
+      actions: [
+        { id: `apply_preview_effect_${fx}`, type: "preview_effect", label: `Jouer l'effet`, payload: { fx } }
+      ],
+      source: "command",
+      intent: "preview_effect"
+    };
+  }
+  if (asksPreview && /\bjingle\b/.test(normalized) && !/\b(?:dialogue|replique|réplique|phrase)\b/.test(normalized)) {
+    return {
+      answer: "Je peux lancer le jingle de début pour tester le son et l'ambiance sans lancer la roue.",
+      actions: [
+        { id: "apply_play_jingle", type: "play_jingle", label: "Jouer le jingle", payload: {} }
+      ],
+      source: "command",
+      intent: "play_jingle"
+    };
+  }
+  if (asksPreview && /\b(?:dialogue|replique|réplique|scene|scène|presentation|présentation|jingle|roue|resultat|résultat|suivant|finale)\b/.test(normalized)) {
+    const trigger = /\bfinale\b/.test(normalized) ? "finale"
+      : /\b(?:suivant|prochain candidat|annonce candidat)\b/.test(normalized) ? "next"
+      : /\b(?:resultat|résultat|gagnant)\b/.test(normalized) ? "result"
+      : /\b(?:roue|tirage|rotation)\b/.test(normalized) ? "spin"
+      : /\bjingle\b/.test(normalized) ? "jingle"
+      : "presentation";
+    const labels = { presentation: "Présentation", jingle: "Jingle", spin: "Pendant la roue", result: "Résultat", next: "Candidat suivant", finale: "Finale" };
+    return {
+      answer: `Je peux prévisualiser l'étape « ${labels[trigger]} » avec les dialogues configurés, pour voir le rendu avant le live.`,
+      actions: [
+        { id: `apply_preview_section_${trigger}`, type: "preview_cue_section", label: `Jouer ${labels[trigger]}`, payload: { trigger } }
+      ],
+      source: "command",
+      intent: "preview_cue_section"
     };
   }
   const lots = Array.isArray(context.lots) ? context.lots : [];
@@ -2457,6 +2709,10 @@ function directKephAnswer(message) {
 
 function fallbackKephAnswer(message, context = {}) {
   const knowledge = charlieKephKnowledge();
+  const diagnostic = kephDiagnostics(message, context);
+  if (diagnostic) return diagnostic;
+  const uiMap = kephUiMapAnswer(message);
+  if (uiMap) return uiMap;
   const direct = directKephAnswer(message);
   if (direct) return direct;
   const text = normalizeKephText(message);
@@ -2614,7 +2870,7 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   const command = parseKephCommand(message, context);
   if (command) return res.json({ ...command, avatarUrl: kephPublicAvatar() });
   const guide = fallbackKephAnswer(message, context);
-  if (guide.matched && guide.source === "direct") return res.json({ ...guide, source: "guide", avatarUrl: kephPublicAvatar() });
+  if (guide.matched && ["direct", "ui_map", "diagnostic"].includes(guide.source)) return res.json({ ...guide, source: "guide", avatarUrl: kephPublicAvatar() });
   try {
     const ai = await askOllamaKeph(message, context, guide.matched ? guide : null);
     const answer = String(ai?.answer || "").trim();

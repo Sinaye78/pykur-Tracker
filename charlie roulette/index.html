@@ -951,16 +951,22 @@ let kephRenderedFeedback=[];
 function kephApi(path){return (location.protocol==='file:'?'https://familier-tracker.fr':'')+path}
 function kephContext(){
   let p=cur?.()||{},q=p.queue||[],pos=Math.min(p.queueIndex||0,Math.max(0,q.length-1)),history=p.history||[],lots=p.lots||[],settings=p.settings||{};
+  let availableLots=lots.filter(lot=>lot.enabled!==false&&(!lot.stockEnabled||Number(lot.stock||0)>0)),unavailableLots=lots.filter(lot=>lot.enabled===false||(lot.stockEnabled&&Number(lot.stock||0)<=0));
   return {
     profile:data?.active||'',
     currentCandidate:p.participant||q[pos]||'',
     nextParticipant:q[pos+1]||'',
     queueTotal:q.length,
     queueRemaining:Math.max(0,q.length-pos-1),
+    queuePosition:pos,
     stage:document.querySelector('.stage')?.dataset.state||'ready',
     modeDiscord:!!presenterMode,
     detachedControl:!!detachedControlMode,
     soundMuted:!!settings.mute,
+    availableLots:availableLots.length,
+    unavailableLots:unavailableLots.map(lot=>lot.name).slice(0,8),
+    activeSection:document.querySelector('.controlTab.active')?.dataset.controlPanel||document.querySelector('.tabButton.active')?.dataset.controlTab||'',
+    configOpen:document.body.classList.contains('config-fullscreen'),
     lots:lots.map(lot=>({name:lot.name,enabled:lot.enabled!==false,stockEnabled:!!lot.stockEnabled,stock:Number(lot.stock||0),available:lot.enabled!==false&&(!lot.stockEnabled||Number(lot.stock||0)>0)})).slice(0,20),
     lastDraw:history[0]?{participant:history[0].participant,lot:history[0].lot,at:history[0].at}:null
   }
@@ -1004,6 +1010,10 @@ function runKephAction(action){
   if(action.type==='update_lot_name')return applyKephLotName(action);
   if(action.type==='add_dialogue')return applyKephAddDialogue(action);
   if(action.type==='add_participant')return applyKephAddParticipant(action);
+  if(action.type==='preview_effect')return applyKephPreviewEffect(action);
+  if(action.type==='preview_cue_section')return applyKephPreviewCueSection(action);
+  if(action.type==='play_jingle')return applyKephPlayJingle(action);
+  if(action.type==='play_event_rehearsal')return applyKephEventRehearsal(action);
   const actions={
     open_prepare:()=>openKephConfigTab('before'),
     open_shortcuts:()=>{openKephConfigTab('before');setTimeout(()=>flashKephTarget(document.querySelector('.shortcutGrid')||$('resetShortcutsBtn')),120)},
@@ -1080,6 +1090,40 @@ function applyKephAddParticipant(action){
   save();renderParticipant();renderQueue();syncQuickControls();
   kephMessagesState.push({role:'assistant',text:`C’est fait : ${name} est ajouté à la fin de la file.`,actions:[{id:'open_prepare',label:'Voir la file'}]});
   renderKephMessages();openKephConfigTab('before');
+}
+function applyKephPreviewEffect(action){
+  let fx=String(action?.payload?.fx||'').trim();
+  if(!SHOW_EFFECTS[fx]){kephMessagesState.push({role:'assistant',text:'Je ne connais pas cet effet. Essaie confettis, feu d’artifice, flash, fumée, glitch, projecteurs ou coupure lumière.'});renderKephMessages();return}
+  playSpecialEffect(fx,'charlie');
+  kephMessagesState.push({role:'assistant',text:`Je joue l’effet « ${SHOW_EFFECTS[fx]} » sur la scène.`});
+  renderKephMessages();
+}
+function applyKephPreviewCueSection(action){
+  let trigger=String(action?.payload?.trigger||'').trim();
+  if(!SHOW_TRIGGERS.includes(trigger)){kephMessagesState.push({role:'assistant',text:'Je ne retrouve pas cette étape de scénario.'});renderKephMessages();return}
+  closeScenarioStudio();closeWheelStudio?.();interruptExperience({keepResult:true});
+  previewCueSection(trigger);
+  kephMessagesState.push({role:'assistant',text:`Je prévisualise l’étape « ${SHOW_TRIGGER_LABELS[trigger]||trigger} ».`});
+  renderKephMessages();
+}
+function applyKephPlayJingle(){
+  if(startingDraw||spinning||presentingResult){kephMessagesState.push({role:'assistant',text:'J’attends la fin du tirage en cours avant de jouer le jingle.'});renderKephMessages();return}
+  closeScenarioStudio();closeWheelStudio?.();playIntroJingle();
+  kephMessagesState.push({role:'assistant',text:'Je lance le jingle de début pour tester le rendu.'});
+  renderKephMessages();
+}
+function applyKephEventRehearsal(){
+  if(startingDraw||spinning||presentingResult||$('showScene')?.classList.contains('active')){kephMessagesState.push({role:'assistant',text:'La scène est déjà occupée. Ferme la scène ou attends la fin du tirage, puis relance la simulation.'});renderKephMessages();return}
+  if(!preliveLotsState().available){kephMessagesState.push({role:'assistant',text:'Impossible de simuler tout l’événement : aucun lot disponible pour le tirage test.',actions:[{id:'open_wheel_studio_lots',label:'Ouvrir les lots'}]});renderKephMessages();return}
+  interruptExperience({keepResult:true});
+  kephMessagesState.push({role:'assistant',text:'Je lance une simulation complète : présentation, jingle, annonce candidat, tirage test, annonce suivant et finale. Aucun stock ni historique réel ne sera modifié.'});
+  renderKephMessages();
+  presentCandidates();
+  scheduleTransition(()=>{closeShowScene();playIntroJingle()},5200);
+  scheduleTransition(()=>callCurrentCandidateScene(),8700);
+  scheduleTransition(()=>{closeShowScene();startDraw(true);scheduleTransition(()=>{if(spinning&&!stopping)$('stopBtn')?.click()},2100)},11800);
+  scheduleTransition(()=>{if($('winOverlay')?.classList.contains('show'))confirmWinResult();callNextCandidate()},18800);
+  scheduleTransition(()=>{closeShowScene();presentFinale()},22400);
 }
 async function askKeph(question){
   question=String(question||'').trim();if(!question||kephBusy)return;
