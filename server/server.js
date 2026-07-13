@@ -2510,12 +2510,12 @@ function parseKephCommand(message, context = {}) {
     context.currentCandidate,
     context.nextParticipant
   ].map(cleanKephName).filter(Boolean))];
-  if (/\b(?:file|liste|queue|candidats|participants)\b/.test(text) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(text)) {
+  if (/\b(?:file|liste|queue|candidats|participants)\b/.test(normalized) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(normalized)) {
     const names = kephNamesFromListText(raw.split(/:|avec|pour/i).pop() || raw);
     const picked = names.length >= 2 ? names : ["Mira", "Grobid", "Tofu-Royal"];
-    add(`set_queue ${picked.slice(0, 6).map(quoteCommandArg).join(" ")}`);
+    addControlled(`set_queue ${picked.slice(0, 6).map(quoteCommandArg).join(" ")}`);
   }
-  if (/\b(?:roue|roulette|lots?)\b/.test(text) && /\b(?:complete|6|six|cree|creer|genere|generer)\b/.test(text)) {
+  if (/\b(?:roue|roulette|lots?)\b/.test(normalized) && /\b(?:complete|6|six|cree|creer|genere|generer)\b/.test(normalized)) {
     const lots = [
       ["Ticket VIP du Chaos", 26, 4, "#c1121f"],
       ["Bourse qui clignote 200.000k", 18, 3, "#023e8a"],
@@ -2524,21 +2524,21 @@ function parseKephCommand(message, context = {}) {
       ["Malus: compliment a Charlie", 12, 5, "#6f2dbd"],
       ["Jackpot des Kamavores", 6, 1, "#f77f00"]
     ];
-    add("clear_lots");
+    addControlled("clear_lots");
     lots.forEach(([name, weight, stock, color]) => {
-      add(`add_lot ${quoteCommandArg(name)} ${weight} ${stock}`);
-      add(`set_lot_color ${quoteCommandArg(name)} ${quoteCommandArg(color)}`);
+      addControlled(`add_lot ${quoteCommandArg(name)} ${weight} ${stock}`);
+      addControlled(`set_lot_color ${quoteCommandArg(name)} ${quoteCommandArg(color)}`);
     });
   }
-  if (/\b(?:regle|regler|configure|configurer)\b/.test(text) && /\b(?:show|profil|dynamique|anti repetition|humeur|dialogues)\b/.test(text)) {
-    add('set_setting "antiRepeatEnabled" "true"');
-    add('set_setting "antiRepeatMode" "session"');
-    add('set_setting "defaultDialoguesEnabled" "false"');
-    add('set_setting "showFrequency" "normal"');
-    add('set_setting "dialogueMode" "timed"');
-    add('set_setting "dialogueDuration" "7"');
-    add('set_setting "charlieMood" "taquin"');
-    add('set_setting "launchTrollChance" "12"');
+  if (/\b(?:regle|regler|configure|configurer)\b/.test(normalized) && /\b(?:show|profil|dynamique|anti repetition|humeur|dialogues)\b/.test(normalized)) {
+    addControlled('set_setting "antiRepeatEnabled" "true"');
+    addControlled('set_setting "antiRepeatMode" "session"');
+    addControlled('set_setting "defaultDialoguesEnabled" "false"');
+    addControlled('set_setting "showFrequency" "normal"');
+    addControlled('set_setting "dialogueMode" "timed"');
+    addControlled('set_setting "dialogueDuration" "7"');
+    addControlled('set_setting "charlieMood" "taquin"');
+    addControlled('set_setting "launchTrollChance" "12"');
   }
   const lotNames = Array.isArray(context.lots) ? context.lots.map((lot) => String(lot.name || "")).filter(Boolean) : [];
   const directRename = raw.match(/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s+(?:en|vers)\s+(.+?)(?:[?.!]|$)/i);
