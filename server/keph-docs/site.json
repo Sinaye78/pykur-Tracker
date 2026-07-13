@@ -1,0 +1,237 @@
+{
+  "version": 1,
+  "app": "Charlie Roulette",
+  "description": "Documentation structuree consultee par Keph pour aider l'organisateur.",
+  "sections": [
+    {
+      "id": "before",
+      "title": "Preparer",
+      "summary": "Participant actuel, file, lancers par participant, checklist, raccourcis et commandes live simples.",
+      "actions": ["open_prepare", "open_shortcuts"]
+    },
+    {
+      "id": "wheel",
+      "title": "Lots & roue",
+      "summary": "Lots, poids, stocks, activation, disponibilite et design visuel de la roue.",
+      "actions": ["open_wheel_studio_lots", "open_wheel_studio_design"]
+    },
+    {
+      "id": "show",
+      "title": "Scenes",
+      "summary": "Dialogues Charlie/Victoria, types de repliques, emotes, effets, bruitages, presets et pilotage de scene.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "audio",
+      "title": "Sons",
+      "summary": "Mute, volumes, jingles, sons de roue et bruitages de repliques.",
+      "actions": ["open_audio"]
+    },
+    {
+      "id": "data",
+      "title": "Sauvegarde",
+      "summary": "Historique, correction du dernier tirage, export CSV et import/export du profil complet.",
+      "actions": ["open_data"]
+    }
+  ],
+  "documents": [
+    {
+      "id": "purpose",
+      "section": "before",
+      "title": "A quoi sert Charlie Roulette",
+      "keywords": ["site", "application", "charlie roulette", "but", "objectif", "sert"],
+      "instant": true,
+      "answer": "Charlie Roulette sert a animer un tirage en live comme une petite emission. Tu prepares des participants, des lots, des stocks, des sons et des dialogues, puis tu pilotes une scene publique propre pour Discord/OBS. La regie controle le live; les reglages preparent la roue et le spectacle.",
+      "actions": ["open_prepare"],
+      "examples": ["a quoi sert le site ?", "c est quoi Charlie Roulette ?"]
+    },
+    {
+      "id": "first_live_steps",
+      "section": "before",
+      "title": "Par quoi commencer avant un live",
+      "keywords": ["par quoi commencer", "commencer avant live", "premier live", "je suis perdu", "preparer live", "avant live"],
+      "instant": true,
+      "answer": "Commence par Preparer : charge la file de participants, verifie le participant actuel et les lancers. Ensuite verifie Lots & roue pour les poids, stocks et lots disponibles, puis teste Sons et Scenes avec Simuler un passage. Quand la checklist est verte, passe en scene Discord/OBS propre.",
+      "actions": ["open_prepare", "highlight_rehearsal"],
+      "examples": ["par quoi je commence ?", "quoi verifier avant un live ?"]
+    },
+    {
+      "id": "live_controls",
+      "section": "before",
+      "title": "Boutons de regie live",
+      "keywords": ["lancer", "stop", "suivant", "tirage test", "dernier tirage", "live simple", "regie"],
+      "answer": "Lancer demarre un vrai tirage et peut consommer un stock, ecrire l'historique et retirer un lancer au participant. Stop arrete la roue quand un vrai tirage est en cours. Tirage test verifie le rendu sans consequence. Suivant passe au prochain candidat.",
+      "actions": ["open_prepare"]
+    },
+    {
+      "id": "test_draw",
+      "section": "before",
+      "title": "Tirage test",
+      "keywords": ["tirage test", "test roue", "test roulette", "sans stock", "sans historique"],
+      "instant": true,
+      "answer": "Le tirage test sert a verifier la roue sans consequence. Il peut montrer un resultat fictif et tester le rythme, mais il ne consomme pas les stocks, ne change pas l'historique et ne retire pas de lancer au participant. Pour un vrai passage live, utilise Lancer.",
+      "actions": ["open_prepare"]
+    },
+    {
+      "id": "participants_draws",
+      "section": "before",
+      "title": "Participants et nombre de lancers",
+      "keywords": ["participant", "candidat", "file", "queue", "lancers", "nombre de lancers", "tickets", "participations", "tentatives"],
+      "instant": true,
+      "answer": "Dans Preparer, tu charges la file de participants avec un pseudo par ligne. Chaque participant peut avoir un nombre de lancers/tickets : augmente-le si le candidat a plusieurs chances. A chaque vrai tirage, le compteur restant descend; quand il arrive a zero, tu peux passer au suivant.",
+      "actions": ["open_prepare"]
+    },
+    {
+      "id": "keyboard_shortcuts",
+      "section": "before",
+      "title": "Raccourcis clavier",
+      "keywords": ["raccourci", "raccourcis", "clavier", "espace", "entree", "touche", "touches"],
+      "instant": true,
+      "answer": "Les raccourcis clavier servent a piloter la regie sans viser les boutons pendant le live. Espace peut lancer, Entree peut stopper, et les touches affichees entre parentheses declenchent les actions rapides comme Presenter, Jingle ou Finale. Dans Preparer > Raccourcis, clique un champ puis appuie sur la touche voulue.",
+      "actions": ["open_shortcuts"]
+    },
+    {
+      "id": "lots_weight_stock",
+      "section": "wheel",
+      "title": "Lots, poids, stocks et activation",
+      "keywords": ["lot", "lots", "poids", "poid", "probabilite", "chance", "stock", "indisponible", "activer", "desactiver", "roue", "case"],
+      "instant": true,
+      "answer": "Dans Lots & roue > Studio de la roulette > Lots & probabilites, chaque case a un nom, un poids, une activation et eventuellement un stock. Le poids est une chance relative : un lot a 20 sort environ deux fois plus souvent qu'un lot a 10. Si le stock arrive a zero ou si le lot est desactive, la case devient indisponible.",
+      "actions": ["open_wheel_studio_lots"]
+    },
+    {
+      "id": "wheel_design",
+      "section": "wheel",
+      "title": "Design et PNG de la roue",
+      "keywords": ["design", "png", "image", "taille texte", "police", "couleur", "case", "visuel", "apparence"],
+      "answer": "Design & PNG regle uniquement l'affichage des cases : texte, taille, position, rotation, image, couleur et lisibilite. Ca ne change pas les probabilites, les stocks ni les chances de tirage.",
+      "actions": ["open_wheel_studio_design"]
+    },
+    {
+      "id": "scenario_studio",
+      "section": "show",
+      "title": "Studio de scenarios",
+      "keywords": ["dialogue", "dialogues", "replique", "repliques", "scenario", "scene", "victoria", "charlie", "presentation", "jingle", "resultat", "finale"],
+      "answer": "Le Studio de scenarios organise les repliques par etape : Presentation, Jingle, Pendant la roue, Resultat, Candidat suivant et Finale. Chaque replique peut avoir un personnage, un type, un ciblage, une emote, un effet special et un bruitage.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "presentation_dialogues",
+      "section": "show",
+      "title": "Modifier les dialogues de presentation",
+      "keywords": ["modifier dialogue presentation", "modifier dialogues presentation", "dialogue presenter candidats", "dialogues presenter candidats", "replique presentation", "presentation candidats"],
+      "instant": true,
+      "answer": "Oui, les dialogues joues par Presenter les candidats sont modifiables. Ouvre Reglages > Scenes > Studio de scenarios, choisis l'etape Presentation, puis modifie, supprime ou ajoute les repliques de Charlie/Victoria. Ca change uniquement l'intro spectacle, pas les stocks ni l'historique.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "dialogue_targeting",
+      "section": "show",
+      "title": "Ciblage des dialogues",
+      "keywords": ["cibler", "ciblage", "candidat cible", "participant cible", "tous les candidats", "candidat actuel"],
+      "instant": true,
+      "answer": "Le ciblage d'une replique sert a choisir pour qui elle peut se jouer. Tous les candidats = replique generale. Candidat actuel = la replique suit la personne en train de passer. Candidat cible = la replique ne sort que pour un pseudo precis. C'est utile pour preparer une phrase speciale sans qu'elle apparaisse pour les autres.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "dialogue_types",
+      "section": "show",
+      "title": "Dialogue parle ou indication scenique",
+      "keywords": ["dialogue parle", "indication scenique", "type dialogue", "type replique", "slash me", "/me"],
+      "instant": true,
+      "answer": "Dialogue parle affiche une vraie bulle de parole pour Charlie ou Victoria. Indication scenique est plus discrete : elle decrit une action de scene, comme un /me, par exemple Charlie observe la roue. Utilise Dialogue parle pour un texte important, et Indication scenique pour donner de la vie sans couper le rythme.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "dialogue_audio",
+      "section": "show",
+      "title": "Bruitage sur une replique",
+      "keywords": ["mp3", "wav", "ogg", "bruitage", "son dialogue", "audio replique", "bibliotheque audio", "importer son"],
+      "instant": true,
+      "answer": "Pour mettre un son sur une replique, ouvre le Studio de scenarios, selectionne ou cree la replique, puis utilise le champ Bruitage dans le panneau de droite. Si le fichier n'est pas encore disponible, le bouton Importer a cote du champ Bruitage ajoute un MP3/WAV/OGG a la bibliotheque et le selectionne pour la replique en cours.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "dialogue_queue",
+      "section": "show",
+      "title": "Pilotage et file de dialogues",
+      "keywords": ["file dialogue", "file dialogues", "suivant dialogue", "passer dialogue", "rejouer dialogue", "auto manuel", "manuel"],
+      "answer": "La file de dialogues permet de garder la main sur ce que Charlie/Victoria vont dire. Suivant joue la prochaine replique, Passer la saute, Rejouer relance la replique actuelle, Vider nettoie la file. En Auto, le site enchaine selon la scene; en Manuel, l'organisateur controle le rythme.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "effects",
+      "section": "show",
+      "title": "Emotes et effets speciaux",
+      "keywords": ["emote", "emotes", "emoji", "effet", "effets", "fx", "confetti", "flash", "feu artifice", "liste effets", "effets speciaux"],
+      "instant": true,
+      "answer": "Les effets speciaux disponibles sont : confettis, feu d'artifice, flash plateau, coupure lumiere, projecteurs, spotlight, shake leger, glitch, pluie d'etoiles, fumee, vague doree et alerte rouge. Ils se reglent sur une replique dans le Studio de scenarios.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "show_options",
+      "section": "show",
+      "title": "Options Charlie Show et dialogues inclus",
+      "keywords": ["charlie show", "dialogues inclus", "dialogue inclus", "dialogues par defaut", "annoncer automatiquement", "candidat suivant automatique", "option cochable"],
+      "instant": true,
+      "answer": "Charlie Show active les interventions de Charlie/Victoria pendant le live. Dialogues inclus active les repliques par defaut fournies avec le site; si tu le coupes, le show utilisera surtout tes dialogues personnalises. Annoncer automatiquement le candidat suivant declenche une annonce apres un tirage valide.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "scene_presets",
+      "section": "show",
+      "title": "Presets et boutons de scene",
+      "keywords": ["preset", "presets", "tirage normal", "pause", "annonce candidat", "resultat", "scene finale", "jingle debut"],
+      "answer": "Les presets changent rapidement l'ambiance de scene. Tirage normal remet la roue au centre, Annonce candidat met le participant en avant, Pause nettoie la scene, Resultat focalise sur le lot obtenu, Scene finale lance la cloture. Jingle debut joue l'ouverture sonore/visuelle du show.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "audio_panel",
+      "section": "audio",
+      "title": "Sons et volumes",
+      "keywords": ["son", "sons", "audio", "jingle", "volume", "mute", "couper son", "roulette muette"],
+      "answer": "La section Sons gere le mute global, le volume des jingles, le volume de la roulette et les sons de scene. Les bruitages attaches a une replique se reglent dans le Studio de scenarios, pas seulement dans Sons.",
+      "actions": ["open_audio"]
+    },
+    {
+      "id": "discord_scene",
+      "section": "show",
+      "title": "Scene Discord OBS et regie detachee",
+      "keywords": ["discord", "obs", "capture", "scene propre", "plein ecran", "detacher", "detacher la regie", "regie separee"],
+      "instant": true,
+      "answer": "La scene Discord/OBS montre seulement la partie publique : roue, participant, resultat et dialogues. Detacher la regie sert a piloter dans une fenetre separee pendant que la fenetre principale reste propre pour la capture. Le public voit la scene, toi tu gardes Lancer, Stop, Suivant et les reglages hors capture.",
+      "actions": ["highlight_discord", "detach_control"]
+    },
+    {
+      "id": "simulation_checklist_alerts",
+      "section": "before",
+      "title": "Simulation, checklist et alertes",
+      "keywords": ["simulation", "simuler", "repetition", "checklist", "pre live", "alerte", "alertes", "pret", "pret live"],
+      "answer": "Simuler un passage enchaine un passage fictif pour tester le rythme sans toucher aux stocks, a l'historique ni aux vrais lancers. La checklist pre-live verifie participants, lots disponibles, stocks, son, scene propre et raccourcis. Les alertes previennent avant de lancer : lots indisponibles, son coupe, file bientot terminee ou stock manquant.",
+      "actions": ["highlight_rehearsal"]
+    },
+    {
+      "id": "history_data",
+      "section": "data",
+      "title": "Historique, correction et profil",
+      "keywords": ["historique", "gagnant", "csv", "export", "import", "profil", "sauvegarde", "corriger", "annuler dernier tirage"],
+      "answer": "Sauvegarde regroupe l'historique des vrais tirages, le dernier gagnant, les gagnants par participant, la correction du dernier tirage, l'export CSV et l'import/export du profil complet. Les tirages test et simulations ne doivent pas remplir l'historique reel.",
+      "actions": ["open_data"]
+    },
+    {
+      "id": "keph_learning",
+      "section": "before",
+      "title": "Keph, logs et apprentissage",
+      "keywords": ["keph", "logs", "like", "dislike", "apprendre", "entrainer", "journal apprentissage", "reponse utile"],
+      "answer": "Keph utilise la documentation du site, le contexte de la regie et les retours like/dislike. Un dislike avec une raison devient un exemple d'erreur a eviter; un like devient un exemple de style a viser. Le bouton Logs affiche les derniers retours classes pour aider a enrichir la documentation.",
+      "actions": []
+    }
+  ],
+  "generalFacts": [
+    {
+      "id": "largest_ocean",
+      "keywords": ["ocean le plus grand", "plus grand ocean"],
+      "answer": "Le plus grand ocean du monde est l'ocean Pacifique."
+    }
+  ]
+}

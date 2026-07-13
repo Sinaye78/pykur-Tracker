@@ -1948,7 +1948,9 @@ function verificationLink(token, client) {
 }
 
 const charlieKephKnowledgePath = path.join(__dirname, "charlie-keph-knowledge.json");
+const kephSiteDocsPath = path.join(__dirname, "keph-docs", "site.json");
 let charlieKephKnowledgeCache = null;
+let kephSiteDocsCache = null;
 
 function charlieKephKnowledge() {
   if (charlieKephKnowledgeCache) return charlieKephKnowledgeCache;
@@ -1959,6 +1961,17 @@ function charlieKephKnowledge() {
     charlieKephKnowledgeCache = { features: [], actions: [], principles: [] };
   }
   return charlieKephKnowledgeCache;
+}
+
+function kephSiteDocs() {
+  if (kephSiteDocsCache) return kephSiteDocsCache;
+  try {
+    kephSiteDocsCache = JSON.parse(fs.readFileSync(kephSiteDocsPath, "utf8"));
+  } catch (error) {
+    console.warn("[keph] Documentation structuree indisponible.", error.message);
+    kephSiteDocsCache = { sections: [], documents: [], generalFacts: [] };
+  }
+  return kephSiteDocsCache;
 }
 
 function kephPublicAvatar() {
@@ -2138,6 +2151,20 @@ function kephUiMapAnswer(message) {
 function kephDocumentation(context = {}) {
   const currentCandidate = String(context?.currentCandidate || "").trim();
   const activeSection = String(context?.activeSection || "").trim();
+  const docs = kephSiteDocs();
+  const structuredDocuments = Array.isArray(docs.documents) ? docs.documents : [];
+  if (structuredDocuments.length) {
+    return [
+      ...structuredDocuments,
+      {
+        id: "context",
+        title: "Contexte actuel de la regie",
+        keywords: ["maintenant", "actuel", "contexte", "ou je suis", "quoi faire"],
+        actions: activeSection ? [activeSection === "wheel" ? "open_wheel_studio_lots" : activeSection === "show" ? "open_scenario_studio" : activeSection === "audio" ? "open_audio" : activeSection === "data" ? "open_data" : "open_prepare"] : [],
+        content: `Contexte lu par Keph: candidat affiche=${currentCandidate || "aucun"}, section active=${activeSection || "inconnue"}, configuration ouverte=${context?.configOpen ? "oui" : "non"}, lots disponibles=${Number(context?.availableLots || 0)}, son coupe=${context?.soundMuted ? "oui" : "non"}. Le nom du candidat affiche n'est pas le nom de l'organisateur.`
+      }
+    ];
+  }
   return [
     {
       id: "purpose",
@@ -2314,7 +2341,7 @@ function kephDocumentationSearch(message, context = {}) {
     .filter((doc) => doc.score > 0 || doc.id === "context")
     .sort((a, b) => b.score - a.score)
     .slice(0, 2)
-    .map(({ score, ...doc }) => doc);
+    .map((doc) => ({ ...doc, score: doc.score }));
 }
 
 function isKephSiteQuestion(message) {
@@ -3025,6 +3052,18 @@ function fallbackKephAnswer(message, context = {}) {
   const best = scored.find((item) => item.score > 0);
   const picked = best?.feature || null;
   const docs = siteQuestion ? kephDocumentationSearch(message, context) : [];
+  const instantDoc = docs.find((doc) => doc.instant && Number(doc.score || 0) >= 18);
+  if (instantDoc) {
+    return {
+      answer: instantDoc.answer || instantDoc.content || "",
+      actions: normalizedKephActions(instantDoc.actions || [], knowledge),
+      source: "doc",
+      matched: true,
+      intent: instantDoc.id,
+      docs: [instantDoc],
+      expectedAnswer: instantDoc.answer || instantDoc.content || ""
+    };
+  }
   const guideActions = direct?.actions?.length ? direct.actions
     : uiMap?.actions?.length ? uiMap.actions
       : siteQuestion ? normalizedKephActions(picked?.actions || docs.flatMap((doc) => doc.actions || []), knowledge) : [];
@@ -3268,7 +3307,7 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   const command = parseKephCommand(message, context);
   if (command?.source === "command") return res.json({ ...command, avatarUrl: kephPublicAvatar() });
   const guide = command || fallbackKephAnswer(message, context);
-  if (guide.matched && ["direct", "ui_map", "diagnostic"].includes(guide.source)) return res.json({ ...guide, source: "guide", avatarUrl: kephPublicAvatar() });
+  if (guide.matched && ["direct", "ui_map", "diagnostic", "doc"].includes(guide.source)) return res.json({ ...guide, source: guide.source === "doc" ? "doc" : "guide", avatarUrl: kephPublicAvatar() });
   try {
     const ai = await askOllamaKeph(message, context, guide.matched ? guide : null);
     const answer = String(ai?.answer || "").trim();
