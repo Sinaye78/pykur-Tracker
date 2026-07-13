@@ -39,6 +39,6 @@ OPENROUTER_MODEL=openrouter/free
 
 ## Comportement attendu
 
-- Une question connue comme "a quoi sert le bouton lancer ?" ne part pas en API : Keph repond instantanement depuis la doc.
-- Une question ouverte ou generale peut partir vers l'API gratuite.
+- Une action concrete a confirmer, comme "mets le poids du lot X a 10", reste securisee par le moteur local.
+- Les autres questions partent vers l'API gratuite avec la documentation ciblee en contexte.
 - Si l'API est absente, lente ou plante, Keph retombe sur le guide/documentation sans casser la chatbox.

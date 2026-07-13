@@ -3549,10 +3549,6 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   const guide = command
     ? { ...command, matched: true, expectedAnswer: command.answer || "", docs: kephDocumentationSearch(message, context) }
     : fallbackKephAnswer(message, context);
-  if (guide.matched && guide.source === "diagnostic") return res.json({ ...guide, source: "guide", avatarUrl: kephPublicAvatar() });
-  if (guide.matched && ["command", "conversation", "direct", "ui_map", "doc"].includes(guide.source)) {
-    return res.json({ ...guide, source: "guide", grounded: true, avatarUrl: kephPublicAvatar() });
-  }
   try {
     const remote = await askRemoteKeph(message, context, guide.matched ? guide : null, KEPH_REMOTE_TIMEOUT_MS);
     if (remote) {
