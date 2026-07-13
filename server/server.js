@@ -2187,7 +2187,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "real_vs_test_draw",
-      test: () => (/\b(?:difference|different|vrai|normal|reel)\b/.test(text) && /\b(?:tirage test|test|lancer)\b/.test(text)) || (/\b(?:sans toucher|sans modifier|sans consommer)\b/.test(text) && /\b(?:stock|historique|vrai tirage)\b/.test(text)),
+      test: () => (/\b(?:difference|different|vrai|normal|reel)\b/.test(text) && /\b(?:tirage test|test|lancer)\b/.test(text)) || (/\b(?:sans toucher|sans modifier|sans consommer)\b/.test(text) && /\b(?:stock|stocks|historique|vrai tirage)\b/.test(text)),
       answer: "Lancer fait un vrai tirage : historique, stock et lancers participant peuvent être modifiés. Tirage test sert uniquement à répéter ou vérifier le rendu, sans toucher aux stocks ni à l’historique. Si tu es en live, utilise Lancer ; si tu règles le show, utilise Tirage test ou Simuler un passage.",
       actions: ["open_prepare"]
     },
