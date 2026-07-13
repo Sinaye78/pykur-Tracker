@@ -2393,7 +2393,7 @@ function kephDocumentationSearch(message, context = {}) {
 
 function kephVerifiedDocs(message, context = {}) {
   return kephDocumentationSearch(message, context)
-    .filter((doc) => doc.id !== "context" && Number(doc.score || 0) >= 4);
+    .filter((doc) => doc.id !== "context" && Number(doc.score || 0) >= 8);
 }
 
 function kephDocCard(doc) {
@@ -3375,7 +3375,7 @@ function kephRemotePrompt() {
 function kephRemotePayload(message, context, guidance) {
   const siteQuestion = isKephSiteQuestion(message);
   const docs = guidance?.docs || kephDocumentationSearch(message, context);
-  const verifiedDocs = docs.filter((doc) => doc.id !== "context" && Number(doc.score || 0) >= 4);
+  const verifiedDocs = docs.filter((doc) => doc.id !== "context" && Number(doc.score || 0) >= 8);
   return {
     question: String(message || "").slice(0, 800),
     question_site: siteQuestion,
@@ -3577,6 +3577,9 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
     : fallbackKephAnswer(message, context);
   const siteQuestion = isKephSiteQuestion(message);
   const verifiedDocs = kephVerifiedDocs(message, context);
+  if (!siteQuestion && guide.matched && ["command", "conversation", "direct"].includes(guide.source)) {
+    return res.json({ ...guide, source: "guide", grounded: false, avatarUrl: kephPublicAvatar() });
+  }
   if (siteQuestion && !command && guide.intent === "retrieval" && !verifiedDocs.length) {
     return res.json({
       answer: "Je ne vois pas cette fonction dans la documentation du site. Donne-moi le nom exact du bouton, du menu ou de l'option, et je te dirai si elle existe dans Charlie Roulette.",
