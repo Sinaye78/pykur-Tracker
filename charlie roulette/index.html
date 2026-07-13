@@ -1171,7 +1171,11 @@ function kephCommandPreview(command){
     let unique=[...new Set(names)];
     return {ok:true,command,label:`Charger la file: ${unique.join(' > ')}`,apply:()=>{p.queue=unique;p.queueIndex=0;p.participant=unique[0]||'';ensureQueueDrawSettings(p.queue)}};
   }
-  if(name==='setstock'||name==='setpoids'||name==='rename_lot'||name==='enable_lot'||name==='disable_lot'){
+  if(name==='clear_lots'){
+    let count=(p.lots||[]).length;
+    return {ok:true,command,label:`Vider la roue (${count} lot(s))`,apply:()=>{p.lots=[];selectedEdit=null}};
+  }
+  if(name==='setstock'||name==='setpoids'||name==='rename_lot'||name==='enable_lot'||name==='disable_lot'||name==='set_lot_color'){
     let lotName=tokens[0],target=kephFindLotByName(lotName);
     if(!target)return fail(`Lot introuvable: ${lotName||'vide'}`);
     if(name==='setstock'){
@@ -1188,6 +1192,10 @@ function kephCommandPreview(command){
     }
     if(name==='enable_lot')return {ok:true,command,label:`Activer le lot ${target.lot.name}`,apply:()=>{target.lot.enabled=true}};
     if(name==='disable_lot')return {ok:true,command,label:`Désactiver le lot ${target.lot.name}`,apply:()=>{target.lot.enabled=false}};
+    if(name==='set_lot_color'){
+      let color=String(tokens[1]||'').trim();if(!/^#[0-9a-f]{6}$/i.test(color))return fail('Couleur attendue au format #RRGGBB.');
+      return {ok:true,command,label:`${target.lot.name}: couleur -> ${color}`,apply:()=>{target.lot.color=color;selectedEdit={type:'text',i:target.index}}};
+    }
   }
   if(name==='add_lot'){
     let lotName=tokens[0],rate=Math.max(0,Math.min(9999,Math.floor(Number(tokens[1]||1)))),stockRaw=tokens[2];
@@ -1199,15 +1207,21 @@ function kephCommandPreview(command){
     if(!SHOW_TRIGGERS.includes(trigger))return fail(`Étape invalide: ${trigger}`);
     if(!['charlie','victoria'].includes(speaker))return fail(`Personnage invalide: ${speaker}`);
     if(!dialogueText)return fail('Texte de réplique vide.');
-    let emote='',fx='',target='all',targetName='';
-    for(let i=3;i<tokens.length;i++){if(tokens[i]==='--emote')emote=tokens[++i]||'';else if(tokens[i]==='--fx')fx=tokens[++i]||'';else if(tokens[i]==='--target'){target='name';targetName=tokens[++i]||''}}
+    let emote='',fx='',target='all',targetName='',kind='dialogue',meDuration=5;
+    for(let i=3;i<tokens.length;i++){if(tokens[i]==='--emote')emote=tokens[++i]||'';else if(tokens[i]==='--fx')fx=tokens[++i]||'';else if(tokens[i]==='--kind')kind=String(tokens[++i]||'dialogue').toLowerCase()==='me'?'me':'dialogue';else if(tokens[i]==='--duration')meDuration=Math.max(2,Math.min(20,Math.floor(Number(tokens[++i]||5))));else if(tokens[i]==='--target'){target='name';targetName=tokens[++i]||''}}
     if(fx&&!SHOW_EFFECTS[fx])return fail(`Effet inconnu: ${fx}`);
-    return {ok:true,command,label:`Ajouter dialogue ${SHOW_TRIGGER_LABELS[trigger]||trigger} · ${speaker}: ${dialogueText.slice(0,80)}`,apply:()=>{p.customDialogues=p.customDialogues||[];p.customDialogues.push({id:'dialogue-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),enabled:true,kind:'dialogue',speaker,trigger,text:dialogueText.slice(0,600),target,targetName,emote,fx,action:'',condition:'auto',audioId:'',meDuration:5,variant:'principale'});activeCueTrigger=trigger}};
+    return {ok:true,command,label:`Ajouter ${kind==='me'?'indication':'dialogue'} ${SHOW_TRIGGER_LABELS[trigger]||trigger} · ${speaker}: ${dialogueText.slice(0,80)}`,apply:()=>{p.customDialogues=p.customDialogues||[];p.customDialogues.push({id:'dialogue-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),enabled:true,kind,speaker,trigger,text:dialogueText.slice(0,600),target,targetName,emote,fx,action:'',condition:'auto',audioId:'',meDuration,variant:'principale'});activeCueTrigger=trigger}};
   }
   if(name==='delete_dialogue'){
     let id=tokens[0],item=(p.customDialogues||[]).find(cue=>cue.id===id);
     if(!item)return fail(`Réplique introuvable: ${id}`);
     return {ok:true,command,label:`Supprimer la réplique ${id}: ${String(item.text||'').slice(0,80)}`,apply:()=>{p.customDialogues=(p.customDialogues||[]).filter(cue=>cue.id!==id)}};
+  }
+  if(name==='set_setting'){
+    let key=String(tokens[0]||''),rawValue=String(tokens[1]||'');
+    let allowed=['antiRepeatEnabled','antiRepeatMode','defaultDialoguesEnabled','showFrequency','dialogueMode','dialogueDuration','charlieMood','launchTrollChance'];
+    if(!allowed.includes(key))return fail(`Réglage non autorisé: ${key}`);
+    return {ok:true,command,label:`Réglage ${key} -> ${rawValue}`,apply:()=>{p.settings=p.settings||defaultSettings();let bool=v=>/^(true|1|oui|yes|actif|active)$/i.test(String(v));if(['antiRepeatEnabled','defaultDialoguesEnabled'].includes(key))p.settings[key]=bool(rawValue);else if(['dialogueDuration','launchTrollChance'].includes(key))p.settings[key]=Math.max(0,Math.min(60,Math.floor(Number(rawValue)||0)));else p.settings[key]=rawValue}};
   }
   if(name==='testeffect'){
     let fx=String(tokens[0]||'stars').toLowerCase();
