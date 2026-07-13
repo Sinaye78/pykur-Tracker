@@ -2239,7 +2239,7 @@ function kephDocumentationSearch(message, context = {}) {
     })
     .filter((doc) => doc.score > 0 || doc.id === "context")
     .sort((a, b) => b.score - a.score)
-    .slice(0, 5)
+    .slice(0, 3)
     .map(({ score, ...doc }) => doc);
 }
 
@@ -2857,7 +2857,7 @@ function recentKephLearningExamples(question = "") {
       FROM keph_feedback
       WHERE vote = 'dislike'
       ORDER BY id DESC
-      LIMIT 18
+      LIMIT 12
     `).all();
     const asked = normalizeKephText(question);
     return rows
@@ -2869,7 +2869,7 @@ function recentKephLearningExamples(question = "") {
         score: normalizeKephText(`${row.question} ${row.reason} ${row.answer}`).split(" ").filter((part) => part.length > 2 && asked.includes(part)).length
       }))
       .sort((a, b) => b.score - a.score)
-      .slice(0, 8)
+      .slice(0, 5)
       .map(({ score, ...entry }) => entry);
   } catch {
     return [];
@@ -2883,7 +2883,7 @@ function recentKephPositiveExamples(question = "") {
       FROM keph_feedback
       WHERE vote = 'like'
       ORDER BY id DESC
-      LIMIT 12
+      LIMIT 8
     `).all();
     const asked = normalizeKephText(question);
     return rows
@@ -2894,7 +2894,7 @@ function recentKephPositiveExamples(question = "") {
         score: normalizeKephText(`${row.question} ${row.answer}`).split(" ").filter((part) => part.length > 2 && asked.includes(part)).length
       }))
       .sort((a, b) => b.score - a.score)
-      .slice(0, 5)
+      .slice(0, 3)
       .map(({ score, ...entry }) => entry);
   } catch {
     return [];
@@ -2916,8 +2916,8 @@ function kephSystemPrompt() {
     "Quand c'est utile, propose des actions dans un tableau actions. N'invente jamais d'id d'action.",
     "Tu ne modifies jamais les donnees a la place de l'utilisateur.",
     "Reponds uniquement en JSON valide: {\"answer\":\"...\",\"actions\":[{\"id\":\"...\",\"label\":\"...\"}]}",
-    "Base de connaissance:",
-    JSON.stringify(knowledge)
+    "Actions autorisees:",
+    JSON.stringify((knowledge.actions || []).map((action) => ({ id: action.id, label: action.label })))
   ].join("\n");
 }
 
@@ -2944,7 +2944,7 @@ async function askOllamaKeph(message, context, guidance = null) {
             bonnes_reponses_likees: recentKephPositiveExamples(message)
           }) }
         ],
-        options: { temperature: 0.45, num_ctx: 4096, num_predict: 300 }
+        options: { temperature: 0.45, num_ctx: 2048, num_predict: 180 }
       })
     });
     if (!response.ok) throw new Error(`Ollama HTTP ${response.status}`);
