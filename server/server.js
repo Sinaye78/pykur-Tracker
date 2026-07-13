@@ -3628,6 +3628,11 @@ function kephCommandPlanFromRules(message, context = {}) {
     add(`add_player ${quoteCommandArg(cleanKephName(addPlayerMatch[1]))} ${Math.max(1, Math.min(20, Number(addPlayerMatch[2] || 1)))}`);
   }
   const lotNames = Array.isArray(context.lots) ? context.lots.map((lot) => String(lot.name || "")).filter(Boolean) : [];
+  const directRenameMatch = raw.match(/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s+(?:en|vers)\s+(.+?)(?:[?.!]|$)/i);
+  if (directRenameMatch) {
+    const targetName = findKephBestName(lotNames, cleanKephName(directRenameMatch[1])) || cleanKephName(directRenameMatch[1]);
+    add(`rename_lot ${quoteCommandArg(targetName)} ${quoteCommandArg(cleanKephName(directRenameMatch[2]))}`);
+  }
   const requestedLotHint = raw.match(/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s+\b(?:en|vers)\b/i)?.[1]
     || raw.match(/\b(?:stock|poids|poid|probabilite|proba|chance)\s+(?:du|de la|de l'|de|pour le|pour la|pour)\s+(.+?)(?:\s+(?:a|à|sur|en)\s+\d|\s*$)/i)?.[1]
     || raw.match(/\b(?:active|activer|desactive|desactiver|coupe|retire)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s*$/i)?.[1]
@@ -3676,6 +3681,7 @@ function kephCommandPlanFromRules(message, context = {}) {
   if (/\b(?:stop|arrete|arreter|arret)\b/.test(text) && /\b(?:roue|tirage)\b/.test(text)) add("stopdraw");
   if (/\b(?:passe|passer|charge|charger)\b/.test(text) && /\b(?:participant suivant|candidat suivant|suivant)\b/.test(text)) add("nextparticipant");
   if (/\b(?:discord|obs|scene propre|mode capture)\b/.test(text) && /\b(?:active|activer|mets|mode|passe|passer)\b/.test(text)) add("discordmode");
+  if (/\b(?:detache|detacher|separe|separer)\b/.test(text) && /\b(?:regie|controle|panneau)\b/.test(text)) add("detach_control");
   if (/\b(?:plein ecran|pleine ecran|fullscreen)\b/.test(text) && /\b(?:active|activer|mets|passe|passer|ouvre|ouvrir)\b/.test(text) && !/\b(?:configuration|reglages|reglage|config)\b/.test(text)) add("fullscreen");
   if (/\b(?:configuration|reglages|reglage)\b/.test(text) && /\b(?:plein ecran|pleine ecran|grand|grande)\b/.test(text) && /\b(?:ouvre|ouvrir|active|activer|mets|passe|passer)\b/.test(text)) add("config_fullscreen");
   if (/\b(?:detache|detacher|separe|separer|ouvre)\b/.test(text) && /\b(?:regie|panneau de controle|controle)\b/.test(text)) add("detach_control");
