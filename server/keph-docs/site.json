@@ -39,7 +39,7 @@
       "id": "purpose",
       "section": "before",
       "title": "A quoi sert Charlie Roulette",
-      "keywords": ["site", "application", "charlie roulette", "but", "objectif", "sert"],
+      "keywords": ["site", "application", "charlie roulette", "but du site", "objectif du site"],
       "instant": true,
       "answer": "Charlie Roulette sert a animer un tirage en live comme une petite emission. Tu prepares des participants, des lots, des stocks, des sons et des dialogues, puis tu pilotes une scene publique propre pour Discord/OBS. La regie controle le live; les reglages preparent la roue et le spectacle.",
       "actions": ["open_prepare"],
@@ -60,8 +60,20 @@
       "section": "before",
       "title": "Boutons de regie live",
       "keywords": ["lancer", "stop", "suivant", "tirage test", "dernier tirage", "live simple", "regie"],
+      "instant": true,
       "answer": "Lancer demarre un vrai tirage et peut consommer un stock, ecrire l'historique et retirer un lancer au participant. Stop arrete la roue quand un vrai tirage est en cours. Tirage test verifie le rendu sans consequence. Suivant passe au prochain candidat.",
-      "actions": ["open_prepare"]
+      "actions": ["open_prepare"],
+      "examples": ["a quoi sert le bouton lancer ?", "a quoi sert lancer ?", "a quoi sert stop ?", "c est quoi stop ?", "a quoi sert le bouton suivant ?", "a quoi sert suivant ?"]
+    },
+    {
+      "id": "studios",
+      "section": "show",
+      "title": "A quoi servent les studios",
+      "keywords": ["studio", "studios", "studio roulette", "studio de scenarios", "studio de la roulette", "a quoi sert le studio", "sert le studio"],
+      "instant": true,
+      "answer": "Les studios sont les grands panneaux de configuration. Le Studio de la roulette sert a modifier les lots, poids, stocks, images et textes des cases. Le Studio de scenarios sert a organiser les repliques de Charlie/Victoria, les emotes, effets speciaux et bruitages. En live, tu pilotes avec la regie; hors live, tu prepares dans les studios.",
+      "actions": ["open_scenario_studio"],
+      "examples": ["a quoi sert le studio ?", "c est quoi le studio ?", "a quoi servent les studios ?"]
     },
     {
       "id": "test_draw",

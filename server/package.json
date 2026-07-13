@@ -5,7 +5,8 @@
   "type": "commonjs",
   "scripts": {
     "dev": "node server.js",
-    "start": "NODE_ENV=production node server.js"
+    "start": "NODE_ENV=production node server.js",
+    "test:keph": "node scripts/keph-test-bench.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

@@ -1018,6 +1018,7 @@ function runKephAction(action){
   if(action.type==='preview_cue_section')return applyKephPreviewCueSection(action);
   if(action.type==='play_jingle')return applyKephPlayJingle(action);
   if(action.type==='play_event_rehearsal')return applyKephEventRehearsal(action);
+  if(action.type==='update_feedback_task')return applyKephFeedbackTask(action);
   const actions={
     open_prepare:()=>openKephConfigTab('before'),
     open_shortcuts:()=>{openKephConfigTab('before');setTimeout(()=>flashKephTarget(document.querySelector('.shortcutGrid')||$('resetShortcutsBtn')),120)},
@@ -1055,17 +1056,33 @@ async function loadKephLearningLog(){
     if(!response.ok)throw new Error('logs');
     let payload=await response.json();
     if(payload.avatarUrl)applyKephAvatar(payload.avatarUrl);
-    let counts=Object.entries(payload.counts||{}).map(([name,count])=>`${name}: ${count}`).join(' Â· ')||'aucun dislike rÃ©cent';
-    let recent=(payload.recent||[]).slice(0,5).map(item=>`- ${item.category} : ${item.question||'question vide'}${item.reason?` (${item.reason})`:''}`).join('\n');
-    kephMessagesState.push({role:'assistant',text:`Journal dâ€™apprentissage\n${counts}${recent?`\n\nÃ€ corriger en prioritÃ© :\n${recent}`:''}`});
-    setKephState('Logs chargÃ©s');
+    let counts=Object.entries(payload.counts||{}).map(([name,count])=>`${name}: ${count}`).join(' · ')||'aucun dislike récent';
+    let items=(payload.recent||[]).slice(0,5);
+    let recent=items.map(item=>`#${item.id} [${item.status||'open'}] ${item.category} : ${item.question||'question vide'}${item.reason?` (${item.reason})`:''}`).join('\n');
+    let actions=items.flatMap(item=>[
+      {type:'update_feedback_task',id:'feedback-doc-'+item.id,label:`Doc #${item.id}`,payload:{id:item.id,status:'doc_added'}},
+      {type:'update_feedback_task',id:'feedback-fixed-'+item.id,label:`Corrigé #${item.id}`,payload:{id:item.id,status:'fixed'}}
+    ]);
+    kephMessagesState.push({role:'assistant',text:`Journal d'apprentissage\n${counts}${recent?`\n\nDislikes récents :\n${recent}`:''}`,actions});
+    setKephState('Logs chargés');
   }catch{
-    kephMessagesState.push({role:'assistant',text:'Je nâ€™arrive pas Ã  charger le journal dâ€™apprentissage pour lâ€™instant.'});
+    kephMessagesState.push({role:'assistant',text:'Je n’arrive pas à charger le journal d’apprentissage pour l’instant.'});
     setKephState('Logs indisponibles');
   }
   renderKephMessages();
 }
-function applyKephLotRate(action){
+async function applyKephFeedbackTask(action){
+  let payload=action?.payload||{},id=Number(payload.id),status=String(payload.status||'open');
+  if(!id)return;
+  try{
+    let response=await fetch(kephApi(`/api/charlie-keph/feedback/${id}/task`),{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({status,note:status==='doc_added'?'A ajouter ou verifier dans la documentation Keph.':'Cas marque comme corrige apres patch.'})});
+    if(!response.ok)throw new Error('task');
+    kephMessagesState.push({role:'assistant',text:`C'est noté : le feedback #${id} est maintenant marqué « ${status==='doc_added'?'à ajouter à la doc':'corrigé'} ».`});
+  }catch{
+    kephMessagesState.push({role:'assistant',text:`Je n'ai pas réussi à mettre à jour le feedback #${id}.`});
+  }
+  renderKephMessages();
+}function applyKephLotRate(action){
   let payload=action.payload||{},lots=cur()?.lots||[],target=null;
   if(Number.isInteger(payload.lotIndex)&&lots[payload.lotIndex]&&(!payload.lotName||lots[payload.lotIndex].name===payload.lotName))target={lot:lots[payload.lotIndex],index:payload.lotIndex};
   if(!target&&payload.lotName){

@@ -219,6 +219,9 @@ db.exec(`
     context_json TEXT,
     ip_address TEXT,
     user_agent TEXT,
+    task_status TEXT NOT NULL DEFAULT 'open',
+    task_note TEXT,
+    updated_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
   CREATE INDEX IF NOT EXISTS idx_keph_feedback_created ON keph_feedback(created_at);
@@ -334,6 +337,9 @@ ensureColumn("message_reports", "internal_note", "TEXT");
 ensureColumn("message_reports", "message_snapshot", "TEXT");
 ensureColumn("message_reports", "context_snapshot", "TEXT");
 ensureColumn("message_reports", "updated_at", "TEXT");
+ensureColumn("keph_feedback", "task_status", "TEXT NOT NULL DEFAULT 'open'");
+ensureColumn("keph_feedback", "task_note", "TEXT");
+ensureColumn("keph_feedback", "updated_at", "TEXT");
 db.prepare("INSERT OR IGNORE INTO chat_settings(id,locked,slow_mode_seconds) VALUES(1,0,0)").run();
 db.prepare("INSERT OR IGNORE INTO security_settings(id) VALUES(1)").run();
 db.prepare("INSERT OR IGNORE INTO living_event_settings(id) VALUES(1)").run();
@@ -2484,8 +2490,8 @@ function parseKephCommand(message, context = {}) {
       intent: "list_dialogues"
     };
   }
-  const greetingOnly = /^(?:bonjour|salut|coucou|hello|yo|hey)(?:\s+(?:ca va|ça va|cv|comment ca va|comment vas tu|tu vas bien))?\s*\??$/.test(normalized);
-  if (greetingOnly || /^(?:ca va|comment ca va|comment vas tu|tu vas bien)\s*\??$/.test(normalized)) {
+  const greetingOnly = /^(?:bonjour|salut|coucou|hello|yo|hey)(?:\s+(?:ca va|ca roule|la forme|cv|comment ca va|comment vas tu|tu vas bien))?\s*\??$/.test(normalized);
+  if (greetingOnly || /^(?:ca va|ca roule|la forme|comment ca va|comment vas tu|tu vas bien)\s*\??$/.test(normalized)) {
     return {
       answer: "Salut, ça va bien, merci. Je suis prêt pour t'aider sur la régie, mais on peut aussi commencer simple : dis-moi ce que tu veux préparer ou ce qui te bloque.",
       actions: [],
@@ -3379,7 +3385,7 @@ function classifyKephFeedback(row = {}) {
 
 app.get("/api/charlie-keph/feedback/summary", kephLimiter, asyncRoute(async (req, res) => {
   const rows = db.prepare(`
-    SELECT id, vote, reason, question, answer, source, intent, created_at
+    SELECT id, vote, reason, question, answer, source, intent, task_status, task_note, created_at
     FROM keph_feedback
     WHERE vote = 'dislike'
     ORDER BY id DESC
@@ -3393,6 +3399,8 @@ app.get("/api/charlie-keph/feedback/summary", kephLimiter, asyncRoute(async (req
     answer: row.answer || "",
     source: row.source || "",
     intent: row.intent || "",
+    status: row.task_status || "open",
+    note: row.task_note || "",
     at: row.created_at || ""
   }));
   const counts = recent.reduce((acc, item) => {
@@ -3408,6 +3416,18 @@ app.get("/api/charlie-keph/feedback/summary", kephLimiter, asyncRoute(async (req
       reason: item.reason
     }));
   res.json({ ok: true, counts, recent, training, avatarUrl: kephPublicAvatar() });
+}));
+
+app.patch("/api/charlie-keph/feedback/:id/task", kephLimiter, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: "Feedback invalide.", code: "KEPH_BAD_FEEDBACK_ID" });
+  const status = String(req.body?.status || "").trim();
+  if (!["open", "doc_added", "fixed"].includes(status)) return res.status(400).json({ error: "Statut invalide.", code: "KEPH_BAD_TASK_STATUS" });
+  const note = String(req.body?.note || "").trim().slice(0, 600);
+  const row = db.prepare("SELECT id FROM keph_feedback WHERE id = ? AND vote = 'dislike'").get(id);
+  if (!row) return res.status(404).json({ error: "Feedback introuvable.", code: "KEPH_FEEDBACK_NOT_FOUND" });
+  db.prepare("UPDATE keph_feedback SET task_status = ?, task_note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(status, note || null, id);
+  res.json({ ok: true, id, status, note });
 }));
 
 app.get("/api/events/living", (req, res) => {
