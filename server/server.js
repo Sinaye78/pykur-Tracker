@@ -2503,6 +2503,31 @@ function parseKephCommand(message, context = {}) {
         : /\b(?:roue|tirage|rotation|pendant)\b/.test(normalized) ? "spin"
           : /\bjingle\b/.test(normalized) ? "jingle"
             : "presentation";
+  const controlledCommands = [];
+  const addControlled = (command) => { if (command && kephCommandAllowed(command) && !controlledCommands.includes(command)) controlledCommands.push(command); };
+  const lotNames = Array.isArray(context.lots) ? context.lots.map((lot) => String(lot.name || "")).filter(Boolean) : [];
+  const directRename = raw.match(/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s+(?:en|vers)\s+(.+?)(?:[?.!]|$)/i);
+  if (directRename) addControlled(`rename_lot ${quoteCommandArg(findKephBestName(lotNames, cleanKephName(directRename[1])) || cleanKephName(directRename[1]))} ${quoteCommandArg(cleanKephName(directRename[2]))}`);
+  if (/\b(?:discord|obs|scene propre|mode capture)\b/.test(normalized) && /\b(?:active|activer|mets|mode|passe|passer)\b/.test(normalized)) addControlled("discordmode");
+  if (/\b(?:detache|detacher|separe|separer)\b/.test(normalized) && /\b(?:regie|controle|panneau)\b/.test(normalized)) addControlled("detach_control");
+  if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(normalized) && /\b(?:jingle|presentation|finale|resultat|roue|candidat suivant)\b/.test(normalized) && /\b(?:plusieurs|quelques|3|trois|4|quatre|5|cinq|fais|faire|prepare|preparer|genere|generer)\b/.test(normalized)) {
+    const trigger = triggerFromText();
+    const candidatesPart = raw.split(/(?:candidats?|participants?)\s*:?\s*/i).pop() || "";
+    const names = candidatesPart.split(/,|\bet\b|\n|\r/).map(cleanKephName).filter((name) => /^[A-Za-z0-9À-ÿ _-]{2,40}$/.test(name)).slice(0, 6);
+    const candidates = names.length ? names : (Array.isArray(context.queue) ? context.queue.slice(0, 4) : []);
+    const list = candidates.length ? candidates.join(", ") : "les candidats";
+    addControlled(`add_dialogue ${quoteCommandArg(trigger)} "charlie" ${quoteCommandArg(`Le jingle démarre, ${list} entrent dans la Charlie Roulette.`)} --emote "spark" --fx "spotlights"`);
+    addControlled(`add_dialogue ${quoteCommandArg(trigger)} "victoria" ${quoteCommandArg(`Ce soir, ${list} vont tenter leur chance. Que la roue choisisse avec panache.`)} --emote "smile" --fx "goldwave"`);
+    addControlled(`add_dialogue ${quoteCommandArg(trigger)} "charlie" ${quoteCommandArg("Les règles sont simples : la roue tourne, les lots tombent, et moi je nie toute responsabilité.")} --emote "wink"`);
+  }
+  if (controlledCommands.length) {
+    return {
+      answer: `Je peux preparer ${controlledCommands.length} commande${controlledCommands.length > 1 ? "s" : ""} controlee${controlledCommands.length > 1 ? "s" : ""}. Verifie l'aperçu, puis applique seulement si tout est bon.\n\n${controlledCommands.map((command) => `/${command}`).join("\n")}`,
+      actions: [{ id: "apply_keph_command_batch", type: "command_batch", label: `Prévisualiser ${controlledCommands.length} commande${controlledCommands.length > 1 ? "s" : ""}`, payload: { commands: controlledCommands, question: raw } }],
+      source: "command",
+      intent: "command_batch"
+    };
+  }
   if (/\bcharlie show\b/.test(normalized)) {
     return {
       answer: "Charlie Show active les interventions de Charlie/Victoria pendant le live. Si c'est coupe, la roue peut rester plus sobre et les scenes parlent moins. Si c'est active, tes dialogues, emotes, effets et reactions peuvent donner de la vie au tirage.",
