@@ -3624,7 +3624,7 @@ function findKephBestName(candidates = [], requested = "") {
 }
 
 function kephCommandAllowed(command = "") {
-  const name = normalizeKephText(String(command).split(/\s+/)[0] || "");
+  const name = String(command).split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9_]/g, "") || "";
   return KEPH_EDIT_COMMANDS.some((entry) => entry.name === name);
 }
 
