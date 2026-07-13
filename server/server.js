@@ -2181,7 +2181,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "how_to_launch_wheel",
-      test: () => /\b(?:comment|ou|où|je veux|pour)\b/.test(text) && /\b(?:lancer|demarrer|faire tourner|tourner)\b/.test(text) && /\b(?:roue|tirage)\b/.test(text),
+      test: () => !/\b(?:sans toucher|sans modifier|sans consommer)\b/.test(text) && /\b(?:comment|ou|où|je veux|pour)\b/.test(text) && /\b(?:lancer|demarrer|faire tourner|tourner)\b/.test(text) && /\b(?:roue|tirage)\b/.test(text),
       answer: "Pour lancer la roue : vérifie que le participant actuel est bon, puis clique sur Lancer dans la régie. La roue démarre un vrai tirage : elle peut consommer un stock, enregistrer l’historique et retirer un lancer au participant. Quand Stop devient disponible, tu peux arrêter la roue.",
       actions: ["open_prepare"]
     },
