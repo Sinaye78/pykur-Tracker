@@ -19,6 +19,7 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://127.0.0.1:8765";
 const APP_PUBLIC_URL = process.env.APP_PUBLIC_URL || CLIENT_ORIGIN;
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://127.0.0.1:11434";
 const KEPH_MODEL = process.env.KEPH_MODEL || "qwen2.5:1.5b";
+const KEPH_AI_TIMEOUT_MS = Number(process.env.KEPH_AI_TIMEOUT_MS || 6500);
 const ROLE_ORDER = { user: 1, moderator: 2, admin: 3 };
 const PUBLIC_DEPLOYMENT = !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(APP_PUBLIC_URL);
 
@@ -3243,9 +3244,9 @@ function kephSystemPrompt() {
   ].join("\n");
 }
 
-async function askOllamaKeph(message, context, guidance = null) {
+async function askOllamaKeph(message, context, guidance = null, timeoutMs = 35000) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 35000);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(`${OLLAMA_URL.replace(/\/+$/, "")}/api/chat`, {
       method: "POST",
@@ -3364,11 +3365,14 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   if (!message) return res.status(400).json({ error: "Question vide.", code: "KEPH_EMPTY_MESSAGE" });
   const knowledge = charlieKephKnowledge();
   const command = parseKephCommand(message, context);
-  if (command?.source === "command" || command?.source === "conversation") return res.json({ ...command, source: command.source === "conversation" ? "guide" : command.source, avatarUrl: kephPublicAvatar() });
-  const guide = command || fallbackKephAnswer(message, context);
-  if (guide.matched && ["direct", "ui_map", "diagnostic", "doc", "conversation"].includes(guide.source)) return res.json({ ...guide, source: guide.source === "doc" ? "doc" : "guide", avatarUrl: kephPublicAvatar() });
+  const commandNeedsConfirmation = command?.source === "command" && Array.isArray(command.actions) && command.actions.some((action) => action?.type);
+  if (commandNeedsConfirmation) return res.json({ ...command, avatarUrl: kephPublicAvatar() });
+  const guide = command
+    ? { ...command, matched: true, expectedAnswer: command.answer || "", docs: kephDocumentationSearch(message, context) }
+    : fallbackKephAnswer(message, context);
+  if (guide.matched && guide.source === "diagnostic") return res.json({ ...guide, source: "guide", avatarUrl: kephPublicAvatar() });
   try {
-    const ai = await askOllamaKeph(message, context, guide.matched ? guide : null);
+    const ai = await askOllamaKeph(message, context, guide.matched ? guide : null, KEPH_AI_TIMEOUT_MS);
     const answer = String(ai?.answer || "").trim();
     if (!answer) throw new Error("Reponse vide");
     const actions = guide.matched ? guide.actions : normalizedKephActions(ai?.actions, knowledge);
