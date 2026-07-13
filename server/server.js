@@ -2250,6 +2250,11 @@ function kephDocumentationSearch(message, context = {}) {
     .map(({ score, ...doc }) => doc);
 }
 
+function isKephSiteQuestion(message) {
+  const text = normalizeKephText(message);
+  return /\b(?:charlie|victoria|roulette|regie|roue|lot|lots|stock|poids|participant|candidat|dialogue|replique|scenario|scene|jingle|son|audio|discord|obs|historique|profil|raccourci|lancer|stop|tirage|configuration|keph|emote|effet|ciblage)\b/.test(text);
+}
+
 function kephDiagnostics(message, context = {}) {
   const text = normalizeKephText(message);
   const asksProblem = /\b(?:pourquoi|probleme|bug|impossible|marche pas|peux pas|peut pas|bloque|bloquee|bloqué|bloquée|gris|grise|grisé|grisee|erreur)\b/.test(text);
@@ -2829,6 +2834,7 @@ function fallbackKephAnswer(message, context = {}) {
   const text = normalizeKephText(message);
   const direct = directKephAnswer(message);
   const uiMap = kephUiMapAnswer(message);
+  const siteQuestion = isKephSiteQuestion(message);
   const keywordScore = (keyword) => {
     const parts = normalizeKephText(keyword).split(" ").filter(Boolean);
     if (!parts.length) return 0;
@@ -2842,10 +2848,10 @@ function fallbackKephAnswer(message, context = {}) {
     .sort((a, b) => b.score - a.score);
   const best = scored.find((item) => item.score > 0);
   const picked = best?.feature || null;
-  const docs = kephDocumentationSearch(message, context);
+  const docs = siteQuestion ? kephDocumentationSearch(message, context) : [];
   const guideActions = direct?.actions?.length ? direct.actions
     : uiMap?.actions?.length ? uiMap.actions
-      : normalizedKephActions(picked?.actions || docs.flatMap((doc) => doc.actions || []), knowledge);
+      : siteQuestion ? normalizedKephActions(picked?.actions || docs.flatMap((doc) => doc.actions || []), knowledge) : [];
   const firstDoc = docs.find((doc) => doc.id !== "context");
   return {
     answer: direct?.answer || uiMap?.answer || picked?.answer || firstDoc?.content || "Je peux t'aider, mais il me manque un peu de contexte. Dis-moi si tu veux comprendre une fonction, retrouver un menu ou preparer une action a confirmer.",
