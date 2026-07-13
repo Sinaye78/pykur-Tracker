@@ -2027,6 +2027,34 @@ function parseKephCommand(message, context = {}) {
       intent: "assistant_identity"
     };
   }
+  if (/\b(?:tu t appelles comment|comment tu t appelles|c est quoi ton nom|ton nom|qui es tu|t es qui)\b/.test(normalized)) {
+    return {
+      answer: "Je m'appelle Keph. Je suis l'assistant de régie de Charlie Roulette : je peux t'aider à comprendre un bouton, préparer le live, retrouver un menu ou proposer une action à confirmer.",
+      actions: [],
+      source: "conversation",
+      intent: "assistant_identity"
+    };
+  }
+  if (/\b(?:qui est victoria|c est qui victoria|victoria c est qui)\b/.test(normalized)) {
+    return {
+      answer: "Victoria est un personnage de mise en scène dans Charlie Roulette. Elle intervient surtout dans les dialogues pour annoncer, commenter ou accompagner le tirage avec un ton plus présentateur. Tu peux modifier ses répliques dans le Studio de scénarios.",
+      actions: [
+        { id: "open_scenario_studio", label: "Ouvrir le studio" }
+      ],
+      source: "conversation",
+      intent: "character_victoria"
+    };
+  }
+  if (/\b(?:qui est charlie|c est qui charlie|charlie c est qui)\b/.test(normalized)) {
+    return {
+      answer: "Charlie est le personnage principal de la roulette : il porte l'ambiance du show, réagit aux tirages et peut parler pendant les scènes. Ses répliques, emotes, sons et effets se règlent dans le Studio de scénarios.",
+      actions: [
+        { id: "open_scenario_studio", label: "Ouvrir le studio" }
+      ],
+      source: "conversation",
+      intent: "character_charlie"
+    };
+  }
   if (/\b(?:ocean le plus grand|plus grand ocean)\b/.test(normalized)) {
     return {
       answer: "Le plus grand océan du monde est l'océan Pacifique. Et si tu veux, je peux aussi revenir sur la roulette : lots, participants, sons, dialogues ou scène Discord.",
@@ -2118,6 +2146,24 @@ function directKephAnswer(message) {
   const yesNo = /\b(?:est ce que|peut on|on peut|possible|je peux|peux)\b/.test(text);
   const directAnswers = [
     {
+      intent: "explain_audio_library",
+      test: () => /\b(?:bibliotheque|biblioteque|library|importer|ajouter)\b/.test(text) && /\b(?:mp3|audio|son|wav|ogg|bruitage)\b/.test(text),
+      answer: "Pour ajouter un MP3 à la bibliothèque, ouvre Réglages > Scènes > Studio de scénarios, puis va dans la zone de sons/bibliothèque audio des scènes. Tu importes le fichier MP3/WAV/OGG, puis tu peux l’assigner à une réplique via le champ Bruitage / Son de la réplique. Le son reste ensuite disponible pour les autres dialogues.",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "explain_stop_disabled",
+      test: () => /\b(?:stop)\b/.test(text) && /\b(?:grise|gris|disabled|desactive|pourquoi|marche pas|impossible)\b/.test(text),
+      answer: "Le bouton Stop est grisé quand la roue n'est pas dans une phase où elle peut être arrêtée. Il devient utile pendant un tirage réel, après le lancement, quand l'arrêt est autorisé. Si tu es en préparation, en résultat, en scène ou en tirage test non stoppable, c'est normal qu'il reste bloqué.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "explain_profile_export",
+      test: () => /\b(?:exporter|export|sauvegarder|backup|telecharger)\b/.test(text) && /\b(?:configuration|config|profil|tout|complete|complete)\b/.test(text),
+      answer: "Pour exporter toute ta configuration, va dans Réglages > Sauvegarde puis utilise l’export de profil. Ça garde les participants, lots, stocks, dialogues, sons, raccourcis et réglages principaux dans un fichier que tu peux réimporter plus tard.",
+      actions: ["open_data"]
+    },
+    {
       intent: "explain_lot_weight",
       test: () => /\b(?:poid|poids|probabilite|proba|chance|taux)\b/.test(text) && /\b(?:case|lot|roue)\b/.test(text),
       answer: `${yesNo ? "Oui, c'est exactement fait pour ca. " : ""}Dans Reglages > Lots & roue > Ouvrir le studio de la roulette, onglet Lots & probabilites, tu peux changer le poids de chaque case. Le poids, c'est sa chance relative : un lot a 20 sort environ deux fois plus souvent qu'un lot a 10. Tu peux aussi me demander "mets le poids du lot X a 10" et je te preparerai le bouton Appliquer.`,
@@ -2173,7 +2219,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "explain_live_mode",
-      test: () => /\b(?:live simple|regie complete|reglages|configuration|mode live)\b/.test(text),
+      test: () => /\b(?:live simple|regie complete|mode live)\b/.test(text) || (/\b(?:reglages)\b/.test(text) && /\b(?:live|regie)\b/.test(text)),
       answer: "Live simple garde seulement ce qui sert pendant l'animation : participant, Lancer, Stop, Suivant, dernier tirage et aides essentielles. Reglages ouvre la configuration complete quand tu dois preparer les lots, dialogues, sons ou sauvegardes. L'idee est de ne pas piloter le live au milieu de toutes les options.",
       actions: ["open_prepare"]
     },
