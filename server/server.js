@@ -3373,6 +3373,9 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
     ? { ...command, matched: true, expectedAnswer: command.answer || "", docs: kephDocumentationSearch(message, context) }
     : fallbackKephAnswer(message, context);
   if (guide.matched && guide.source === "diagnostic") return res.json({ ...guide, source: "guide", avatarUrl: kephPublicAvatar() });
+  if (guide.matched && ["command", "direct", "ui_map", "doc"].includes(guide.source)) {
+    return res.json({ ...guide, source: "guide", grounded: true, avatarUrl: kephPublicAvatar() });
+  }
   try {
     const ai = await askOllamaKeph(message, context, guide.matched ? guide : null, KEPH_AI_TIMEOUT_MS);
     const answer = String(ai?.answer || "").trim();
