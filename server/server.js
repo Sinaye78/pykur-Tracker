@@ -3578,7 +3578,14 @@ function isKephEditRequest(message = "") {
 }
 
 function cleanKephName(value = "") {
-  return String(value || "").trim().replace(/\s+/g, " ").replace(/[.,!?;:]+$/g, "").slice(0, 80);
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/^(?:le|la|les|l'|roue|roulette|candidat|participant|joueur|nombre de relances?|nombre de lancers?|relances?|lancers?)\s+(?:de|du|d'|pour)?\s*/i, "")
+    .replace(/^(?:de|du|d'|pour|a|à)\s+/i, "")
+    .replace(/\s+(?:a|à|sur|avec)\s*$/i, "")
+    .replace(/[.,!?;:]+$/g, "")
+    .slice(0, 80);
 }
 
 function quoteCommandArg(value = "") {
@@ -3638,7 +3645,9 @@ function kephCommandPlanFromRules(message, context = {}) {
     context.currentCandidate,
     context.nextParticipant
   ].map(cleanKephName).filter(Boolean);
-  const lanceMatch = raw.match(/\b(?:mets|met|mettre|donne|change|modifie|modifier|regle|règle)\s+(\d{1,2})\s+(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\s+(?:a|à|pour|de)?\s*([A-Za-z0-9À-ÿ _-]{2,40})\b/i)
+  const lanceMatch = raw.match(/\b(?:nombre\s+de\s+)?(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)(?:\s+de\s+la\s+roue)?\s+(?:de|du|d'|pour)?\s*([A-Za-z0-9À-ÿ _-]{2,40}?)\s+(?:a|à|sur|avec)\s*(\d{1,2})\b/i)
+    || raw.match(/\b(?:mets|met|mettre|donne|change|modifie|modifier|regle|règle)\s+(?:le\s+)?(?:nombre\s+de\s+)?(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)(?:\s+de\s+la\s+roue)?\s+(?:de|du|d'|pour)?\s*([A-Za-z0-9À-ÿ _-]{2,40}?)\s+(?:a|à|sur|avec)\s*(\d{1,2})\b/i)
+    || raw.match(/\b(?:mets|met|mettre|donne|change|modifie|modifier|regle|règle)\s+(\d{1,2})\s+(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\s+(?:a|à|pour|de)?\s*([A-Za-z0-9À-ÿ _-]{2,40})\b/i)
     || raw.match(/\b(?:mets|met|mettre|change|modifie|modifier|regle|règle)\s+([A-Za-z0-9À-ÿ _-]{2,40})\s+(?:a|à|sur|avec)?\s*(\d{1,2})\s+(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\b/i)
     || raw.match(/\b(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\s+(?:de|pour)\s+([A-Za-z0-9À-ÿ _-]{2,40})\s+(?:a|à|sur|avec)?\s*(\d{1,2})\b/i);
   if (lanceMatch) {
