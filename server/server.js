@@ -2246,7 +2246,7 @@ function kephDocumentationSearch(message, context = {}) {
     })
     .filter((doc) => doc.score > 0 || doc.id === "context")
     .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
+    .slice(0, 2)
     .map(({ score, ...doc }) => doc);
 }
 
@@ -2871,12 +2871,12 @@ function recentKephLearningExamples(question = "") {
       .map((row) => ({
         reason: String(row.reason || "").slice(0, 180),
         question: String(row.question || "").slice(0, 220),
-        bad_answer: String(row.answer || "").slice(0, 150),
+        erreur_a_eviter: String(row.reason || "").slice(0, 120),
         intent: String(row.intent || row.source || "").slice(0, 80),
         score: normalizeKephText(`${row.question} ${row.reason} ${row.answer}`).split(" ").filter((part) => part.length > 2 && asked.includes(part)).length
       }))
       .sort((a, b) => b.score - a.score)
-      .slice(0, 3)
+      .slice(0, 2)
       .map(({ score, ...entry }) => entry);
   } catch {
     return [];
@@ -2896,16 +2896,48 @@ function recentKephPositiveExamples(question = "") {
     return rows
       .map((row) => ({
         question: String(row.question || "").slice(0, 220),
-        good_answer: String(row.answer || "").slice(0, 180),
+        good_answer: String(row.answer || "").slice(0, 150),
         intent: String(row.intent || row.source || "").slice(0, 80),
         score: normalizeKephText(`${row.question} ${row.answer}`).split(" ").filter((part) => part.length > 2 && asked.includes(part)).length
       }))
       .sort((a, b) => b.score - a.score)
-      .slice(0, 3)
+      .slice(0, 2)
       .map(({ score, ...entry }) => entry);
   } catch {
     return [];
   }
+}
+
+function kephAiContext(message, context = {}) {
+  const text = normalizeKephText(message);
+  const wantsDialogues = /\b(?:dialogue|dialogues|replique|repliques|scenario|presentation|jingle|resultat|finale)\b/.test(text);
+  const wantsLots = /\b(?:lot|lots|poids|stock|roue|case|probabilite)\b/.test(text);
+  const wantsAudio = /\b(?:son|audio|mp3|wav|ogg|bruitage|jingle)\b/.test(text);
+  return {
+    currentCandidate: context?.currentCandidate || "",
+    nextParticipant: context?.nextParticipant || "",
+    queueRemaining: context?.queueRemaining || 0,
+    activeSection: context?.activeSection || "",
+    configOpen: !!context?.configOpen,
+    stage: context?.stage || "",
+    soundMuted: !!context?.soundMuted,
+    availableLots: context?.availableLots || 0,
+    unavailableLots: Array.isArray(context?.unavailableLots) ? context.unavailableLots.slice(0, 5) : [],
+    lots: wantsLots && Array.isArray(context?.lots) ? context.lots.slice(0, 10) : undefined,
+    dialogues: wantsDialogues && Array.isArray(context?.dialogues) ? context.dialogues.slice(0, 12).map((cue) => ({
+      index: cue.index,
+      trigger: cue.trigger,
+      speaker: cue.speaker,
+      kind: cue.kind,
+      text: String(cue.text || "").slice(0, 120),
+      emote: cue.emote || "",
+      fx: cue.fx || "",
+      audioId: cue.audioId || ""
+    })) : undefined,
+    audioAssets: wantsAudio && Array.isArray(context?.audioAssets) ? context.audioAssets.slice(0, 10) : undefined,
+    participantDraws: context?.participantDraws || undefined,
+    settingsSnapshot: context?.settingsSnapshot || undefined
+  };
 }
 
 function kephSystemPrompt() {
@@ -2944,14 +2976,14 @@ async function askOllamaKeph(message, context, guidance = null) {
           { role: "system", content: kephSystemPrompt() },
           { role: "user", content: JSON.stringify({
             question: String(message || "").slice(0, 800),
-            contexte_live: context || {},
+            contexte_live: kephAiContext(message, context),
             documentation_pertinente: guidance?.docs || kephDocumentationSearch(message, context),
             aide_ciblee: guidance ? { actions: guidance.actions || [], intent: guidance.intent || "" } : null,
             retours_negatifs_recents: recentKephLearningExamples(message),
             bonnes_reponses_likees: recentKephPositiveExamples(message)
           }) }
         ],
-        options: { temperature: 0.45, num_ctx: 2048, num_predict: 180 }
+        options: { temperature: 0.35, num_ctx: 1536, num_predict: 110 }
       })
     });
     if (!response.ok) throw new Error(`Ollama HTTP ${response.status}`);
