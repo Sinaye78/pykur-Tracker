@@ -3373,7 +3373,7 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
     ? { ...command, matched: true, expectedAnswer: command.answer || "", docs: kephDocumentationSearch(message, context) }
     : fallbackKephAnswer(message, context);
   if (guide.matched && guide.source === "diagnostic") return res.json({ ...guide, source: "guide", avatarUrl: kephPublicAvatar() });
-  if (guide.matched && ["command", "direct", "ui_map", "doc"].includes(guide.source)) {
+  if (guide.matched && ["command", "conversation", "direct", "ui_map", "doc"].includes(guide.source)) {
     return res.json({ ...guide, source: "guide", grounded: true, avatarUrl: kephPublicAvatar() });
   }
   try {
