@@ -2135,6 +2135,114 @@ function kephUiMapAnswer(message) {
   };
 }
 
+function kephDocumentation(context = {}) {
+  const currentCandidate = String(context?.currentCandidate || "").trim();
+  const activeSection = String(context?.activeSection || "").trim();
+  return [
+    {
+      id: "purpose",
+      title: "A quoi sert Charlie Roulette",
+      keywords: ["site", "application", "charlie roulette", "but", "objectif", "sert"],
+      content: "Charlie Roulette est une regie de tirage en live. L'organisateur prepare une file de candidats, des lots, des stocks, des sons, des dialogues et des effets, puis pilote une scene publique propre pour Discord/OBS. La regie controle le live; la configuration prepare les donnees et le spectacle."
+    },
+    {
+      id: "live_controls",
+      title: "Regie live",
+      keywords: ["lancer", "stop", "suivant", "tirage test", "dernier tirage", "live simple", "regie"],
+      actions: ["open_prepare"],
+      content: "Lancer demarre un vrai tirage: il peut consommer un stock, enregistrer l'historique et retirer un lancer au participant. Stop arrete la roue seulement quand le tirage est en cours. Tirage test sert a tester sans toucher aux stocks ni a l'historique. Suivant passe au prochain candidat. Dernier tirage sert a rappeler le dernier resultat utile en animation."
+    },
+    {
+      id: "participants",
+      title: "Participants et lancers",
+      keywords: ["participant", "candidat", "file", "queue", "lancers", "participation", "tentative"],
+      actions: ["open_prepare"],
+      content: "Dans Preparer, l'organisateur charge une file avec un pseudo par ligne. Le participant actuel est celui affiche sur la scene. Chaque participant peut avoir un nombre de lancers/tickets; a chaque vrai tirage, le compteur descend. Quand ses lancers sont termines, on passe au suivant."
+    },
+    {
+      id: "lots",
+      title: "Lots, poids, stocks et activation",
+      keywords: ["lot", "lots", "poids", "probabilite", "stock", "indisponible", "activer", "desactiver", "roue"],
+      actions: ["open_wheel_studio_lots"],
+      content: "Dans Lots & roue > Studio de la roulette > Lots & probabilites, chaque case a un nom, un poids, une activation et eventuellement un stock. Le poids est une chance relative: 20 sort environ deux fois plus souvent que 10. Si le stock est active et arrive a zero, le lot devient indisponible pour les prochains candidats. Desactiver un lot le retire de la roue sans le supprimer."
+    },
+    {
+      id: "wheel_design",
+      title: "Design et PNG de la roue",
+      keywords: ["design", "png", "image", "taille texte", "police", "couleur", "case", "visuel"],
+      actions: ["open_wheel_studio_design"],
+      content: "Design & PNG regle uniquement l'affichage des cases: texte, taille, position, rotation, image, couleur et lisibilite. Ca ne change pas les probabilites, les stocks ni les chances de tirage."
+    },
+    {
+      id: "scenarios",
+      title: "Studio de scenarios",
+      keywords: ["dialogue", "replique", "scenario", "scene", "victoria", "charlie", "presentation", "jingle", "resultat", "finale"],
+      actions: ["open_scenario_studio"],
+      content: "Le Studio de scenarios organise les repliques par etape: Presentation, Jingle, Temps mort/Pendant la roue, Apres le resultat, Candidat suivant et Scene finale. Chaque replique peut avoir un personnage, un type, un ciblage, une emote, un effet special et un bruitage. Le mode dialogue parle affiche une bulle de parole; l'indication scenique affiche une action plus discrete de type /me."
+    },
+    {
+      id: "dialogue_audio",
+      title: "Bruitage sur une replique",
+      keywords: ["mp3", "wav", "ogg", "bruitage", "son dialogue", "audio replique", "bibliotheque"],
+      actions: ["open_scenario_studio"],
+      content: "Pour mettre un son sur une replique, ouvrir le Studio de scenarios, selectionner ou creer la replique, puis utiliser le champ Bruitage dans le panneau de droite. Si le fichier n'est pas encore disponible, le bouton Importer a cote du champ Bruitage ajoute un MP3/WAV/OGG a la bibliotheque et le selectionne pour la replique en cours."
+    },
+    {
+      id: "emotes_effects",
+      title: "Emotes et effets speciaux",
+      keywords: ["emote", "emoji", "effet", "confetti", "firework", "flash", "fumee", "glitch", "projecteur"],
+      actions: ["open_scenario_studio"],
+      content: "Les emotes donnent une expression au dialogue. Les effets speciaux sont des animations CSS declenchees par une replique: confettis, feu d'artifice, flash plateau, coupure lumiere, projecteurs, spotlight, shake leger, glitch, pluie d'etoiles, fumee, vague doree et alerte rouge. Ils n'influencent pas le tirage."
+    },
+    {
+      id: "audio",
+      title: "Sons et volumes",
+      keywords: ["son", "sons", "audio", "jingle", "volume", "mute", "couper"],
+      actions: ["open_audio"],
+      content: "La section Sons gere le mute global, le volume des jingles, le volume de la roulette et les sons de scene. Les bruitages attaches a une replique se reglent dans le Studio de scenarios, pas seulement dans Sons."
+    },
+    {
+      id: "discord",
+      title: "Scene Discord OBS",
+      keywords: ["discord", "obs", "capture", "scene propre", "plein ecran", "detacher"],
+      actions: ["highlight_discord", "detach_control"],
+      content: "La scene Discord/OBS doit montrer seulement la partie publique: roue, participant, resultat et dialogues. Pour ne pas capturer les controles admin, utiliser le mode scene propre ou detacher la regie dans une autre fenetre."
+    },
+    {
+      id: "history_data",
+      title: "Historique, sauvegarde et profil",
+      keywords: ["historique", "gagnant", "csv", "export", "import", "profil", "sauvegarde", "corriger"],
+      actions: ["open_data"],
+      content: "Sauvegarde regroupe l'historique des vrais tirages, le dernier gagnant, les gagnants par participant, la correction du dernier tirage, l'export CSV et l'import/export du profil complet. Les tirages test et simulations ne doivent pas remplir l'historique reel."
+    },
+    {
+      id: "context",
+      title: "Contexte actuel de la regie",
+      keywords: ["maintenant", "actuel", "contexte", "ou je suis", "quoi faire"],
+      actions: activeSection ? [activeSection === "wheel" ? "open_wheel_studio_lots" : activeSection === "show" ? "open_scenario_studio" : activeSection === "audio" ? "open_audio" : activeSection === "data" ? "open_data" : "open_prepare"] : [],
+      content: `Contexte lu par Keph: candidat affiche=${currentCandidate || "aucun"}, section active=${activeSection || "inconnue"}, configuration ouverte=${context?.configOpen ? "oui" : "non"}, lots disponibles=${Number(context?.availableLots || 0)}, son coupe=${context?.soundMuted ? "oui" : "non"}. Le nom du candidat affiche n'est pas le nom de l'organisateur.`
+    }
+  ];
+}
+
+function kephDocumentationSearch(message, context = {}) {
+  const text = normalizeKephText(message);
+  const tokens = new Set(text.split(" ").filter((part) => part.length > 2));
+  return kephDocumentation(context)
+    .map((doc) => {
+      const haystack = normalizeKephText(`${doc.title} ${(doc.keywords || []).join(" ")} ${doc.content}`);
+      let score = 0;
+      tokens.forEach((token) => { if (haystack.includes(token)) score += 1; });
+      (doc.keywords || []).forEach((keyword) => { if (text.includes(normalizeKephText(keyword))) score += 4; });
+      if (doc.id === "context" && context?.activeSection) score += 1;
+      return { ...doc, score };
+    })
+    .filter((doc) => doc.score > 0 || doc.id === "context")
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+    .map(({ score, ...doc }) => doc);
+}
+
 function kephDiagnostics(message, context = {}) {
   const text = normalizeKephText(message);
   const asksProblem = /\b(?:pourquoi|probleme|bug|impossible|marche pas|peux pas|peut pas|bloque|bloquee|bloqué|bloquée|gris|grise|grisé|grisee|erreur)\b/.test(text);
@@ -2711,11 +2819,9 @@ function fallbackKephAnswer(message, context = {}) {
   const knowledge = charlieKephKnowledge();
   const diagnostic = kephDiagnostics(message, context);
   if (diagnostic) return diagnostic;
-  const uiMap = kephUiMapAnswer(message);
-  if (uiMap) return uiMap;
-  const direct = directKephAnswer(message);
-  if (direct) return direct;
   const text = normalizeKephText(message);
+  const direct = directKephAnswer(message);
+  const uiMap = kephUiMapAnswer(message);
   const keywordScore = (keyword) => {
     const parts = normalizeKephText(keyword).split(" ").filter(Boolean);
     if (!parts.length) return 0;
@@ -2729,22 +2835,83 @@ function fallbackKephAnswer(message, context = {}) {
     .sort((a, b) => b.score - a.score);
   const best = scored.find((item) => item.score > 0);
   const picked = best?.feature || null;
+  const docs = kephDocumentationSearch(message, context);
+  const guideActions = direct?.actions?.length ? direct.actions
+    : uiMap?.actions?.length ? uiMap.actions
+      : normalizedKephActions(picked?.actions || docs.flatMap((doc) => doc.actions || []), knowledge);
+  const firstDoc = docs.find((doc) => doc.id !== "context");
   return {
-    answer: picked?.answer || "Je peux t'aider sur la regie, la roue, les lots, les dialogues, les sons, l'historique, Discord et les actions a confirmer. Dis-moi ce que tu veux comprendre ou modifier.",
-    actions: normalizedKephActions(picked?.actions || [], knowledge),
-    source: "fallback",
-    matched: !!best
+    answer: direct?.answer || uiMap?.answer || picked?.answer || firstDoc?.content || "Je peux t'aider, mais il me manque un peu de contexte. Dis-moi si tu veux comprendre une fonction, retrouver un menu ou preparer une action a confirmer.",
+    actions: guideActions,
+    source: "retrieval",
+    matched: !!(direct || uiMap || best || docs.length),
+    intent: direct?.intent || uiMap?.intent || picked?.id || "retrieval",
+    docs
   };
+}
+
+function recentKephLearningExamples(question = "") {
+  try {
+    const rows = db.prepare(`
+      SELECT vote, reason, question, answer, intent, source
+      FROM keph_feedback
+      WHERE vote = 'dislike'
+      ORDER BY id DESC
+      LIMIT 18
+    `).all();
+    const asked = normalizeKephText(question);
+    return rows
+      .map((row) => ({
+        reason: String(row.reason || "").slice(0, 180),
+        question: String(row.question || "").slice(0, 220),
+        bad_answer: String(row.answer || "").slice(0, 260),
+        intent: String(row.intent || row.source || "").slice(0, 80),
+        score: normalizeKephText(`${row.question} ${row.reason} ${row.answer}`).split(" ").filter((part) => part.length > 2 && asked.includes(part)).length
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map(({ score, ...entry }) => entry);
+  } catch {
+    return [];
+  }
+}
+
+function recentKephPositiveExamples(question = "") {
+  try {
+    const rows = db.prepare(`
+      SELECT question, answer, intent, source
+      FROM keph_feedback
+      WHERE vote = 'like'
+      ORDER BY id DESC
+      LIMIT 12
+    `).all();
+    const asked = normalizeKephText(question);
+    return rows
+      .map((row) => ({
+        question: String(row.question || "").slice(0, 220),
+        good_answer: String(row.answer || "").slice(0, 320),
+        intent: String(row.intent || row.source || "").slice(0, 80),
+        score: normalizeKephText(`${row.question} ${row.answer}`).split(" ").filter((part) => part.length > 2 && asked.includes(part)).length
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+      .map(({ score, ...entry }) => entry);
+  } catch {
+    return [];
+  }
 }
 
 function kephSystemPrompt() {
   const knowledge = charlieKephKnowledge();
   return [
     "Tu es Keph, assistant de regie de Charlie Roulette.",
-    "Tu aides l'organisateur pendant un live. Reponds en francais naturel, en 2 a 5 phrases maximum.",
-    "Reponds vraiment a la question posee. Ne recite pas une fiche si la question demande un oui/non, une explication courte ou une etape precise.",
+    "Tu aides l'organisateur pendant un live. Reponds en francais naturel, precis, et humain.",
+    "Ta reponse doit d'abord repondre exactement a la question posee. Si la question est simple, reponds simplement. Si elle demande une procedure, donne des etapes courtes. Si elle demande a quoi ca sert, explique l'usage live et la consequence.",
+    "Ne declenche pas une fiche generique parce qu'un mot ressemble a un sujet. Par exemple, si on demande 'qui est Victoria ?', parle de Victoria, pas de la creation de dialogues.",
+    "Utilise la documentation fournie comme source de verite, mais reformule et cible la demande. Ne copie-colle pas automatiquement la documentation.",
+    "Les exemples dislike sont des contre-exemples: evite de reproduire ces erreurs. Les exemples like montrent le style et le niveau de precision a viser.",
     "Le champ currentCandidate designe le candidat affiche sur la roue, pas la personne qui te parle. Ne salue jamais l'organisateur avec le nom du candidat.",
-    "Pour Charlie Roulette, utilise seulement les fonctions presentes dans cette base de connaissance et dans aide_ciblee si elle est fournie.",
+    "Pour Charlie Roulette, utilise seulement les fonctions presentes dans la documentation, la base de connaissance et l'aide ciblee si elle est fournie.",
     "Tu peux repondre aux petites questions generales simples, mais ramene doucement vers la roulette si c'est utile.",
     "Quand c'est utile, propose des actions dans un tableau actions. N'invente jamais d'id d'action.",
     "Tu ne modifies jamais les donnees a la place de l'utilisateur.",
@@ -2768,7 +2935,14 @@ async function askOllamaKeph(message, context, guidance = null) {
         format: "json",
         messages: [
           { role: "system", content: kephSystemPrompt() },
-          { role: "user", content: JSON.stringify({ question: String(message || "").slice(0, 800), contexte_live: context || {}, aide_ciblee: guidance ? { answer: guidance.answer, actions: guidance.actions || [], intent: guidance.intent || "" } : null }) }
+          { role: "user", content: JSON.stringify({
+            question: String(message || "").slice(0, 800),
+            contexte_live: context || {},
+            documentation_pertinente: guidance?.docs || kephDocumentationSearch(message, context),
+            aide_ciblee: guidance ? { answer: guidance.answer, actions: guidance.actions || [], intent: guidance.intent || "" } : null,
+            retours_negatifs_recents: recentKephLearningExamples(message),
+            bonnes_reponses_likees: recentKephPositiveExamples(message)
+          }) }
         ],
         options: { temperature: 0.45, num_ctx: 4096, num_predict: 300 }
       })
@@ -2919,6 +3093,49 @@ app.post("/api/charlie-keph/feedback", kephLimiter, asyncRoute(async (req, res) 
     String(req.get("user-agent") || "").slice(0, 300)
   );
   res.json({ ok: true });
+}));
+
+function classifyKephFeedback(row = {}) {
+  const text = normalizeKephText(`${row.reason || ""} ${row.question || ""} ${row.answer || ""}`);
+  if (/\b(?:rien fait|pas fait|action|modifier|modifie|ajouter|supprimer|changer|appliquer|effectue)\b/.test(text)) return "action manquante";
+  if (/\b(?:hors sujet|a cote|cot[eé]|rapport|pas la question|pas repondu|repond pas)\b/.test(text)) return "hors sujet";
+  if (/\b(?:faux|incorrect|existe pas|mensonge|hallucine|invente)\b/.test(text)) return "faux";
+  if (/\b(?:vague|general|generique|robot|pas cible|trop large)\b/.test(text)) return "trop vague";
+  if (/\b(?:mauvais candidat|mauvais lot|mauvaise cible|kinza|candidat actuel)\b/.test(text)) return "mauvaise cible";
+  return "a verifier";
+}
+
+app.get("/api/charlie-keph/feedback/summary", kephLimiter, asyncRoute(async (req, res) => {
+  const rows = db.prepare(`
+    SELECT id, vote, reason, question, answer, source, intent, created_at
+    FROM keph_feedback
+    WHERE vote = 'dislike'
+    ORDER BY id DESC
+    LIMIT 40
+  `).all();
+  const recent = rows.slice(0, 12).map((row) => ({
+    id: row.id,
+    category: classifyKephFeedback(row),
+    reason: row.reason || "",
+    question: row.question || "",
+    answer: row.answer || "",
+    source: row.source || "",
+    intent: row.intent || "",
+    at: row.created_at || ""
+  }));
+  const counts = recent.reduce((acc, item) => {
+    acc[item.category] = (acc[item.category] || 0) + 1;
+    return acc;
+  }, {});
+  const training = recent
+    .filter((item) => ["hors sujet", "trop vague", "faux", "action manquante", "mauvaise cible"].includes(item.category))
+    .slice(0, 8)
+    .map((item) => ({
+      category: item.category,
+      question: item.question,
+      reason: item.reason
+    }));
+  res.json({ ok: true, counts, recent, training, avatarUrl: kephPublicAvatar() });
 }));
 
 app.get("/api/events/living", (req, res) => {
