@@ -2181,6 +2181,13 @@ function kephDocumentation(context = {}) {
       content: "Le Studio de scenarios organise les repliques par etape: Presentation, Jingle, Temps mort/Pendant la roue, Apres le resultat, Candidat suivant et Scene finale. Chaque replique peut avoir un personnage, un type, un ciblage, une emote, un effet special et un bruitage. Le mode dialogue parle affiche une bulle de parole; l'indication scenique affiche une action plus discrete de type /me."
     },
     {
+      id: "presentation_dialogues",
+      title: "Modifier les dialogues de presentation",
+      keywords: ["modifier dialogue presentation", "modifier dialogues presentation", "dialogue presenter candidats", "dialogues presenter candidats", "replique presentation", "presentation candidats"],
+      actions: ["open_scenario_studio"],
+      content: "Oui, les dialogues joues par le bouton Presenter les candidats sont modifiables. Il faut ouvrir Reglages > Scenes > Studio de scenarios, choisir l'etape Presentation dans la colonne de gauche, puis modifier, supprimer ou ajouter les repliques de Charlie/Victoria. Ces changements affectent l'intro spectacle, pas les stocks ni l'historique."
+    },
+    {
       id: "dialogue_targeting",
       title: "Ciblage des dialogues",
       keywords: ["cibler", "ciblage", "candidat cible", "participant cible", "tous les candidats", "candidat actuel"],
@@ -2563,6 +2570,12 @@ function directKephAnswer(message) {
   const yesNo = /\b(?:est ce que|peut on|on peut|possible|je peux|peux)\b/.test(text);
   const directAnswers = [
     {
+      intent: "edit_presentation_dialogues",
+      test: () => /\b(?:modifier|modifie|changer|editer|edit|personnaliser)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && /\b(?:presenter|presentation|candidats)\b/.test(text),
+      answer: "Oui. Les dialogues du bouton Presenter les candidats se modifient dans Reglages > Scenes > Studio de scenarios. Choisis l'etape Presentation a gauche, puis tu peux modifier les repliques existantes, en ajouter, changer Charlie/Victoria, l'emote, l'effet ou le bruitage. Ca change seulement l'intro spectacle : aucun stock ni historique n'est touche.",
+      actions: ["open_scenario_studio"]
+    },
+    {
       intent: "site_purpose",
       test: () => /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|but|objectif|utilite)\b/.test(text) && /\b(?:site|application|appli|charlie roulette|roulette)\b/.test(text),
       answer: "Charlie Roulette sert à animer un tirage en live comme une petite émission : tu prépares une file de candidats, des lots, des sons et des dialogues, puis tu pilotes la roue pendant que le public voit une scène propre. La régie sert à contrôler le live, les réglages servent à préparer la roue, les scènes et les sauvegardes. En gros : c’est un outil d’animation, pas juste une roulette aléatoire.",
@@ -2854,7 +2867,7 @@ function fallbackKephAnswer(message, context = {}) {
       : siteQuestion ? normalizedKephActions(picked?.actions || docs.flatMap((doc) => doc.actions || []), knowledge) : [];
   const firstDoc = docs.find((doc) => doc.id !== "context");
   return {
-    answer: direct?.answer || uiMap?.answer || picked?.answer || firstDoc?.content || "Je peux t'aider, mais il me manque un peu de contexte. Dis-moi si tu veux comprendre une fonction, retrouver un menu ou preparer une action a confirmer.",
+    answer: direct?.answer || firstDoc?.content || uiMap?.answer || picked?.answer || "Je peux t'aider, mais il me manque un peu de contexte. Dis-moi si tu veux comprendre une fonction, retrouver un menu ou preparer une action a confirmer.",
     actions: guideActions,
     source: "retrieval",
     matched: !!(direct || uiMap || best || docs.length),

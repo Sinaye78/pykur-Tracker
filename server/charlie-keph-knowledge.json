@@ -43,6 +43,12 @@
   ],
   "features": [
     {
+      "id": "edit_presentation_dialogues",
+      "keywords": ["modifier dialogue presentation", "modifier dialogues presentation", "dialogue presenter candidats", "dialogues presenter candidats", "replique presentation"],
+      "answer": "Oui, les dialogues joues par Presenter les candidats sont modifiables. Va dans Reglages > Scenes > Studio de scenarios, choisis l'etape Presentation, puis modifie les repliques existantes ou ajoute-en de nouvelles. Tu peux regler Charlie/Victoria, l'emote, l'effet special et le bruitage. Ca change uniquement l'intro spectacle, pas les stocks ni l'historique.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
       "id": "present_candidates",
       "keywords": ["presenter candidats", "presentation candidats", "bouton presenter", "presenter les candidats", "a quoi sert presenter"],
       "answer": "Le bouton Presenter les candidats lance une scene d'introduction avant le tirage. Il sert a afficher/annoncer les candidats, donner du rythme au live et faire intervenir Charlie/Victoria avant de passer au candidat courant. C'est une action de spectacle : elle ne touche pas aux stocks, aux lots ni a l'historique.",
