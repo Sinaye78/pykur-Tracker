@@ -1962,6 +1962,61 @@ function normalizedKephActions(actions, knowledge) {
     .map((action) => ({ id: action.id, label: action.label || allowed.get(action.id).label || action.id }));
 }
 
+function normalizeKephText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function findKephLot(lots, rawName) {
+  const wanted = normalizeKephText(rawName);
+  if (!wanted) return null;
+  const candidates = (Array.isArray(lots) ? lots : []).map((lot, index) => ({
+    lot,
+    index,
+    name: String(lot?.name || ""),
+    norm: normalizeKephText(lot?.name || "")
+  }));
+  const exact = candidates.find((entry) => entry.norm === wanted);
+  if (exact) return exact;
+  const partial = candidates.find((entry) => entry.norm.includes(wanted) || wanted.includes(entry.norm));
+  if (partial) return partial;
+  const best = candidates
+    .map((entry) => ({ ...entry, score: wanted.split(" ").filter((part) => part && entry.norm.includes(part)).length }))
+    .sort((a, b) => b.score - a.score)[0];
+  return best?.score ? best : null;
+}
+
+function parseKephCommand(message, context = {}) {
+  const raw = String(message || "").trim();
+  const normalized = normalizeKephText(raw);
+  const lots = Array.isArray(context.lots) ? context.lots : [];
+  const asksLot = /\blot\b|\bpoid\b|\bpoids\b|\bprobabilit/.test(normalized);
+  if (asksLot) {
+    const rateMatch = normalized.match(/\b(?:poid|poids|ponderation|probabilite|proba|taux)\b.*?\b(?:a|de|sur)?\s*(\d{1,4})\b/) || normalized.match(/\b(\d{1,4})\b.*?\b(?:poid|poids|ponderation|probabilite|proba|taux)\b/);
+    const lotNameMatch = raw.match(/lot\s+(.+?)(?:\s+(?:et|puis|avec|à|a|au|en|pour|met|mets|mettre|modifie|modifier|change|changer|poids|pondération|probabilité|proba|taux)\b|[?.!,]|$)/i)
+      || raw.match(/(?:modifie|modifier|change|changer|mettre|mets|met)\s+(.+?)(?:\s+(?:et|puis|avec|à|a|au|en|pour|poids|pondération|probabilité|proba|taux)\b|[?.!,]|$)/i);
+    const inferredName = lotNameMatch?.[1] || lots.map((lot) => lot.name).find((name) => normalized.includes(normalizeKephText(name)));
+    const target = findKephLot(lots, inferredName);
+    if (rateMatch && target) {
+      const rate = Math.max(0, Math.min(9999, Number(rateMatch[1])));
+      return {
+        answer: `Je peux mettre le poids du lot « ${target.name} » à ${rate}. Je ne le fais pas tout seul : cliquez sur Appliquer pour confirmer.`,
+        actions: [
+          { id: "apply_update_lot_rate", type: "update_lot_rate", label: `Appliquer poids ${rate}`, payload: { lotName: target.name, lotIndex: target.index, rate } },
+          { id: "open_wheel_studio_lots", label: "Ouvrir les lots" }
+        ],
+        source: "command",
+        intent: "update_lot_rate"
+      };
+    }
+  }
+  return null;
+}
+
 function fallbackKephAnswer(message, context = {}) {
   const knowledge = charlieKephKnowledge();
   const text = String(message || "").toLowerCase();
@@ -1973,9 +2028,9 @@ function fallbackKephAnswer(message, context = {}) {
     .sort((a, b) => b.score - a.score);
   const best = scored.find((item) => item.score > 0);
   const picked = best?.feature || knowledge.features?.[0];
-  const participant = context?.participant ? ` Participant actuel : ${context.participant}.` : "";
+  const candidate = context?.currentCandidate || context?.participant || "";
   return {
-    answer: (picked?.answer || "Je peux vous guider sur les participants, lots, dialogues, sons, historique et mode Discord. Dites-moi ce que vous voulez faire.") + participant,
+    answer: (picked?.answer || "Je peux vous guider sur les participants, lots, dialogues, sons, historique et mode Discord. Dites-moi ce que vous voulez faire.") + (candidate ? ` Candidat actuel : ${candidate}.` : ""),
     actions: normalizedKephActions(picked?.actions || ["open_prepare"], knowledge),
     source: "fallback",
     matched: !!best
@@ -1987,6 +2042,7 @@ function kephSystemPrompt() {
   return [
     "Tu es Keph, assistant de regie de Charlie Roulette.",
     "Tu aides l'organisateur pendant un live. Reponds en francais, en 2 a 5 phrases maximum.",
+    "Le champ currentCandidate designe le candidat affiche sur la roue, pas la personne qui te parle. Ne salue jamais l'organisateur avec le nom du candidat.",
     "Utilise seulement les fonctions presentes dans cette base de connaissance.",
     "Quand c'est utile, propose des actions dans un tableau actions. N'invente jamais d'id d'action.",
     "Tu ne modifies jamais les donnees a la place de l'utilisateur.",
@@ -2109,6 +2165,8 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
   if (!message) return res.status(400).json({ error: "Question vide.", code: "KEPH_EMPTY_MESSAGE" });
   const knowledge = charlieKephKnowledge();
+  const command = parseKephCommand(message, context);
+  if (command) return res.json({ ...command, avatarUrl: kephPublicAvatar() });
   const guide = fallbackKephAnswer(message, context);
   if (guide.matched) return res.json({ ...guide, source: "guide", avatarUrl: kephPublicAvatar() });
   try {

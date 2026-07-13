@@ -946,12 +946,13 @@ let kephMessagesState=[];
 let kephBusy=false;
 let kephAvatarLoaded=false;
 let kephHealthTimer=null;
+let kephRenderedActions=[];
 function kephApi(path){return (location.protocol==='file:'?'https://familier-tracker.fr':'')+path}
 function kephContext(){
   let p=cur?.()||{},q=p.queue||[],pos=Math.min(p.queueIndex||0,Math.max(0,q.length-1)),history=p.history||[],lots=p.lots||[],settings=p.settings||{};
   return {
     profile:data?.active||'',
-    participant:p.participant||q[pos]||'',
+    currentCandidate:p.participant||q[pos]||'',
     nextParticipant:q[pos+1]||'',
     queueTotal:q.length,
     queueRemaining:Math.max(0,q.length-pos-1),
@@ -987,13 +988,17 @@ async function checkKephHealth(){
 function renderKephMessages(){
   let box=$('kephMessages');if(!box)return;
   if(!kephMessagesState.length)kephMessagesState=[{role:'assistant',text:'Salut, je suis Keph. Demande-moi comment préparer un dialogue, régler les stocks, gérer la scène Discord ou retrouver un menu.'}];
-  box.innerHTML=kephMessagesState.slice(-8).map(msg=>`<div class="kephMsg ${msg.role}"><div>${esc(msg.text)}</div>${msg.actions?.length?`<div class="kephActions">${msg.actions.map(action=>`<button class="btn dark kephAction" type="button" data-keph-action="${esc(action.id)}">${esc(action.label||action.id)}</button>`).join('')}</div>`:''}</div>`).join('');
-  box.querySelectorAll('[data-keph-action]').forEach(button=>button.onclick=()=>runKephAction(button.dataset.kephAction));
+  kephRenderedActions=[];
+  box.innerHTML=kephMessagesState.slice(-8).map(msg=>`<div class="kephMsg ${msg.role}"><div>${esc(msg.text)}</div>${msg.actions?.length?`<div class="kephActions">${msg.actions.map(action=>{let index=kephRenderedActions.push(action)-1;return `<button class="btn dark kephAction" type="button" data-keph-action-index="${index}">${esc(action.label||action.id)}</button>`}).join('')}</div>`:''}</div>`).join('');
+  box.querySelectorAll('[data-keph-action-index]').forEach(button=>button.onclick=()=>runKephAction(kephRenderedActions[Number(button.dataset.kephActionIndex)]));
   box.scrollTop=box.scrollHeight;
 }
 function flashKephTarget(el){if(!el)return;el.classList.remove('kephTargetFlash');void el.offsetWidth;el.classList.add('kephTargetFlash');setTimeout(()=>el.classList.remove('kephTargetFlash'),3100)}
 function openKephConfigTab(tab){setConfigFullscreen(true);openControlTab(tab);setTimeout(()=>flashKephTarget(document.querySelector(`[data-control-panel="${tab}"]`)||document.querySelector(`[data-control-tab="${tab}"]`)),80)}
-function runKephAction(id){
+function runKephAction(action){
+  if(!action)return;
+  let id=typeof action==='string'?action:action.id;
+  if(action.type==='update_lot_rate')return applyKephLotRate(action);
   const actions={
     open_prepare:()=>openKephConfigTab('before'),
     open_shortcuts:()=>{openKephConfigTab('before');setTimeout(()=>flashKephTarget(document.querySelector('.shortcutGrid')||$('resetShortcutsBtn')),120)},
@@ -1007,6 +1012,20 @@ function runKephAction(id){
     highlight_rehearsal:()=>flashKephTarget($('rehearsalBtn'))
   };
   actions[id]?.();
+}
+function applyKephLotRate(action){
+  let payload=action.payload||{},lots=cur()?.lots||[],target=null;
+  if(Number.isInteger(payload.lotIndex)&&lots[payload.lotIndex]&&(!payload.lotName||lots[payload.lotIndex].name===payload.lotName))target={lot:lots[payload.lotIndex],index:payload.lotIndex};
+  if(!target&&payload.lotName){
+    let wanted=String(payload.lotName).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+    let index=lots.findIndex(lot=>String(lot.name||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim()===wanted);
+    if(index>=0)target={lot:lots[index],index};
+  }
+  let rate=Math.max(0,Math.min(9999,Math.floor(Number(payload.rate))));
+  if(!target||!Number.isFinite(rate)){kephMessagesState.push({role:'assistant',text:'Je n’ai pas retrouvé ce lot dans la roue. Ouvrez le studio de la roulette pour vérifier le nom exact.',actions:[{id:'open_wheel_studio_lots',label:'Ouvrir les lots'}]});renderKephMessages();return}
+  target.lot.rate=rate;selectedEdit={type:'text',i:target.index};save();renderLots();renderSettings();syncEditor();drawWheel();
+  kephMessagesState.push({role:'assistant',text:`C’est fait : le poids du lot « ${target.lot.name} » est maintenant à ${rate}.`,actions:[{id:'open_wheel_studio_lots',label:'Voir dans les lots'}]});
+  renderKephMessages();openWheelStudio('lots');
 }
 async function askKeph(question){
   question=String(question||'').trim();if(!question||kephBusy)return;
