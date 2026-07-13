@@ -3543,6 +3543,11 @@ const KEPH_EDIT_COMMANDS = [
 function isKephEditRequest(message = "") {
   const text = normalizeKephText(message);
   if (/\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment fonctionne|que fait|ca sert a quoi)\b/.test(text)) return false;
+  if (/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\b/.test(text)) return true;
+  if (/\b(?:relance|relances|lancer|lancers|participation|participations)\b/.test(text) && /\b\d{1,2}\b/.test(text)) return true;
+  if (/\b(?:testeffect|testemote|startjingle|startpresentation|startnext|startfinale|starttestdraw|startrehearsal|startdraw|stopdraw)\b/.test(text)) return true;
+  if (/\b(?:detache|detacher|separe|separer)\b/.test(text) && /\b(?:regie|controle|panneau)\b/.test(text)) return true;
+  if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && /\b(?:fais|faire|prepare|preparer|genere|generer|cree|creer)\b/.test(text)) return true;
   return /\b(?:mets|met|mettre|donne|change|changer|modifie|modifier|ajoute|ajouter|cree|creer|supprime|supprimer|desactive|desactiver|active|activer|renomme|renommer|renome|prepare|preparer|fais moi|faire|genere|generer|test|teste|tester|testeffect|testemote|lance|lancer|startjingle|startpresentation|startnext|startfinale|startdraw|joue|jouer|demarre|demarrer|passe|passer|stop|arrete|arret|ouvre|ouvrir|mode|detache|detacher)\b/.test(text)
     && /\b(?:relance|relances|lancer|lance|participant|candidat|joueur|lot|stock|poids|poid|roue|dialogue|replique|jingle|presentation|startpresentation|startjingle|scenario|scene finale|finale|emote|testemote|effet|effets|fx|testeffect|tirage test|suivant|repetition|simulation|discord|obs|regie|studio|configuration|plein ecran|pleine ecran|fullscreen|detache|detacher)\b/.test(text);
 }
@@ -3562,7 +3567,28 @@ function kephTokenScore(needle = "", candidate = "") {
   if (hay === normalizeKephText(needle)) return 100;
   if (hay.includes(normalizeKephText(needle))) return 80 + wanted.length;
   const hits = wanted.filter((part) => hay.includes(part)).length;
-  return hits ? hits / wanted.length * 60 + hits : 0;
+  const tokenScore = hits ? hits / wanted.length * 60 + hits : 0;
+  const needleNorm = normalizeKephText(needle);
+  const fuzzyScore = wanted.length === 1 ? Math.max(0, 70 - kephEditDistance(needleNorm, hay) * 18) : 0;
+  return Math.max(tokenScore, fuzzyScore);
+}
+
+function kephEditDistance(a = "", b = "") {
+  a = String(a || "");
+  b = String(b || "");
+  if (!a) return b.length;
+  if (!b) return a.length;
+  const row = Array.from({ length: b.length + 1 }, (_, index) => index);
+  for (let i = 1; i <= a.length; i += 1) {
+    let prev = row[0];
+    row[0] = i;
+    for (let j = 1; j <= b.length; j += 1) {
+      const temp = row[j];
+      row[j] = a[i - 1] === b[j - 1] ? prev : Math.min(prev, row[j - 1], row[j]) + 1;
+      prev = temp;
+    }
+  }
+  return row[b.length];
 }
 
 function findKephBestName(candidates = [], requested = "") {
@@ -3664,7 +3690,7 @@ function kephCommandPlanFromRules(message, context = {}) {
   if (mentionedLot && renameMatch) add(`rename_lot ${quoteCommandArg(mentionedLot)} ${quoteCommandArg(cleanKephName(renameMatch[1]))}`);
   if (mentionedLot && /\b(?:desactive|desactiver|coupe|retire)\b/.test(text)) add(`disable_lot ${quoteCommandArg(mentionedLot)}`);
   if (mentionedLot && /\b(?:active|activer|reactive|reactiver)\b/.test(text)) add(`enable_lot ${quoteCommandArg(mentionedLot)}`);
-  if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && /\b(?:jingle|presentation|finale|resultat|roue|candidat suivant)\b/.test(text) && /\b(?:plusieurs|quelques|3|trois|4|quatre|5|cinq|fais|prepare|genere)\b/.test(text)) {
+  if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && /\b(?:jingle|presentation|finale|resultat|roue|candidat suivant)\b/.test(text) && /\b(?:plusieurs|quelques|3|trois|4|quatre|5|cinq|fais|faire|prepare|preparer|genere|generer)\b/.test(text)) {
     const trigger = /\bfinale\b/.test(text) ? "finale" : /\bresultat\b/.test(text) ? "result" : /\b(?:roue|tirage)\b/.test(text) ? "spin" : /\b(?:suivant|candidat suivant)\b/.test(text) ? "next" : /\bjingle\b/.test(text) ? "jingle" : "presentation";
     const candidatesPart = raw.split(/(?:candidats?|participants?)\s*:?\s*/i).pop() || "";
     const names = candidatesPart.split(/,|\bet\b|\n|\r/).map(cleanKephName).filter((name) => /^[A-Za-z0-9À-ÿ _-]{2,40}$/.test(name)).slice(0, 6);
@@ -3676,6 +3702,12 @@ function kephCommandPlanFromRules(message, context = {}) {
     add(`add_dialogue ${quoteCommandArg(trigger)} "victoria" ${quoteCommandArg("Installez-vous, le show commence maintenant.")} --emote "heart" --fx "confetti"`);
   }
   if (!commands.length) return null;
+  if (/\b(?:la totale|passage complet|tout l evenement|toute l animation)\b/.test(text)) {
+    add("startpresentation");
+    add("startjingle");
+    add("startnext");
+    add("startrehearsal");
+  }
   return {
     answer: `Je peux preparer ${commands.length} commande${commands.length > 1 ? "s" : ""} controlee${commands.length > 1 ? "s" : ""}. Verifie l'aperçu, puis applique seulement si tout est bon.`,
     commands
