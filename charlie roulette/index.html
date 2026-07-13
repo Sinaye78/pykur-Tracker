@@ -70,7 +70,7 @@ body.fx-win .centerFace{animation:charlieHappy .72s ease-in-out infinite alterna
 .app{max-width:1680px;padding:14px 18px 22px}.top{padding:8px 4px 12px}.top .title{font-size:clamp(28px,3vw,46px)}
 .statusBar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 11px;margin-top:6px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(90deg,#100916e8,#2a1124d9);box-shadow:0 10px 28px #0005}
 .statusChip{display:flex;align-items:center;gap:6px;min-height:30px;padding:6px 10px;border-radius:999px;background:#ffffff0b;border:1px solid #ffffff10;color:#e7d9bc;font-size:11px;font-weight:900;text-transform:uppercase}.statusChip b{color:#ffe28a}.statusDot{width:7px;height:7px;border-radius:50%;background:#777}.statusChip.good .statusDot{background:#38d477;box-shadow:0 0 10px #38d477}.statusChip.test .statusDot{background:#b982ff;box-shadow:0 0 10px #b982ff}
-.studioShell{display:grid;grid-template-columns:minmax(310px,370px) minmax(560px,1fr);gap:16px;margin-top:14px;align-items:stretch}.controlDeck{min-width:0;padding:12px;display:flex;flex-direction:column;max-height:calc(100vh - 130px);position:sticky;top:12px}.deckHeader{padding:4px 4px 10px}.deckHeader h2{margin:0;font-size:18px}.deckHeader p{margin:3px 0 0}
+.studioShell{display:grid;grid-template-columns:minmax(360px,430px) minmax(560px,1fr);gap:16px;margin-top:14px;align-items:stretch}.controlDeck{min-width:0;padding:12px;display:flex;flex-direction:column;max-height:calc(100vh - 130px);position:sticky;top:12px}.deckHeader{padding:4px 4px 10px}.deckHeader h2{margin:0;font-size:18px}.deckHeader p{margin:3px 0 0}
 .tabNav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:5px;border-radius:13px;background:#08050d;border:1px solid #ffffff10}.tabButton{min-width:0;padding:9px 5px;border:0;border-radius:9px;background:transparent;color:#bfae91;font-size:11px;font-weight:900;cursor:pointer}.tabButton:hover{background:#ffffff0b;color:#fff}.tabButton.active{background:linear-gradient(180deg,#6e1737,#3a1028);color:#ffe79d;box-shadow:inset 0 0 0 1px #ffd1664d,0 4px 12px #0005}
 .tabViewport{min-height:0;overflow:auto;margin-top:8px;padding:1px 5px 8px 2px;scrollbar-color:#8b5d22 #0d0711}.controlTab{display:none}.controlTab.active{display:block;animation:tabIn .18s ease-out}.controlTab h3{font-size:15px;margin:12px 0 8px}.controlTab .configSection{padding:11px 0;margin:0;border-color:#ffffff0c}@keyframes tabIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .stage{position:relative;overflow:hidden;min-height:calc(100vh - 130px);padding:14px;background:radial-gradient(circle at 50% 42%,#65214366 0 16%,transparent 40%),radial-gradient(circle at 50% 50%,#251331 0 45%,#09060e 78%);border-color:#ffd16644}.stage:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 18%,#ffd1660c 42%,transparent 62%),repeating-linear-gradient(90deg,transparent 0 12%,#ffffff05 12.2% 12.4%);opacity:.7}
@@ -373,6 +373,35 @@ body.detached-control #configFullscreenBtn{display:none!important}
 .lotStockToggle input{width:auto}.lotStock{min-width:0}
 .emptyState{min-height:68px!important;padding:14px!important;font-size:11px!important}
 .btn[data-icon]:before{border-radius:7px!important}
+/* Configuration atelier : plus d'espace, moins de scroll dans les onglets */
+body.config-fullscreen .studioShell{grid-template-columns:minmax(720px,1fr) minmax(360px,520px)!important;gap:0!important}
+body.config-fullscreen .controlDeck{display:grid!important;grid-template-columns:176px minmax(0,1fr)!important;grid-template-rows:auto minmax(0,1fr)!important;padding:0!important}
+body.config-fullscreen .controlDeck .deckHeader{grid-column:1/-1!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;padding:16px 18px!important;background:linear-gradient(90deg,#1d0c20,#0b0610)!important}
+body.config-fullscreen .deckHeaderActions{display:flex!important;align-items:center!important;gap:8px!important;justify-content:flex-end!important}
+body.config-fullscreen .controlDeck .deckHeader h2{font-size:22px!important}
+body.config-fullscreen .controlDeck .deckHeader p{font-size:12px!important}
+body.config-fullscreen .controlDeck .tabNav{grid-column:1!important;grid-row:2!important;display:flex!important;flex-direction:column!important;gap:8px!important;margin:0!important;padding:16px 12px!important;border:0!important;border-right:1px solid #ffffff12!important;border-radius:0!important;background:#08050dcc!important}
+body.config-fullscreen .controlDeck .tabButton{justify-content:flex-start!important;min-height:48px!important;padding:11px 12px!important;text-align:left!important;border:1px solid #ffffff0e!important;border-radius:12px!important;font-size:12px!important;line-height:1.15!important;background:#ffffff05!important}
+body.config-fullscreen .controlDeck .tabButton.active{background:linear-gradient(180deg,#6e1737,#3a1028)!important;border-color:#ffd16655!important;color:#ffe899!important}
+body.config-fullscreen .tabButton[data-icon]{gap:9px!important}
+body.config-fullscreen .tabButton[data-icon]:before{width:20px!important;min-width:20px!important;font-size:14px!important}
+body.config-fullscreen .controlDeck .tabViewport{grid-column:2!important;grid-row:2!important;margin:0!important;padding:18px!important;overflow:auto!important;background:linear-gradient(180deg,#100817,#09050e)!important}
+body.config-fullscreen .controlTab.active{display:grid!important;grid-template-columns:repeat(2,minmax(280px,1fr))!important;gap:14px!important;align-content:start!important}
+body.config-fullscreen .controlIntro{grid-column:1/-1!important;margin:0!important;padding:0 0 14px!important}
+body.config-fullscreen .controlIntro b{font-size:22px!important}
+body.config-fullscreen .controlIntro span{display:block!important;font-size:12px!important;color:#bbaa8b!important}
+body.config-fullscreen .controlTab .configSection{margin:0!important;padding:16px!important;border-radius:16px!important;background:#ffffff06!important;border-color:#ffffff14!important}
+body.config-fullscreen .controlTab .configSection>h2,body.config-fullscreen .controlTab .configSection>h3{font-size:17px!important;margin-bottom:12px!important}
+body.config-fullscreen .controlTab .toggleRow{min-height:46px!important;padding:12px!important}
+body.config-fullscreen .shortcutGrid,body.config-fullscreen .historyStats,body.config-fullscreen .preliveItems{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+body.config-fullscreen .historyList,body.config-fullscreen .queueList{max-height:360px!important}
+body.config-fullscreen .historyActions{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+body.config-fullscreen .stage{border-left:1px solid #ffffff14!important}
+body.config-fullscreen .wheelBox{width:min(500px,56vh,34vw)!important}
+body.config-fullscreen .participantTitle{font-size:22px!important}
+body.config-fullscreen .result{font-size:24px!important;width:min(460px,34vw)!important}
+@media(max-width:1280px){.studioShell{grid-template-columns:minmax(330px,380px) minmax(0,1fr)}body.config-fullscreen .studioShell{grid-template-columns:minmax(620px,1fr) minmax(300px,420px)!important}body.config-fullscreen .controlDeck{grid-template-columns:150px minmax(0,1fr)!important}body.config-fullscreen .controlTab.active{grid-template-columns:1fr!important}}
+@media(max-width:920px){body.config-fullscreen .studioShell{grid-template-columns:1fr!important}body.config-fullscreen .stage{display:none!important}body.config-fullscreen .controlDeck{grid-template-columns:1fr!important;grid-template-rows:auto auto minmax(0,1fr)!important}body.config-fullscreen .controlDeck .tabNav{grid-column:1!important;grid-row:2!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;border-right:0!important;border-bottom:1px solid #ffffff12!important}body.config-fullscreen .controlDeck .tabViewport{grid-column:1!important;grid-row:3!important}}
 @media(max-width:420px){.scenePresetBar{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 </head>
