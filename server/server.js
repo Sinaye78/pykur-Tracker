@@ -2109,6 +2109,72 @@ function directKephAnswer(message) {
       test: () => /\b(?:discord|obs|capture|scene propre|plein ecran|detacher)\b/.test(text),
       answer: "La scene Discord/OBS sert a montrer uniquement la partie publique : roue, candidat, resultat et dialogues. Pour garder les boutons hors capture, utilise le mode scene propre ou Detacher la regie : tu controles dans une fenetre separee pendant que la fenetre principale reste presentable.",
       actions: ["highlight_discord", "detach_control"]
+    },
+    {
+      intent: "explain_stock",
+      test: () => /\b(?:stock|stocks|indisponible|epuise|epuises|disponible)\b/.test(text),
+      answer: "Les stocks servent a eviter qu'un lot deja epuise retombe pour les prochains candidats. Dans le Studio de la roulette, active le stock sur le lot, indique la quantite, puis la roue le grise et le rend indisponible quand il arrive a zero. C'est surtout utile pour les lots limites ou uniques.",
+      actions: ["open_wheel_studio_lots"]
+    },
+    {
+      intent: "explain_participant_attempts",
+      test: () => /\b(?:lancer|lancers|ticket|tickets|participation|participations|tentative|tentatives)\b/.test(text) && /\b(?:participant|candidat|joueur|personne)\b/.test(text),
+      answer: "Le nombre de lancers par participant sert a donner plusieurs chances a une personne sans la remettre plusieurs fois dans la file. Dans Preparer, ouvre la liste complete des participants puis ajuste le compteur de lancers. A chaque vrai tirage, il descend d'un cran ; quand il arrive a zero, tu peux passer au suivant.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "explain_live_mode",
+      test: () => /\b(?:live simple|regie complete|reglages|configuration|mode live)\b/.test(text),
+      answer: "Live simple garde seulement ce qui sert pendant l'animation : participant, Lancer, Stop, Suivant, dernier tirage et aides essentielles. Reglages ouvre la configuration complete quand tu dois preparer les lots, dialogues, sons ou sauvegardes. L'idee est de ne pas piloter le live au milieu de toutes les options.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "explain_history",
+      test: () => /\b(?:historique|dernier gagnant|corriger|annuler|export csv|csv)\b/.test(text),
+      answer: "L'historique garde la trace des vrais tirages : dernier gagnant, total, gagnants par participant et export CSV. Le bouton corriger/annuler le dernier tirage sert si tu as lance par erreur ou si le live a eu un incident. Les tirages test et simulations ne doivent pas remplir cet historique.",
+      actions: ["open_data"]
+    },
+    {
+      intent: "explain_profile_export",
+      test: () => /\b(?:profil|import|export|sauvegarde|backup|restaurer)\b/.test(text),
+      answer: "L'export profil sert a garder une configuration complete : participants, lots, stocks, dialogues, sons, raccourcis et reglages utiles. C'est pratique avant un gros live ou pour reutiliser une roulette plus tard. L'import restaure ce profil sans devoir tout refaire a la main.",
+      actions: ["open_data"]
+    },
+    {
+      intent: "explain_presets",
+      test: () => /\b(?:preset|presets|tirage normal|annonce candidat|pause|finale|scene finale)\b/.test(text),
+      answer: "Les presets sont des raccourcis de mise en scene. Tirage remet la roue au centre, Annonce candidat prepare l'intro du participant, Pause nettoie la scene, Resultat remet l'accent sur le lot obtenu, et Finale lance la cloture. Ils evitent de regler plusieurs options une par une pendant le live.",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "explain_emotes_effects",
+      test: () => /\b(?:emote|emotes|emoji|effet|effets|confetti|flash|feu artifice|lumiere)\b/.test(text),
+      answer: "Les emotes et effets donnent du relief aux dialogues. L'emote apparait avec la bulle pour montrer le ton de la replique, tandis qu'un effet special peut lancer une animation CSS comme confettis, flash ou coupure de lumiere. Tu les choisis dans le Studio de scenarios, directement sur la replique.",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "explain_dialogue_queue",
+      test: () => /\b(?:file de dialogue|file dialogues|dialogue suivant|passer|rejouer|auto|manuel|manual)\b/.test(text),
+      answer: "La file de dialogues sert a controler ce que Charlie/Victoria vont dire ensuite. Suivant joue la prochaine replique, Passer la saute, Rejouer relance la replique actuelle, Vider nettoie la file. En auto, le site enchaine selon la scene ; en manuel, tu gardes la main.",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "explain_audio_panel",
+      test: () => /\b(?:mute|couper|volume|jingle|jingles|roulette|son actif)\b/.test(text),
+      answer: "La section Sons sert a controler l'ambiance sans fouiller partout : couper tous les sons, regler le volume des jingles, regler le volume de la roulette et tester les sons de scene. Avant un live Discord, c'est l'endroit a verifier pour eviter un jingle trop fort ou une roulette muette.",
+      actions: ["open_audio"]
+    },
+    {
+      intent: "explain_visual_studio",
+      test: () => /\b(?:design|png|image|images|apparence|texte|taille|police|couleur|visuel)\b/.test(text) && /\b(?:roue|lot|case)\b/.test(text),
+      answer: "Le studio visuel de la roue sert a regler l'affichage des cases sans changer les chances de tirage : textes, images PNG, tailles, positions, couleurs et lisibilite. Si tu veux changer les probabilites ou les stocks, reste dans Lots & probabilites ; si tu veux que la case soit plus propre a l'ecran, va dans Design & PNG.",
+      actions: ["open_wheel_studio_design", "open_wheel_studio_lots"]
+    },
+    {
+      intent: "explain_checklist_alerts",
+      test: () => /\b(?:checklist|alerte|alertes|pre live|pret|roue en cours|stop possible|etat)\b/.test(text),
+      answer: "La checklist et les alertes sont la securite avant live. Elles te signalent les participants charges, les lots disponibles, les stocks OK, le son actif, la scene propre et les raccourcis. Les etats comme Pret, Roue en cours, Stop possible ou Resultat servent a savoir quoi faire d'un coup d'oeil.",
+      actions: ["open_prepare"]
     }
   ];
   const picked = directAnswers.find((entry) => entry.test());
