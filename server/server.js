@@ -2391,6 +2391,28 @@ function kephDocumentationSearch(message, context = {}) {
     .map((doc) => ({ ...doc, score: doc.score }));
 }
 
+function kephVerifiedDocs(message, context = {}) {
+  return kephDocumentationSearch(message, context)
+    .filter((doc) => doc.id !== "context" && Number(doc.score || 0) >= 4);
+}
+
+function kephDocCard(doc) {
+  const answer = String(doc.answer || doc.content || "").trim();
+  return {
+    id: doc.id,
+    section: doc.section || "",
+    title: doc.title || doc.id,
+    location: doc.location || doc.where || "",
+    purpose: doc.purpose || answer,
+    live_use: doc.live_use || "",
+    modifies: doc.modifies || "",
+    does_not_modify: doc.does_not_modify || "",
+    direct_action: doc.direct_action || "",
+    answer,
+    actions: doc.actions || []
+  };
+}
+
 function isKephSiteQuestion(message) {
   const text = normalizeKephText(message);
   return /\b(?:site|application|bouton|option|live|preparer|studio|show|charlie|victoria|roulette|regie|roue|lot|lots|stock|poid|poids|participant|candidat|dialogue|replique|scenario|scene|jingle|son|audio|bruitage|mp3|discord|obs|historique|profil|sauvegarde|raccourci|lancer|stop|tirage|configuration|keph|emote|effet|ciblage)\b/.test(text);
@@ -3338,24 +3360,28 @@ function kephRemotePrompt() {
   return [
     "Tu es Keph, assistant de regie de Charlie Roulette.",
     "Reponds en francais naturel, precis, court et directement a la question.",
-    "Utilise la documentation fournie comme source de verite. N'invente pas de fonction.",
+    "Mode reponse verifiee: pour les questions sur Charlie Roulette, utilise uniquement les fiches documentation fournies comme source de verite.",
+    "Si question_site=true et documentation_suffisante=false, reponds exactement que tu ne vois pas cette fonction dans la documentation du site, puis demande une precision courte.",
+    "N'invente jamais de bouton, menu, effet, option ou chemin qui n'apparait pas dans les fiches.",
     "Si la question demande comment faire, donne des etapes courtes.",
     "Si elle demande a quoi ca sert, explique l'usage live et les consequences.",
+    "Quand une fiche contient location, purpose, live_use, modifies ou does_not_modify, utilise ces champs pour cibler la reponse.",
+    "Si une fiche contient actions, renvoie les actions utiles dans le tableau actions avec les memes id et labels autorises.",
     "Le candidat actuel n'est pas la personne qui te parle.",
     "Reponds uniquement en JSON valide: {\"answer\":\"...\",\"actions\":[{\"id\":\"...\",\"label\":\"...\"}]}"
   ].join("\n");
 }
 
 function kephRemotePayload(message, context, guidance) {
+  const siteQuestion = isKephSiteQuestion(message);
+  const docs = guidance?.docs || kephDocumentationSearch(message, context);
+  const verifiedDocs = docs.filter((doc) => doc.id !== "context" && Number(doc.score || 0) >= 4);
   return {
     question: String(message || "").slice(0, 800),
+    question_site: siteQuestion,
+    documentation_suffisante: !siteQuestion || verifiedDocs.length > 0 || !!guidance?.matched,
     contexte: kephAiContext(message, context),
-    documentation: (guidance?.docs || kephDocumentationSearch(message, context)).slice(0, 3).map((doc) => ({
-      id: doc.id,
-      title: doc.title,
-      content: String(doc.answer || doc.content || "").slice(0, 900),
-      actions: doc.actions || []
-    })),
+    documentation: docs.slice(0, 3).map(kephDocCard),
     reponse_attendue: String(guidance?.expectedAnswer || guidance?.answer || "").slice(0, 900),
     actions_autorisees: (charlieKephKnowledge().actions || []).map((action) => ({ id: action.id, label: action.label }))
   };
@@ -3549,6 +3575,18 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   const guide = command
     ? { ...command, matched: true, expectedAnswer: command.answer || "", docs: kephDocumentationSearch(message, context) }
     : fallbackKephAnswer(message, context);
+  const siteQuestion = isKephSiteQuestion(message);
+  const verifiedDocs = kephVerifiedDocs(message, context);
+  if (siteQuestion && !command && guide.intent === "retrieval" && !verifiedDocs.length) {
+    return res.json({
+      answer: "Je ne vois pas cette fonction dans la documentation du site. Donne-moi le nom exact du bouton, du menu ou de l'option, et je te dirai si elle existe dans Charlie Roulette.",
+      actions: normalizedKephActions(["open_prepare"], knowledge),
+      source: "verified",
+      intent: "unverified_site_question",
+      grounded: false,
+      avatarUrl: kephPublicAvatar()
+    });
+  }
   try {
     const remote = await askRemoteKeph(message, context, guide.matched ? guide : null, KEPH_REMOTE_TIMEOUT_MS);
     if (remote) {
