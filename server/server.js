@@ -2840,7 +2840,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "auto_next_candidate_option",
-      test: () => /\b(?:annoncer automatiquement|annonce automatique|candidat suivant automatique|automatiquement le candidat suivant)\b/.test(text),
+      test: () => /\b(?:annoncer automatiquement|annonce automatique|candidat suivant automatique|automatiquement le candidat suivant|option cochable annoncer le candidat suivant|option annoncer le candidat suivant)\b/.test(text),
       answer: "Annoncer automatiquement le candidat suivant lance une annonce apres un tirage valide pour enchainer vers la personne suivante. C'est pratique si tu veux un rythme fluide sans cliquer une scene a chaque fois. Si tu preferes garder la main en live, laisse l'option coupee et utilise le bouton Suivant ou Annoncer le candidat quand tu es pret.",
       actions: ["open_scenario_studio"]
     },
