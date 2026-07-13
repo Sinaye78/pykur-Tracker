@@ -2570,6 +2570,36 @@ function parseKephCommand(message, context = {}) {
     add('set_setting "charlieMood" "taquin"');
     add('set_setting "launchTrollChance" "12"');
   }
+  if (!creativeWriting && /\b(?:file|liste|queue|candidats|participants)\b/.test(text) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(text)) {
+    const names = candidateListMatch ? kephNamesFromListText(candidateListMatch[1]) : kephNamesFromListText(raw.split(/:|avec|pour/i).pop() || raw);
+    const picked = names.length >= 2 ? names : ["Mira", "Grobid", "Tofu-Royal"];
+    add(`set_queue ${picked.slice(0, 6).map(quoteCommandArg).join(" ")}`);
+  }
+  if (/\b(?:roue|roulette|lots?)\b/.test(text) && /\b(?:complete|6|six|cree|creer|genere|generer)\b/.test(text)) {
+    const lots = [
+      ["Ticket VIP du Chaos", 26, 4, "#c1121f"],
+      ["Bourse qui clignote 200.000k", 18, 3, "#023e8a"],
+      ["Relance du Destin", 16, 2, "#ffd60a"],
+      ["Cadeau mystere suspect", 14, 2, "#2dc653"],
+      ["Malus: compliment a Charlie", 12, 5, "#6f2dbd"],
+      ["Jackpot des Kamavores", 6, 1, "#f77f00"]
+    ];
+    add("clear_lots");
+    lots.forEach(([name, weight, stock, color]) => {
+      add(`add_lot ${quoteCommandArg(name)} ${weight} ${stock}`);
+      add(`set_lot_color ${quoteCommandArg(name)} ${quoteCommandArg(color)}`);
+    });
+  }
+  if (/\b(?:regle|regler|configure|configurer)\b/.test(text) && /\b(?:spectacle|show|profil|dynamique|anti repetition|humeur|dialogues|live fluide)\b/.test(text)) {
+    add('set_setting "antiRepeatEnabled" "true"');
+    add('set_setting "antiRepeatMode" "session"');
+    add('set_setting "defaultDialoguesEnabled" "false"');
+    add('set_setting "showFrequency" "normal"');
+    add('set_setting "dialogueMode" "timed"');
+    add('set_setting "dialogueDuration" "7"');
+    add('set_setting "charlieMood" "taquin"');
+    add('set_setting "launchTrollChance" "12"');
+  }
   const lotNames = Array.isArray(context.lots) ? context.lots.map((lot) => String(lot.name || "")).filter(Boolean) : [];
   const directRename = raw.match(/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s+(?:en|vers)\s+(.+?)(?:[?.!]|$)/i);
   if (directRename) addControlled(`rename_lot ${quoteCommandArg(findKephBestName(lotNames, cleanKephName(directRename[1])) || cleanKephName(directRename[1]))} ${quoteCommandArg(cleanKephName(directRename[2]))}`);
@@ -3855,6 +3885,36 @@ function kephCommandPlanFromRules(message, context = {}) {
   const addPlayerMatch = raw.match(/\b(?:ajoute|ajouter)\s+(?:le\s+)?(?:candidat|participant|joueur)?\s*([A-Za-z0-9À-ÿ _-]{2,40})(?:\s+(?:avec|a|à)\s+(\d{1,2})\s+(?:lancer|lancers|tickets?))?/i);
   if (!commands.length && addPlayerMatch && /\b(?:file|liste|participant|candidat|joueur)\b/.test(text)) {
     add(`add_player ${quoteCommandArg(cleanKephName(addPlayerMatch[1]))} ${Math.max(1, Math.min(20, Number(addPlayerMatch[2] || 1)))}`);
+  }
+  if (!creativeWriting && /\b(?:file|liste|queue|candidats|participants)\b/.test(text) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(text)) {
+    const names = candidateListMatch ? kephNamesFromListText(candidateListMatch[1]) : kephNamesFromListText(raw.split(/:|avec|pour/i).pop() || raw);
+    const picked = names.length >= 2 ? names : ["Mira", "Grobid", "Tofu-Royal"];
+    add(`set_queue ${picked.slice(0, 6).map(quoteCommandArg).join(" ")}`);
+  }
+  if (/\b(?:roue|roulette|lots?)\b/.test(text) && /\b(?:complete|6|six|cree|creer|genere|generer)\b/.test(text)) {
+    const lots = [
+      ["Ticket VIP du Chaos", 26, 4, "#c1121f"],
+      ["Bourse qui clignote 200.000k", 18, 3, "#023e8a"],
+      ["Relance du Destin", 16, 2, "#ffd60a"],
+      ["Cadeau mystere suspect", 14, 2, "#2dc653"],
+      ["Malus: compliment a Charlie", 12, 5, "#6f2dbd"],
+      ["Jackpot des Kamavores", 6, 1, "#f77f00"]
+    ];
+    add("clear_lots");
+    lots.forEach(([name, weight, stock, color]) => {
+      add(`add_lot ${quoteCommandArg(name)} ${weight} ${stock}`);
+      add(`set_lot_color ${quoteCommandArg(name)} ${quoteCommandArg(color)}`);
+    });
+  }
+  if (/\b(?:regle|regler|configure|configurer)\b/.test(text) && /\b(?:spectacle|show|profil|dynamique|anti repetition|humeur|dialogues|live fluide)\b/.test(text)) {
+    add('set_setting "antiRepeatEnabled" "true"');
+    add('set_setting "antiRepeatMode" "session"');
+    add('set_setting "defaultDialoguesEnabled" "false"');
+    add('set_setting "showFrequency" "normal"');
+    add('set_setting "dialogueMode" "timed"');
+    add('set_setting "dialogueDuration" "7"');
+    add('set_setting "charlieMood" "taquin"');
+    add('set_setting "launchTrollChance" "12"');
   }
   const lotNames = Array.isArray(context.lots) ? context.lots.map((lot) => String(lot.name || "")).filter(Boolean) : [];
   const directRenameMatch = raw.match(/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s+(?:en|vers)\s+(.+?)(?:[?.!]|$)/i);
