@@ -2063,6 +2063,22 @@ function parseKephCommand(message, context = {}) {
       intent: "general_answer"
     };
   }
+  if (/\b(?:qui t a cree|qui ta cree|qui t a fait|qui ta fait|qui est ton createur)\b/.test(normalized)) {
+    return {
+      answer: "Je suis l'assistant intégré à Charlie Roulette, construit pour aider l'organisateur pendant les lives. Mon rôle n'est pas de remplacer la régie, mais de t'éviter de chercher partout quand tu prépares ou animes.",
+      actions: [],
+      source: "conversation",
+      intent: "assistant_identity"
+    };
+  }
+  if (/\b(?:merci|merci keph|ok merci|parfait merci)\b/.test(normalized) && normalized.split(" ").length <= 4) {
+    return {
+      answer: "Avec plaisir. Si tu bloques sur un bouton, un lot, un dialogue ou la scène Discord, demande-moi directement ce que tu veux faire.",
+      actions: [],
+      source: "conversation",
+      intent: "thanks"
+    };
+  }
   const lots = Array.isArray(context.lots) ? context.lots : [];
   const asksLot = /\blot\b|\bpoid\b|\bpoids\b|\bprobabilit/.test(normalized);
   if (asksLot) {
@@ -2145,6 +2161,108 @@ function directKephAnswer(message) {
   const text = normalizeKephText(message);
   const yesNo = /\b(?:est ce que|peut on|on peut|possible|je peux|peux)\b/.test(text);
   const directAnswers = [
+    {
+      intent: "site_purpose",
+      test: () => /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|but|objectif|utilite)\b/.test(text) && /\b(?:site|application|appli|charlie roulette|roulette)\b/.test(text),
+      answer: "Charlie Roulette sert à animer un tirage en live comme une petite émission : tu prépares une file de candidats, des lots, des sons et des dialogues, puis tu pilotes la roue pendant que le public voit une scène propre. La régie sert à contrôler le live, les réglages servent à préparer la roue, les scènes et les sauvegardes. En gros : c’est un outil d’animation, pas juste une roulette aléatoire.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "assistant_capabilities",
+      test: () => /\b(?:tu sers a quoi|tu peux faire quoi|aide moi|qu est ce que tu peux faire|tes capacites|fonctionnalites)\b/.test(text),
+      answer: "Je peux t’aider à comprendre le site, retrouver un menu, préparer le live ou créer une action à confirmer. Par exemple : ajouter un participant, changer le poids d’un lot, renommer un lot, ajouter une réplique, expliquer un bouton, guider la scène Discord ou retrouver l’endroit où régler les sons.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "first_steps",
+      test: () => /\b(?:je suis perdu|par quoi commencer|commencer par quoi|premiere fois|debuter|avant le live|preparer live)\b/.test(text),
+      answer: "Commence par trois choses : 1. charge la file de participants dans Préparer, 2. vérifie les lots et leurs stocks dans Lots & roue, 3. teste sons/dialogues avec Simuler un passage. Quand la checklist est verte, tu peux passer en scène propre Discord/OBS et lancer le vrai tirage.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "how_to_launch_wheel",
+      test: () => /\b(?:comment|ou|où|je veux|pour)\b/.test(text) && /\b(?:lancer|demarrer|faire tourner|tourner)\b/.test(text) && /\b(?:roue|tirage)\b/.test(text),
+      answer: "Pour lancer la roue : vérifie que le participant actuel est bon, puis clique sur Lancer dans la régie. La roue démarre un vrai tirage : elle peut consommer un stock, enregistrer l’historique et retirer un lancer au participant. Quand Stop devient disponible, tu peux arrêter la roue.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "real_vs_test_draw",
+      test: () => /\b(?:difference|different|vrai|normal|reel)\b/.test(text) && /\b(?:tirage test|test|lancer)\b/.test(text),
+      answer: "Lancer fait un vrai tirage : historique, stock et lancers participant peuvent être modifiés. Tirage test sert uniquement à répéter ou vérifier le rendu, sans toucher aux stocks ni à l’historique. Si tu es en live, utilise Lancer ; si tu règles le show, utilise Tirage test ou Simuler un passage.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "current_participant",
+      test: () => /\b(?:participant actuel|candidat actuel|pseudo affiche|changer candidat|changer participant)\b/.test(text),
+      answer: "Le participant actuel est le nom affiché sur la scène et utilisé dans les dialogues. Tu peux le modifier dans Préparer, ou avancer dans la file avec Suivant. Si tu charges une file, le site prend le candidat courant et prépare le suivant automatiquement.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "next_button",
+      test: () => /\b(?:bouton suivant|suivant sert|a quoi sert suivant|passer au suivant|candidat suivant)\b/.test(text),
+      answer: "Suivant sert à passer au prochain participant de la file. Utilise-le après un résultat validé, ou si tu veux sauter un candidat. Il met à jour le participant affiché sur la roue et le contexte utilisé par les dialogues.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "detach_control",
+      test: () => /\b(?:detacher la regie|detacher regie|regie separee|autre onglet|autre fenetre)\b/.test(text),
+      answer: "Détacher la régie ouvre les contrôles dans une fenêtre séparée. C’est pratique pour OBS/Discord : la fenêtre capturée reste propre pour le public, pendant que toi tu gardes Lancer, Stop, Suivant et les réglages sous la main ailleurs.",
+      actions: ["detach_control"]
+    },
+    {
+      intent: "fullscreen",
+      test: () => /\b(?:plein ecran|fullscreen|grand ecran)\b/.test(text),
+      answer: "Plein écran sert surtout à présenter la scène publique plus proprement, sans bordures de navigateur visibles. Pour une capture OBS/Discord vraiment propre, combine-le avec le mode scène propre ou une régie détachée.",
+      actions: ["highlight_discord"]
+    },
+    {
+      intent: "password_access",
+      test: () => /\b(?:mot de passe|password|acceder|connexion|entrer sur le site)\b/.test(text),
+      answer: "L’accès Charlie Roulette est protégé par le mot de passe du site. Si tu es sur la page de connexion, entre le mot de passe prévu pour cette roulette, puis valide. Si ça ne marche plus, il faut vérifier que tu es sur la bonne URL et que le mot de passe n’a pas été changé.",
+      actions: []
+    },
+    {
+      intent: "save_behavior",
+      test: () => /\b(?:sauvegarde automatique|c est sauvegarde|perdre mes reglages|localstorage|navigateur)\b/.test(text),
+      answer: "Les réglages de la roulette sont sauvegardés dans le profil du navigateur, et tu peux aussi exporter un profil complet depuis Sauvegarde. Avant un gros live, je te conseille d’exporter le profil : c’est ta sécurité si tu changes de navigateur ou de machine.",
+      actions: ["open_data"]
+    },
+    {
+      intent: "control_room_purpose",
+      test: () => /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi)\b/.test(text) && /\b(?:regie|régie|panneau live|pilotage)\b/.test(text),
+      answer: "La régie, c’est ton poste de contrôle pendant le live. Elle garde les actions importantes sous la main : participant actuel, Lancer, Stop, Suivant, dernier tirage, dialogues, alertes et checklist. Les réglages plus lourds restent à part pour ne pas t’étouffer pendant l’animation.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "configuration_purpose",
+      test: () => /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi)\b/.test(text) && /\b(?:configuration|reglages|réglages|config)\b/.test(text),
+      answer: "La configuration sert à préparer le live avant de lancer : participants, lots, stocks, apparence de la roue, dialogues, sons, raccourcis et sauvegardes. Pendant le direct, tu restes plutôt en Live simple ; quand tu dois régler quelque chose en profondeur, tu ouvres Configuration.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "wheel_purpose",
+      test: () => /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi)\b/.test(text) && /\b(?:roue|roulette)\b/.test(text),
+      answer: "La roue est la scène centrale du tirage : elle affiche les lots, choisit le résultat et donne le moment fort du live. Ses chances viennent des poids des lots, et ses cases peuvent devenir indisponibles si les stocks sont épuisés.",
+      actions: ["open_wheel_studio_lots"]
+    },
+    {
+      intent: "result_purpose",
+      test: () => /\b(?:resultat|résultat|gagnant|lot gagne|lot gagné)\b/.test(text) && /\b(?:sert|affiche|voir|apres|après|quoi)\b/.test(text),
+      answer: "Le résultat sert à valider ce que le candidat vient de gagner et à donner un moment clair au public. Sur un vrai tirage, il peut alimenter l’historique, retirer du stock et faire avancer les lancers du participant. Si c’est une erreur, tu peux corriger le dernier tirage dans Sauvegarde.",
+      actions: ["open_data"]
+    },
+    {
+      intent: "alerts_meaning",
+      test: () => /\b(?:alerte|alertes|pastille|point vert|point rouge|etat rouge|etat vert|status)\b/.test(text),
+      answer: "Les alertes et pastilles servent à te dire si tu peux lancer sereinement. Vert indique que le point est OK, orange prévient qu’il faut vérifier, rouge signale un blocage ou un danger. Pour Keph, le voyant vert veut dire que l’assistance répond ; rouge veut dire qu’elle est hors ligne.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "what_if_wrong_result",
+      test: () => /\b(?:mauvais resultat|erreur tirage|trompe|annuler tirage|corriger tirage|tirage erreur)\b/.test(text),
+      answer: "Si un tirage est parti par erreur, va dans Sauvegarde/Historique et utilise la correction du dernier tirage. Ça sert à revenir sur le dernier résultat, restaurer le contexte utile et éviter de laisser un historique faux.",
+      actions: ["open_data"]
+    },
     {
       intent: "explain_audio_library",
       test: () => /\b(?:bibliotheque|biblioteque|library|importer|ajouter)\b/.test(text) && /\b(?:mp3|audio|son|wav|ogg|bruitage)\b/.test(text),
