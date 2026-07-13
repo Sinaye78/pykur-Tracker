@@ -2115,7 +2115,7 @@ function parseKephCommand(message, context = {}) {
       };
     }
   }
-  const addParticipantMatch = raw.match(/\b(?:ajoute|ajouter|mets|mettre)\b\s+(?:le\s+)?(?:candidat|participant)?\s*([A-Za-z0-9À-ÿ _-]{2,40})\s+(?:a|à)\s+la\s+fin\s+(?:de\s+)?(?:la\s+)?(?:liste|file|queue)\b/i);
+  const addParticipantMatch = raw.match(/\b(?:ajoute|ajouter|mets|mettre)\b\s+(?:le\s+)?(?:candidat|participant)?\s*([A-Za-z0-9À-ÿ _-]{2,40})\s+(?:(?:a|à)\s+la\s+fin\s+(?:de\s+)?(?:la\s+)?(?:liste|file|queue)|(?:dans|a|à)\s+(?:la\s+)?(?:file|liste|queue))\b/i);
   if (addParticipantMatch) {
     const name = addParticipantMatch[1].trim().replace(/\s+/g, " ").slice(0, 40);
     if (name) {
@@ -2175,7 +2175,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "first_steps",
-      test: () => /\b(?:je suis perdu|par quoi commencer|commencer par quoi|premiere fois|debuter|avant le live|preparer live)\b/.test(text),
+      test: () => /\b(?:je suis perdu|par quoi commencer|commencer par quoi|premiere fois|jamais utilise|jamais utiliser|tu me guides|guide moi|debuter|avant le live|preparer live)\b/.test(text),
       answer: "Commence par trois choses : 1. charge la file de participants dans Préparer, 2. vérifie les lots et leurs stocks dans Lots & roue, 3. teste sons/dialogues avec Simuler un passage. Quand la checklist est verte, tu peux passer en scène propre Discord/OBS et lancer le vrai tirage.",
       actions: ["open_prepare"]
     },
@@ -2187,7 +2187,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "real_vs_test_draw",
-      test: () => /\b(?:difference|different|vrai|normal|reel)\b/.test(text) && /\b(?:tirage test|test|lancer)\b/.test(text),
+      test: () => (/\b(?:difference|different|vrai|normal|reel)\b/.test(text) && /\b(?:tirage test|test|lancer)\b/.test(text)) || (/\b(?:sans toucher|sans modifier|sans consommer)\b/.test(text) && /\b(?:stock|historique|vrai tirage)\b/.test(text)),
       answer: "Lancer fait un vrai tirage : historique, stock et lancers participant peuvent être modifiés. Tirage test sert uniquement à répéter ou vérifier le rendu, sans toucher aux stocks ni à l’historique. Si tu es en live, utilise Lancer ; si tu règles le show, utilise Tirage test ou Simuler un passage.",
       actions: ["open_prepare"]
     },
@@ -2259,7 +2259,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "what_if_wrong_result",
-      test: () => /\b(?:mauvais resultat|erreur tirage|trompe|annuler tirage|corriger tirage|tirage erreur)\b/.test(text),
+      test: () => /\b(?:mauvais resultat|mauvais tirage|erreur tirage|tirage rate|tirage foire|trompe|annuler tirage|corriger tirage|tirage erreur)\b/.test(text),
       answer: "Si un tirage est parti par erreur, va dans Sauvegarde/Historique et utilise la correction du dernier tirage. Ça sert à revenir sur le dernier résultat, restaurer le contexte utile et éviter de laisser un historique faux.",
       actions: ["open_data"]
     },
