@@ -1993,6 +1993,14 @@ function findKephLot(lots, rawName) {
 function parseKephCommand(message, context = {}) {
   const raw = String(message || "").trim();
   const normalized = normalizeKephText(raw);
+  if (/\b(?:bonjour|salut|coucou|hello|yo)\b/.test(normalized)) {
+    return {
+      answer: "Salut, je suis là. Je peux t'expliquer une fonction de la roulette ou préparer une action à confirmer, comme renommer un lot, changer un poids ou ajouter une réplique.",
+      actions: [],
+      source: "conversation",
+      intent: "greeting"
+    };
+  }
   const lots = Array.isArray(context.lots) ? context.lots : [];
   const asksLot = /\blot\b|\bpoid\b|\bpoids\b|\bprobabilit/.test(normalized);
   if (asksLot) {
@@ -2029,7 +2037,7 @@ function parseKephCommand(message, context = {}) {
       };
     }
   }
-  const asksDialogueAction = /\b(?:ajoute|ajouter|cree|creer|crée|modifier|modifie)\b/.test(normalized) && /\b(?:dialogue|replique|phrase)\b/.test(normalized);
+  const asksDialogueAction = /\b(?:ajoute|ajouter|cree|creer|modifier|modifie)\b/.test(normalized) && /\b(?:dialogue|replique|plique|phrase)\b/.test(normalized);
   if (asksDialogueAction) {
     const quoted = raw.match(/[«"“](.+?)[»"”]/)?.[1];
     const afterColon = raw.match(/[:：]\s*(.+)$/)?.[1];
@@ -2056,8 +2064,69 @@ function parseKephCommand(message, context = {}) {
   return null;
 }
 
+function directKephAnswer(message) {
+  const text = normalizeKephText(message);
+  const yesNo = /\b(?:est ce que|peut on|on peut|possible|je peux|peux)\b/.test(text);
+  const directAnswers = [
+    {
+      intent: "explain_lot_weight",
+      test: () => /\b(?:poid|poids|probabilite|proba|chance|taux)\b/.test(text) && /\b(?:case|lot|roue)\b/.test(text),
+      answer: `${yesNo ? "Oui. " : ""}Le poids d'une case se modifie dans Reglages > Lots & roue > Ouvrir le studio de la roulette, onglet Lots & probabilites. Plus le poids est haut, plus le lot a de chances de sortir par rapport aux autres lots. Exemple simple : si un lot est a 10 et un autre a 20, le deuxieme sort environ deux fois plus souvent. Tu peux aussi me demander "mets le poids du lot X a 10" et je te preparerai une action a confirmer.`,
+      actions: ["open_wheel_studio_lots"]
+    },
+    {
+      intent: "explain_present_candidates",
+      test: () => /\b(?:a quoi sert|sert a quoi|pourquoi|c est quoi)\b/.test(text) && /\b(?:presenter|presentation)\b/.test(text) && /\b(?:candidat|candidats)\b/.test(text),
+      answer: "Presenter les candidats sert a lancer une intro de spectacle avant la roue. Charlie/Victoria peuvent annoncer les participants, installer l'ambiance et donner un contexte au public. Ca ne lance pas la roue, ne consomme aucun stock et n'ajoute rien a l'historique : c'est uniquement de la mise en scene.",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "explain_test_spin",
+      test: () => /\b(?:tirage test|test)\b/.test(text) && /\b(?:sert|quoi|pourquoi|difference|vrai|normal)\b/.test(text),
+      answer: "Le tirage test sert a verifier le rendu de la roue sans consequence. Il peut montrer un resultat fictif, tester le rythme et les sons, mais il ne consomme pas les stocks, ne change pas l'historique et ne retire pas de lancer au participant. Pour un vrai passage live, utilise Lancer.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "explain_keyboard_shortcuts",
+      test: () => /\b(?:raccourci|raccourcis|touche|clavier|espace|entree)\b/.test(text),
+      answer: "Les raccourcis servent a piloter la regie sans viser les boutons a la souris pendant le live. Espace peut lancer, Entree peut stopper, et les touches affichees entre parentheses declenchent les actions comme Presenter, Jingle ou Finale. Tu peux les modifier dans Preparer > Raccourcis.",
+      actions: ["open_shortcuts"]
+    },
+    {
+      intent: "explain_dialogue_audio",
+      test: () => /\b(?:son|audio|mp3|wav|ogg|bruitage)\b/.test(text) && /\b(?:dialogue|replique|phrase)\b/.test(text),
+      answer: "Oui, une replique peut avoir son propre son. Ouvre le Studio de scenarios, selectionne la replique, puis utilise le champ de bruitage/son de replique dans son edition. Si ton fichier n'apparait pas, importe d'abord le MP3/WAV/OGG dans la bibliotheque audio des scenes.",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "explain_simulation",
+      test: () => /\b(?:simulation|simuler|passage|repetition)\b/.test(text),
+      answer: "Simuler un passage sert a repeter le deroule complet avant le live : candidat, presentation, tirage test et resultat fictif. C'est fait pour regler le rythme et verifier les dialogues sans toucher aux stocks, a l'historique ou aux vrais lancers.",
+      actions: ["highlight_rehearsal"]
+    },
+    {
+      intent: "explain_discord_scene",
+      test: () => /\b(?:discord|obs|capture|scene propre|plein ecran|detacher)\b/.test(text),
+      answer: "La scene Discord/OBS sert a montrer uniquement la partie publique : roue, candidat, resultat et dialogues. Pour garder les boutons hors capture, utilise le mode scene propre ou Detacher la regie : tu controles dans une fenetre separee pendant que la fenetre principale reste presentable.",
+      actions: ["highlight_discord", "detach_control"]
+    }
+  ];
+  const picked = directAnswers.find((entry) => entry.test());
+  if (!picked) return null;
+  const knowledge = charlieKephKnowledge();
+  return {
+    answer: picked.answer,
+    actions: normalizedKephActions(picked.actions, knowledge),
+    source: "direct",
+    matched: true,
+    intent: picked.intent
+  };
+}
+
 function fallbackKephAnswer(message, context = {}) {
   const knowledge = charlieKephKnowledge();
+  const direct = directKephAnswer(message);
+  if (direct) return direct;
   const text = normalizeKephText(message);
   const keywordScore = (keyword) => {
     const parts = normalizeKephText(keyword).split(" ").filter(Boolean);
@@ -2072,9 +2141,8 @@ function fallbackKephAnswer(message, context = {}) {
     .sort((a, b) => b.score - a.score);
   const best = scored.find((item) => item.score > 0);
   const picked = best?.feature || knowledge.features?.[0];
-  const candidate = context?.currentCandidate || context?.participant || "";
   return {
-    answer: (picked?.answer || "Je peux vous guider sur les participants, lots, dialogues, sons, historique et mode Discord. Dites-moi ce que vous voulez faire.") + (candidate ? ` Candidat actuel : ${candidate}.` : ""),
+    answer: picked?.answer || "Je peux t'aider sur la regie, la roue, les lots, les dialogues, les sons, l'historique, Discord et les actions a confirmer. Dis-moi ce que tu veux comprendre ou modifier.",
     actions: normalizedKephActions(picked?.actions || ["open_prepare"], knowledge),
     source: "fallback",
     matched: !!best

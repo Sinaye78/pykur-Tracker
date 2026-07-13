@@ -43,8 +43,26 @@
   ],
   "features": [
     {
+      "id": "present_candidates",
+      "keywords": ["presenter candidats", "presentation candidats", "bouton presenter", "presenter les candidats", "a quoi sert presenter"],
+      "answer": "Le bouton Presenter les candidats lance une scene d'introduction avant le tirage. Il sert a afficher/annoncer les candidats, donner du rythme au live et faire intervenir Charlie/Victoria avant de passer au candidat courant. C'est une action de spectacle : elle ne touche pas aux stocks, aux lots ni a l'historique.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "live_controls",
+      "keywords": ["lancer", "stop", "tirage test", "bouton stop", "bouton lancer", "bouton suivant", "dernier tirage"],
+      "answer": "Les boutons de regie servent au pilotage rapide du live. Lancer demarre un vrai tirage avec stock et historique, Stop arrete la roue quand il devient disponible, Tirage test simule sans consequence, Suivant passe au candidat suivant, et Dernier tirage rappelle le dernier resultat utile en animation.",
+      "actions": ["open_prepare"]
+    },
+    {
+      "id": "scene_presets",
+      "keywords": ["preset", "presets", "tirage normal", "pause", "annonce candidat", "scene finale", "resultat"],
+      "answer": "Les presets de scene preparent rapidement l'ambiance : Tirage remet la scene en mode roue, Annonce lance le candidat courant, Pause nettoie la scene, Resultat remet en avant le dernier gagnant, Finale lance la cloture. Ils evitent de chercher plusieurs options pendant le live.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
       "id": "dialogue_audio",
-      "keywords": ["son dialogue", "audio dialogue", "mp3 dialogue", "bruitage dialogue", "son replique", "audio replique", "mp3 replique", "bruitage replique"],
+      "keywords": ["son dialogue", "audio dialogue", "mp3 dialogue", "bruitage dialogue", "son replique", "audio replique", "mp3 replique", "bruitage replique", "mp3", "bibliotheque audio"],
       "answer": "Oui, tu peux mettre un son MP3/WAV/OGG sur une replique. Va dans Reglages > Scenes > Ouvrir le studio, selectionne ou cree la replique, puis dans le panneau de droite utilise le champ Bruitage / Son de la replique. Si le son n'existe pas encore, importe-le d'abord dans la bibliotheque audio de la section Scenes, puis reviens sur la replique pour l'assigner.",
       "actions": ["open_scenario_studio"]
     },
@@ -92,7 +110,7 @@
     },
     {
       "id": "simulation",
-      "keywords": ["simulation", "repetition", "test", "simuler", "checklist"],
+      "keywords": ["simulation", "repetition", "test", "simuler", "passage", "checklist"],
       "answer": "La simulation sert a repeter un passage complet sans consommer de stock ni remplir l'historique. La checklist pre-live verifie les points essentiels avant de lancer : participants, lots disponibles, stocks OK, son actif, scene propre et raccourcis configures.",
       "actions": ["highlight_rehearsal"]
     }
