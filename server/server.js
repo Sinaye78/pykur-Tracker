@@ -2181,6 +2181,13 @@ function kephDocumentation(context = {}) {
       content: "Le Studio de scenarios organise les repliques par etape: Presentation, Jingle, Temps mort/Pendant la roue, Apres le resultat, Candidat suivant et Scene finale. Chaque replique peut avoir un personnage, un type, un ciblage, une emote, un effet special et un bruitage. Le mode dialogue parle affiche une bulle de parole; l'indication scenique affiche une action plus discrete de type /me."
     },
     {
+      id: "dialogue_targeting",
+      title: "Ciblage des dialogues",
+      keywords: ["cibler", "ciblage", "candidat cible", "participant cible", "tous les candidats", "candidat actuel"],
+      actions: ["open_scenario_studio"],
+      content: "Le ciblage d'une replique sert a choisir pour qui elle peut se jouer. Tous les candidats = replique generale. Candidat actuel = la replique utilise le candidat en train de passer. Candidat cible = la replique ne sort que pour un pseudo precis. C'est utile pour preparer une phrase speciale pour Kinza, Barbaric, etc. sans qu'elle apparaisse pour les autres."
+    },
+    {
       id: "dialogue_audio",
       title: "Bruitage sur une replique",
       keywords: ["mp3", "wav", "ogg", "bruitage", "son dialogue", "audio replique", "bibliotheque"],
@@ -2864,12 +2871,12 @@ function recentKephLearningExamples(question = "") {
       .map((row) => ({
         reason: String(row.reason || "").slice(0, 180),
         question: String(row.question || "").slice(0, 220),
-        bad_answer: String(row.answer || "").slice(0, 260),
+        bad_answer: String(row.answer || "").slice(0, 150),
         intent: String(row.intent || row.source || "").slice(0, 80),
         score: normalizeKephText(`${row.question} ${row.reason} ${row.answer}`).split(" ").filter((part) => part.length > 2 && asked.includes(part)).length
       }))
       .sort((a, b) => b.score - a.score)
-      .slice(0, 5)
+      .slice(0, 3)
       .map(({ score, ...entry }) => entry);
   } catch {
     return [];
@@ -2889,7 +2896,7 @@ function recentKephPositiveExamples(question = "") {
     return rows
       .map((row) => ({
         question: String(row.question || "").slice(0, 220),
-        good_answer: String(row.answer || "").slice(0, 320),
+        good_answer: String(row.answer || "").slice(0, 180),
         intent: String(row.intent || row.source || "").slice(0, 80),
         score: normalizeKephText(`${row.question} ${row.answer}`).split(" ").filter((part) => part.length > 2 && asked.includes(part)).length
       }))
@@ -2923,7 +2930,7 @@ function kephSystemPrompt() {
 
 async function askOllamaKeph(message, context, guidance = null) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 22000);
+  const timer = setTimeout(() => controller.abort(), 35000);
   try {
     const response = await fetch(`${OLLAMA_URL.replace(/\/+$/, "")}/api/chat`, {
       method: "POST",
@@ -2939,7 +2946,7 @@ async function askOllamaKeph(message, context, guidance = null) {
             question: String(message || "").slice(0, 800),
             contexte_live: context || {},
             documentation_pertinente: guidance?.docs || kephDocumentationSearch(message, context),
-            aide_ciblee: guidance ? { answer: guidance.answer, actions: guidance.actions || [], intent: guidance.intent || "" } : null,
+            aide_ciblee: guidance ? { actions: guidance.actions || [], intent: guidance.intent || "" } : null,
             retours_negatifs_recents: recentKephLearningExamples(message),
             bonnes_reponses_likees: recentKephPositiveExamples(message)
           }) }
