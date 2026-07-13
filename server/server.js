@@ -2153,6 +2153,13 @@ function kephDocumentation(context = {}) {
       content: "Lancer demarre un vrai tirage: il peut consommer un stock, enregistrer l'historique et retirer un lancer au participant. Stop arrete la roue seulement quand le tirage est en cours. Tirage test sert a tester sans toucher aux stocks ni a l'historique. Suivant passe au prochain candidat. Dernier tirage sert a rappeler le dernier resultat utile en animation."
     },
     {
+      id: "first_live_steps",
+      title: "Par quoi commencer avant un live",
+      keywords: ["par quoi commencer", "commencer avant live", "premier live", "je suis perdu", "preparer live", "avant live"],
+      actions: ["open_prepare", "highlight_rehearsal"],
+      content: "Avant un live, commence par Preparer: charge la file de participants, verifie le participant actuel et les lancers. Ensuite va dans Lots & roue pour verifier poids, stocks et lots disponibles. Puis teste Sons et Scenes avec Simuler un passage. Quand la checklist pre-live est verte, passe en scene Discord/OBS propre."
+    },
+    {
       id: "participants",
       title: "Participants et lancers",
       keywords: ["participant", "candidat", "file", "queue", "lancers", "participation", "tentative"],
@@ -2202,6 +2209,20 @@ function kephDocumentation(context = {}) {
       content: "Pour mettre un son sur une replique, ouvrir le Studio de scenarios, selectionner ou creer la replique, puis utiliser le champ Bruitage dans le panneau de droite. Si le fichier n'est pas encore disponible, le bouton Importer a cote du champ Bruitage ajoute un MP3/WAV/OGG a la bibliotheque et le selectionne pour la replique en cours."
     },
     {
+      id: "dialogue_types",
+      title: "Dialogue parle ou indication scenique",
+      keywords: ["dialogue parle", "indication scenique", "type dialogue", "type replique", "slash me", "/me"],
+      actions: ["open_scenario_studio"],
+      content: "Une replique en Dialogue parle affiche une vraie bulle de parole pour Charlie ou Victoria. Une Indication scenique est plus discrete: elle decrit une action de scene, comme un /me, par exemple Charlie observe la roue ou Victoria applaudit. Dialogue parle sert a faire entendre un texte au public; indication scenique sert a donner de la vie sans voler l'attention."
+    },
+    {
+      id: "dialogue_queue",
+      title: "Pilotage et file de dialogues",
+      keywords: ["file dialogue", "file dialogues", "suivant dialogue", "passer dialogue", "rejouer dialogue", "auto manuel", "manuel"],
+      actions: ["open_scenario_studio"],
+      content: "La file de dialogues permet de garder la main sur ce que Charlie/Victoria vont dire. Suivant joue la prochaine replique, Passer la saute, Rejouer relance la replique actuelle, Vider nettoie la file. En Auto, le site enchaine selon la scene; en Manuel, l'organisateur controle le rythme."
+    },
+    {
       id: "emotes_effects",
       title: "Emotes et effets speciaux",
       keywords: ["emote", "emoji", "effet", "confetti", "firework", "flash", "fumee", "glitch", "projecteur"],
@@ -2209,11 +2230,39 @@ function kephDocumentation(context = {}) {
       content: "Les emotes donnent une expression au dialogue. Les effets speciaux sont des animations CSS declenchees par une replique: confettis, feu d'artifice, flash plateau, coupure lumiere, projecteurs, spotlight, shake leger, glitch, pluie d'etoiles, fumee, vague doree et alerte rouge. Ils n'influencent pas le tirage."
     },
     {
+      id: "show_options",
+      title: "Options Charlie Show et dialogues inclus",
+      keywords: ["charlie show", "dialogues inclus", "dialogues par defaut", "annoncer automatiquement", "candidat suivant automatique", "option cochable"],
+      actions: ["open_scenario_studio"],
+      content: "Activer Charlie Show autorise les interventions de Charlie/Victoria pendant le live. Dialogues inclus active les repliques par defaut fournies avec le site; si l'option est coupee, seules tes repliques personnalisees peuvent jouer. Annoncer automatiquement le candidat suivant declenche une annonce apres un tirage valide, utile si tu veux que la scene enchaine sans cliquer a chaque fois."
+    },
+    {
+      id: "scene_presets",
+      title: "Presets et boutons de scene",
+      keywords: ["preset", "presets", "tirage normal", "pause", "annonce candidat", "resultat", "scene finale", "jingle debut"],
+      actions: ["open_scenario_studio"],
+      content: "Les presets servent a changer rapidement l'ambiance de scene. Tirage normal remet la roue au centre, Annonce candidat met le participant en avant, Pause nettoie la scene, Resultat focalise le public sur le lot obtenu, Scene finale lance la cloture. Jingle debut joue l'ouverture sonore/visuelle du show."
+    },
+    {
       id: "audio",
       title: "Sons et volumes",
       keywords: ["son", "sons", "audio", "jingle", "volume", "mute", "couper"],
       actions: ["open_audio"],
       content: "La section Sons gere le mute global, le volume des jingles, le volume de la roulette et les sons de scene. Les bruitages attaches a une replique se reglent dans le Studio de scenarios, pas seulement dans Sons."
+    },
+    {
+      id: "shortcuts",
+      title: "Raccourcis clavier",
+      keywords: ["raccourci", "raccourcis", "clavier", "espace", "entree", "touche", "touches"],
+      actions: ["open_shortcuts"],
+      content: "Les raccourcis clavier servent a piloter la regie sans viser les boutons pendant le live. Espace peut lancer, Entree peut stopper, et les touches affichees entre parentheses sur les boutons declenchent les actions rapides comme Presenter, Jingle ou Finale. Dans Preparer > Raccourcis, clique un champ puis appuie sur la touche voulue."
+    },
+    {
+      id: "simulation_checklist_alerts",
+      title: "Simulation, checklist et alertes",
+      keywords: ["simulation", "simuler", "repetition", "checklist", "pre live", "alerte", "alertes", "pret", "pret live"],
+      actions: ["highlight_rehearsal"],
+      content: "Simuler un passage enchaine un passage fictif pour tester le rythme sans toucher aux stocks, a l'historique ni aux vrais lancers. La checklist pre-live verifie participants, lots disponibles, stocks, son, scene propre et raccourcis. Les alertes previennent avant de lancer: lots indisponibles, son coupe, file bientot terminee ou stock manquant."
     },
     {
       id: "discord",
@@ -2228,6 +2277,13 @@ function kephDocumentation(context = {}) {
       keywords: ["historique", "gagnant", "csv", "export", "import", "profil", "sauvegarde", "corriger"],
       actions: ["open_data"],
       content: "Sauvegarde regroupe l'historique des vrais tirages, le dernier gagnant, les gagnants par participant, la correction du dernier tirage, l'export CSV et l'import/export du profil complet. Les tirages test et simulations ne doivent pas remplir l'historique reel."
+    },
+    {
+      id: "keph_learning",
+      title: "Keph, logs et apprentissage",
+      keywords: ["keph", "logs", "like", "dislike", "apprendre", "entrainer", "journal apprentissage", "reponse utile"],
+      actions: [],
+      content: "Keph utilise la documentation du site, le contexte de la regie et les retours like/dislike. Un dislike avec une raison devient un exemple d'erreur a eviter; un like devient un exemple de style a viser. Le bouton Logs affiche les derniers retours classes pour aider a enrichir la documentation."
     },
     {
       id: "context",
@@ -2325,6 +2381,13 @@ function kephDiagnostics(message, context = {}) {
 function parseKephCommand(message, context = {}) {
   const raw = String(message || "").trim();
   const normalized = normalizeKephText(raw);
+  const triggerLabels = { presentation: "Presentation", jingle: "Jingle", spin: "Pendant la roue", result: "Resultat", next: "Candidat suivant", finale: "Finale" };
+  const triggerFromText = () => /\bfinale\b/.test(normalized) ? "finale"
+    : /\b(?:suivant|prochain candidat|annonce candidat)\b/.test(normalized) ? "next"
+      : /\b(?:resultat|gagnant|lot obtenu)\b/.test(normalized) ? "result"
+        : /\b(?:roue|tirage|rotation|pendant)\b/.test(normalized) ? "spin"
+          : /\bjingle\b/.test(normalized) ? "jingle"
+            : "presentation";
   const greetingOnly = /^(?:bonjour|salut|coucou|hello|yo|hey)(?:\s+(?:ca va|ça va|cv|comment ca va|comment vas tu|tu vas bien))?\s*\??$/.test(normalized);
   if (greetingOnly || /^(?:ca va|comment ca va|comment vas tu|tu vas bien)\s*\??$/.test(normalized)) {
     return {
@@ -2866,13 +2929,15 @@ function fallbackKephAnswer(message, context = {}) {
     : uiMap?.actions?.length ? uiMap.actions
       : siteQuestion ? normalizedKephActions(picked?.actions || docs.flatMap((doc) => doc.actions || []), knowledge) : [];
   const firstDoc = docs.find((doc) => doc.id !== "context");
+  const expectedAnswer = direct?.answer || firstDoc?.content || "";
   return {
     answer: direct?.answer || firstDoc?.content || uiMap?.answer || picked?.answer || "Je peux t'aider, mais il me manque un peu de contexte. Dis-moi si tu veux comprendre une fonction, retrouver un menu ou preparer une action a confirmer.",
     actions: guideActions,
     source: "retrieval",
     matched: !!(direct || uiMap || best || docs.length),
     intent: direct?.intent || uiMap?.intent || picked?.id || "retrieval",
-    docs
+    docs,
+    expectedAnswer
   };
 }
 
@@ -2963,10 +3028,11 @@ function kephSystemPrompt() {
   const knowledge = charlieKephKnowledge();
   return [
     "Tu es Keph, assistant de regie de Charlie Roulette.",
-    "Tu aides l'organisateur pendant un live. Reponds en francais naturel, precis, et humain.",
+    "Tu aides l'organisateur pendant un live. Reponds en francais naturel, precis, humain, et tutoie l'utilisateur.",
     "Ta reponse doit d'abord repondre exactement a la question posee. Si la question est simple, reponds simplement. Si elle demande une procedure, donne des etapes courtes. Si elle demande a quoi ca sert, explique l'usage live et la consequence.",
     "Ne declenche pas une fiche generique parce qu'un mot ressemble a un sujet. Par exemple, si on demande 'qui est Victoria ?', parle de Victoria, pas de la creation de dialogues.",
     "Utilise la documentation fournie comme source de verite, mais reformule et cible la demande. Ne copie-colle pas automatiquement la documentation.",
+    "Si aide_ciblee.reponse_attendue existe, utilise-la comme intention verifiee: reponds dans ce sens, en l'adaptant a la question.",
     "Les exemples dislike sont des contre-exemples: evite de reproduire ces erreurs. Les exemples like montrent le style et le niveau de precision a viser.",
     "Le champ currentCandidate designe le candidat affiche sur la roue, pas la personne qui te parle. Ne salue jamais l'organisateur avec le nom du candidat.",
     "Pour Charlie Roulette, utilise seulement les fonctions presentes dans la documentation, la base de connaissance et l'aide ciblee si elle est fournie.",
@@ -2997,7 +3063,7 @@ async function askOllamaKeph(message, context, guidance = null) {
             question: String(message || "").slice(0, 800),
             contexte_live: kephAiContext(message, context),
             documentation_pertinente: guidance?.docs || kephDocumentationSearch(message, context),
-            aide_ciblee: guidance ? { actions: guidance.actions || [], intent: guidance.intent || "" } : null,
+            aide_ciblee: guidance ? { actions: guidance.actions || [], intent: guidance.intent || "", reponse_attendue: guidance.expectedAnswer || "" } : null,
             retours_negatifs_recents: recentKephLearningExamples(message),
             bonnes_reponses_likees: recentKephPositiveExamples(message)
           }) }

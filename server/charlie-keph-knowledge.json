@@ -43,6 +43,12 @@
   ],
   "features": [
     {
+      "id": "first_live_steps",
+      "keywords": ["par quoi commencer", "commencer avant live", "premier live", "je suis perdu", "preparer live", "avant live"],
+      "answer": "Commence par Preparer : charge la file de participants, verifie le participant actuel et les lancers. Ensuite verifie Lots & roue pour les poids, stocks et lots disponibles, puis teste Sons et Scenes avec Simuler un passage. Quand la checklist est verte, passe en scene Discord/OBS propre.",
+      "actions": ["open_prepare", "highlight_rehearsal"]
+    },
+    {
       "id": "edit_presentation_dialogues",
       "keywords": ["modifier dialogue presentation", "modifier dialogues presentation", "dialogue presenter candidats", "dialogues presenter candidats", "replique presentation"],
       "answer": "Oui, les dialogues joues par Presenter les candidats sont modifiables. Va dans Reglages > Scenes > Studio de scenarios, choisis l'etape Presentation, puis modifie les repliques existantes ou ajoute-en de nouvelles. Tu peux regler Charlie/Victoria, l'emote, l'effet special et le bruitage. Ca change uniquement l'intro spectacle, pas les stocks ni l'historique.",
@@ -76,6 +82,12 @@
       "id": "dialogues",
       "keywords": ["dialogue", "replique", "victoria", "charlie", "emote", "effet", "scenario", "scene"],
       "answer": "Les dialogues servent a piloter ce que Charlie ou Victoria disent selon le moment du live : presentation, roue, resultat, candidat suivant ou finale. Pour en ajouter un, ouvre Reglages > Scenes > Studio de scenarios, choisis l'etape a gauche, ecris la replique a droite, puis Ajoute la replique. Tu peux aussi me demander directement d'ajouter une replique si tu me donnes le texte.",
+      "actions": ["open_scenario_studio"]
+    },
+    {
+      "id": "show_options",
+      "keywords": ["charlie show", "dialogues inclus", "dialogues par defaut", "annoncer automatiquement", "option cochable", "candidat suivant automatique"],
+      "answer": "Charlie Show autorise les interventions de Charlie/Victoria pendant le live. Dialogues inclus active les repliques par defaut du site; sans cette option, tu relies surtout tes repliques personnalisees. Annoncer automatiquement le candidat suivant lance l'annonce apres un tirage valide.",
       "actions": ["open_scenario_studio"]
     },
     {
