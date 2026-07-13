@@ -2303,7 +2303,11 @@ function kephDocumentationSearch(message, context = {}) {
       const haystack = normalizeKephText(`${doc.title} ${(doc.keywords || []).join(" ")} ${doc.content}`);
       let score = 0;
       tokens.forEach((token) => { if (haystack.includes(token)) score += 1; });
-      (doc.keywords || []).forEach((keyword) => { if (text.includes(normalizeKephText(keyword))) score += 4; });
+      (doc.keywords || []).forEach((keyword) => {
+        const normalizedKeyword = normalizeKephText(keyword);
+        if (!normalizedKeyword) return;
+        if (text.includes(normalizedKeyword)) score += normalizedKeyword.includes(" ") ? 18 : 4;
+      });
       if (doc.id === "context" && context?.activeSection) score += 1;
       return { ...doc, score };
     })
