@@ -2510,6 +2510,36 @@ function parseKephCommand(message, context = {}) {
     context.currentCandidate,
     context.nextParticipant
   ].map(cleanKephName).filter(Boolean))];
+  if (/\b(?:file|liste|queue|candidats|participants)\b/.test(text) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(text)) {
+    const names = kephNamesFromListText(raw.split(/:|avec|pour/i).pop() || raw);
+    const picked = names.length >= 2 ? names : ["Mira", "Grobid", "Tofu-Royal"];
+    add(`set_queue ${picked.slice(0, 6).map(quoteCommandArg).join(" ")}`);
+  }
+  if (/\b(?:roue|roulette|lots?)\b/.test(text) && /\b(?:complete|6|six|cree|creer|genere|generer)\b/.test(text)) {
+    const lots = [
+      ["Ticket VIP du Chaos", 26, 4, "#c1121f"],
+      ["Bourse qui clignote 200.000k", 18, 3, "#023e8a"],
+      ["Relance du Destin", 16, 2, "#ffd60a"],
+      ["Cadeau mystere suspect", 14, 2, "#2dc653"],
+      ["Malus: compliment a Charlie", 12, 5, "#6f2dbd"],
+      ["Jackpot des Kamavores", 6, 1, "#f77f00"]
+    ];
+    add("clear_lots");
+    lots.forEach(([name, weight, stock, color]) => {
+      add(`add_lot ${quoteCommandArg(name)} ${weight} ${stock}`);
+      add(`set_lot_color ${quoteCommandArg(name)} ${quoteCommandArg(color)}`);
+    });
+  }
+  if (/\b(?:regle|regler|configure|configurer)\b/.test(text) && /\b(?:show|profil|dynamique|anti repetition|humeur|dialogues)\b/.test(text)) {
+    add('set_setting "antiRepeatEnabled" "true"');
+    add('set_setting "antiRepeatMode" "session"');
+    add('set_setting "defaultDialoguesEnabled" "false"');
+    add('set_setting "showFrequency" "normal"');
+    add('set_setting "dialogueMode" "timed"');
+    add('set_setting "dialogueDuration" "7"');
+    add('set_setting "charlieMood" "taquin"');
+    add('set_setting "launchTrollChance" "12"');
+  }
   const lotNames = Array.isArray(context.lots) ? context.lots.map((lot) => String(lot.name || "")).filter(Boolean) : [];
   const directRename = raw.match(/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s+(?:en|vers)\s+(.+?)(?:[?.!]|$)/i);
   if (directRename) addControlled(`rename_lot ${quoteCommandArg(findKephBestName(lotNames, cleanKephName(directRename[1])) || cleanKephName(directRename[1]))} ${quoteCommandArg(cleanKephName(directRename[2]))}`);
@@ -3593,8 +3623,10 @@ function isKephEditRequest(message = "") {
   if (/\b(?:relance|relances|lancer|lancers|participation|participations)\b/.test(text) && /\b\d{1,2}\b/.test(text)) return true;
   if (/\b(?:testeffect|testemote|startjingle|startpresentation|startnext|startfinale|starttestdraw|startrehearsal|startdraw|stopdraw)\b/.test(text)) return true;
   if (/\b(?:detache|detacher|separe|separer)\b/.test(text) && /\b(?:regie|controle|panneau)\b/.test(text)) return true;
-  if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && /\b(?:fais|faire|prepare|preparer|genere|generer|cree|creer)\b/.test(text)) return true;
-  return /\b(?:mets|met|mettre|donne|change|changer|modifie|modifier|ajoute|ajouter|cree|creer|supprime|supprimer|desactive|desactiver|active|activer|renomme|renommer|renome|prepare|preparer|fais moi|faire|genere|generer|test|teste|tester|testeffect|testemote|lance|lancer|startjingle|startpresentation|startnext|startfinale|startdraw|joue|jouer|demarre|demarrer|passe|passer|stop|arrete|arret|ouvre|ouvrir|mode|detache|detacher)\b/.test(text)
+  if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && /\b(?:ecris|ecrire|redige|rediger|fais|faire|prepare|preparer|genere|generer|cree|creer)\b/.test(text)) return true;
+  if (/\b(?:roue|roulette|lots?)\b/.test(text) && /\b(?:complete|6|six|cree|creer|genere|generer|vide|vider)\b/.test(text)) return true;
+  if (/\b(?:profil|regle|reglage|show|dynamique|anti repetition|humeur)\b/.test(text) && /\b(?:regle|regler|configure|configurer|active|desactive)\b/.test(text)) return true;
+  return /\b(?:mets|met|mettre|donne|change|changer|modifie|modifier|ajoute|ajouter|cree|creer|supprime|supprimer|desactive|desactiver|active|activer|renomme|renommer|renome|prepare|preparer|fais moi|faire|ecris|ecrire|redige|rediger|genere|generer|test|teste|tester|testeffect|testemote|lance|lancer|startjingle|startpresentation|startnext|startfinale|startdraw|joue|jouer|demarre|demarrer|passe|passer|stop|arrete|arret|ouvre|ouvrir|mode|detache|detacher)\b/.test(text)
     && /\b(?:relance|relances|lancer|lance|participant|candidat|joueur|lot|stock|poids|poid|roue|dialogue|replique|jingle|presentation|startpresentation|startjingle|scenario|scene finale|finale|emote|testemote|effet|effets|fx|testeffect|tirage test|suivant|repetition|simulation|discord|obs|regie|studio|configuration|plein ecran|pleine ecran|fullscreen|detache|detacher)\b/.test(text);
 }
 
@@ -3660,6 +3692,54 @@ function kephNamesFromListText(value = "") {
       .replace(/\b(?:de\s+)?(?:liste|file|queue|attente)\b/gi, "")))
     .filter((name) => /^[A-Za-z0-9À-ÿ _-]{2,40}$/.test(name))
     .slice(0, 30);
+}
+
+function kephScenarioDialogueCommands(trigger = "presentation", candidates = []) {
+  const list = candidates.length ? candidates.join(", ") : "les candidats";
+  const first = candidates[0] || "{candidatactuel}";
+  const templates = {
+    presentation: [
+      ["charlie", `Bonsoir public, ce soir ${list} entrent dans la roulette la moins assuree juridiquement du serveur.`, "laugh", "spotlights", "dialogue"],
+      ["victoria", `Je rappelle que sourire avant un tirage augmente les chances de 0%, mais ca rend mieux sur Discord.`, "smile", "goldwave", "dialogue"],
+      ["charlie", `Charlie ajuste trois fiches candidats et fait semblant de savoir lire les petites lignes.`, "question", "smoke", "me"],
+      ["victoria", `${first} ouvre le bal. Les autres peuvent encore negocier avec la roue, mais elle repond rarement.`, "star", "flash", "dialogue"]
+    ],
+    jingle: [
+      ["charlie", "Jingle lance, dignite rangee, on passe officiellement en mode spectacle.", "star", "spotlights", "dialogue"],
+      ["victoria", "Les lumieres montent, la roue brille, et Charlie vient de perdre le bouton mute.", "laugh", "goldwave", "dialogue"],
+      ["charlie", "Charlie pointe la roue comme si elle lui devait de l'argent.", "angry", "smoke", "me"],
+      ["victoria", `Bienvenue ${first}, installe-toi. Le hasard a mis une cravate pour l'occasion.`, "smile", "confetti", "dialogue"]
+    ],
+    spin: [
+      ["charlie", "{candidatactuel}, le bouton STOP existe. Je precise parce que la roue commence a prendre confiance.", "question", "alert", "dialogue"],
+      ["victoria", "Regardez bien la vitesse : c'est le moment ou tout le monde devient expert en probabilites.", "star", "spotlight", "dialogue"],
+      ["charlie", "Charlie fixe le pointeur avec l'intensite d'un comptable devant une facture mystere.", "sweat", "shake", "me"],
+      ["victoria", "Si ca tombe sur rien, on dira que c'etait une decision artistique.", "laugh", "glitch", "dialogue"]
+    ],
+    result: [
+      ["victoria", "{candidatactuel} remporte {lot}. Le destin a parle, et cette fois il avait un micro.", "star", "confetti", "dialogue"],
+      ["charlie", "Charlie verifie le lot, le public, puis son plan de fuite.", "sweat", "flash", "me"],
+      ["charlie", "Je confirme : {lot}, c'est officiel. Mon avocat dit que je dois dire bravo.", "laugh", "goldwave", "dialogue"],
+      ["victoria", "Applaudissements pour {candidatactuel}. Meme la roue a l'air surprise.", "love", "stars", "dialogue"]
+    ],
+    next: [
+      ["charlie", "On respire, on range les confettis imaginaires, et on appelle le prochain courageux.", "smile", "spotlight", "dialogue"],
+      ["victoria", "{candidatsuivant}, prepare-toi. La roue vient de finir son echauffement dramatique.", "star", "flash", "dialogue"],
+      ["charlie", "Charlie tourne la page du conducteur avec beaucoup trop de gravite.", "question", "smoke", "me"]
+    ],
+    finale: [
+      ["victoria", "Merci a tous les candidats : {participants}. La roue retourne dans sa loge.", "love", "goldwave", "dialogue"],
+      ["charlie", "Charlie salue le public, puis demande discretement si les lots etaient bien rembourses.", "laugh", "confetti", "me"],
+      ["charlie", "Fin du show. Si quelqu'un demande, tout etait parfaitement prevu.", "star", "fireworks", "dialogue"]
+    ],
+    idle: [
+      ["charlie", "Petit temps mort. La roue attend, Victoria sourit, moi je soupconne un piege.", "question", "smoke", "dialogue"],
+      ["victoria", "On peut prendre dix secondes. Le suspense aussi a besoin de s'hydrater.", "smile", "spotlight", "dialogue"]
+    ]
+  };
+  return (templates[trigger] || templates.presentation).map(([speaker, text, emote, fx, kind]) =>
+    `add_dialogue ${quoteCommandArg(trigger)} ${quoteCommandArg(speaker)} ${quoteCommandArg(text)} --kind ${quoteCommandArg(kind)} --emote ${quoteCommandArg(emote)} --fx ${quoteCommandArg(fx)}`
+  );
 }
 
 function kephCommandAllowed(command = "") {
@@ -3781,16 +3861,12 @@ function kephCommandPlanFromRules(message, context = {}) {
   if (mentionedLot && renameMatch) add(`rename_lot ${quoteCommandArg(mentionedLot)} ${quoteCommandArg(cleanKephName(renameMatch[1]))}`);
   if (mentionedLot && /\b(?:desactive|desactiver|coupe|retire)\b/.test(text)) add(`disable_lot ${quoteCommandArg(mentionedLot)}`);
   if (mentionedLot && /\b(?:active|activer|reactive|reactiver)\b/.test(text)) add(`enable_lot ${quoteCommandArg(mentionedLot)}`);
-  if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && /\b(?:jingle|presentation|finale|resultat|roue|candidat suivant)\b/.test(text) && /\b(?:plusieurs|quelques|3|trois|4|quatre|5|cinq|fais|faire|prepare|preparer|genere|generer)\b/.test(text)) {
+  if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && /\b(?:jingle|presentation|finale|resultat|roue|candidat suivant|suivant|idle|temps mort)\b/.test(text) && /\b(?:plusieurs|quelques|3|trois|4|quatre|5|cinq|fais|faire|ecris|ecrire|redige|rediger|prepare|preparer|genere|generer)\b/.test(text)) {
     const trigger = /\bfinale\b/.test(text) ? "finale" : /\bresultat\b/.test(text) ? "result" : /\b(?:roue|tirage)\b/.test(text) ? "spin" : /\b(?:suivant|candidat suivant)\b/.test(text) ? "next" : /\bjingle\b/.test(text) ? "jingle" : "presentation";
     const candidatesPart = raw.split(/(?:candidats?|participants?)\s*:?\s*/i).pop() || "";
     const names = candidatesPart.split(/,|\bet\b|\n|\r/).map(cleanKephName).filter((name) => /^[A-Za-z0-9À-ÿ _-]{2,40}$/.test(name)).slice(0, 6);
     const candidates = names.length ? names : (Array.isArray(context.queue) ? context.queue.slice(0, 4) : []);
-    const list = candidates.length ? candidates.join(", ") : "les candidats";
-    add(`add_dialogue ${quoteCommandArg(trigger)} "charlie" ${quoteCommandArg(`Le jingle démarre, ${list} entrent dans la Charlie Roulette.`)} --emote "spark" --fx "spotlights"`);
-    add(`add_dialogue ${quoteCommandArg(trigger)} "victoria" ${quoteCommandArg(`Ce soir, ${list} vont tenter leur chance. Que la roue choisisse avec panache.`)} --emote "smile" --fx "goldwave"`);
-    add(`add_dialogue ${quoteCommandArg(trigger)} "charlie" ${quoteCommandArg("Les règles sont simples : la roue tourne, les lots tombent, et moi je nie toute responsabilité.")} --emote "wink"`);
-    add(`add_dialogue ${quoteCommandArg(trigger)} "victoria" ${quoteCommandArg("Installez-vous, le show commence maintenant.")} --emote "heart" --fx "confetti"`);
+    kephScenarioDialogueCommands(trigger, candidates).forEach(add);
   }
   if (!commands.length) return null;
   if (/\b(?:la totale|passage complet|tout l evenement|toute l animation)\b/.test(text)) {
