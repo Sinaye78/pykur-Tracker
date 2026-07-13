@@ -18,7 +18,7 @@ const DB_PATH = process.env.DB_PATH ? path.resolve(__dirname, process.env.DB_PAT
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://127.0.0.1:8765";
 const APP_PUBLIC_URL = process.env.APP_PUBLIC_URL || CLIENT_ORIGIN;
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://127.0.0.1:11434";
-const KEPH_MODEL = process.env.KEPH_MODEL || "qwen2.5:3b";
+const KEPH_MODEL = process.env.KEPH_MODEL || "qwen2.5:1.5b";
 const ROLE_ORDER = { user: 1, moderator: 2, admin: 3 };
 const PUBLIC_DEPLOYMENT = !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(APP_PUBLIC_URL);
 
@@ -1996,7 +1996,7 @@ function kephSystemPrompt() {
 
 async function askOllamaKeph(message, context) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 18000);
+  const timer = setTimeout(() => controller.abort(), 45000);
   try {
     const response = await fetch(`${OLLAMA_URL.replace(/\/+$/, "")}/api/chat`, {
       method: "POST",
