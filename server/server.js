@@ -2812,7 +2812,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "site_purpose",
-      test: () => /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|but|objectif|utilite)\b/.test(text) && /\b(?:site|application|appli|charlie roulette|roulette)\b/.test(text),
+      test: () => !/\bstudio\b/.test(text) && /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|but|objectif|utilite)\b/.test(text) && /\b(?:site|application|appli|charlie roulette|roulette)\b/.test(text),
       answer: "Charlie Roulette sert à animer un tirage en live comme une petite émission : tu prépares une file de candidats, des lots, des sons et des dialogues, puis tu pilotes la roue pendant que le public voit une scène propre. La régie sert à contrôler le live, les réglages servent à préparer la roue, les scènes et les sauvegardes. En gros : c’est un outil d’animation, pas juste une roulette aléatoire.",
       actions: ["open_prepare"]
     },
