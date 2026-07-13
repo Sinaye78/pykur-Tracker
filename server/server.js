@@ -19,7 +19,7 @@ const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://127.0.0.1:8765";
 const APP_PUBLIC_URL = process.env.APP_PUBLIC_URL || CLIENT_ORIGIN;
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://127.0.0.1:11434";
 const KEPH_MODEL = process.env.KEPH_MODEL || "qwen2.5:1.5b";
-const KEPH_AI_TIMEOUT_MS = Number(process.env.KEPH_AI_TIMEOUT_MS || 6500);
+const KEPH_AI_TIMEOUT_MS = Number(process.env.KEPH_AI_TIMEOUT_MS || 3000);
 const ROLE_ORDER = { user: 1, moderator: 2, admin: 3 };
 const PUBLIC_DEPLOYMENT = !/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(APP_PUBLIC_URL);
 
@@ -2392,7 +2392,7 @@ function kephDocumentationSearch(message, context = {}) {
 
 function isKephSiteQuestion(message) {
   const text = normalizeKephText(message);
-  return /\b(?:site|application|bouton|option|live|preparer|studio|show|charlie|victoria|roulette|regie|roue|lot|lots|stock|poids|participant|candidat|dialogue|replique|scenario|scene|jingle|son|audio|bruitage|mp3|discord|obs|historique|profil|sauvegarde|raccourci|lancer|stop|tirage|configuration|keph|emote|effet|ciblage)\b/.test(text);
+  return /\b(?:site|application|bouton|option|live|preparer|studio|show|charlie|victoria|roulette|regie|roue|lot|lots|stock|poid|poids|participant|candidat|dialogue|replique|scenario|scene|jingle|son|audio|bruitage|mp3|discord|obs|historique|profil|sauvegarde|raccourci|lancer|stop|tirage|configuration|keph|emote|effet|ciblage)\b/.test(text);
 }
 
 function kephDiagnostics(message, context = {}) {
@@ -2945,7 +2945,8 @@ function directKephAnswer(message) {
     },
     {
       intent: "explain_lot_weight",
-      test: () => /\b(?:poid|poids|probabilite|proba|chance|taux)\b/.test(text) && /\b(?:case|lot|roue)\b/.test(text),
+      test: () => /\b(?:poid|poids|probabilite|proba|chance|taux)\b/.test(text)
+        && (/\b(?:case|lot|roue|roulette)\b/.test(text) || /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|comment marche|veut dire)\b/.test(text)),
       answer: `${yesNo ? "Oui, c'est exactement fait pour ca. " : ""}Dans Reglages > Lots & roue > Ouvrir le studio de la roulette, onglet Lots & probabilites, tu peux changer le poids de chaque case. Le poids, c'est sa chance relative : un lot a 20 sort environ deux fois plus souvent qu'un lot a 10. Tu peux aussi me demander "mets le poids du lot X a 10" et je te preparerai le bouton Appliquer.`,
       actions: ["open_wheel_studio_lots"]
     },

@@ -108,6 +108,12 @@
       "section": "wheel",
       "title": "Lots, poids, stocks et activation",
       "keywords": ["lot", "lots", "poids", "poid", "probabilite", "chance", "stock", "indisponible", "activer", "desactiver", "roue", "case"],
+      "examples": [
+        "a quoi sert le poid ?",
+        "a quoi sert le poids ?",
+        "c est quoi le poids d un lot ?",
+        "comment modifier le poids d une case ?"
+      ],
       "instant": true,
       "answer": "Dans Lots & roue > Studio de la roulette > Lots & probabilites, chaque case a un nom, un poids, une activation et eventuellement un stock. Le poids est une chance relative : un lot a 20 sort environ deux fois plus souvent qu'un lot a 10. Si le stock arrive a zero ou si le lot est desactive, la case devient indisponible.",
       "actions": ["open_wheel_studio_lots"]
