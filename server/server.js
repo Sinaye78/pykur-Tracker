@@ -2325,7 +2325,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "explain_stock",
-      test: () => /\b(?:stock|stocks|indisponible|epuise|epuises|disponible)\b/.test(text),
+      test: () => !/\b(?:sans toucher|sans modifier|sans consommer)\b/.test(text) && /\b(?:stock|stocks|indisponible|epuise|epuises|disponible)\b/.test(text),
       answer: "Les stocks servent a eviter qu'un lot deja epuise retombe pour les prochains candidats. Dans le Studio de la roulette, active le stock sur le lot, indique la quantite, puis la roue le grise et le rend indisponible quand il arrive a zero. C'est surtout utile pour les lots limites ou uniques.",
       actions: ["open_wheel_studio_lots"]
     },
