@@ -3645,12 +3645,19 @@ function kephCommandPlanFromRules(message, context = {}) {
     context.currentCandidate,
     context.nextParticipant
   ].map(cleanKephName).filter(Boolean);
+  const allLanceMatch = raw.match(/\b(?:mets|met|mettre|donne|change|modifie|modifier|regle|règle)\s+(?:tous|toutes)\s+(?:les\s+)?(?:candidats|participants|joueurs)\s+(?:a|à|sur|avec)\s*(\d{1,2})\s+(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\b/i)
+    || raw.match(/\b(?:mets|met|mettre|donne|change|modifie|modifier|regle|règle)\s+(?:a|à|sur|avec)\s*(\d{1,2})\s+(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\s+(?:pour\s+)?(?:tous|toutes)\s+(?:les\s+)?(?:candidats|participants|joueurs)\b/i)
+    || raw.match(/\b(?:tous|toutes)\s+(?:les\s+)?(?:candidats|participants|joueurs)\s+(?:a|à|sur|avec)\s*(\d{1,2})\s+(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\b/i);
+  if (allLanceMatch) {
+    const amount = Math.max(1, Math.min(20, Number(allLanceMatch[1])));
+    [...new Set(participantNames)].forEach((name) => add(`setlance ${quoteCommandArg(name)} ${amount}`));
+  }
   const lanceMatch = raw.match(/\b(?:nombre\s+de\s+)?(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)(?:\s+de\s+la\s+roue)?\s+(?:de|du|d'|pour)?\s*([A-Za-z0-9À-ÿ _-]{2,40}?)\s+(?:a|à|sur|avec)\s*(\d{1,2})\b/i)
     || raw.match(/\b(?:mets|met|mettre|donne|change|modifie|modifier|regle|règle)\s+(?:le\s+)?(?:nombre\s+de\s+)?(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)(?:\s+de\s+la\s+roue)?\s+(?:de|du|d'|pour)?\s*([A-Za-z0-9À-ÿ _-]{2,40}?)\s+(?:a|à|sur|avec)\s*(\d{1,2})\b/i)
     || raw.match(/\b(?:mets|met|mettre|donne|change|modifie|modifier|regle|règle)\s+(\d{1,2})\s+(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\s+(?:a|à|pour|de)?\s*([A-Za-z0-9À-ÿ _-]{2,40})\b/i)
     || raw.match(/\b(?:mets|met|mettre|change|modifie|modifier|regle|règle)\s+([A-Za-z0-9À-ÿ _-]{2,40})\s+(?:a|à|sur|avec)?\s*(\d{1,2})\s+(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\b/i)
     || raw.match(/\b(?:relance|relances|lancer|lance|lancers|lances|ticket|tickets|participation|participations)\s+(?:de|pour)\s+([A-Za-z0-9À-ÿ _-]{2,40})\s+(?:a|à|sur|avec)?\s*(\d{1,2})\b/i);
-  if (lanceMatch) {
+  if (!allLanceMatch && lanceMatch) {
     const firstIsNumber = /^\d+$/.test(lanceMatch[1]);
     const requestedName = cleanKephName(firstIsNumber ? lanceMatch[2] : lanceMatch[1]);
     const amount = Number(firstIsNumber ? lanceMatch[1] : lanceMatch[2]);

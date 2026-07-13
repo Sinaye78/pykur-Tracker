@@ -1147,8 +1147,11 @@ function kephCommandPreview(command){
   let fail=reason=>({ok:false,command,label:`/${command}\n  [ERREUR] ${reason}`});
   if(!p)return fail('Aucun profil actif.');
   if(name==='setlance'){
-    let requestedPlayer=tokens[0],player=kephFindParticipantName(requestedPlayer),value=Math.max(1,Math.min(20,Math.floor(Number(tokens[1]))));
+    let requestedPlayer=tokens[0],value=Math.max(1,Math.min(20,Math.floor(Number(tokens[1]))));
     if(!requestedPlayer||!Number.isFinite(value))return fail('Syntaxe attendue: setlance "participant" nombre');
+    let allRequested=/^(tous|toutes)( les)? (candidats|participants|joueurs)$/i.test(kephCleanParticipantHint(requestedPlayer))||/^(tous|toutes)( les)? (candidats|participants|joueurs)$/i.test(String(requestedPlayer||'').trim());
+    if(allRequested){let names=[...new Set([...(p?.queue||[]),p?.participant].filter(Boolean))];if(!names.length)return fail('Aucun participant à modifier.');return {ok:true,command,label:`Tous les candidats: ${names.length} participant(s) -> ${value} lancer(s)`,apply:()=>names.forEach(name=>setParticipantDrawTarget(name,value))}}
+    let player=kephFindParticipantName(requestedPlayer);
     if(!player)return fail(`Participant introuvable: ${requestedPlayer}`);
     let before=participantDrawTarget(player),correction=player!==requestedPlayer?` (corrigé depuis ${requestedPlayer})`:'';
     return {ok:true,command,label:`${player}: ${before} lancer(s) -> ${value}${correction}`,apply:()=>setParticipantDrawTarget(player,value)};
