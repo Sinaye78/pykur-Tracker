@@ -2010,7 +2010,7 @@ async function askOllamaKeph(message, context) {
           { role: "system", content: kephSystemPrompt() },
           { role: "user", content: JSON.stringify({ question: String(message || "").slice(0, 800), contexte_live: context || {} }) }
         ],
-        options: { temperature: 0.2, num_ctx: 4096 }
+        options: { temperature: 0.2, num_ctx: 4096, num_predict: 260 }
       })
     });
     if (!response.ok) throw new Error(`Ollama HTTP ${response.status}`);
@@ -2084,9 +2084,11 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
     const ai = await askOllamaKeph(message, context);
     const answer = String(ai?.answer || "").trim();
     if (!answer) throw new Error("Reponse vide");
+    const fallback = fallbackKephAnswer(message, context);
+    const actions = normalizedKephActions(ai?.actions, knowledge);
     res.json({
       answer: answer.slice(0, 1400),
-      actions: normalizedKephActions(ai?.actions, knowledge),
+      actions: actions.length ? actions : fallback.actions,
       source: "ollama",
       model: KEPH_MODEL,
       avatarUrl: kephPublicAvatar()
