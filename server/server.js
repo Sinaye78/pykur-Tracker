@@ -2055,12 +2055,41 @@ function parseKephCommand(message, context = {}) {
       intent: "character_charlie"
     };
   }
+  if (/^(?:et\s+)?charlie\s*\??$/.test(normalized)) {
+    return {
+      answer: "Charlie, c'est le personnage principal du show. Il peut presenter les candidats, commenter la roue, reagir aux resultats et porter les blagues ou interventions pendant le live. Tu peux regler ses repliques, emotes, bruitages et effets dans le Studio de scenarios.",
+      actions: [
+        { id: "open_scenario_studio", label: "Ouvrir le studio" }
+      ],
+      source: "conversation",
+      intent: "character_charlie"
+    };
+  }
   if (/\b(?:ocean le plus grand|plus grand ocean)\b/.test(normalized)) {
     return {
       answer: "Le plus grand océan du monde est l'océan Pacifique. Et si tu veux, je peux aussi revenir sur la roulette : lots, participants, sons, dialogues ou scène Discord.",
       actions: [],
       source: "conversation",
       intent: "general_answer"
+    };
+  }
+  if (/\b(?:canne a sucre|canne sucre)\b/.test(normalized) && /\b(?:ou|pousse|pousser|cultive|vient)\b/.test(normalized)) {
+    return {
+      answer: "La canne a sucre pousse surtout dans les regions tropicales et subtropicales, par exemple au Bresil, en Inde, en Thailande, dans les Caraibes ou a La Reunion. Elle a besoin de chaleur, d'eau et de beaucoup de soleil.",
+      actions: [],
+      source: "conversation",
+      intent: "general_answer"
+    };
+  }
+  if (/\b(?:moi je suis qui|je suis qui|qui suis je|tu sais qui je suis)\b/.test(normalized)) {
+    const current = String(context?.currentCandidate || "").trim();
+    return {
+      answer: current
+        ? `Je ne peux pas savoir qui tu es personnellement depuis ce chat. Par contre, dans la roulette, le candidat actuellement affiche est ${current}.`
+        : "Je ne peux pas savoir qui tu es personnellement depuis ce chat. Je peux seulement lire le contexte de la roulette, comme le candidat affiche, la file, les lots et l'etat du live.",
+      actions: current ? [{ id: "open_prepare", label: "Ouvrir Preparer" }] : [],
+      source: "conversation",
+      intent: "user_identity"
     };
   }
   if (/\b(?:qui t a cree|qui ta cree|qui t a fait|qui ta fait|qui est ton createur)\b/.test(normalized)) {
@@ -2266,7 +2295,7 @@ function directKephAnswer(message) {
     {
       intent: "explain_audio_library",
       test: () => /\b(?:bibliotheque|biblioteque|library|importer|ajouter)\b/.test(text) && /\b(?:mp3|audio|son|wav|ogg|bruitage)\b/.test(text),
-      answer: "Pour ajouter un MP3 à la bibliothèque, ouvre Réglages > Scènes > Studio de scénarios, puis va dans la zone de sons/bibliothèque audio des scènes. Tu importes le fichier MP3/WAV/OGG, puis tu peux l’assigner à une réplique via le champ Bruitage / Son de la réplique. Le son reste ensuite disponible pour les autres dialogues.",
+      answer: "Pour ajouter un bruitage, ouvre Réglages > Scènes > Studio de scénarios. Dans le panneau de droite, le champ Bruitage a un bouton Importer : choisis ton MP3/WAV/OGG, il est ajouté à la bibliothèque et sélectionné pour la réplique en cours. Ensuite tu enregistres la réplique, et le son se jouera en même temps que ce dialogue.",
       actions: ["open_scenario_studio"]
     },
     {
@@ -2308,7 +2337,13 @@ function directKephAnswer(message) {
     {
       intent: "explain_dialogue_audio",
       test: () => /\b(?:son|audio|mp3|wav|ogg|bruitage)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text),
-      answer: "Oui, une replique peut avoir son propre son. Ouvre le Studio de scenarios, selectionne la replique, puis utilise le champ de bruitage/son de replique dans son edition. Si ton fichier n'apparait pas, importe d'abord le MP3/WAV/OGG dans la bibliotheque audio des scenes.",
+      answer: "Oui, une réplique peut avoir son propre bruitage. Ouvre le Studio de scénarios, crée ou sélectionne la réplique, puis utilise le champ Bruitage dans le panneau de droite. Si ton son n'est pas encore dans la liste, clique Importer juste à côté du champ, choisis un MP3/WAV/OGG, puis enregistre la réplique.",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "explain_jingle_dialogue",
+      test: () => /\b(?:comment|creer|cree|ajouter|faire|modifier)\b/.test(text) && /\b(?:dialogue|replique|phrase)\b/.test(text) && /\bjingle\b/.test(text),
+      answer: "Pour créer un dialogue de jingle, ouvre le Studio de scénarios, sélectionne l'étape Jingle dans la colonne de gauche, puis écris la réplique dans le panneau de droite. Choisis Charlie ou Victoria, ajoute éventuellement une emote, un effet spécial ou un bruitage, puis clique Ajouter la réplique. Elle sera jouée quand tu déclenches le jingle.",
       actions: ["open_scenario_studio"]
     },
     {
@@ -2333,6 +2368,12 @@ function directKephAnswer(message) {
       intent: "explain_participant_attempts",
       test: () => /\b(?:lancer|lancers|ticket|tickets|participation|participations|tentative|tentatives)\b/.test(text) && /\b(?:participant|candidat|joueur|personne)\b/.test(text),
       answer: "Le nombre de lancers par participant sert a donner plusieurs chances a une personne sans la remettre plusieurs fois dans la file. Dans Preparer, ouvre la liste complete des participants puis ajuste le compteur de lancers. A chaque vrai tirage, il descend d'un cran ; quand il arrive a zero, tu peux passer au suivant.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "explain_participant_queue",
+      test: () => /\b(?:changer|modifier|charger|recharger|organiser)\b/.test(text) && /\b(?:file|liste|queue)\b/.test(text),
+      answer: "Changer la file sert à définir l'ordre de passage des candidats pendant l'événement. Les candidats passeront dans cet ordre pour tourner la roue : le premier devient le participant actuel, puis Suivant charge le prochain. C'est utile pour préparer le live à l'avance, ajouter quelqu'un en fin de liste ou corriger l'ordre sans toucher aux lots.",
       actions: ["open_prepare"]
     },
     {
@@ -2362,7 +2403,13 @@ function directKephAnswer(message) {
     {
       intent: "explain_emotes_effects",
       test: () => /\b(?:emote|emotes|emoji|effet|effets|confetti|flash|feu artifice|lumiere)\b/.test(text),
-      answer: "Les emotes et effets donnent du relief aux dialogues. L'emote apparait avec la bulle pour montrer le ton de la replique, tandis qu'un effet special peut lancer une animation CSS comme confettis, flash ou coupure de lumiere. Tu les choisis dans le Studio de scenarios, directement sur la replique.",
+      answer: "Les effets spéciaux sont des animations visuelles déclenchées par une réplique : confettis, flash, coupure de lumière, fumée, glitch, projecteur, etc. Ils ne changent pas le tirage ; ils servent seulement à donner de l'impact à un moment du show. Dans le Studio de scénarios, choisis une réplique puis règle Effet spécial.",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "explain_me_cues",
+      test: () => /\b(?:slash me|indication scenique|indication scénique|commande me)\b/.test(text) || (/\bme\b/.test(text) && /\b(?:c est quoi|sert|signifie|veut dire|commande)\b/.test(text)),
+      answer: "Les /me sont des indications scéniques, pas des messages Discord. Au lieu de faire parler Charlie ou Victoria dans une grosse bulle, ça affiche une petite action près du personnage, par exemple « Charlie regarde la roue » ou « Victoria applaudit ». C'est pratique pour donner de la vie sans couper le dialogue principal.",
       actions: ["open_scenario_studio"]
     },
     {
@@ -2373,9 +2420,15 @@ function directKephAnswer(message) {
     },
     {
       intent: "explain_audio_panel",
-      test: () => /\b(?:mute|couper|volume|jingle|jingles|roulette|son actif)\b/.test(text),
+      test: () => !/\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text) && /\b(?:mute|couper|volume|jingle|jingles|roulette|son actif)\b/.test(text),
       answer: "La section Sons sert a controler l'ambiance sans fouiller partout : couper tous les sons, regler le volume des jingles, regler le volume de la roulette et tester les sons de scene. Avant un live Discord, c'est l'endroit a verifier pour eviter un jingle trop fort ou une roulette muette.",
       actions: ["open_audio"]
+    },
+    {
+      intent: "edit_lot_text_size",
+      test: () => /\b(?:taille|grossir|retrecir|agrandir|reduire|police|texte)\b/.test(text) && /\b(?:lot|lots|case|cases|roue)\b/.test(text),
+      answer: "Pour modifier la taille du texte d'un lot, ouvre Lots & roue puis Ouvrir le studio de la roulette. Va dans Design & PNG, sélectionne la case concernée, puis ajuste la taille du texte et sa position jusqu'à ce qu'il tienne bien dans la case. Ça change seulement l'affichage : les probabilités et stocks restent dans Lots & probabilités.",
+      actions: ["open_wheel_studio_design"]
     },
     {
       intent: "explain_visual_studio",
@@ -2422,7 +2475,7 @@ function fallbackKephAnswer(message, context = {}) {
   const picked = best?.feature || null;
   return {
     answer: picked?.answer || "Je peux t'aider sur la regie, la roue, les lots, les dialogues, les sons, l'historique, Discord et les actions a confirmer. Dis-moi ce que tu veux comprendre ou modifier.",
-    actions: normalizedKephActions(picked?.actions || ["open_prepare"], knowledge),
+    actions: normalizedKephActions(picked?.actions || [], knowledge),
     source: "fallback",
     matched: !!best
   };
@@ -2569,7 +2622,7 @@ app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
     const actions = guide.matched ? guide.actions : normalizedKephActions(ai?.actions, knowledge);
     res.json({
       answer: answer.slice(0, 1400),
-      actions: actions.length ? actions : guide.actions,
+      actions: actions.length ? actions : (guide.matched ? guide.actions : []),
       source: "ollama",
       intent: guide.intent || String(ai?.intent || "").slice(0, 80) || null,
       grounded: !!guide.matched,

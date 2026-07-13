@@ -63,7 +63,7 @@
     {
       "id": "dialogue_audio",
       "keywords": ["son dialogue", "audio dialogue", "mp3 dialogue", "bruitage dialogue", "son replique", "audio replique", "mp3 replique", "bruitage replique", "mp3", "bibliotheque audio"],
-      "answer": "Oui, tu peux mettre un son MP3/WAV/OGG sur une replique. Va dans Reglages > Scenes > Ouvrir le studio, selectionne ou cree la replique, puis dans le panneau de droite utilise le champ Bruitage / Son de la replique. Si le son n'existe pas encore, importe-le d'abord dans la bibliotheque audio de la section Scenes, puis reviens sur la replique pour l'assigner.",
+      "answer": "Oui, tu peux mettre un son MP3/WAV/OGG sur une replique. Va dans Reglages > Scenes > Ouvrir le studio, selectionne ou cree la replique, puis utilise le champ Bruitage dans le panneau de droite. Si le son n'existe pas encore, clique Importer juste a cote du champ Bruitage, choisis ton MP3/WAV/OGG, puis enregistre la replique.",
       "actions": ["open_scenario_studio"]
     },
     {
