@@ -2511,6 +2511,11 @@ function parseKephCommand(message, context = {}) {
     context.currentCandidate,
     context.nextParticipant
   ].map(cleanKephName).filter(Boolean))];
+  const helpOnly = /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment je peux|comment faire|comment ajouter|comment creer|comment modifier|comment utiliser|ou est|ou trouver|ca sert a quoi)\b/.test(normalized);
+  const explicitDoNow = /\b(?:tu peux|peux tu|peux-tu|stp|s il te plait|maintenant)\b/.test(normalized)
+    && /\b(?:ajoute|ajouter|cree|creer|mets|mettre|met|modifie|modifier|change|changer|renomme|renommer|supprime|supprimer|vide|vider|active|activer|desactive|desactiver|lance|lancer|joue|jouer|ouvre|ouvrir)\b/.test(normalized)
+    && !/\b(?:m aider|m expliquer|me guider|comment)\b/.test(normalized);
+  if (helpOnly && !explicitDoNow) return null;
   if (/\b(?:file|liste|queue|candidats|participants)\b/.test(normalized) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(normalized)) {
     const names = kephNamesFromListText(raw.split(/:|avec|pour/i).pop() || raw);
     const picked = names.length >= 2 ? names : ["Mira", "Grobid", "Tofu-Royal"];
