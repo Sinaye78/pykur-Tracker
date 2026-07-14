@@ -3472,9 +3472,10 @@ function fallbackKephAnswer(message, context = {}) {
       expectedAnswer: instantDoc.answer || instantDoc.content || ""
     };
   }
+  const docActions = docs.flatMap((doc) => doc.id !== "context" ? (doc.actions || []) : []);
   const guideActions = direct?.actions?.length ? direct.actions
     : uiMap?.actions?.length ? uiMap.actions
-      : siteQuestion ? normalizedKephActions(picked?.actions || docs.flatMap((doc) => doc.actions || []), knowledge) : [];
+      : siteQuestion ? normalizedKephActions(docActions.length ? docActions : (picked?.actions || []), knowledge) : [];
   const firstDoc = docs.find((doc) => doc.id !== "context");
   const expectedAnswer = direct?.answer || firstDoc?.content || "";
   return {
@@ -3482,7 +3483,7 @@ function fallbackKephAnswer(message, context = {}) {
     actions: guideActions,
     source: "retrieval",
     matched: !!(direct || uiMap || best || docs.length),
-    intent: direct?.intent || uiMap?.intent || picked?.id || "retrieval",
+    intent: direct?.intent || uiMap?.intent || firstDoc?.id || picked?.id || "retrieval",
     docs,
     expectedAnswer
   };
