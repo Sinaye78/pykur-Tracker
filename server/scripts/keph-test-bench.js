@@ -42,6 +42,8 @@ const cases = [
 
   { q: "a quoi sert le bouton lancer ?", expect: ["vrai tirage", "stock", "historique"], action: "open_prepare", avoid: ["charlie roulette sert"] },
   { q: "a quoi sert stop ?", expect: ["arrete", "roue"], action: "open_prepare" },
+  { q: "stop ca change quoi ?", expect: ["arrete", "roue"], action: "open_prepare", avoid: ["lancer demarre"] },
+  { q: "suivant consomme un stock ?", expect: ["non", "prochain participant"], action: "open_prepare", avoid: ["stocks servent"] },
   { q: "tu peux faire un tirage test ?", expect: ["tirage test", "sans toucher"], actionType: "start_test_draw" },
   { q: "a quoi sert tirage test ?", expect: ["sans", "stock", "historique"], action: "open_prepare" },
 
@@ -70,6 +72,8 @@ const cases = [
   { q: "c'est quoi la liste des effets spéciaux ?", expect: ["confettis", "flash"], action: "open_scenario_studio" },
 
   { q: "a quoi sert le jingle ?", expect: ["ouverture", "ambiance", "sans lancer la roue"], actionAny: ["open_scenario_studio", "open_audio"] },
+  { q: "est ce que le jingle lance la roue ?", expect: ["non", "ne lance pas la roue"], actionAny: ["open_scenario_studio", "open_audio"], avoid: ["je peux lancer"] },
+  { q: "a quoi sert presenter les candidats ?", expect: ["intro", "candidats"], action: "open_scenario_studio", avoid: ["participants servent"] },
   { q: "a quoi sert d'activer le charlie show ?", expect: ["interventions", "charlie", "victoria"], action: "open_scenario_studio" },
   { q: "a quoi ça sert d'activer l'option dialogue inclus", expect: ["defaut", "personnalise"], action: "open_scenario_studio" },
   { q: "a quoi sert l'option cochable annoncer le candidat suivant ?", expect: ["annonce", "apres un tirage"], action: "open_scenario_studio" },

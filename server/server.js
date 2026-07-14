@@ -2396,9 +2396,9 @@ function kephDocumentationSearch(message, context = {}) {
   const allDocs = kephDocumentation(context);
   const forcedIds = [];
   if (/\b(?:tu connais keph|qui est keph|qui es tu|tu es qui|tu t appelles comment)\b/.test(text)) forcedIds.push("keph_identity_human");
-  if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|pourquoi)\b/.test(text) && /\b(?:bouton\s+)?lancer\b/.test(text)) forcedIds.push("button_launch");
-  if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|pourquoi|quand utiliser)\b/.test(text) && /\bstop\b/.test(text)) forcedIds.push("button_stop");
-  if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|pourquoi|comment passer)\b/.test(text) && /\b(?:suivant|candidat suivant|participant suivant)\b/.test(text)) forcedIds.push("button_next");
+  if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|change quoi|pourquoi)\b/.test(text) && /\b(?:bouton\s+)?lancer\b/.test(text)) forcedIds.push("button_launch");
+  if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|change quoi|pourquoi|quand utiliser)\b/.test(text) && /\bstop\b/.test(text)) forcedIds.push("button_stop");
+  if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|change quoi|consomme|stock|pourquoi|comment passer)\b/.test(text) && /\b(?:suivant|candidat suivant|participant suivant)\b/.test(text)) forcedIds.push("button_next");
   if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|pourquoi)\b/.test(text) && /\b(?:presenter les candidats|presente les candidats|presentation candidats)\b/.test(text)) forcedIds.push("present_candidates_button");
   if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|pourquoi|quand)\b/.test(text) && /\bjingle\b/.test(text)) forcedIds.push("jingle_button");
   if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|pourquoi|quand)\b/.test(text) && /\b(?:scene finale|finale)\b/.test(text)) forcedIds.push("finale_button");
@@ -2410,7 +2410,7 @@ function kephDocumentationSearch(message, context = {}) {
   if (/\b(?:export|exporte|exporter|backup|telecharger|sauvegarder|garder|deplacer|déplacer|changer)\b/.test(text) && /\b(?:profil|profile|sauvegarde|configuration|pc|ordinateur|navigateur)\b/.test(text)) forcedIds.push("export_profile");
   if (/\b(?:candidat actuel|candidat suivant|dernier lot|lot concerne|lot concerné|nombre de candidats|nombre de gagnants|bouton|boutons|variable|variables)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text)) forcedIds.push("dialogue_tokens");
   if (/\b(?:annoncer automatiquement|annonce automatique|option cochable annoncer|option annoncer|candidat suivant automatique)\b/.test(text)) forcedIds.push("show_options");
-  if (/\b(?:a quoi sert|sert a quoi|ca sert a quoi|pourquoi|utilite)\b/.test(text) && !/\b(?:dialogue|dialogues|replique|repliques|option|cochable|annoncer|automatiquement)\b/.test(text) && /\b(?:participant|participants|candidat|candidats|file|liste d attente|file d attente)\b/.test(text)) forcedIds.push("participant_purpose");
+  if (/\b(?:a quoi sert|sert a quoi|ca sert a quoi|pourquoi|utilite)\b/.test(text) && !/\b(?:dialogue|dialogues|replique|repliques|option|cochable|annoncer|automatiquement|presenter|presentation|presente)\b/.test(text) && /\b(?:participant|participants|candidat|candidats|file|liste d attente|file d attente)\b/.test(text)) forcedIds.push("participant_purpose");
   if (/\b(?:comment|ajouter|creer|cree|mettre)\b/.test(text) && /\b(?:lot|lots|case|roue|roulette)\b/.test(text) && !/\b(?:dialogue|replique)\b/.test(text)) forcedIds.push("add_lot_howto");
   if (/\b(?:maximum|max|limite|combien|nombre)\b/.test(text) && /\b(?:lot|lots|case|cases|roue|roulette)\b/.test(text)) forcedIds.push("wheel_lot_limit");
   if (/\b(?:nouveau|premiere fois|jamais utilise|je suis perdu|utiliser le site|guide moi|me guider|commencer)\b/.test(text) && !/\b(?:pc|ordinateur|export|importe|importer|import|profil|profile)\b/.test(text)) forcedIds.push("first_live_steps");
@@ -2721,6 +2721,30 @@ function parseKephCommand(message, context = {}) {
       actions: [{ id: "open_scenario_studio", label: "Ouvrir le studio" }],
       source: "command",
       intent: "explain_dialogue_types"
+    };
+  }
+  if (/\b(?:est ce que|est-ce que|es ce que)\b/.test(normalized) && /\bjingle\b/.test(normalized) && /\b(?:lance|lancer|demarre|demarrer)\b/.test(normalized) && /\b(?:roue|tirage)\b/.test(normalized)) {
+    return {
+      answer: "Non. Le jingle joue l'ambiance d'ouverture ou de transition, avec ses sons/dialogues si tu les as configures. Il ne lance pas la roue, ne choisit pas de lot et ne consomme aucun stock.",
+      actions: [{ id: "open_scenario_studio", label: "Ouvrir le studio" }, { id: "open_audio", label: "Ouvrir Sons" }],
+      source: "command",
+      intent: "jingle_does_not_spin"
+    };
+  }
+  if (/\b(?:suivant|candidat suivant|participant suivant)\b/.test(normalized) && /\b(?:stock|consomme|consommer)\b/.test(normalized)) {
+    return {
+      answer: "Non. Suivant charge le prochain participant de la file, mais ne lance pas la roue et ne consomme pas de stock. Les stocks bougent seulement lors d'un vrai tirage avec Lancer.",
+      actions: [{ id: "open_prepare", label: "Ouvrir Preparer" }],
+      source: "command",
+      intent: "next_does_not_consume_stock"
+    };
+  }
+  if (/\bstop\b/.test(normalized) && /\b(?:change quoi|ca change quoi|fait quoi|sert a quoi|a quoi sert)\b/.test(normalized)) {
+    return {
+      answer: "Stop arrete la roue quand un tirage est en cours. C'est un bouton de controle live, pas un reglage : il ne change ni les lots, ni les stocks, ni la file.",
+      actions: [{ id: "open_prepare", label: "Ouvrir Preparer" }],
+      source: "command",
+      intent: "stop_button_purpose"
     };
   }
   if (/\b(?:liste|lister|quels sont|c est quoi|donne moi)\b/.test(normalized) && /\b(?:effet|effets|fx|speciaux|spéciaux)\b/.test(normalized)) {
@@ -3146,7 +3170,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "participant_purpose",
-      test: () => wantsPurpose && !/\b(?:dialogue|dialogues|replique|repliques|option|cochable|annoncer|automatiquement)\b/.test(text) && /\b(?:participant|participants|candidat|candidats|file|liste d attente|file d attente)\b/.test(text),
+      test: () => wantsPurpose && !/\b(?:dialogue|dialogues|replique|repliques|option|cochable|annoncer|automatiquement|presenter|presentation|presente)\b/.test(text) && /\b(?:participant|participants|candidat|candidats|file|liste d attente|file d attente)\b/.test(text),
       answer: "Les participants servent à définir qui passe dans la roulette et dans quel ordre. Le participant actuel est affiché sur la scène, ses dialogues peuvent utiliser son nom, et son nombre de lancers indique combien de vrais tirages il peut faire avant de passer au suivant. Sans participants, tu peux tester la roue, mais tu n'as pas de vrai déroulé de live.",
       actions: ["open_prepare"]
     },
