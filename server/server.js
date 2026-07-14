@@ -4465,7 +4465,7 @@ function kephCommandPlanFromRules(message, context = {}) {
   if (!creativeWriting && /\bstartdraw\b/.test(text)) add("startdraw");
   if (!creativeWriting && /\bstopdraw\b/.test(text)) add("stopdraw");
   if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\bjingle\b/.test(text)) add("startjingle");
-  if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\b(?:presentation|presenter les candidats|presente les candidats|la totale)\b/.test(text)) add("startpresentation");
+  if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start|presente|presenter)\b/.test(text) && /\b(?:presentation|presenter les candidats|presente les candidats|candidats|participants|la totale)\b/.test(text)) add("startpresentation");
   if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|annonce|annoncer|start)\b/.test(text) && /\b(?:candidat suivant|suivant|prochain candidat|la totale)\b/.test(text)) add("startnext");
   if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\bfinale\b/.test(text)) add("startfinale");
   if (wantsTestDraw || (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start|test)\b/.test(text) && /\b(?:tirage test|test roue|test roulette)\b/.test(text))) add("starttestdraw");
