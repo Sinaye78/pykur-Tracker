@@ -4117,6 +4117,7 @@ function isKephEditRequest(message = "") {
   if (/\b(?:supprime|supprimer|vide|vider|efface|effacer|retire|retirer|charge|charger|reorganise|reorganiser|ordre|tete de liste)\b/.test(text) && /\b(?:file|liste|queue|attente|candidats|participants|premier|deux|trois)\b/.test(text)) return true;
   if (/\b(?:relance|relances|lancer|lancers|participation|participations)\b/.test(text) && /\b\d{1,2}\b/.test(text)) return true;
   if (/\b(?:testeffect|testemote|startjingle|startpresentation|startnext|startfinale|starttestdraw|startrehearsal|startdraw|stopdraw)\b/.test(text)) return true;
+  if (/\b(?:presente|presenter|présente|présenter)\b/.test(text) && /\b(?:candidats|participants)\b/.test(text)) return true;
   if (/\b(?:detache|detacher|separe|separer)\b/.test(text) && /\b(?:regie|controle|panneau)\b/.test(text)) return true;
   if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && /\b(?:ecris|ecrire|redige|rediger|fais|faire|prepare|preparer|genere|generer|cree|creer)\b/.test(text)) return true;
   if (/\b(?:roue|roulette|lots?)\b/.test(text) && /\b(?:complete|6|six|cree|creer|genere|generer|vide|vider)\b/.test(text)) return true;
