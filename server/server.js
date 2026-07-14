@@ -2498,6 +2498,14 @@ function parseKephCommand(message, context = {}) {
   const raw = String(message || "").trim();
   const normalized = normalizeKephText(raw);
   const triggerLabels = { presentation: "Presentation", jingle: "Jingle", spin: "Pendant la roue", result: "Resultat", next: "Candidat suivant", finale: "Finale" };
+  if (/\b(?:idee|idees|idée|idées|tu ferais quoi|propose|suggestion|inspire)\b/.test(normalized) && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(normalized) && /\bjingle\b/.test(normalized)) {
+    return {
+      answer: "Pour un jingle drôle, je partirais sur des phrases courtes et faciles à jouer en live. Exemples : « Le jingle part, la dignité reste en coulisses. », « Victoria, vérifie que la roue n'a pas signé chez la concurrence. », « Le hasard entre sur scène, merci de ne pas le regarder directement. », « Si ça clignote, c'est normal. Si ça explose, c'était prévu. »",
+      actions: [{ id: "open_scenario_studio", label: "Ouvrir le studio" }],
+      source: "conversation",
+      intent: "jingle_dialogue_ideas"
+    };
+  }
   const triggerFromText = () => /\bfinale\b/.test(normalized) ? "finale"
     : /\b(?:suivant|prochain candidat|annonce candidat)\b/.test(normalized) ? "next"
       : /\b(?:resultat|gagnant|lot obtenu)\b/.test(normalized) ? "result"
