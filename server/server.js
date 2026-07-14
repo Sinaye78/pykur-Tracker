@@ -2211,6 +2211,8 @@ function kephUiMapAnswer(message) {
 function kephDocumentation(context = {}) {
   const currentCandidate = String(context?.currentCandidate || "").trim();
   const activeSection = String(context?.activeSection || "").trim();
+  const activePanel = String(context?.activePanel || context?.activeTab || context?.screen || "").trim();
+  const activeControl = String(context?.activeControl || context?.currentControl || context?.focusedField || context?.selectedField || "").trim();
   const docs = kephSiteDocs();
   const structuredDocuments = Array.isArray(docs.documents) ? docs.documents : [];
   const manualDocuments = kephSiteManualDocs();
@@ -2227,7 +2229,7 @@ function kephDocumentation(context = {}) {
         title: "Contexte actuel de la regie",
         keywords: ["maintenant", "actuel", "contexte", "ou je suis", "quoi faire"],
         actions: activeSection ? [activeSection === "wheel" ? "open_wheel_studio_lots" : activeSection === "show" ? "open_scenario_studio" : activeSection === "audio" ? "open_audio" : activeSection === "data" ? "open_data" : "open_prepare"] : [],
-        content: `Contexte lu par Keph: candidat affiche=${currentCandidate || "aucun"}, section active=${activeSection || "inconnue"}, configuration ouverte=${context?.configOpen ? "oui" : "non"}, lots disponibles=${Number(context?.availableLots || 0)}, son coupe=${context?.soundMuted ? "oui" : "non"}. Le nom du candidat affiche n'est pas le nom de l'organisateur.`
+        content: `Contexte lu par Keph: candidat affiche=${currentCandidate || "aucun"}, section active=${activeSection || "inconnue"}, panneau actif=${activePanel || "inconnu"}, controle/champ actif=${activeControl || "inconnu"}, configuration ouverte=${context?.configOpen ? "oui" : "non"}, lots disponibles=${Number(context?.availableLots || 0)}, son coupe=${context?.soundMuted ? "oui" : "non"}. Le nom du candidat affiche n'est pas le nom de l'organisateur.`
       }
     ];
   }
@@ -2383,7 +2385,7 @@ function kephDocumentation(context = {}) {
       title: "Contexte actuel de la regie",
       keywords: ["maintenant", "actuel", "contexte", "ou je suis", "quoi faire"],
       actions: activeSection ? [activeSection === "wheel" ? "open_wheel_studio_lots" : activeSection === "show" ? "open_scenario_studio" : activeSection === "audio" ? "open_audio" : activeSection === "data" ? "open_data" : "open_prepare"] : [],
-      content: `Contexte lu par Keph: candidat affiche=${currentCandidate || "aucun"}, section active=${activeSection || "inconnue"}, configuration ouverte=${context?.configOpen ? "oui" : "non"}, lots disponibles=${Number(context?.availableLots || 0)}, son coupe=${context?.soundMuted ? "oui" : "non"}. Le nom du candidat affiche n'est pas le nom de l'organisateur.`
+      content: `Contexte lu par Keph: candidat affiche=${currentCandidate || "aucun"}, section active=${activeSection || "inconnue"}, panneau actif=${activePanel || "inconnu"}, controle/champ actif=${activeControl || "inconnu"}, configuration ouverte=${context?.configOpen ? "oui" : "non"}, lots disponibles=${Number(context?.availableLots || 0)}, son coupe=${context?.soundMuted ? "oui" : "non"}. Le nom du candidat affiche n'est pas le nom de l'organisateur.`
     }
   ];
 }
@@ -2393,6 +2395,17 @@ function kephDocumentationSearch(message, context = {}) {
   const tokens = new Set(text.split(" ").filter((part) => part.length > 2));
   const allDocs = kephDocumentation(context);
   const forcedIds = [];
+  if (/\b(?:tu connais keph|qui est keph|qui es tu|tu es qui|tu t appelles comment)\b/.test(text)) forcedIds.push("keph_identity_human");
+  if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|pourquoi)\b/.test(text) && /\b(?:bouton\s+)?lancer\b/.test(text)) forcedIds.push("button_launch");
+  if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|pourquoi|quand utiliser)\b/.test(text) && /\bstop\b/.test(text)) forcedIds.push("button_stop");
+  if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|pourquoi|comment passer)\b/.test(text) && /\b(?:suivant|candidat suivant|participant suivant)\b/.test(text)) forcedIds.push("button_next");
+  if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|pourquoi)\b/.test(text) && /\b(?:presenter les candidats|presente les candidats|presentation candidats)\b/.test(text)) forcedIds.push("present_candidates_button");
+  if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|pourquoi|quand)\b/.test(text) && /\bjingle\b/.test(text)) forcedIds.push("jingle_button");
+  if (/\b(?:a quoi sert|sert a quoi|que fait|ca fait quoi|pourquoi|quand)\b/.test(text) && /\b(?:scene finale|finale)\b/.test(text)) forcedIds.push("finale_button");
+  if (/\b(?:comment|ou|où|ajouter|mettre|charger)\b/.test(text) && /\b(?:candidat|candidats|participant|participants|pseudo|pseudos)\b/.test(text) && !/\b(?:dialogue|replique)\b/.test(text)) forcedIds.push("add_candidates_howto");
+  if (/\b(?:verifier|vérifier|check|controler|contrôler)\b/.test(text) && /\b(?:lot|lots|roue|stocks?)\b/.test(text)) forcedIds.push("verify_lots_purpose");
+  if (/\b(?:couleur|couleurs|design|png|lisibilite|visuel)\b/.test(text) && /\b(?:case|cases|roue|lot|lots)\b/.test(text)) forcedIds.push("lot_color_design");
+  if (/\b(?:comment|ou|où|creer|créer|cree|crée|ajouter|ecrire|écrire)\b/.test(text) && /\b(?:dialogue|replique|phrase)\b/.test(text) && !/\b(?:son|audio|mp3|bruitage|effet|emote|variable|bouton)\b/.test(text)) forcedIds.push("create_dialogue_howto_precise");
   if (/\b(?:import|importe|importer|restaurer|charger|recuperer|récupérer)\b/.test(text) && /\b(?:profil|profile|sauvegarde|configuration|pc|ordinateur|navigateur)\b/.test(text)) forcedIds.push("import_profile");
   if (/\b(?:export|exporte|exporter|backup|telecharger|sauvegarder|garder|deplacer|déplacer|changer)\b/.test(text) && /\b(?:profil|profile|sauvegarde|configuration|pc|ordinateur|navigateur)\b/.test(text)) forcedIds.push("export_profile");
   if (/\b(?:candidat actuel|candidat suivant|dernier lot|lot concerne|lot concerné|nombre de candidats|nombre de gagnants|bouton|boutons|variable|variables)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text)) forcedIds.push("dialogue_tokens");
@@ -2412,6 +2425,9 @@ function kephDocumentationSearch(message, context = {}) {
     .map((doc) => {
       const haystack = normalizeKephText(`${doc.title} ${(doc.keywords || []).join(" ")} ${doc.content || ""} ${doc.answer || ""} ${(doc.examples || []).join(" ")}`);
       let score = 0;
+      const activeSection = normalizeKephText(context?.activeSection || "");
+      const activePanel = normalizeKephText(`${context?.activePanel || ""} ${context?.activeTab || ""} ${context?.screen || ""}`);
+      const activeControl = normalizeKephText(`${context?.activeControl || ""} ${context?.currentControl || ""} ${context?.focusedField || ""} ${context?.selectedField || ""}`);
       tokens.forEach((token) => { if (haystack.includes(token)) score += 1; });
       (doc.keywords || []).forEach((keyword) => {
         const normalizedKeyword = normalizeKephText(keyword);
@@ -2423,6 +2439,9 @@ function kephDocumentationSearch(message, context = {}) {
         if (!normalizedExample) return;
         if (text.includes(normalizedExample) || (text.length > 8 && normalizedExample.includes(text))) score += 24;
       });
+      if (activeSection && doc.section && normalizeKephText(doc.section) === activeSection) score += 3;
+      if (activePanel && haystack.includes(activePanel)) score += 8;
+      if (activeControl && haystack.includes(activeControl)) score += 16;
       if (doc.id === "context" && context?.activeSection) score += 1;
       return { ...doc, score };
     })
@@ -2524,6 +2543,18 @@ function parseKephCommand(message, context = {}) {
   const raw = String(message || "").trim();
   const normalized = normalizeKephText(raw);
   const triggerLabels = { presentation: "Presentation", jingle: "Jingle", spin: "Pendant la roue", result: "Resultat", next: "Candidat suivant", finale: "Finale" };
+  const activeControlText = normalizeKephText(`${context?.activeControl || ""} ${context?.currentControl || ""} ${context?.focusedField || ""} ${context?.selectedField || ""}`);
+  if (/^(?:a quoi sert|sert a quoi|ca sert a quoi|c est quoi|c quoi|pourquoi)\s*\??$/.test(normalized) && activeControlText) {
+    const doc = kephDocumentationSearch(`${raw} ${activeControlText}`, context).find((item) => item.id !== "context");
+    if (doc) {
+      return {
+        answer: doc.answer || doc.content || "Je vois le champ actif, mais je n'ai pas assez de detail pour l'expliquer proprement.",
+        actions: normalizedKephActions(doc.actions || [], charlieKephKnowledge()),
+        source: "conversation",
+        intent: doc.id || "contextual_help"
+      };
+    }
+  }
   if (/\b(?:idee|idees|idée|idées|tu ferais quoi|propose|suggestion|inspire)\b/.test(normalized) && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(normalized) && /\bjingle\b/.test(normalized)) {
     return {
       answer: "Pour un jingle drôle, je partirais sur des phrases courtes et faciles à jouer en live. Exemples : « Le jingle part, la dignité reste en coulisses. », « Victoria, vérifie que la roue n'a pas signé chez la concurrence. », « Le hasard entre sur scène, merci de ne pas le regarder directement. », « Si ça clignote, c'est normal. Si ça explose, c'était prévu. »",
@@ -3042,7 +3073,7 @@ function parseKephCommand(message, context = {}) {
     }
   }
   const addParticipantMatch = raw.match(/\b(?:ajoute|ajouter|mets|mettre)\b\s+(?:le\s+)?(?:candidat|participant)?\s*([A-Za-z0-9À-ÿ _-]{2,40})\s+(?:(?:a|à)\s+la\s+fin\s+(?:de\s+)?(?:la\s+)?(?:liste|file|queue)|(?:dans|a|à)\s+(?:la\s+)?(?:file|liste|queue))\b/i);
-  if (addParticipantMatch) {
+  if (!controlledCommands.length && addParticipantMatch) {
     const name = addParticipantMatch[1].trim().replace(/\s+/g, " ").slice(0, 40);
     if (name) {
       return {
@@ -3649,6 +3680,8 @@ function kephAiContext(message, context = {}) {
     nextParticipant: context?.nextParticipant || "",
     queueRemaining: context?.queueRemaining || 0,
     activeSection: context?.activeSection || "",
+    activePanel: context?.activePanel || context?.activeTab || context?.screen || "",
+    activeControl: context?.activeControl || context?.currentControl || context?.focusedField || context?.selectedField || "",
     configOpen: !!context?.configOpen,
     stage: context?.stage || "",
     soundMuted: !!context?.soundMuted,

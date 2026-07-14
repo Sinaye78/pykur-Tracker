@@ -30,6 +30,7 @@ const context = {
 const cases = [
   { q: "salut la forme ?", expect: ["salut"], avoid: ["documentation", "dialogue cible"], noActions: true },
   { q: "tu t appelles comment ?", expect: ["keph"], avoid: ["je peux t aider sur la regie"], noActions: true },
+  { q: "tu connais Keph ?", expect: ["keph", "assistant"], avoid: ["je ne vois pas"], noActions: true },
   { q: "qui suis-je ?", expectAny: ["je ne peux pas savoir", "candidat actuellement"], noActions: false },
   { q: "qui a cree Harry Potter ?", expect: ["rowling"], noActions: true },
   { q: "il est quelle heure ?", expectAny: ["il est", "heure"], noActions: true },
@@ -46,6 +47,7 @@ const cases = [
 
   { q: "ça sert à quoi de mettre des participants ?", expect: ["qui passe", "ordre", "lancers"], action: "open_prepare", avoid: ["pour ajouter"] },
   { q: "comment j'ajoute des candidats ?", expect: ["preparer", "pseudo", "charger"], action: "open_prepare" },
+  { q: "tu peux mettre le candidat Miette en premiere position sans supprimer les autres?", expect: ["set_queue", "Miette"], actionType: "command_batch", avoid: ["add_player"] },
   { q: "tu peux ajouter le candidat Capy a la fin de la liste", expect: ["capy"], actionType: "command_batch", avoid: ["capy a la fin"] },
   { q: "mets tous les candidats a 5 lancers", expect: ["commande", "controlee"], actionType: "command_batch" },
 
@@ -76,6 +78,8 @@ const cases = [
   { q: "a quoi sert exporter le profil ?", expect: ["fichier", "sauvegarde", "configuration"], action: "open_data" },
   { q: "d'accord, donc si je change d'ordinateur je peux exporter et importer sur le nouveau pc ?", expect: ["oui", "export", "import"], action: "open_data" },
   { q: "a quoi sert l historique ?", expect: ["vrais tirages", "gagnant"], action: "open_data" },
+  { q: "merci aurevoir !", expectAny: ["avec plaisir", "a bientot", "bonne"], noActions: true },
+  { q: "ca sert a quoi ?", context: { activeSection: "show", activePanel: "Studio de scenarios", activeControl: "Bruitage" }, expect: ["bruitage", "replique"], action: "open_scenario_studio", noInternalCommands: true },
   { q: "que faire si je me trompe de tirage ?", expect: ["corriger", "dernier tirage"], action: "open_data" },
 
   { q: "comment faire une scene Discord propre ?", expect: ["discord", "capture", "regie"], actionAny: ["highlight_discord", "detach_control"] },
@@ -94,20 +98,20 @@ function hasTerm(answer, term) {
   return normalize(answer).includes(normalize(term));
 }
 
-async function ask(question) {
+async function ask(question, extraContext = {}) {
   const started = Date.now();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   const response = await fetch(`${BASE_URL.replace(/\/$/, "")}/api/charlie-keph/ask`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ message: question, context }),
+    body: JSON.stringify({ message: question, context: { ...context, ...extraContext } }),
     signal: controller.signal
   }).finally(() => clearTimeout(timer));
   const elapsed = Date.now() - started;
   if (response.status === 429) {
     await new Promise((resolve) => setTimeout(resolve, RETRY_429_MS));
-    return ask(question);
+    return ask(question, extraContext);
   }
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   return { elapsed, payload: await response.json() };
@@ -119,7 +123,7 @@ async function ask(question) {
   for (const test of selected) {
     try {
       if (PAUSE_MS) await new Promise((resolve) => setTimeout(resolve, PAUSE_MS));
-      const { elapsed, payload } = await ask(test.q);
+      const { elapsed, payload } = await ask(test.q, test.context || {});
       const answer = payload.answer || "";
       const actions = Array.isArray(payload.actions) ? payload.actions : [];
       const missing = (test.expect || []).filter((term) => !hasTerm(answer, term));

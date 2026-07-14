@@ -733,6 +733,291 @@
         "passe en plein ecran",
         "detache la regie"
       ]
+    },
+    {
+      "id": "button_launch",
+      "section": "before",
+      "title": "Bouton Lancer",
+      "keywords": [
+        "bouton lancer",
+        "lancer",
+        "demarrer tirage",
+        "vrai tirage",
+        "tirage reel"
+      ],
+      "instant": true,
+      "location": "Regie > Live simple > Lancer",
+      "purpose": "Demarrer un vrai tirage pour le participant actuel.",
+      "live_use": "A utiliser quand tout est pret et que le candidat doit vraiment jouer.",
+      "modifies": "Peut consommer le stock du lot gagne, ajouter une ligne a l historique et retirer un lancer au participant.",
+      "does_not_modify": "Ne sert pas a tester sans consequence; pour ca il faut Tirage test ou Simuler un passage.",
+      "answer": "Lancer demarre un vrai tirage pour le participant actuel. C est le bouton live principal : la roue tourne, un resultat est choisi, puis le site peut consommer un stock, ecrire l historique et retirer un lancer. Pour essayer sans risque, utilise Tirage test.",
+      "actions": [
+        "open_prepare"
+      ],
+      "examples": [
+        "a quoi sert le bouton lancer ?",
+        "lancer ca fait quoi ?",
+        "est ce que lancer consomme un stock ?"
+      ]
+    },
+    {
+      "id": "button_stop",
+      "section": "before",
+      "title": "Bouton Stop",
+      "keywords": [
+        "bouton stop",
+        "stop",
+        "arreter la roue",
+        "stop possible"
+      ],
+      "instant": true,
+      "location": "Regie > Live simple > Stop",
+      "purpose": "Arreter une roue en cours de tirage ou reprendre la main en live.",
+      "live_use": "A utiliser pendant une rotation si tu dois couper ou valider l arret.",
+      "modifies": "Agit seulement sur la rotation en cours.",
+      "does_not_modify": "Ne change pas les lots, les dialogues ou la file de participants.",
+      "answer": "Stop sert a arreter la roue pendant un tirage en cours. C est le bouton de reprise en main live : il ne configure rien, il agit seulement sur la rotation actuelle.",
+      "actions": [
+        "open_prepare"
+      ],
+      "examples": [
+        "a quoi sert stop ?",
+        "quand utiliser stop ?"
+      ]
+    },
+    {
+      "id": "button_next",
+      "section": "before",
+      "title": "Bouton Suivant",
+      "keywords": [
+        "bouton suivant",
+        "suivant",
+        "candidat suivant",
+        "participant suivant",
+        "prochain candidat"
+      ],
+      "instant": true,
+      "location": "Regie > Live simple > Suivant",
+      "purpose": "Passer au prochain participant de la file.",
+      "live_use": "A utiliser quand le candidat actuel a termine son passage ou ses lancers.",
+      "modifies": "Change le participant actuel et prepare le suivant selon la file.",
+      "does_not_modify": "Ne lance pas la roue et ne consomme pas de stock.",
+      "answer": "Suivant charge le prochain participant de la file. Utilise-le quand le candidat actuel a fini son passage. Ca change le nom affiche et le contexte des dialogues, mais ca ne lance pas la roue.",
+      "actions": [
+        "open_prepare"
+      ],
+      "examples": [
+        "a quoi sert suivant ?",
+        "comment passer au candidat suivant ?"
+      ]
+    },
+    {
+      "id": "present_candidates_button",
+      "section": "show",
+      "title": "Bouton Presenter les candidats",
+      "keywords": [
+        "presenter les candidats",
+        "presente les candidats",
+        "presentation candidats",
+        "bouton presenter",
+        "presenter candidat"
+      ],
+      "instant": true,
+      "location": "Regie > boutons spectacle > Presenter les candidats",
+      "purpose": "Lancer la scene d introduction des candidats avant les tirages.",
+      "live_use": "A utiliser au debut du live pour presenter les personnes en lice et donner du rythme.",
+      "modifies": "Joue les dialogues/effects de l etape Presentation.",
+      "does_not_modify": "Ne lance pas la roue, ne consomme pas de stock, ne modifie pas l historique.",
+      "answer": "Presenter les candidats lance l intro spectacle. Ca sert a annoncer les candidats et faire parler Charlie/Victoria avant le premier tirage. C est uniquement de la scene : aucun stock, lot, historique ou lancer n est modifie.",
+      "actions": [
+        "open_scenario_studio"
+      ],
+      "examples": [
+        "a quoi sert presenter les candidats ?",
+        "est ce que presenter consomme un lancer ?",
+        "je peux modifier les dialogues de presentation ?"
+      ]
+    },
+    {
+      "id": "jingle_button",
+      "section": "show",
+      "title": "Bouton Jingle debut",
+      "keywords": [
+        "jingle debut",
+        "bouton jingle",
+        "start jingle",
+        "lancer le jingle",
+        "a quoi sert le jingle"
+      ],
+      "instant": true,
+      "location": "Regie > boutons spectacle > Jingle debut",
+      "purpose": "Jouer le moment d ouverture sonore/visuel du show.",
+      "live_use": "A utiliser pour lancer l ambiance avant le tirage ou entre deux moments forts.",
+      "modifies": "Joue le jingle et les dialogues/effects associes a l etape Jingle.",
+      "does_not_modify": "Ne tire pas de lot et ne change pas la file.",
+      "answer": "Le jingle sert a marquer un temps fort : ouverture du show, transition ou mise en ambiance. Il peut jouer un son et des dialogues de l etape Jingle, mais il ne lance pas la roue et ne touche pas aux stocks.",
+      "actions": [
+        "open_scenario_studio",
+        "open_audio"
+      ],
+      "examples": [
+        "a quoi sert le jingle ?",
+        "quand lancer le jingle ?",
+        "ou modifier les dialogues du jingle ?"
+      ]
+    },
+    {
+      "id": "finale_button",
+      "section": "show",
+      "title": "Bouton Scene finale",
+      "keywords": [
+        "scene finale",
+        "bouton finale",
+        "finale",
+        "fin du live",
+        "cloture"
+      ],
+      "instant": true,
+      "location": "Regie > boutons spectacle > Scene finale",
+      "purpose": "Lancer la sequence de cloture du live.",
+      "live_use": "A utiliser quand tous les candidats sont passes ou quand tu veux conclure le show.",
+      "modifies": "Joue les dialogues/effects de l etape Finale.",
+      "does_not_modify": "Ne vide pas la file, ne modifie pas les lots et ne corrige pas l historique.",
+      "answer": "Scene finale lance la conclusion du show. Elle sert a faire parler Charlie/Victoria pour cloturer proprement, sans changer la roue, les stocks ou l historique.",
+      "actions": [
+        "open_scenario_studio"
+      ],
+      "examples": [
+        "a quoi sert scene finale ?",
+        "quand utiliser la finale ?"
+      ]
+    },
+    {
+      "id": "add_candidates_howto",
+      "section": "before",
+      "title": "Ajouter des candidats",
+      "keywords": [
+        "ajouter candidats",
+        "ajouter des candidats",
+        "ajouter participant",
+        "charger la file",
+        "pseudo par ligne"
+      ],
+      "instant": true,
+      "location": "Regie > Preparer > File de participants",
+      "purpose": "Remplir la file pour que le live sache qui passe et dans quel ordre.",
+      "live_use": "A faire avant le live ou avant une nouvelle session de tirage.",
+      "modifies": "La file de participants et, si tu changes les compteurs, le nombre de lancers.",
+      "does_not_modify": "Ne modifie pas les lots ou l historique.",
+      "answer": "Pour ajouter des candidats, ouvre Preparer. Dans File de participants, ecris un pseudo par ligne, puis clique Charger. Le premier devient le participant actuel et Suivant passera au prochain. Ensuite tu peux regler le nombre de lancers de chaque candidat.",
+      "actions": [
+        "open_prepare"
+      ],
+      "examples": [
+        "comment j ajoute des candidats ?",
+        "comment charger la file ?",
+        "ou mettre les pseudos ?"
+      ]
+    },
+    {
+      "id": "verify_lots_purpose",
+      "section": "wheel",
+      "title": "Verifier les lots avant live",
+      "keywords": [
+        "verifier les lots",
+        "verifier lots",
+        "check lots",
+        "lots disponibles",
+        "stocks ok"
+      ],
+      "instant": true,
+      "location": "Reglages > Lots & roue > Studio de la roulette",
+      "purpose": "Controler que les lots actifs, poids et stocks sont coherents avant de lancer.",
+      "live_use": "A faire avant le live pour eviter un lot epuise, une chance incorrecte ou une case illisible.",
+      "modifies": "Rien si tu verifies seulement; tu peux ensuite ajuster poids, stock ou activation si besoin.",
+      "does_not_modify": "La verification seule ne touche pas aux dialogues ni a l historique.",
+      "answer": "Verifier les lots sert a eviter une mauvaise surprise en live : lot epuise encore actif, stock a zero, poids trop haut ou case illisible. C est une etape de controle avant de lancer, pas une action qui modifie toute seule la roue.",
+      "actions": [
+        "open_wheel_studio_lots"
+      ],
+      "examples": [
+        "a quoi sert de verifier les lots ?",
+        "pourquoi verifier les lots avant live ?"
+      ]
+    },
+    {
+      "id": "lot_color_design",
+      "section": "wheel",
+      "title": "Couleur et lisibilite des cases",
+      "keywords": [
+        "couleur case",
+        "couleurs cases",
+        "changer couleurs",
+        "couleur roue",
+        "design case"
+      ],
+      "instant": true,
+      "location": "Lots & roue > Studio de la roulette > Design & PNG",
+      "purpose": "Ameliorer la lisibilite et l apparence des cases sans changer les chances.",
+      "live_use": "A regler avant le live si le texte deborde ou si deux cases se ressemblent trop.",
+      "modifies": "Couleur, image, position, taille et texte visuel des cases.",
+      "does_not_modify": "Ne change pas le poids, le stock ou le resultat du tirage.",
+      "answer": "Oui, tu peux changer les couleurs des cases dans Design & PNG du Studio de la roulette. C est purement visuel : ca aide la lisibilite, mais ca ne change ni les poids, ni les stocks, ni les chances.",
+      "actions": [
+        "open_wheel_studio_design"
+      ],
+      "examples": [
+        "on peut changer les couleurs des cases ?",
+        "ou modifier la couleur de la roue ?"
+      ]
+    },
+    {
+      "id": "create_dialogue_howto_precise",
+      "section": "show",
+      "title": "Creer une replique",
+      "keywords": [
+        "comment creer un dialogue",
+        "creer dialogue",
+        "ajouter replique",
+        "nouvelle replique",
+        "ecrire dialogue"
+      ],
+      "instant": true,
+      "location": "Scenes > Studio de scenarios > Nouvelle replique",
+      "purpose": "Ajouter une phrase de Charlie/Victoria a une etape du live.",
+      "live_use": "A preparer avant le live pour Presentation, Jingle, Pendant la roue, Resultat, Suivant ou Finale.",
+      "modifies": "Ajoute une replique avec personnage, texte, type, ciblage, emote, effet et bruitage si choisi.",
+      "does_not_modify": "Ne change pas les lots, stocks ou historique.",
+      "answer": "Pour creer un dialogue, ouvre Scenes > Studio de scenarios. Choisis l etape a gauche, ecris la replique dans Nouvelle replique, choisis Charlie ou Victoria, puis ajoute si besoin une emote, un effet ou un bruitage. Termine avec Ajouter la replique.",
+      "actions": [
+        "open_scenario_studio"
+      ],
+      "examples": [
+        "comment creer un dialogue ?",
+        "comment ajouter une replique ?",
+        "ou ecrire une phrase pour Charlie ?"
+      ]
+    },
+    {
+      "id": "keph_identity_human",
+      "section": "before",
+      "title": "Keph assistant",
+      "keywords": [
+        "keph",
+        "tu connais keph",
+        "tu es qui",
+        "qui es tu",
+        "tu t appelles comment"
+      ],
+      "instant": true,
+      "answer": "Je suis Keph, l assistant de Charlie Roulette. Mon role est d aider l organisateur a comprendre les boutons, retrouver les reglages et preparer des actions a confirmer sans casser le live.",
+      "actions": [],
+      "examples": [
+        "tu connais Keph ?",
+        "tu t appelles comment ?",
+        "qui es tu ?"
+      ]
     }
   ],
   "generalFacts": [
