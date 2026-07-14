@@ -2627,7 +2627,7 @@ function parseKephCommand(message, context = {}) {
       intent: "explain_dialogue_types"
     };
   }
-  if (/\b(?:liste|lister|quels sont|c est quoi|donne moi)\b/.test(normalized) && /\b(?:effet|effets|fx|speciaux|spÃ©ciaux)\b/.test(normalized)) {
+  if (/\b(?:liste|lister|quels sont|c est quoi|donne moi)\b/.test(normalized) && /\b(?:effet|effets|fx|speciaux|spéciaux)\b/.test(normalized)) {
     return {
       answer: "Les effets speciaux disponibles sont : confettis, feu d'artifice, flash plateau, coupure lumiere, projecteurs, spotlight, shake leger, glitch, pluie d'etoiles, fumee, vague doree et alerte rouge. Ils se reglent sur une replique dans le Studio de scenarios.",
       actions: [{ id: "open_scenario_studio", label: "Ouvrir le studio" }],
@@ -3123,7 +3123,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "studios_purpose",
-      test: () => /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique)\b/.test(text) && /\bstudio\b/.test(text) && !/\b(?:scenario|scenarios|scÃ©nario|scÃ©narios|roulette|roue)\b/.test(text),
+      test: () => /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique)\b/.test(text) && /\bstudio\b/.test(text) && !/\b(?:scenario|scenarios|scénario|scénarios|roulette|roue)\b/.test(text),
       answer: "Quand tu dis le studio, il y en a surtout deux. Le Studio de la roulette sert a regler les lots, poids, stocks, textes et PNG de la roue. Le Studio de scenarios sert a regler les repliques de Charlie/Victoria, les emotes, effets speciaux, bruitages et etapes de scene. En live tu pilotes avec la regie ; hors live tu prepares dans les studios.",
       actions: ["open_wheel_studio_lots", "open_scenario_studio"]
     },
@@ -3730,41 +3730,41 @@ function kephScenarioDialogueCommands(trigger = "presentation", candidates = [])
   const first = candidates[0] || "{candidatactuel}";
   const templates = {
     presentation: [
-      ["charlie", `Bonsoir public, ce soir ${list} entrent dans la roulette la moins assuree juridiquement du serveur.`, "laugh", "spotlights", "dialogue"],
-      ["victoria", `Je rappelle que sourire avant un tirage augmente les chances de 0%, mais ca rend mieux sur Discord.`, "smile", "goldwave", "dialogue"],
+      ["charlie", `Bonsoir public, ce soir ${list} entrent dans la roulette la moins assurée juridiquement du serveur.`, "laugh", "spotlights", "dialogue"],
+      ["victoria", `Je rappelle que sourire avant un tirage augmente les chances de 0%, mais ça rend mieux sur Discord.`, "smile", "goldwave", "dialogue"],
       ["charlie", `Charlie ajuste trois fiches candidats et fait semblant de savoir lire les petites lignes.`, "question", "smoke", "me"],
-      ["victoria", `${first} ouvre le bal. Les autres peuvent encore negocier avec la roue, mais elle repond rarement.`, "star", "flash", "dialogue"]
+      ["victoria", `${first} ouvre le bal. Les autres peuvent encore négocier avec la roue, mais elle répond rarement.`, "star", "flash", "dialogue"]
     ],
     jingle: [
-      ["charlie", "Jingle lance, dignite rangee, on passe officiellement en mode spectacle.", "star", "spotlights", "dialogue"],
-      ["victoria", "Les lumieres montent, la roue brille, et Charlie vient de perdre le bouton mute.", "laugh", "goldwave", "dialogue"],
+      ["charlie", "Jingle lancé, dignité rangée, on passe officiellement en mode spectacle.", "star", "spotlights", "dialogue"],
+      ["victoria", "Les lumières montent, la roue brille, et Charlie vient de perdre le bouton mute.", "laugh", "goldwave", "dialogue"],
       ["charlie", "Charlie pointe la roue comme si elle lui devait de l'argent.", "angry", "smoke", "me"],
       ["victoria", `Bienvenue ${first}, installe-toi. Le hasard a mis une cravate pour l'occasion.`, "smile", "confetti", "dialogue"]
     ],
     spin: [
-      ["charlie", "{candidatactuel}, le bouton STOP existe. Je precise parce que la roue commence a prendre confiance.", "question", "alert", "dialogue"],
-      ["victoria", "Regardez bien la vitesse : c'est le moment ou tout le monde devient expert en probabilites.", "star", "spotlight", "dialogue"],
-      ["charlie", "Charlie fixe le pointeur avec l'intensite d'un comptable devant une facture mystere.", "sweat", "shake", "me"],
-      ["victoria", "Si ca tombe sur rien, on dira que c'etait une decision artistique.", "laugh", "glitch", "dialogue"]
+      ["charlie", "{candidatactuel}, le bouton STOP existe. Je précise parce que la roue commence à prendre confiance.", "question", "alert", "dialogue"],
+      ["victoria", "Regardez bien la vitesse : c'est le moment où tout le monde devient expert en probabilités.", "star", "spotlight", "dialogue"],
+      ["charlie", "Charlie fixe le pointeur avec l'intensité d'un comptable devant une facture mystère.", "sweat", "shake", "me"],
+      ["victoria", "Si ça tombe sur rien, on dira que c'était une décision artistique.", "laugh", "glitch", "dialogue"]
     ],
     result: [
-      ["victoria", "{candidatactuel} remporte {lot}. Le destin a parle, et cette fois il avait un micro.", "star", "confetti", "dialogue"],
+      ["victoria", "{candidatactuel} remporte {lot}. Le destin a parlé, et cette fois il avait un micro.", "star", "confetti", "dialogue"],
       ["charlie", "Charlie verifie le lot, le public, puis son plan de fuite.", "sweat", "flash", "me"],
       ["charlie", "Je confirme : {lot}, c'est officiel. Mon avocat dit que je dois dire bravo.", "laugh", "goldwave", "dialogue"],
       ["victoria", "Applaudissements pour {candidatactuel}. Meme la roue a l'air surprise.", "love", "stars", "dialogue"]
     ],
     next: [
       ["charlie", "On respire, on range les confettis imaginaires, et on appelle le prochain courageux.", "smile", "spotlight", "dialogue"],
-      ["victoria", "{candidatsuivant}, prepare-toi. La roue vient de finir son echauffement dramatique.", "star", "flash", "dialogue"],
-      ["charlie", "Charlie tourne la page du conducteur avec beaucoup trop de gravite.", "question", "smoke", "me"]
+      ["victoria", "{candidatsuivant}, prépare-toi. La roue vient de finir son échauffement dramatique.", "star", "flash", "dialogue"],
+      ["charlie", "Charlie tourne la page du conducteur avec beaucoup trop de gravité.", "question", "smoke", "me"]
     ],
     finale: [
-      ["victoria", "Merci a tous les candidats : {participants}. La roue retourne dans sa loge.", "love", "goldwave", "dialogue"],
-      ["charlie", "Charlie salue le public, puis demande discretement si les lots etaient bien rembourses.", "laugh", "confetti", "me"],
-      ["charlie", "Fin du show. Si quelqu'un demande, tout etait parfaitement prevu.", "star", "fireworks", "dialogue"]
+      ["victoria", "Merci à tous les candidats : {participants}. La roue retourne dans sa loge.", "love", "goldwave", "dialogue"],
+      ["charlie", "Charlie salue le public, puis demande discrètement si les lots étaient bien remboursés.", "laugh", "confetti", "me"],
+      ["charlie", "Fin du show. Si quelqu'un demande, tout était parfaitement prévu.", "star", "fireworks", "dialogue"]
     ],
     idle: [
-      ["charlie", "Petit temps mort. La roue attend, Victoria sourit, moi je soupconne un piege.", "question", "smoke", "dialogue"],
+      ["charlie", "Petit temps mort. La roue attend, Victoria sourit, moi je soupçonne un piège.", "question", "smoke", "dialogue"],
       ["victoria", "On peut prendre dix secondes. Le suspense aussi a besoin de s'hydrater.", "smile", "spotlight", "dialogue"]
     ]
   };
@@ -3831,12 +3831,24 @@ function kephCommandPlanFromRules(message, context = {}) {
     const picked = names.length >= 2 ? names : ["Mira", "Grobid", "Tofu-Royal"];
     add(`set_queue ${picked.slice(0, 6).map(quoteCommandArg).join(" ")}`);
   }
-  if (/\b(?:roue|roulette|lots?)\b/.test(text) && /\b(?:complete|6|six|cree|creer|genere|generer)\b/.test(text)) {
-    const lots = [
+  if (/\b(?:roue|roulette|lots?)\b/.test(text) && /\b(?:complete|6|six|10|dix|cree|creer|genere|generer)\b/.test(text)) {
+    const tenLots = /\b(?:10|dix)\b/.test(text);
+    const lots = tenLots ? [
+      ["Couronne de l'Imprévu", 18, 3, "#c1121f"],
+      ["Bourse Astrale 250.000k", 16, 3, "#023e8a"],
+      ["Relance Éclair", 14, 2, "#ffd60a"],
+      ["Coffre Mimique", 12, 2, "#2dc653"],
+      ["Potion de Panique Douce", 10, 4, "#6f2dbd"],
+      ["Contrat du Destin", 9, 2, "#f77f00"],
+      ["Ticket Double Frisson", 8, 2, "#00b4d8"],
+      ["Malus: Éloge de Charlie", 7, 5, "#7f0000"],
+      ["Bénédiction de Victoria", 5, 1, "#ff70a6"],
+      ["Jackpot Néon", 3, 1, "#80ffdb"]
+    ] : [
       ["Ticket VIP du Chaos", 26, 4, "#c1121f"],
       ["Bourse qui clignote 200.000k", 18, 3, "#023e8a"],
       ["Relance du Destin", 16, 2, "#ffd60a"],
-      ["Cadeau mystere suspect", 14, 2, "#2dc653"],
+      ["Cadeau mystère suspect", 14, 2, "#2dc653"],
       ["Malus: compliment a Charlie", 12, 5, "#6f2dbd"],
       ["Jackpot des Kamavores", 6, 1, "#f77f00"]
     ];
@@ -3994,7 +4006,7 @@ async function askRemoteKephCommandPlan(message, context = {}, timeoutMs = 7000)
     const commands = (Array.isArray(parsed.commands) ? parsed.commands : [])
       .map((command) => String(command || "").trim())
       .filter((command) => command.length <= 900 && kephCommandAllowed(command))
-      .slice(0, 20);
+      .slice(0, 40);
     if (!commands.length) return null;
     return { answer: String(parsed.answer || "Je peux preparer ces commandes controlees.").slice(0, 500), commands };
   } catch (error) {
@@ -4133,7 +4145,7 @@ app.get("/api/charlie-keph/status", asyncRoute(async (req, res) => {
 async function resolveKephReply(message, context = {}) {
   const commandPlan = await kephCommandPlan(message, context);
   if (commandPlan?.commands?.length) {
-    const commands = commandPlan.commands.slice(0, 20);
+    const commands = commandPlan.commands.slice(0, 40);
     return {
       answer: `${commandPlan.answer}\n\n${commands.map((command) => `/${command}`).join("\n")}`,
       actions: [
@@ -4298,7 +4310,7 @@ app.post("/api/charlie-keph/feedback", kephLimiter, asyncRoute(async (req, res) 
 }));
 
 app.post("/api/charlie-keph/command-rejections", kephLimiter, asyncRoute(async (req, res) => {
-  const items = Array.isArray(req.body?.items) ? req.body.items.slice(0, 20) : [];
+  const items = Array.isArray(req.body?.items) ? req.body.items.slice(0, 40) : [];
   const question = String(req.body?.question || "").trim().slice(0, 1000);
   const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
   const stmt = db.prepare(`
@@ -6070,7 +6082,7 @@ app.get("/api/moderation/security-bans", requireAuth, requireRole("moderator"), 
 app.post("/api/moderation/users/:id/ip-ban", requireAuth, requireRole("moderator"), requirePermission("users.ip.ban"), (req, res) => {
   const target = getUserById(req.params.id);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
-  if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Vous ne pouvez pas modÃ©rer ce rÃ´le." });
+  if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Vous ne pouvez pas modérer ce rôle." });
   const ip = normalizeIpAddress(req.body.ipAddress || target.last_ip_address);
   if (!ip) return res.status(400).json({ error: "Aucune IP connue pour ce membre." });
   const reason = String(req.body.reason || "").trim().slice(0, 300);
@@ -6090,7 +6102,7 @@ app.post("/api/moderation/users/:id/ip-ban", requireAuth, requireRole("moderator
 app.post("/api/moderation/users/:id/browser-ban", requireAuth, requireRole("moderator"), requirePermission("users.browser.ban"), (req, res) => {
   const target = getUserById(req.params.id);
   if (!target) return res.status(404).json({ error: "Utilisateur introuvable." });
-  if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Vous ne pouvez pas modÃ©rer ce rÃ´le." });
+  if (!canModerateTarget(req.user, target)) return res.status(403).json({ error: "Vous ne pouvez pas modérer ce rôle." });
   const browserId = normalizeBrowserId(req.body.browserId || target.last_browser_id);
   if (!browserId) return res.status(400).json({ error: "Aucun navigateur connu pour ce membre." });
   const reason = String(req.body.reason || "").trim().slice(0, 300);
