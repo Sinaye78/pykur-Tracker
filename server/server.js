@@ -3028,6 +3028,36 @@ function directKephAnswer(message) {
             : "Presentation";
   const directAnswers = [
     {
+      intent: "effect_howto",
+      test: () => /\b(?:comment|comment faire|comment mettre|comment ajouter|ou|ou est|ou mettre|mettre|ajouter)\b/.test(text) && /\b(?:effet|effets|fx|speciaux|special|confetti|flash|fumee|glitch)\b/.test(text),
+      answer: "Pour mettre un effet spécial, ouvre Réglages > Scènes > Studio de scénarios, sélectionne ou crée une réplique, puis règle le champ Effet spécial dans le panneau d'édition. L'effet se déclenchera quand cette réplique se joue. Utilise-les surtout sur les moments forts : intro, résultat, finale ou grosse blague.",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "jingle_dialogue_ideas",
+      test: () => /\b(?:idee|idees|idée|idées|tu ferais quoi|propose|suggestion|inspire)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && /\bjingle\b/.test(text),
+      answer: "Oui. Pour un jingle drôle, je partirais sur des phrases courtes et très rythmées. Exemples : « Le jingle part, la dignité reste en coulisses. », « Victoria, vérifie que la roue n'a pas signé chez la concurrence. », « Le hasard entre sur scène, merci de ne pas le regarder directement. », « Si ça clignote, c'est normal. Si ça explose, c'était prévu. »",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "dialogue_capability",
+      test: () => /\b(?:tu sais|tu peux|est ce que tu peux|possible)\b/.test(text) && /\b(?:creer|créer|faire|ecrire|écrire|rediger|rédiger)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && !/\b(?:maintenant|ajoute|ajouter|cree moi|crée moi|fais moi|ecris moi|écris moi)\b/.test(text),
+      answer: "Oui, je peux t'aider à créer des dialogues. Si tu veux juste des idées, je te propose du texte sans rien modifier. Si tu veux que je les ajoute au site, dis-le clairement, par exemple : « ajoute 3 dialogues pour le jingle avec Charlie et Victoria ». Dans ce cas je prépare des commandes à confirmer.",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "prepare_location",
+      test: () => /\b(?:ou|où|ou est|où est|ou trouver|où trouver|c est ou|c'est où)\b/.test(text) && /\b(?:preparer|préparer|avant live)\b/.test(text),
+      answer: "Préparer est dans la configuration/régie, côté Avant live. C'est l'endroit où tu règles le participant actuel, la file de candidats, les lancers, la checklist et les raccourcis. Je peux t'ouvrir directement ce panneau.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "add_candidates_howto",
+      test: () => /\b(?:comment|comment faire|ou|où|je veux|j ajoute|ajouter|mettre)\b/.test(text) && /\b(?:candidat|candidats|participant|participants)\b/.test(text) && !/\b(?:dialogue|replique|réplique)\b/.test(text),
+      answer: "Pour ajouter des candidats, ouvre Préparer. Dans la file de participants, écris un pseudo par ligne, puis clique sur Charger. Le premier devient le participant actuel, et Suivant passera au prochain. Tu peux aussi régler le nombre de lancers de chaque candidat dans la liste complète.",
+      actions: ["open_prepare"]
+    },
+    {
       intent: "dialogue_sound_howto",
       test: () => /\b(?:comment|comment faire|ou|ou est|ajouter|mettre|associer|assigner)\b/.test(text) && /\b(?:son|audio|musique|mp3|wav|ogg|bruitage)\b/.test(text) && /\b(?:dialogue|replique|réplique)\b/.test(text),
       answer: "Pour mettre un son sur une réplique, ouvre Réglages > Scènes > Studio de scénarios, sélectionne ou crée la réplique, puis utilise le champ Bruitage dans le panneau d'édition. Si ton MP3/WAV/OGG n'est pas encore dans la bibliothèque, importe-le depuis ce champ, puis enregistre la réplique. Ce son se jouera avec ce dialogue, alors que la section Sons règle plutôt les volumes globaux et les jingles.",
@@ -3721,7 +3751,8 @@ const KEPH_EDIT_COMMANDS = [
 
 function isKephEditRequest(message = "") {
   const text = normalizeKephText(message);
-  const learningQuestion = /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment fonctionne|comment je peux|comment faire|comment ajouter|comment creer|comment modifier|comment utiliser|ou est|ou se trouve|ou trouver|que fait|ca sert a quoi)\b/.test(text);
+  if (/\b(?:ne cree rien|ne creer rien|ne cree pas|ne creer pas|sans creer|sans modifier|juste des idees|juste des idées|donne moi des idees|donne moi des idées|tu ferais quoi|tu sais creer|tu sais créer)\b/.test(text)) return false;
+  const learningQuestion = /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment fonctionne|comment je peux|comment faire|comment ajouter|comment creer|comment modifier|comment utiliser|comment mettre|ou est|ou se trouve|ou trouver|ou mettre|que fait|ca sert a quoi)\b/.test(text);
   const yesNoQuestion = /\b(?:on peut|peut on|est ce que|possible|je peux)\b/.test(text);
   const explicitDoNow = /\b(?:tu peux|peux tu|peux-tu|stp|s il te plait|maintenant)\b/.test(text)
     && /\b(?:ajoute|ajouter|cree|creer|mets|mettre|met|modifie|modifier|change|changer|renomme|renommer|supprime|supprimer|vide|vider|active|activer|desactive|desactiver|lance|lancer|joue|jouer|ouvre|ouvrir)\b/.test(text)
@@ -3861,7 +3892,8 @@ function kephCommandAllowed(command = "") {
 function kephCommandPlanFromRules(message, context = {}) {
   const raw = String(message || "");
   const text = normalizeKephText(raw);
-  const helpOnly = /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment je peux|comment faire|comment ajouter|comment creer|comment modifier|comment utiliser|ou est|ou trouver|ca sert a quoi)\b/.test(text);
+  if (/\b(?:ne cree rien|ne creer rien|ne cree pas|ne creer pas|sans creer|sans modifier|juste des idees|juste des idées|donne moi des idees|donne moi des idées|tu ferais quoi|tu sais creer|tu sais créer)\b/.test(text)) return null;
+  const helpOnly = /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment je peux|comment faire|comment ajouter|comment creer|comment modifier|comment utiliser|comment mettre|ou est|ou trouver|ou mettre|ca sert a quoi)\b/.test(text);
   const explicitDoNow = /\b(?:tu peux|peux tu|peux-tu|stp|s il te plait|maintenant)\b/.test(text)
     && /\b(?:ajoute|ajouter|cree|creer|mets|mettre|met|modifie|modifier|change|changer|renomme|renommer|supprime|supprimer|vide|vider|active|activer|desactive|desactiver|lance|lancer|joue|jouer|ouvre|ouvrir)\b/.test(text)
     && !/\b(?:m aider|m expliquer|me guider|comment)\b/.test(text);
