@@ -4086,6 +4086,12 @@ function kephCommandPlanFromRules(message, context = {}) {
     context.currentCandidate,
     context.nextParticipant
   ].map(cleanKephName).filter(Boolean))];
+  const frontQueueMatch = raw.match(/\b(?:mets|met|mettre|place|placer|deplace|déplace)\s+(?:le\s+)?(?:candidat|participant|joueur)?\s*([A-Za-z0-9À-ÿ _-]{2,40})\s+(?:en|a|à)\s+(?:premiere|première|premier|1ere|1er|tete|tête)\b/i);
+  if (frontQueueMatch && /\b(?:file|liste|queue|position|ordre|premiere|premiere|tete|tête)\b/.test(text)) {
+    const target = findKephBestName(participantNames, cleanKephName(frontQueueMatch[1])) || cleanKephName(frontQueueMatch[1]);
+    const rest = participantNames.filter((name) => normalizeKephText(name) !== normalizeKephText(target));
+    add(`set_queue ${[target, ...rest].map(quoteCommandArg).join(" ")}`);
+  }
   if (creativeWriting
     && /\b(?:presenter|presentation|présenter|présentation)\b/.test(text)
     && /\b(?:candidat|candidats|participant|participants)\b/.test(text)) {
