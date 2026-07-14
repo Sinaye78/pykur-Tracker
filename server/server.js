@@ -2745,7 +2745,7 @@ function parseKephCommand(message, context = {}) {
   }
   if (/^(?:ca|cela|ce truc|c est|cest)?\s*(?:se trouve|est)?\s*ou\s*\??$/.test(normalized) || /^ou\s*\??$/.test(normalized)) {
     return {
-      answer: "Je peux te guider, mais il me manque le nom du bouton ou de l'option. Dis-moi par exemple : \"ou se trouve le bruitage d'une replique ?\", \"ou modifier le poids d'un lot ?\" ou \"ou est le mode Discord ?\".",
+      answer: "Tu parles de quel bouton ou quelle option ? Precise le nom exact, par exemple : \"ou se trouve le bruitage d'une replique ?\", \"ou modifier le poids d'un lot ?\" ou \"ou est le mode Discord ?\".",
       actions: [],
       source: "conversation",
       intent: "ambiguous_location"

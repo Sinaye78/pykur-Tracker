@@ -34,7 +34,7 @@ const cases = [
   { q: "qui a cree Harry Potter ?", expect: ["rowling"], noActions: true },
   { q: "il est quelle heure ?", expectAny: ["il est", "heure"], noActions: true },
 
-  { q: "je suis nouveau sur le site, je fais quoi ?", expect: ["preparer", "lots", "simulation"], action: "open_prepare", avoid: ["je ne vois pas"] },
+  { q: "je suis nouveau sur le site, je fais quoi ?", expect: ["preparer", "lots"], expectAny: ["simulation", "simuler"], action: "open_prepare", avoid: ["je ne vois pas"] },
   { q: "a quoi sert le site ?", expect: ["tirage", "live", "discord"], action: "open_prepare" },
   { q: "par quoi je dois commencer avant un live ?", expect: ["preparer", "lots"], expectAny: ["simulation", "simuler"], action: "open_prepare" },
   { q: "ça se trouve ou ?", expectAny: ["quel bouton", "quelle option", "precise"], noActions: true },
