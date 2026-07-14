@@ -3252,7 +3252,7 @@ function directKephAnswer(message, context = {}) {
     },
     {
       intent: "profile_transfer",
-      test: () => /\b(?:changer|nouveau|autre|transfert|transferer|deplacer|deplacer)\b/.test(text) && /\b(?:ordinateur|pc|navigateur)\b/.test(text) && /\b(?:export|exporter|import|importer|profil|profile|sauvegarde|configuration)\b/.test(text),
+      test: () => /\b(?:changer|change|nouveau|autre|transfert|transferer|deplacer|deplacer|garder|recuperer|récupérer)\b/.test(text) && /\b(?:ordinateur|pc|navigateur)\b/.test(text) && /\b(?:export|exporter|import|importer|profil|profile|sauvegarde|configuration|roulette|garder|recuperer|récupérer)\b/.test(text),
       answer: "Oui. Pour changer d'ordinateur ou de navigateur, exporte d'abord le profil sur l'ancien poste, puis importe ce fichier sur le nouveau. Le profil contient la configuration de la roulette : participants, lots, poids, stocks, dialogues, sons, raccourcis et options. Fais toujours l'export avant l'import, parce que l'import remplace la configuration courante.",
       actions: ["open_data"]
     },
@@ -3278,6 +3278,12 @@ function directKephAnswer(message, context = {}) {
       intent: "add_lot_howto",
       test: () => /\b(?:comment|comment faire|comment ajouter|ajouter|mettre|creer|créer)\b/.test(text) && /\b(?:lot|lots|case|roue|roulette)\b/.test(text) && !/\b(?:dialogue|replique|réplique)\b/.test(text),
       answer: "Oui. Pour ajouter un lot, ouvre Lots & roue puis le Studio de la roulette. Dans Lots & probabilités, ajoute une case, donne-lui un nom, un poids et éventuellement un stock. Ensuite passe dans Design & PNG si tu veux ajuster le texte, la couleur ou l'image de la case.",
+      actions: ["open_wheel_studio_lots"]
+    },
+    {
+      intent: "stock_unavailable_result",
+      test: () => /\b(?:stock|stocks)\b/.test(text) && /\b(?:plus|zero|zéro|epuise|épuisé|vide)\b/.test(text) && /\b(?:tomber|sortir|retomber|gagner|possible|peut)\b/.test(text),
+      answer: "Non. Si le stock d'un lot est activé et tombe à zéro, la case devient indisponible : elle est grisée sur la roue et les prochains candidats ne peuvent plus tomber dessus. Pour la remettre en jeu, il faut remonter son stock ou désactiver la limite de stock.",
       actions: ["open_wheel_studio_lots"]
     },
     {
