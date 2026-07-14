@@ -2481,13 +2481,14 @@ function isKephSiteQuestion(message) {
   return /\b(?:site|application|bouton|option|live|preparer|studio|show|charlie|victoria|roulette|regie|roue|lot|lots|stock|poid|poids|participant|candidat|dialogue|replique|scenario|scene|jingle|son|audio|bruitage|mp3|discord|obs|historique|profil|profile|sauvegarde|raccourci|lancer|stop|tirage|configuration|keph|emote|effet|ciblage)\b/.test(text);
 }
 
-const KEPH_REPLY_MODES = new Set(["auto", "discussion", "help", "action", "creative"]);
+const KEPH_REPLY_MODES = new Set(["auto", "discussion", "help", "action", "creative", "diagnostic"]);
 
 function normalizeKephMode(value) {
   const mode = normalizeKephText(value);
   if (["aide", "help", "doc", "documentation"].includes(mode)) return "help";
   if (["action", "commande", "commandes", "modifier"].includes(mode)) return "action";
   if (["creatif", "creative", "creation", "scenario", "idees", "idee"].includes(mode)) return "creative";
+  if (["diagnostic", "diag", "check", "controle", "etat"].includes(mode)) return "diagnostic";
   if (["discussion", "chat", "humain", "general"].includes(mode)) return "discussion";
   return "auto";
 }
@@ -2501,6 +2502,7 @@ function classifyKephMode(message, context = {}) {
   const selected = kephSelectedMode(context);
   if (selected !== "auto") return selected;
   const text = normalizeKephText(message);
+  if (/\b(?:pourquoi je peux pas|pourquoi je ne peux pas|impossible|bloque|bloquee|bloqué|bloquée|diagnostic|check|tout va bien|je peux lancer|pret|prêt)\b/.test(text)) return "diagnostic";
   if (isKephEditRequest(message)) return "action";
   if (/\b(?:idee|idees|idée|idées|imagine|propose|inspire|blague|drôle|drole|scenario|scénario|ecris|écris|redige|rédige)\b/.test(text)
     && /\b(?:dialogue|dialogues|replique|repliques|jingle|presentation|finale|scene|show|candidats?)\b/.test(text)) return "creative";
@@ -2514,7 +2516,8 @@ function kephModeLabel(mode) {
     discussion: "Discussion",
     help: "Aide",
     action: "Action",
-    creative: "Creatif"
+    creative: "Creatif",
+    diagnostic: "Diagnostic"
   }[mode] || "Auto";
 }
 
@@ -3186,7 +3189,7 @@ function parseKephCommand(message, context = {}) {
   return null;
 }
 
-function directKephAnswer(message) {
+function directKephAnswer(message, context = {}) {
   const text = normalizeKephText(message);
   const yesNo = /\b(?:est ce que|peut on|on peut|possible|je peux|peux)\b/.test(text);
   const wantsHow = /\b(?:comment|comment faire|ou|ou est|ou aller|je veux|pour)\b/.test(text);
@@ -3198,6 +3201,48 @@ function directKephAnswer(message) {
           : /\bfinale\b/.test(text) ? "Finale"
             : "Presentation";
   const directAnswers = [
+    {
+      intent: "conversation_greeting",
+      test: () => /\b(?:salut|coucou|hello|yo|bonjour)\b/.test(text) && /\b(?:ca va|ça va|la forme|forme|comment vas tu)\b/.test(text),
+      answer: "Salut, oui ça va bien. Je suis là pour t'aider tranquillement, que ce soit pour comprendre le site, préparer un live ou juste tester une idée.",
+      actions: []
+    },
+    {
+      intent: "conversation_introduction",
+      test: () => /\b(?:enchante|enchant[eé]|ravi|ravie)\b/.test(text) && text.split(" ").length <= 8,
+      answer: "Enchanté. Moi c'est Keph, l'assistant de régie de Charlie Roulette. Tu peux me parler normalement, ou me demander d'ouvrir un réglage précis.",
+      actions: []
+    },
+    {
+      intent: "conversation_thanks",
+      test: () => /\b(?:merci|thanks)\b/.test(text) && text.split(" ").length <= 8,
+      answer: "Avec plaisir. Bon live, et je reste dans le coin si tu veux vérifier un réglage.",
+      actions: []
+    },
+    {
+      intent: "stream_public_scene",
+      test: () => /\b(?:stream|streamer|diffuse|diffuser|montrer|partager|capture|capturer)\b/.test(text) && /\b(?:interface|participant|participants|discord|obs|scene|scène|regie|régie)\b/.test(text),
+      answer: "Pas toute l'interface. En live, l'idée est de montrer surtout la scène publique propre : roue, candidat, dialogues, résultat et ambiance. La régie sert à piloter et à configurer; idéalement elle reste hors capture Discord/OBS ou détachée sur un autre écran.",
+      actions: ["highlight_discord", "detach_control"]
+    },
+    {
+      intent: "start_with_candidate_queue",
+      test: () => /\b(?:d accord|du coup|ok|donc)\b/.test(text) && /\b(?:commence|commencer|debuter|démarrer)\b/.test(text) && /\b(?:liste|file|candidat|candidats|participant|participants)\b/.test(text),
+      answer: "Oui, commence par là. Charge d'abord la file de candidats, vérifie le participant actuel et le nombre de lancers de chacun. Ensuite passe aux lots/stocks, puis fais une simulation avant le vrai live.",
+      actions: ["open_prepare", "highlight_rehearsal"]
+    },
+    {
+      intent: "after_queue_next_steps",
+      test: () => /\b(?:apres|après|ensuite|une fois|termine|terminé|fini)\b/.test(text) && /\b(?:file|liste|candidat|candidats|participant|participants)\b/.test(text),
+      answer: "Après la file, vérifie la roue : noms des lots, poids, stocks et lots indisponibles. Ensuite teste les sons/dialogues avec Simuler un passage. Quand tout est propre, tu peux passer en scène Discord/OBS et lancer le vrai passage.",
+      actions: ["open_wheel_studio_lots", "highlight_rehearsal", "highlight_discord"]
+    },
+    {
+      intent: "new_user_create_wheel_help",
+      test: () => /\b(?:nouveau|nouvelle|premiere fois|première fois|jamais utilise|jamais utilisé)\b/.test(text) && /\b(?:aider|m aider|m'aide|ml aider|ml'aide|maider|guide)\b/.test(text) && /\b(?:creer|créer|faire|preparer|préparer)\b/.test(text) && /\b(?:roue|roulette|lot|lots)\b/.test(text),
+      answer: "Oui. Pour créer ta roue, fais simple : ouvre Lots & roue, ajoute tes lots, donne un poids à chaque case, coche un stock si le lot doit être limité, puis regarde le rendu dans Design & PNG. Quand les cases sont lisibles, fais un tirage test pour vérifier le rythme sans toucher aux stocks.",
+      actions: ["open_wheel_studio_lots"]
+    },
     {
       intent: "ambiguous_location",
       test: () => /\b(?:ca se trouve ou|ça se trouve ou|c est ou|c'est ou|ou ca|ou ça)\b/.test(text) && text.split(" ").length <= 6,
@@ -3646,12 +3691,13 @@ function directKephAnswer(message) {
 
 function fallbackKephAnswer(message, context = {}) {
   const knowledge = charlieKephKnowledge();
-  const diagnostic = kephDiagnostics(message, context);
-  if (diagnostic) return diagnostic;
   const text = normalizeKephText(message);
-  const direct = directKephAnswer(message);
+  const diagnostic = kephDiagnostics(message, context);
+  const direct = directKephAnswer(message, context);
   const uiMap = kephUiMapAnswer(message);
+  if (diagnostic && !direct) return diagnostic;
   if (direct) return direct;
+  if (diagnostic) return diagnostic;
   if (uiMap) return uiMap;
   const siteQuestion = isKephSiteQuestion(message);
   const keywordScore = (keyword) => {
@@ -3867,6 +3913,10 @@ function kephRemotePrompt(mode = "auto") {
       "MODE CREATIF: aide a imaginer ou rediger des dialogues/scenarios. Sois vivant, concret et adapte au rythme d'un live.",
       "Si l'utilisateur demande explicitement de creer dans le site, les commandes seront confirmees par le serveur. Sinon, donne des propositions lisibles et reutilisables."
     ],
+    diagnostic: [
+      "MODE DIAGNOSTIC: inspecte l'etat fourni et explique ce qui bloque ou ce qui est a verifier avant de lancer.",
+      "Ne donne pas une fiche generale. Reponds comme un controle pre-live: pret, attention, ou bloquant."
+    ],
     auto: [
       "MODE AUTO: choisis la posture utile selon la question, mais ne melange pas aide, discussion et action dans la meme reponse."
     ]
@@ -4003,13 +4053,13 @@ const KEPH_EDIT_COMMANDS = [
 
 function isKephEditRequest(message = "") {
   const text = normalizeKephText(message);
-  if (/\b(?:ne cree rien|ne creer rien|ne cree pas|ne creer pas|sans creer|sans modifier|juste des idees|juste des idées|donne moi des idees|donne moi des idées|tu ferais quoi|tu sais creer|tu sais créer|tu sais faire|tu peux m aider|peux tu m aider|aide moi|explique moi)\b/.test(text)) return false;
+  if (/\b(?:ne cree rien|ne creer rien|ne cree pas|ne creer pas|sans creer|sans modifier|juste des idees|juste des idées|donne moi des idees|donne moi des idées|tu ferais quoi|tu sais creer|tu sais créer|tu sais faire|tu peux m aider|peux tu m aider|m aider|m aide|ml aider|maider|aide moi|explique moi)\b/.test(text)) return false;
   if (/\b(?:liste|lister|affiche|afficher|montre|montrer|donne moi)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(text)) return false;
   const learningQuestion = /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment fonctionne|comment je peux|comment faire|comment ajouter|comment creer|comment modifier|comment utiliser|comment mettre|ou est|ou se trouve|ou trouver|ou mettre|que fait|ca sert a quoi)\b/.test(text);
   const yesNoQuestion = /\b(?:on peut|peut on|est ce que|possible|je peux)\b/.test(text);
   const explicitDoNow = /\b(?:tu peux|peux tu|peux-tu|stp|s il te plait|maintenant)\b/.test(text)
     && /\b(?:ajoute|ajouter|cree|creer|mets|mettre|met|modifie|modifier|change|changer|renomme|renommer|supprime|supprimer|vide|vider|active|activer|desactive|desactiver|lance|lancer|joue|jouer|ouvre|ouvrir)\b/.test(text)
-    && !/\b(?:m aider|m expliquer|me guider|comment)\b/.test(text);
+    && !/\b(?:m aider|m aide|ml aider|maider|m expliquer|me guider|comment)\b/.test(text);
   if (/\b(?:a quoi sert|sert a quoi|ca sert a quoi|c est quoi|c quoi|pourquoi|que fait)\b/.test(text)) return false;
   if (learningQuestion && !explicitDoNow) return false;
   if (yesNoQuestion && !explicitDoNow) return false;
@@ -4585,6 +4635,16 @@ app.get("/api/charlie-keph/status", asyncRoute(async (req, res) => {
 async function resolveKephReply(message, context = {}) {
   const selectedMode = kephSelectedMode(context);
   const replyMode = classifyKephMode(message, context);
+  if (replyMode === "diagnostic") {
+    const diagnostic = kephDiagnostics(message, context) || {
+      answer: "Diagnostic rapide : je n'ai pas assez d'indices pour trouver un blocage précis. Dis-moi ce qui ne marche pas, ou demande « je peux lancer ? » pour que je vérifie participant, lots, stocks, son et état de scène.",
+      actions: normalizedKephActions(["open_prepare"], charlieKephKnowledge()),
+      source: "diagnostic",
+      matched: true,
+      intent: "diagnostic_needs_context"
+    };
+    return { ...diagnostic, replyMode, selectedMode, grounded: true, avatarUrl: kephPublicAvatar() };
+  }
   const canPlanCommand = replyMode === "action" || (replyMode === "creative" && isKephEditRequest(message));
   const commandPlan = canPlanCommand ? await kephCommandPlan(message, context) : null;
   if (commandPlan?.commands?.length) {
@@ -4870,6 +4930,7 @@ app.get("/api/charlie-keph/feedback/summary", kephLimiter, asyncRoute(async (req
     answer: row.answer || "",
     source: row.source || "",
     intent: row.intent || "",
+    mode: row.mode || "",
     trainingCase: parseKephJsonField(row.training_case_json, kephFeedbackTrainingCase(row)),
     docSuggestion: parseKephJsonField(row.doc_suggestion_json, kephFeedbackDocSuggestion(row)),
     status: row.task_status || "open",
@@ -4880,6 +4941,16 @@ app.get("/api/charlie-keph/feedback/summary", kephLimiter, asyncRoute(async (req
     acc[item.category] = (acc[item.category] || 0) + 1;
     return acc;
   }, {});
+  const byMode = recent.reduce((acc, item) => {
+    const key = item.mode || "inconnu";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  const byStatus = recent.reduce((acc, item) => {
+    const key = item.status || "open";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
   const training = recent
     .filter((item) => ["hors sujet", "trop vague", "faux", "action manquante", "mauvaise cible"].includes(item.category))
     .slice(0, 8)
@@ -4888,7 +4959,7 @@ app.get("/api/charlie-keph/feedback/summary", kephLimiter, asyncRoute(async (req
       question: item.question,
       reason: item.reason
     }));
-  res.json({ ok: true, counts, recent, training, avatarUrl: kephPublicAvatar() });
+  res.json({ ok: true, counts, byMode, byStatus, recent, training, avatarUrl: kephPublicAvatar() });
 }));
 
 app.patch("/api/charlie-keph/feedback/:id/task", kephLimiter, asyncRoute(async (req, res) => {

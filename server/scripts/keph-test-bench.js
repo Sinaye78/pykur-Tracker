@@ -1,9 +1,13 @@
 #!/usr/bin/env node
+const fs = require("fs");
+const path = require("path");
 const BASE_URL = process.env.KEPH_TEST_BASE_URL || "https://familier-tracker.fr";
 const REQUEST_TIMEOUT_MS = Number(process.env.KEPH_TEST_TIMEOUT_MS || 12000);
 const PAUSE_MS = Number(process.env.KEPH_TEST_PAUSE_MS || 850);
 const RETRY_429_MS = Number(process.env.KEPH_TEST_RETRY_429_MS || 4500);
 const LIMIT = Number(process.env.KEPH_TEST_LIMIT || 0);
+const MIN_QUALITY_AVG = Number(process.env.KEPH_TEST_MIN_QUALITY_AVG || 1.72);
+const ALLOW_QUALITY_ONE = process.env.KEPH_TEST_ALLOW_QUALITY_ONE === "1";
 
 const context = {
   currentCandidate: "Kinza",
@@ -27,7 +31,7 @@ const context = {
   settingsSnapshot: { showEnabled: true, defaultDialoguesEnabled: true, autoNextShow: false }
 };
 
-const cases = [
+const coreCases = [
   { q: "salut la forme ?", expect: ["salut"], avoid: ["documentation", "dialogue cible"], noActions: true },
   { q: "salut la forme ?", mode: "discussion", expect: ["salut"], expectMode: "discussion", avoid: ["documentation", "studio", "regie"], noActions: true },
   { q: "tu t appelles comment ?", expect: ["keph"], avoid: ["je peux t aider sur la regie"], noActions: true },
@@ -99,6 +103,29 @@ const cases = [
   { q: "comment activer le mode dragon laser dans le site ?", expect: ["je ne vois pas", "documentation"] }
 ];
 
+function loadRealCases() {
+  try {
+    const file = path.join(__dirname, "..", "keph-docs", "feedback-cases.json");
+    const payload = JSON.parse(fs.readFileSync(file, "utf8"));
+    return (payload.cases || []).map((item) => ({
+      q: item.question,
+      mode: item.mode || "",
+      expect: item.expect || [],
+      expectAny: item.expectAny || [],
+      avoid: item.avoid || [],
+      noInternalCommands: !!item.noInternalCommands,
+      qualityHint: item.ideal || "",
+      realCaseId: item.id,
+      category: item.category
+    }));
+  } catch (error) {
+    console.warn(`WARN unable to load real feedback cases: ${error.message}`);
+    return [];
+  }
+}
+
+const cases = [...coreCases, ...loadRealCases()];
+
 const normalize = (value) => String(value || "")
   .toLowerCase()
   .normalize("NFD")
@@ -108,6 +135,52 @@ const normalize = (value) => String(value || "")
 
 function hasTerm(answer, term) {
   return normalize(answer).includes(normalize(term));
+}
+
+function qualityScore({ test, answer, actions, payload }) {
+  const norm = normalize(answer);
+  let score = 2;
+  const reasons = [];
+  const genericPhrases = [
+    "je peux t aider mais il me manque",
+    "donne moi le nom exact",
+    "charlie roulette sert a animer",
+    "sauvegarde regroupe",
+    "le studio de scenarios sert a organiser"
+  ];
+  const internalCommand = /(^|\n)\s*\/(?:add_lot|setpoids|setstock|add_dialogue|clear_lots|set_queue|setlance|set_lot_color)\b/i.test(answer);
+  const isHelpLike = (test.mode || payload.replyMode) === "help" || /^(?:comment|a quoi|pourquoi|ou|où|c est quoi|ça sert|ca sert)/i.test(test.q || "");
+  const asksYesNo = /\b(?:d accord|du coup|est ce que|je peux|on peut|tu sais|possible)\b/i.test(test.q || "");
+  const asksNext = /\b(?:apres|après|ensuite|une fois|termin[eé])\b/i.test(test.q || "");
+  if (internalCommand && (test.noInternalCommands || isHelpLike)) {
+    score = 0;
+    reasons.push("commandes internes dans une réponse d'aide");
+  }
+  if (genericPhrases.some((phrase) => norm.includes(phrase)) && !test.allowGeneric) {
+    score = Math.min(score, 1);
+    reasons.push("formulation trop générique ou fiche recopiée");
+  }
+  if (asksYesNo && !/\b(?:oui|non)\b/.test(norm) && !actions.some((action) => action.type === "command_batch")) {
+    score = Math.min(score, 1);
+    reasons.push("question oui/non sans réponse directe");
+  }
+  if (asksNext && /\b(?:sert a|sert à|pseudo par ligne|file d attente sert)\b/i.test(answer)) {
+    score = Math.min(score, 1);
+    reasons.push("répond par une définition au lieu de guider la suite");
+  }
+  if (answer.length > 900 && !actions.some((action) => action.type === "command_batch")) {
+    score = Math.min(score, 1);
+    reasons.push("réponse trop longue pour une aide live");
+  }
+  if (payload.intent === "unverified_site_question" && !/dragon|fonction.*documentation/i.test(test.q || "")) {
+    score = Math.min(score, 1);
+    reasons.push("refus non vérifié sur une question probablement couverte");
+  }
+  if (score === 2 && answer.trim().length < 35) {
+    score = 1;
+    reasons.push("réponse trop courte");
+  }
+  return { score, reasons };
 }
 
 async function ask(question, extraContext = {}, mode = "") {
@@ -132,6 +205,8 @@ async function ask(question, extraContext = {}, mode = "") {
 (async () => {
   const selected = LIMIT > 0 ? cases.slice(0, LIMIT) : cases;
   const failures = [];
+  let qualityTotal = 0;
+  let qualityOne = 0;
   for (const test of selected) {
     try {
       if (PAUSE_MS) await new Promise((resolve) => setTimeout(resolve, PAUSE_MS));
@@ -148,8 +223,12 @@ async function ask(question, extraContext = {}, mode = "") {
       const actionTypeMissing = test.actionType && !actions.some((action) => action.type === test.actionType);
       const noActionsFailed = test.noActions && actions.length > 0;
       const tooShort = answer.trim().length < 18;
-      const ok = !missing.length && !missingAny.length && !forbidden.length && !internalCommands && !modeMissing && !actionMissing && !actionAnyMissing && !actionTypeMissing && !noActionsFailed && !tooShort;
-      console.log(`${ok ? "OK" : "FAIL"} ${elapsed}ms [${payload.source || "?"}/${payload.replyMode || "?"}/${payload.intent || "?"}] ${test.q}`);
+      const quality = qualityScore({ test, answer, actions, payload });
+      qualityTotal += quality.score;
+      if (quality.score === 1) qualityOne++;
+      const qualityFailed = quality.score === 0 || (!ALLOW_QUALITY_ONE && test.realCaseId && quality.score < 2);
+      const ok = !missing.length && !missingAny.length && !forbidden.length && !internalCommands && !modeMissing && !actionMissing && !actionAnyMissing && !actionTypeMissing && !noActionsFailed && !tooShort && !qualityFailed;
+      console.log(`${ok ? "OK" : "FAIL"} q${quality.score}/2 ${elapsed}ms [${payload.source || "?"}/${payload.replyMode || "?"}/${payload.intent || "?"}] ${test.realCaseId ? `[${test.realCaseId}] ` : ""}${test.q}`);
       if (missing.length) console.log(`  missing: ${missing.join(", ")}`);
       if (missingAny.length) console.log(`  missing any of: ${missingAny.join(", ")}`);
       if (forbidden.length) console.log(`  forbidden: ${forbidden.join(", ")}`);
@@ -160,14 +239,20 @@ async function ask(question, extraContext = {}, mode = "") {
       if (actionTypeMissing) console.log(`  missing action type: ${test.actionType}`);
       if (noActionsFailed) console.log(`  unexpected actions: ${actions.map((a) => a.id).join(", ")}`);
       if (tooShort) console.log("  answer too short");
-      if (!ok) failures.push({ test, elapsed, source: payload.source, mode: payload.replyMode, intent: payload.intent, answer, actions });
+      if (quality.reasons.length) console.log(`  quality: ${quality.reasons.join("; ")}`);
+      if (!ok) failures.push({ test, elapsed, source: payload.source, mode: payload.replyMode, intent: payload.intent, quality, answer, actions });
     } catch (error) {
       failures.push({ test, error: error.message });
       console.log(`FAIL ---- ${test.q}`);
       console.log(`  ${error.message}`);
     }
   }
+  const qualityAverage = selected.length ? qualityTotal / selected.length : 0;
   console.log(`\n${selected.length - failures.length}/${selected.length} OK`);
+  console.log(`Quality average: ${qualityAverage.toFixed(2)}/2 (${qualityOne} response(s) at 1/2)`);
+  if (qualityAverage < MIN_QUALITY_AVG) {
+    failures.push({ error: `Quality average ${qualityAverage.toFixed(2)} below ${MIN_QUALITY_AVG}` });
+  }
   if (failures.length) {
     console.log(JSON.stringify(failures.slice(0, 12), null, 2));
     process.exitCode = 1;

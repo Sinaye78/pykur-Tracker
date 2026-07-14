@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "source": "curated_from_keph_dislikes",
+  "cases": [
+    {
+      "id": "real_after_queue_next_step",
+      "category": "suite_de_parcours",
+      "question": "D'accord et une fois que j'ai termine de faire ma file d'attente je dois faire quoi ?",
+      "mode": "help",
+      "expectAny": ["lots", "stocks", "simulation"],
+      "avoid": ["la file d'attente sert", "pseudo par ligne"],
+      "ideal": "Apres la file, verifie les lots et les stocks, puis fais une simulation avant le live."
+    },
+    {
+      "id": "real_confirm_start_with_queue",
+      "category": "oui_non",
+      "question": "D'accord du coup je commence par preparer la liste des candidats ?",
+      "mode": "help",
+      "expect": ["oui"],
+      "expectAny": ["file", "candidats"],
+      "avoid": ["sert a faire passer"],
+      "ideal": "Oui. Commence par charger la file de candidats, puis passe aux lots/stocks."
+    },
+    {
+      "id": "real_stream_interface",
+      "category": "discord_capture",
+      "question": "Ah en gros on stream l'interface au participant ?",
+      "mode": "help",
+      "expect": ["scene", "discord"],
+      "expectAny": ["pas la regie", "interface publique", "capture"],
+      "avoid": ["ciblage des dialogues"],
+      "ideal": "Pas toute la regie : tu affiches surtout la scene publique propre pour Discord/OBS."
+    },
+    {
+      "id": "real_new_user_create_wheel",
+      "category": "aide_pas_action",
+      "question": "D'accord, je suis un nouveau utilisateur sur le site, tu peux m'aider a creer ma roue ?",
+      "mode": "help",
+      "expect": ["oui", "lots", "poids"],
+      "avoid": ["/add_dialogue", "/clear_lots", "/add_lot"],
+      "noInternalCommands": true,
+      "ideal": "Oui, je te guide d'abord : cree tes lots, regle poids/stocks, puis verifie le design."
+    },
+    {
+      "id": "real_effects_help_not_profile",
+      "category": "aide_pas_action",
+      "question": "comment mettre des effets speciaux ?",
+      "mode": "help",
+      "expect": ["studio", "replique", "effet"],
+      "avoid": ["/clear_lots", "/add_lot"],
+      "noInternalCommands": true,
+      "ideal": "Les effets se reglent sur une replique dans le Studio de scenarios."
+    },
+    {
+      "id": "real_dialogue_capability_no_action",
+      "category": "oui_non",
+      "question": "tu sais creer les dialogues toi ?",
+      "mode": "help",
+      "expect": ["oui"],
+      "expectAny": ["idees", "confirmer"],
+      "avoid": ["/add_dialogue"],
+      "noInternalCommands": true,
+      "ideal": "Oui, je peux proposer des idees ou preparer des dialogues a confirmer si tu me le demandes clairement."
+    },
+    {
+      "id": "real_jingle_ideas_no_commands",
+      "category": "creatif_pas_action",
+      "question": "tu ferais quoi comme dialogue pour un jingle drole, donne moi juste des idees ne creer rien",
+      "mode": "creative",
+      "expect": ["jingle"],
+      "expectAny": ["idee", "phrase", "exemple"],
+      "avoid": ["/add_dialogue"],
+      "noInternalCommands": true,
+      "ideal": "Donner des phrases reutilisables, sans proposer de commande."
+    },
+    {
+      "id": "real_add_lot_help_no_commands",
+      "category": "aide_pas_action",
+      "question": "salut, tu peux m'aider comment je peux ajouter un lot dans la roue ?",
+      "mode": "help",
+      "expect": ["studio", "poids", "stock"],
+      "avoid": ["/add_lot", "/setpoids", "/setstock"],
+      "noInternalCommands": true,
+      "ideal": "Expliquer le chemin dans l'interface, pas les commandes internes."
+    },
+    {
+      "id": "real_dialogue_variables",
+      "category": "precision",
+      "question": "quand creer un dialogue il y a des boutons Candidat actuel Lot etc ca sert a quoi ?",
+      "mode": "help",
+      "expect": ["variables", "candidat", "lot"],
+      "avoid": ["/clear_lots", "/add_lot"],
+      "noInternalCommands": true,
+      "ideal": "Expliquer que ces boutons inserent des variables dynamiques dans la replique."
+    },
+    {
+      "id": "real_target_candidate_dialogue",
+      "category": "precision",
+      "question": "dans les dialogues ca sert a quoi de cibler un candidat ?",
+      "mode": "help",
+      "expect": ["candidat", "pseudo", "replique"],
+      "avoid": ["Le Studio de scenarios sert"],
+      "ideal": "Expliquer que la replique ne sort que pour le candidat cible."
+    },
+    {
+      "id": "real_thanks_simple",
+      "category": "humain",
+      "question": "merci aurevoir !",
+      "mode": "discussion",
+      "expectAny": ["avec plaisir", "a bientot", "bonne"],
+      "avoid": ["bouton", "lot", "dialogue", "discord"],
+      "ideal": "Reponse courte et naturelle."
+    },
+    {
+      "id": "real_dialogue_presentation_edit",
+      "category": "precision",
+      "question": "et je peux modifier les dialogue pour presenter les candidats ?",
+      "mode": "help",
+      "expect": ["oui", "presentation", "studio"],
+      "avoid": ["lance une scene"],
+      "ideal": "Oui, ces dialogues se modifient dans l'etape Presentation du Studio de scenarios."
+    }
+  ]
+}
