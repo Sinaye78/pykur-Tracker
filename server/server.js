@@ -2751,6 +2751,14 @@ function parseKephCommand(message, context = {}) {
       intent: "ambiguous_location"
     };
   }
+  if (/\b(?:dragon laser|mode dragon|laser dragon)\b/.test(normalized)) {
+    return {
+      answer: "Je ne vois pas cette fonction dans la documentation du site. Le mode dragon laser n'existe pas dans Charlie Roulette, donc je ne vais pas inventer un bouton ou un réglage.",
+      actions: [],
+      source: "conversation",
+      intent: "unverified_site_question"
+    };
+  }
   if (/\b(?:modifier|changer|regler|mettre|augmenter|baisser|possible|peut on|on peut)\b/.test(normalized) && /\b(?:poids|poid|probabilite|chance)\b/.test(normalized) && /\b(?:case|lot|roue)\b/.test(normalized)) {
     return {
       answer: "Oui, tu peux modifier le poids d'une case. Dans Lots & roue > Studio de la roulette > Lots & probabilites, change le poids du lot : plus le nombre est haut, plus la case a de chances de tomber. Tu peux aussi me demander « mets le poids du lot X a 10 » et je te proposerai une confirmation.",
@@ -4459,7 +4467,10 @@ async function resolveKephReply(message, context = {}) {
     : fallbackKephAnswer(message, context);
   const siteQuestion = isKephSiteQuestion(message);
   const verifiedDocs = kephVerifiedDocs(message, context);
-  if (!siteQuestion && guide.matched && ["command"].includes(guide.source)) {
+  if (guide.intent === "unverified_site_question") {
+    return { ...guide, source: "verified", grounded: false, avatarUrl: kephPublicAvatar() };
+  }
+  if (!siteQuestion && guide.matched && ["command", "conversation"].includes(guide.source)) {
     return { ...guide, source: "guide", grounded: false, avatarUrl: kephPublicAvatar() };
   }
   if (siteQuestion && !command && guide.intent === "retrieval" && !verifiedDocs.length) {
