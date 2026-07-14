@@ -4304,7 +4304,7 @@ async function resolveKephReply(message, context = {}) {
     : fallbackKephAnswer(message, context);
   const siteQuestion = isKephSiteQuestion(message);
   const verifiedDocs = kephVerifiedDocs(message, context);
-  if (!siteQuestion && guide.matched && ["command", "conversation", "direct"].includes(guide.source)) {
+  if (!siteQuestion && guide.matched && ["command"].includes(guide.source)) {
     return { ...guide, source: "guide", grounded: false, avatarUrl: kephPublicAvatar() };
   }
   if (siteQuestion && !command && guide.intent === "retrieval" && !verifiedDocs.length) {
