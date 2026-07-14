@@ -4067,6 +4067,8 @@ const KEPH_EDIT_COMMANDS = [
 function isKephEditRequest(message = "") {
   const text = normalizeKephText(message);
   if (/\b(?:ne cree rien|ne creer rien|ne cree pas|ne creer pas|sans creer|sans modifier|juste des idees|juste des idées|donne moi des idees|donne moi des idées|tu ferais quoi|tu sais creer|tu sais créer|tu sais faire|tu peux m aider|peux tu m aider|m aider|m aide|ml aider|maider|aide moi|explique moi)\b/.test(text)) return false;
+  if (/\b(?:blague|idee|idees|idée|idées|propose|proposer|imagine|suggestion|inspire)\b/.test(text)
+    && !/\b(?:ajoute|ajouter|cree|creer|crée|créer|enregistre|enregistrer|sauvegarde|sauvegarder|dialogue|dialogues|replique|repliques|réplique|répliques)\b/.test(text)) return false;
   if (/\b(?:liste|lister|affiche|afficher|montre|montrer|donne moi)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(text)) return false;
   const learningQuestion = /\b(?:a quoi sert|a quoi ca sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment fonctionne|comment je peux|comment faire|comment ajouter|comment creer|comment modifier|comment utiliser|comment mettre|ou est|ou se trouve|ou trouver|ou mettre|que fait|ca sert a quoi)\b/.test(text);
   const yesNoQuestion = /\b(?:on peut|peut on|est ce que|possible|je peux)\b/.test(text);
