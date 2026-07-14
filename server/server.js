@@ -3090,8 +3090,14 @@ function directKephAnswer(message) {
     {
       intent: "ambiguous_location",
       test: () => /\b(?:ca se trouve ou|ça se trouve ou|c est ou|c'est ou|ou ca|ou ça)\b/.test(text) && text.split(" ").length <= 6,
-      answer: "Tu parles de quel bouton ou quelle option ? Précise le nom exact, par exemple « le bruitage », « le poids », « les raccourcis » ou « la sauvegarde », et je t'ouvre le bon endroit.",
+      answer: "Tu parles de quel bouton ou quelle option ? Precise le nom exact, par exemple « le bruitage », « le poids », « les raccourcis » ou « la sauvegarde », et je t'ouvre le bon endroit.",
       actions: []
+    },
+    {
+      intent: "profile_transfer",
+      test: () => /\b(?:changer|nouveau|autre|transfert|transferer|deplacer|deplacer)\b/.test(text) && /\b(?:ordinateur|pc|navigateur)\b/.test(text) && /\b(?:export|exporter|import|importer|profil|profile|sauvegarde|configuration)\b/.test(text),
+      answer: "Oui. Pour changer d'ordinateur ou de navigateur, exporte d'abord le profil sur l'ancien poste, puis importe ce fichier sur le nouveau. Le profil contient la configuration de la roulette : participants, lots, poids, stocks, dialogues, sons, raccourcis et options. Fais toujours l'export avant l'import, parce que l'import remplace la configuration courante.",
+      actions: ["open_data"]
     },
     {
       intent: "new_user_onboarding",

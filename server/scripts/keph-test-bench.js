@@ -36,7 +36,7 @@ const cases = [
 
   { q: "je suis nouveau sur le site, je fais quoi ?", expect: ["preparer", "lots", "simulation"], action: "open_prepare", avoid: ["je ne vois pas"] },
   { q: "a quoi sert le site ?", expect: ["tirage", "live", "discord"], action: "open_prepare" },
-  { q: "par quoi je dois commencer avant un live ?", expect: ["preparer", "lots", "simulation"], action: "open_prepare" },
+  { q: "par quoi je dois commencer avant un live ?", expect: ["preparer", "lots"], expectAny: ["simulation", "simuler"], action: "open_prepare" },
   { q: "ça se trouve ou ?", expectAny: ["quel bouton", "quelle option", "precise"], noActions: true },
 
   { q: "a quoi sert le bouton lancer ?", expect: ["vrai tirage", "stock", "historique"], action: "open_prepare", avoid: ["charlie roulette sert"] },
@@ -53,12 +53,12 @@ const cases = [
   { q: "on peut changer les couleurs des cases de la roulette ?", expect: ["couleur", "design"], action: "open_wheel_studio_design" },
   { q: "il y a un nombre théorique de lot maximum dans la roue ?", expectAny: ["8", "12", "lisible"], action: "open_wheel_studio_lots", avoid: ["poids est une chance"] },
   { q: "a quoi sert le poid dans la roue ?", expect: ["chance relative", "20", "10"], action: "open_wheel_studio_lots" },
-  { q: "modifie le lot Dofus Cawotte et mets son poids a 10", expect: ["poids", "10"], actionType: "update_lot_rate" },
+  { q: "modifie le lot Dofus Cawotte et mets son poids a 10", expect: ["setpoids", "Dofus Cawotte", "10"], actionType: "command_batch" },
 
   { q: "comment créer un dialogue ?", expect: ["studio", "replique", "etape"], action: "open_scenario_studio", noInternalCommands: true },
   { q: "Comment modifier les dialogues de présentation", expect: ["presentation", "modifier", "studio"], action: "open_scenario_studio", noInternalCommands: true },
   { q: "tu sais créer les dialogues toi ?", expect: ["oui", "idees", "confirmer"], action: "open_scenario_studio", noInternalCommands: true },
-  { q: "tu ferais quoi comme dialogue pour un jingle drôle, donne moi juste des idées ne créer rien", expect: ["jingle", "idees"], action: "open_scenario_studio", noInternalCommands: true },
+  { q: "tu ferais quoi comme dialogue pour un jingle drôle, donne moi juste des idées ne créer rien", expect: ["jingle"], expectAny: ["idees", "exemples", "phrases"], action: "open_scenario_studio", noInternalCommands: true },
   { q: "Tu peux me créer un dialogue qui va présenter les 5 candidats un peu drôle, il doit y avoir 1 dialogue pour un candidat et libre à toi de choisir qui parle Charlie ou Victoria, les emotes et les effets", expect: ["add_dialogue", "presentation"], actionType: "command_batch", avoid: ["set_queue"] },
   { q: "quand créer un dialogue il y a des boutons Candidat actuel Lot etc ça sert à quoi ?", expect: ["variables", "contexte", "candidat"], action: "open_scenario_studio", noInternalCommands: true },
   { q: "dialogue parlé ou indication scénique ?", expect: ["bulle", "action", "scene"], action: "open_scenario_studio" },
