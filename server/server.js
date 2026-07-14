@@ -3834,15 +3834,15 @@ function kephCommandPlanFromRules(message, context = {}) {
   if (/\b(?:roue|roulette|lots?)\b/.test(text) && /\b(?:complete|6|six|10|dix|cree|creer|genere|generer)\b/.test(text)) {
     const tenLots = /\b(?:10|dix)\b/.test(text);
     const lots = tenLots ? [
-      ["Couronne de l'Imprévu", 18, 3, "#c1121f"],
-      ["Bourse Astrale 250.000k", 16, 3, "#023e8a"],
+      ["Couronne Surprise", 18, 3, "#c1121f"],
+      ["Bourse Astrale", 16, 3, "#023e8a"],
       ["Relance Éclair", 14, 2, "#ffd60a"],
       ["Coffre Mimique", 12, 2, "#2dc653"],
-      ["Potion de Panique Douce", 10, 4, "#6f2dbd"],
-      ["Contrat du Destin", 9, 2, "#f77f00"],
-      ["Ticket Double Frisson", 8, 2, "#00b4d8"],
-      ["Malus: Éloge de Charlie", 7, 5, "#7f0000"],
-      ["Bénédiction de Victoria", 5, 1, "#ff70a6"],
+      ["Potion Panique", 10, 4, "#6f2dbd"],
+      ["Contrat Destin", 9, 2, "#f77f00"],
+      ["Ticket Frisson", 8, 2, "#00b4d8"],
+      ["Éloge Charlie", 7, 5, "#7f0000"],
+      ["Bénédiction", 5, 1, "#ff70a6"],
       ["Jackpot Néon", 3, 1, "#80ffdb"]
     ] : [
       ["Ticket VIP du Chaos", 26, 4, "#c1121f"],

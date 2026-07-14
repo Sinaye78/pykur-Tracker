@@ -1200,7 +1200,7 @@ function kephCommandPreview(command){
   if(name==='add_lot'){
     let lotName=tokens[0],rate=Math.max(0,Math.min(9999,Math.floor(Number(tokens[1]||1)))),stockRaw=tokens[2];
     if(!lotName)return fail('Syntaxe attendue: add_lot "nom" poids [stock]');
-    return {ok:true,command,label:`Créer le lot ${lotName} (poids ${rate}${stockRaw!=null?`, stock ${stockRaw}`:''})`,apply:()=>{p.lots=p.lots||[];p.lots.push({id:'lot-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),name:lotName,rate,enabled:true,stockEnabled:stockRaw!=null,stock:Math.max(0,Math.floor(Number(stockRaw||0))),img:'',color:'#b20d1e',textSize:34,textRadius:280,textAngle:0,imgSize:70,imgRadius:170,imgAngle:0})}};
+    return {ok:true,command,label:`Créer le lot ${lotName} (poids ${rate}${stockRaw!=null?`, stock ${stockRaw}`:''})`,apply:()=>{p.lots=p.lots||[];let textSize=lotName.length>18?24:lotName.length>13?28:32;p.lots.push({id:'lot-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),name:lotName,rate,enabled:true,stockEnabled:stockRaw!=null,stock:Math.max(0,Math.floor(Number(stockRaw||0))),img:'',color:'#b20d1e',textColor:'#fff7df',font:'system-ui',textSize,textRadius:300,textX:0,textY:0,textRot:0,imgSize:60,imgRadius:335,imgY:-32,imgRot:0})}};
   }
   if(name==='add_dialogue'){
     let trigger=tokens[0],speaker=String(tokens[1]||'').toLowerCase(),dialogueText=tokens[2];
