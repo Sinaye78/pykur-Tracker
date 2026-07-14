@@ -4160,6 +4160,8 @@ async function askOllamaKeph(message, context, guidance = null, timeoutMs = 3500
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
+    const prompt = kephRemotePrompt();
+    const requestPayload = kephRemotePayload(message, context, guidance);
     const response = await fetch(`${OLLAMA_URL.replace(/\/+$/, "")}/api/chat`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -4170,23 +4172,22 @@ async function askOllamaKeph(message, context, guidance = null, timeoutMs = 3500
         format: "json",
         keep_alive: "30m",
         messages: [
-          { role: "system", content: kephSystemPrompt() },
+          { role: "system", content: prompt },
           { role: "user", content: JSON.stringify({
-            question: String(message || "").slice(0, 800),
-            contexte_live: kephAiContext(message, context),
-            documentation_pertinente: guidance?.docs || kephDocumentationSearch(message, context),
-            aide_ciblee: guidance ? { actions: guidance.actions || [], intent: guidance.intent || "", reponse_attendue: guidance.expectedAnswer || "" } : null,
+            ...requestPayload,
             retours_negatifs_recents: recentKephLearningExamples(message),
             bonnes_reponses_likees: recentKephPositiveExamples(message)
           }) }
         ],
-        options: { temperature: 0.25, num_ctx: 1024, num_predict: 75 }
+        options: { temperature: 0.25, num_ctx: 2048, num_predict: 140 }
       })
     });
     if (!response.ok) throw new Error(`Ollama HTTP ${response.status}`);
-    const payload = await response.json();
-    const content = payload?.message?.content || payload?.response || "";
-    return JSON.parse(content);
+    const responsePayload = await response.json();
+    const content = responsePayload?.message?.content || responsePayload?.response || "";
+    const parsed = safeParseKephAiJson(content);
+    if (!parsed) throw new Error("Ollama JSON invalide");
+    return parsed;
   } finally {
     clearTimeout(timer);
   }
@@ -4350,6 +4351,7 @@ async function resolveKephReply(message, context = {}) {
       avatarUrl: kephPublicAvatar()
     };
   } catch (error) {
+    console.warn("[keph] Ollama indisponible.", error.message);
     return { ...guide, source: guide.matched ? "guide" : "fallback", avatarUrl: kephPublicAvatar(), warning: "ollama_unavailable" };
   }
 }
