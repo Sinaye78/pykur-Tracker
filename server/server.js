@@ -2525,9 +2525,35 @@ function kephModeLabel(mode) {
 function kephDiagnostics(message, context = {}) {
   const text = normalizeKephText(message);
   const asksProblem = /\b(?:probleme|bug|impossible|marche pas|peux pas|peut pas|bloque|bloquee|bloqué|bloquée|gris|grise|grisé|grisee|erreur)\b/.test(text);
+  const asksSoundCheck = /\b(?:son|sons|audio|muet|mute|coupe|coupé|volume)\b/.test(text)
+    && /\b(?:muet|mute|coupe|coupé|actif|ok|marche|fonctionne|verifier|vérifier)\b/.test(text);
+  const asksDiscordCheck = /\b(?:discord|obs|capture|scene propre|scène propre)\b/.test(text)
+    && /\b(?:propre|ok|pret|prêt|capture|regie|régie|boutons?|visible|verifier|vérifier)\b/.test(text);
   const asksReady = /\b(?:pret|prêt|check|diagnostic|avant live|tout va bien|je peux lancer)\b/.test(text)
     || (/\b(?:verifier|vérifier)\b/.test(text) && !/\b(?:a quoi sert|sert a quoi|pourquoi|utilite|ça sert|ca sert)\b/.test(text));
-  if (!asksProblem && !asksReady) return null;
+  if (!asksProblem && !asksReady && !asksSoundCheck && !asksDiscordCheck) return null;
+
+  if (asksSoundCheck) {
+    return {
+      answer: context.soundMuted
+        ? "Le son est coupé pour l'instant. Ouvre Sons pour réactiver l'audio ou vérifier les volumes avant le live."
+        : "Le son n'est pas signalé comme muet dans l'état actuel. Pour confirmer, ouvre Sons et teste les jingles ou un bruitage de scène.",
+      actions: normalizedKephActions(["open_audio"], charlieKephKnowledge()),
+      source: "diagnostic",
+      matched: true,
+      intent: context.soundMuted ? "diagnostic_sound_muted" : "diagnostic_sound_ok"
+    };
+  }
+
+  if (asksDiscordCheck) {
+    return {
+      answer: "Pour une scène Discord propre, la capture doit montrer la roue, le participant, le résultat et les dialogues, sans les boutons de régie. Si tu vois encore des contrôles admin dans la capture, active le mode Discord ou détache la régie.",
+      actions: normalizedKephActions(["highlight_discord", "detach_control"], charlieKephKnowledge()),
+      source: "diagnostic",
+      matched: true,
+      intent: "diagnostic_discord_scene"
+    };
+  }
 
   const lots = Array.isArray(context.lots) ? context.lots : [];
   const unavailableNames = Array.isArray(context.unavailableLots)
