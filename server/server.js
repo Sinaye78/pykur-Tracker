@@ -2650,7 +2650,7 @@ function parseKephCommand(message, context = {}) {
   }
   if (/\b(?:discord|obs|scene propre|mode capture)\b/.test(normalized) && /\b(?:active|activer|mets|mode|passe|passer)\b/.test(normalized)) addControlled("discordmode");
   if (/\b(?:detache|detacher|separe|separer)\b/.test(normalized) && /\b(?:regie|controle|panneau)\b/.test(normalized)) addControlled("detach_control");
-  if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(normalized) && /\b(?:jingle|presentation|finale|resultat|roue|candidat suivant)\b/.test(normalized) && /\b(?:plusieurs|quelques|3|trois|4|quatre|5|cinq|fais|faire|prepare|preparer|genere|generer)\b/.test(normalized)) {
+  if (!controlledCommands.length && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(normalized) && /\b(?:jingle|presentation|finale|resultat|roue|candidat suivant)\b/.test(normalized) && /\b(?:plusieurs|quelques|3|trois|4|quatre|5|cinq|fais|faire|prepare|preparer|genere|generer)\b/.test(normalized)) {
     const trigger = triggerFromText();
     const candidatesPart = raw.split(/(?:candidats?|participants?)\s*:?\s*/i).pop() || "";
     const names = candidatesPart.split(/,|\bet\b|\n|\r/).map(cleanKephName).filter((name) => /^[A-Za-z0-9À-ÿ _-]{2,40}$/.test(name)).slice(0, 6);
@@ -4217,7 +4217,7 @@ function kephCommandPlanFromRules(message, context = {}) {
   if (mentionedLot && renameMatch) add(`rename_lot ${quoteCommandArg(mentionedLot)} ${quoteCommandArg(cleanKephName(renameMatch[1]))}`);
   if (mentionedLot && /\b(?:desactive|desactiver|coupe|retire)\b/.test(text)) add(`disable_lot ${quoteCommandArg(mentionedLot)}`);
   if (mentionedLot && /\b(?:active|activer|reactive|reactiver)\b/.test(text)) add(`enable_lot ${quoteCommandArg(mentionedLot)}`);
-  if (creativeWriting) {
+  if (!commands.length && creativeWriting) {
     const trigger = /\b(?:idle|temps mort|attend trop)\b/.test(text) ? "idle" : /\bjingle\b/.test(text) ? "jingle" : /\bfinale\b/.test(text) ? "finale" : /\bresultat\b/.test(text) ? "result" : /\b(?:roue|tirage)\b/.test(text) ? "spin" : /\b(?:suivant|candidat suivant)\b/.test(text) ? "next" : "presentation";
     const names = candidateListMatch ? kephNamesFromListText(candidateListMatch[1]) : [];
     const candidates = names.length ? names : (Array.isArray(context.queue) ? context.queue.slice(0, 4) : []);
