@@ -3047,7 +3047,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "dialogue_targeting",
-      test: () => /\b(?:ciblage|cibler|candidat cible|participant cible|tous les candidats|candidat actuel)\b/.test(text) && /\b(?:dialogue|replique|candidat|participant)\b/.test(text),
+      test: () => /\b(?:ciblage|cibler|candidat cible|participant cible|tous les candidats|candidat actuel)\b/.test(text) && /\b(?:dialogue|replique|candidat|participant)\b/.test(text) && !/\b(?:bouton|boutons|variable|variables|dernier lot|lot concerne|lot concerné|nombre de candidats|gagnants)\b/.test(text),
       answer: "Le ciblage decide pour qui une replique peut sortir. Tous les candidats = phrase generale. Candidat actuel = la phrase suit la personne qui passe maintenant. Candidat cible = la phrase ne sort que pour un pseudo precis. C'est utile pour preparer une blague ou une annonce speciale sans qu'elle apparaisse pour tout le monde.",
       actions: ["open_scenario_studio"]
     },
