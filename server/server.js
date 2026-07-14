@@ -3337,6 +3337,12 @@ function directKephAnswer(message, context = {}) {
       actions: ["open_scenario_studio"]
     },
     {
+      intent: "presenter_joke_idea",
+      test: () => /\b(?:blague|vanne|phrase drole|phrase drôle)\b/.test(text) && /\b(?:presentateur|présentateur|candidat|participant)\b/.test(text),
+      answer: "Oui, par exemple : « Notre candidat arrive confiant, ce qui est courageux quand on confie son avenir à une roue qui a clairement séché les cours de morale. » C'est court, présentateur, et assez neutre pour marcher avec presque n'importe quel candidat.",
+      actions: []
+    },
+    {
       intent: "dialogue_capability",
       test: () => /\b(?:tu sais|tu peux|est ce que tu peux|possible)\b/.test(text) && /\b(?:creer|créer|faire|ecrire|écrire|rediger|rédiger)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(text) && !/\b(?:maintenant|ajoute|ajouter|cree moi|crée moi|fais moi|ecris moi|écris moi)\b/.test(text),
       answer: "Oui, je peux t'aider à créer des dialogues. Si tu veux juste des idées, je te propose du texte sans rien modifier. Si tu veux que je les ajoute au site, dis-le clairement, par exemple : « ajoute 3 dialogues pour le jingle avec Charlie et Victoria ». Dans ce cas je prépare des commandes à confirmer.",
