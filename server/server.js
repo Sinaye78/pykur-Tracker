@@ -4242,6 +4242,25 @@ function kephCommandPlanFromRules(message, context = {}) {
   const creativeWriting = /\b(?:ecris|ecrire|redige|rediger|fais|faire|prepare|preparer|genere|generer|cree|creer)\b/.test(text)
     && /\b(?:dialogue|dialogues|replique|repliques|presentation|jingle|finale|scene finale|resultat|roue|tirage|candidat suivant|suivant|idle|temps mort)\b/.test(text)
     && !wantsTestDraw;
+  const quotedDialogueText = raw.match(/[«"]([^«»"]{8,700})[»"]/i)?.[1]?.trim();
+  if (creativeWriting && quotedDialogueText && /\b(?:dialogue|replique|phrase|dire)\b/.test(text)) {
+    const trigger = /\bjingle\b/.test(text) ? "jingle"
+      : /\bfinale\b/.test(text) ? "finale"
+        : /\bresultat\b/.test(text) ? "result"
+          : /\b(?:roue|tirage)\b/.test(text) ? "spin"
+            : /\b(?:suivant|prochain)\b/.test(text) ? "next"
+              : "presentation";
+    const speaker = /\bvictoria\b/.test(text) && !/\bcharlie\b/.test(text) ? "victoria" : "charlie";
+    const emote = /\b(?:rire|drole|drôle|blague)\b/.test(text) ? "laugh"
+      : /\b(?:coeur|cœur|love)\b/.test(text) ? "love"
+        : /\b(?:surprise|choque|choc)\b/.test(text) ? "shock"
+          : "star";
+    const fx = /\b(?:feu|artifice)\b/.test(text) ? "fireworks"
+      : /\bflash\b/.test(text) ? "flash"
+        : /\bconfetti/.test(text) ? "confetti"
+          : "spotlights";
+    add(`add_dialogue ${quoteCommandArg(trigger)} ${quoteCommandArg(speaker)} ${quoteCommandArg(quotedDialogueText)} --kind "dialogue" --emote ${quoteCommandArg(emote)} --fx ${quoteCommandArg(fx)}`);
+  }
   const participantNames = [...new Set([
     ...(Array.isArray(context.queue) ? context.queue : []),
     context.currentCandidate,
@@ -4253,7 +4272,7 @@ function kephCommandPlanFromRules(message, context = {}) {
     const rest = participantNames.filter((name) => normalizeKephText(name) !== normalizeKephText(target));
     add(`set_queue ${[target, ...rest].map(quoteCommandArg).join(" ")}`);
   }
-  if (creativeWriting
+  if (!commands.length && creativeWriting
     && /\b(?:presenter|presentation|présenter|présentation)\b/.test(text)
     && /\b(?:candidat|candidats|participant|participants)\b/.test(text)) {
     const count = kephRequestedCount(raw, Math.min(5, Math.max(1, participantNames.length || 5)));
