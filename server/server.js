@@ -3204,7 +3204,7 @@ function directKephAnswer(message, context = {}) {
   const directAnswers = [
     {
       intent: "conversation_greeting",
-      test: () => /\b(?:salut|coucou|hello|yo|bonjour)\b/.test(text) && /\b(?:ca va|ça va|la forme|forme|comment vas tu)\b/.test(text),
+      test: () => /\b(?:salut|coucou|hello|yo|bonjour)\b/.test(text) && /\b(?:ca va|ça va|a va|la forme|forme|comment vas tu)\b/.test(text),
       answer: "Salut, oui ça va bien. Je suis là pour t'aider tranquillement, que ce soit pour comprendre le site, préparer un live ou juste tester une idée.",
       actions: []
     },
@@ -3372,7 +3372,7 @@ function directKephAnswer(message, context = {}) {
     },
     {
       intent: "site_purpose",
-      test: () => !/\bstudio\b/.test(text) && /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|but|objectif|utilite)\b/.test(text) && /\b(?:site|application|appli|charlie roulette|roulette)\b/.test(text),
+      test: () => !/\bstudio\b/.test(text) && /\b(?:a quoi sert|quoi sert|sert a quoi|c est quoi|c quoi|but|objectif|utilite)\b/.test(text) && /\b(?:site|application|appli|charlie roulette|roulette)\b/.test(text),
       answer: "Charlie Roulette sert à animer un tirage en live comme une petite émission : tu prépares une file de candidats, des lots, des sons et des dialogues, puis tu pilotes la roue pendant que le public voit une scène propre pour Discord/OBS. La régie sert à contrôler le live, les réglages servent à préparer la roue, les scènes et les sauvegardes. En gros : c’est un outil d’animation, pas juste une roulette aléatoire.",
       actions: ["open_prepare"]
     },

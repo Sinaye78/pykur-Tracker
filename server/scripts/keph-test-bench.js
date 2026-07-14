@@ -34,6 +34,7 @@ const context = {
 const coreCases = [
   { q: "salut la forme ?", expect: ["salut"], avoid: ["documentation", "dialogue cible"], noActions: true },
   { q: "salut la forme ?", mode: "discussion", expect: ["salut"], expectMode: "discussion", avoid: ["documentation", "studio", "regie"], noActions: true },
+  { q: "Salut Keph, ça va ?", mode: "discussion", expect: ["salut"], expectMode: "discussion", avoid: ["Kinza", "candidat actuel"], noActions: true },
   { q: "tu t appelles comment ?", expect: ["keph"], avoid: ["je peux t aider sur la regie"], noActions: true },
   { q: "tu connais Keph ?", expect: ["keph", "assistant"], avoid: ["je ne vois pas"], noActions: true },
   { q: "qui suis-je ?", expectAny: ["je ne peux pas savoir", "candidat actuellement"], noActions: false },
@@ -42,6 +43,7 @@ const coreCases = [
 
   { q: "je suis nouveau sur le site, je fais quoi ?", expect: ["preparer", "lots"], expectAny: ["simulation", "simuler"], action: "open_prepare", avoid: ["je ne vois pas"] },
   { q: "a quoi sert le site ?", expect: ["tirage", "live", "discord"], action: "open_prepare" },
+  { q: "À quoi sert Charlie Roulette ?", mode: "help", expect: ["tirage", "live"], expectAny: ["discord", "obs"], expectMode: "help", action: "open_prepare", avoid: ["open_audio"] },
   { q: "a quoi sert le site ?", mode: "help", expect: ["tirage", "live"], expectMode: "help", action: "open_prepare", avoid: ["je peux t aider"] },
   { q: "par quoi je dois commencer avant un live ?", expect: ["preparer", "lots"], expectAny: ["simulation", "simuler"], action: "open_prepare" },
   { q: "ça se trouve ou ?", expectAny: ["quel bouton", "quelle option", "precise"], noActions: true },
