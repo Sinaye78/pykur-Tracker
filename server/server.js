@@ -3227,6 +3227,8 @@ function directKephAnswer(message, context = {}) {
         : /\b(?:suivant|prochain candidat)\b/.test(text) ? "Candidat suivant"
           : /\bfinale\b/.test(text) ? "Finale"
             : "Presentation";
+  const knownCandidateMentioned = Array.isArray(context.queue)
+    && context.queue.some((name) => name && text.includes(normalizeKephText(name)));
   const directAnswers = [
     {
       intent: "conversation_greeting",
@@ -3296,7 +3298,7 @@ function directKephAnswer(message, context = {}) {
     },
     {
       intent: "reorder_queue_howto",
-      test: () => /\b(?:comment|comment faire|ou|où|je peux)\b/.test(text) && /\b(?:mettre|placer|passer|remonter)\b/.test(text) && /\b(?:premiere position|première position|tete de liste|tête de liste|premier)\b/.test(text) && /\b(?:file|liste|candidat|participant|miette)\b/.test(text),
+      test: () => /\b(?:comment|comment faire|ou|où|je peux)\b/.test(text) && /\b(?:mettre|placer|passer|remonter)\b/.test(text) && /\b(?:premiere position|première position|tete de liste|tête de liste|premier)\b/.test(text) && (knownCandidateMentioned || /\b(?:file|liste|candidat|participant|miette)\b/.test(text)),
       answer: "Pour mettre un candidat en première position, va dans Préparer > File de participants, puis remonte ce candidat tout en haut de la liste. Ça change l'ordre de passage, pas les lots ni l'historique. En mode Action, tu peux aussi me demander : « mets Miette en tête de liste ».",
       actions: ["open_prepare"]
     },
