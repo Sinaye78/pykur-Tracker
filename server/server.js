@@ -2435,7 +2435,7 @@ function isKephSiteQuestion(message) {
 
 function kephDiagnostics(message, context = {}) {
   const text = normalizeKephText(message);
-  const asksProblem = /\b(?:pourquoi|probleme|bug|impossible|marche pas|peux pas|peut pas|bloque|bloquee|bloqué|bloquée|gris|grise|grisé|grisee|erreur)\b/.test(text);
+  const asksProblem = /\b(?:probleme|bug|impossible|marche pas|peux pas|peut pas|bloque|bloquee|bloqué|bloquée|gris|grise|grisé|grisee|erreur)\b/.test(text);
   const asksReady = /\b(?:pret|prêt|check|diagnostic|avant live|tout va bien|je peux lancer)\b/.test(text)
     || (/\b(?:verifier|vérifier)\b/.test(text) && !/\b(?:a quoi sert|sert a quoi|pourquoi|utilite|ça sert|ca sert)\b/.test(text));
   if (!asksProblem && !asksReady) return null;
