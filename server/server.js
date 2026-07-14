@@ -3856,6 +3856,11 @@ function kephCommandAllowed(command = "") {
 function kephCommandPlanFromRules(message, context = {}) {
   const raw = String(message || "");
   const text = normalizeKephText(raw);
+  const helpOnly = /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment je peux|comment faire|comment ajouter|comment creer|comment modifier|comment utiliser|ou est|ou trouver|ca sert a quoi)\b/.test(text);
+  const explicitDoNow = /\b(?:tu peux|peux tu|peux-tu|stp|s il te plait|maintenant)\b/.test(text)
+    && /\b(?:ajoute|ajouter|cree|creer|mets|mettre|met|modifie|modifier|change|changer|renomme|renommer|supprime|supprimer|vide|vider|active|activer|desactive|desactiver|lance|lancer|joue|jouer|ouvre|ouvrir)\b/.test(text)
+    && !/\b(?:m aider|m expliquer|me guider|comment)\b/.test(text);
+  if (helpOnly && !explicitDoNow) return null;
   const commands = [];
   const add = (command) => { if (command && kephCommandAllowed(command) && !commands.includes(command)) commands.push(command); };
   const creativeWriting = /\b(?:ecris|ecrire|redige|rediger|fais|faire|prepare|preparer|genere|generer)\b/.test(text)
@@ -3901,12 +3906,21 @@ function kephCommandPlanFromRules(message, context = {}) {
   if (!commands.length && addPlayerMatch && /\b(?:file|liste|participant|candidat|joueur)\b/.test(text)) {
     add(`add_player ${quoteCommandArg(cleanKephName(addPlayerMatch[1]))} ${Math.max(1, Math.min(20, Number(addPlayerMatch[2] || 1)))}`);
   }
+  const addSingleLotMatch = raw.match(/\b(?:ajoute|ajouter|cree|creer)\s+(?:un\s+|une\s+)?(?:lot|case)\s+(.+?)\s+(?:poids|poid|chance|proba)\s+(\d{1,4})(?:\s+(?:stock|stocks)\s+(\d{1,4}))?/i);
+  if (addSingleLotMatch) {
+    const lotName = cleanKephName(addSingleLotMatch[1]);
+    const weight = Math.max(0, Math.min(9999, Number(addSingleLotMatch[2]) || 1));
+    const stock = addSingleLotMatch[3] != null ? Math.max(0, Math.min(9999, Number(addSingleLotMatch[3]) || 0)) : null;
+    if (lotName) add(`add_lot ${quoteCommandArg(lotName)} ${weight}${stock != null ? ` ${stock}` : ""}`);
+  }
   if (!creativeWriting && /\b(?:file|liste|queue|candidats|participants)\b/.test(text) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(text)) {
     const names = candidateListMatch ? kephNamesFromListText(candidateListMatch[1]) : kephNamesFromListText(raw.split(/:|avec|pour/i).pop() || raw);
     const picked = names.length >= 2 ? names : ["Mira", "Grobid", "Tofu-Royal"];
     add(`set_queue ${picked.slice(0, 6).map(quoteCommandArg).join(" ")}`);
   }
-  if (/\b(?:roue|roulette|lots?)\b/.test(text) && /\b(?:complete|6|six|10|dix|cree|creer|genere|generer)\b/.test(text)) {
+  const wantsFullWheel = /\b(?:roue|roulette)\s+(?:complete|entiere|entière|de\s+(?:6|six|10|dix)\s+lots|avec\s+(?:6|six|10|dix)\s+lots)\b/.test(text)
+    || /\b(?:cree|creer|genere|generer|prepare|preparer|fais|faire)\b/.test(text) && /\b(?:roue|roulette)\b/.test(text) && /\b(?:complete|entiere|entière|6 lots|six lots|10 lots|dix lots)\b/.test(text);
+  if (!commands.length && wantsFullWheel) {
     const tenLots = /\b(?:10|dix)\b/.test(text);
     const lots = tenLots ? [
       ["Couronne Surprise", 18, 3, "#c1121f"],
