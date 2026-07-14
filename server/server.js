@@ -2823,6 +2823,14 @@ function parseKephCommand(message, context = {}) {
   const greetingText = normalized.replace(/\bkeph\b/g, " ").replace(/\s+/g, " ").trim();
   const greetingOnly = /^(?:bonjour|salut|coucou|hello|yo|hey)(?:\s+(?:ca va|ca roule|la forme|cv|comment ca va|comment vas tu|tu vas bien))?\s*\??$/.test(greetingText);
   if (greetingOnly || /^(?:ca va|ca roule|la forme|comment ca va|comment vas tu|tu vas bien)\s*\??$/.test(greetingText)) {
+    if (kephSelectedMode(context) === "discussion") {
+      return {
+        answer: "Salut, oui ça va bien, merci. Et toi, la forme ?",
+        actions: [],
+        source: "conversation",
+        intent: "greeting"
+      };
+    }
     return {
       answer: "Salut, ça va bien, merci. Je suis prêt pour t'aider sur la régie, mais on peut aussi commencer simple : dis-moi ce que tu veux préparer ou ce qui te bloque.",
       actions: [],
@@ -3564,8 +3572,14 @@ function directKephAnswer(message) {
       actions: ["open_data"]
     },
     {
+      intent: "explain_profile_import",
+      test: () => /\b(?:import|importe|importer|restaurer|charger|recuperer|récupérer)\b/.test(text) && /\b(?:profil|profile|sauvegarde|configuration|pc|ordinateur|navigateur)\b/.test(text),
+      answer: "Importer un profil sert à recharger une configuration complète depuis un fichier exporté : participants, lots, poids, stocks, dialogues, sons, raccourcis et options. C'est pratique pour récupérer une roulette préparée ailleurs ou changer de PC. Attention : l'import remplace la configuration courante, donc exporte d'abord si tu veux garder l'état actuel.",
+      actions: ["open_data"]
+    },
+    {
       intent: "explain_profile_export",
-      test: () => /\b(?:profil|import|export|sauvegarde|backup|restaurer)\b/.test(text),
+      test: () => /\b(?:profil|export|sauvegarde|backup)\b/.test(text) && !/\b(?:import|importe|importer|restaurer|charger|recuperer|récupérer)\b/.test(text),
       answer: "L'export profil sert a garder une configuration complete : participants, lots, stocks, dialogues, sons, raccourcis et reglages utiles. C'est pratique avant un gros live ou pour reutiliser une roulette plus tard. L'import restaure ce profil sans devoir tout refaire a la main.",
       actions: ["open_data"]
     },
