@@ -3035,7 +3035,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "create_dialogue",
-      test: () => /\b(?:creer|cree|ajouter|ajoute|faire|mettre|met|mets|nouveau|nouvelle)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text) && !/\b(?:son|audio|musique|mp3|wav|ogg|bruitage)\b/.test(text),
+      test: () => /\b(?:creer|cree|ajouter|ajoute|faire|mettre|met|mets|nouveau|nouvelle)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text) && !/\b(?:son|audio|musique|mp3|wav|ogg|bruitage|bouton|boutons|variable|variables|sert)\b/.test(text),
       answer: `Pour creer un dialogue, ouvre Reglages > Scenes > Studio de scenarios. A gauche, choisis l'etape ou la replique doit se jouer, par exemple ${stageLabel}. A droite, choisis Charlie ou Victoria, ecris le texte, regle si besoin le ciblage, l'emote, l'effet special ou le bruitage, puis clique sur Ajouter la replique. Si tu me donnes directement le texte entre guillemets, je peux aussi preparer l'action a confirmer.`,
       actions: ["open_scenario_studio"]
     },
