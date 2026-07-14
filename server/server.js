@@ -2049,6 +2049,15 @@ function normalizeKephText(value) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\bcr er\b/g, "creer")
+    .replace(/\bcr e\b/g, "cree")
+    .replace(/\bpr senter\b/g, "presenter")
+    .replace(/\bpr sentation\b/g, "presentation")
+    .replace(/\br pliques?\b/g, "replique")
+    .replace(/\br glages?\b/g, "reglage")
+    .replace(/\br gie\b/g, "regie")
+    .replace(/\bdrole\b|\bdr le\b/g, "drole")
+    .replace(/\bpo d\b/g, "poid")
     .trim();
 }
 
@@ -4022,7 +4031,7 @@ function kephCommandPlanFromRules(message, context = {}) {
   const add = (command) => { if (command && kephCommandAllowed(command) && !commands.includes(command)) commands.push(command); };
   const wantsTestDraw = /\b(?:tirage test|test roue|test roulette)\b/.test(text)
     && /\b(?:tu peux|peux tu|peux-tu|fais|faire|lance|lancer|demarre|demarrer|start|test)\b/.test(text);
-  const creativeWriting = /\b(?:ecris|ecrire|redige|rediger|fais|faire|prepare|preparer|genere|generer)\b/.test(text)
+  const creativeWriting = /\b(?:ecris|ecrire|redige|rediger|fais|faire|prepare|preparer|genere|generer|cree|creer)\b/.test(text)
     && /\b(?:dialogue|dialogues|replique|repliques|presentation|jingle|finale|scene finale|resultat|roue|tirage|candidat suivant|suivant|idle|temps mort)\b/.test(text)
     && !wantsTestDraw;
   const participantNames = [...new Set([
