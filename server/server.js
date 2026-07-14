@@ -3938,7 +3938,7 @@ function kephCommandPlanFromRules(message, context = {}) {
   if (mentionedLot && /\b(?:desactive|desactiver|coupe|retire)\b/.test(text)) add(`disable_lot ${quoteCommandArg(mentionedLot)}`);
   if (mentionedLot && /\b(?:active|activer|reactive|reactiver)\b/.test(text)) add(`enable_lot ${quoteCommandArg(mentionedLot)}`);
   if (creativeWriting) {
-    const trigger = /\b(?:idle|temps mort|attend trop)\b/.test(text) ? "idle" : /\bfinale\b/.test(text) ? "finale" : /\bresultat\b/.test(text) ? "result" : /\b(?:roue|tirage)\b/.test(text) ? "spin" : /\b(?:suivant|candidat suivant)\b/.test(text) ? "next" : /\bjingle\b/.test(text) ? "jingle" : "presentation";
+    const trigger = /\b(?:idle|temps mort|attend trop)\b/.test(text) ? "idle" : /\bjingle\b/.test(text) ? "jingle" : /\bfinale\b/.test(text) ? "finale" : /\bresultat\b/.test(text) ? "result" : /\b(?:roue|tirage)\b/.test(text) ? "spin" : /\b(?:suivant|candidat suivant)\b/.test(text) ? "next" : "presentation";
     const names = candidateListMatch ? kephNamesFromListText(candidateListMatch[1]) : [];
     const candidates = names.length ? names : (Array.isArray(context.queue) ? context.queue.slice(0, 4) : []);
     kephScenarioDialogueCommands(trigger, candidates).forEach(add);
