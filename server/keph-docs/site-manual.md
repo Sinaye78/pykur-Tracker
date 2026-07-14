@@ -145,7 +145,9 @@ Corriger le dernier tirage sert si un resultat a ete valide par erreur.
 
 Exporter CSV sert a recuperer l'historique dans un fichier.
 
-Exporter/importer profil sert a sauvegarder toute une configuration : participants, lots, stocks, dialogues, sons, raccourcis et options.
+Exporter un profil telecharge un fichier de sauvegarde contenant toute la configuration : participants, lots, poids, stocks, dialogues, sons, raccourcis et options. C'est a faire avant un gros live, avant de grosses modifications, ou avant d'importer un autre profil.
+
+Importer un profil recharge une configuration complete depuis un fichier exporte. C'est utile pour restaurer une roulette, changer de navigateur ou tester un profil prepare ailleurs. Attention : l'import remplace la configuration courante par celle du fichier; il vaut mieux exporter le profil actuel avant si on veut pouvoir revenir en arriere.
 
 ## Raccourcis clavier
 

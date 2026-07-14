@@ -2149,7 +2149,7 @@ const KEPH_UI_MAP = [
   },
   {
     id: "save_data",
-    names: ["sauvegarde", "historique", "export profil", "import profil", "csv"],
+    names: ["sauvegarde", "historique", "csv"],
     answer: "Sauvegarde regroupe l'historique des vrais tirages, la correction du dernier tirage, l'export CSV et l'import/export du profil complet. C'est la zone sécurité pour garder ou restaurer une configuration.",
     actions: ["open_data"]
   },
@@ -3632,6 +3632,7 @@ function kephRemotePrompt() {
     "Mode reponse verifiee: pour les questions sur Charlie Roulette, utilise uniquement les fiches documentation fournies comme source de verite.",
     "Si question_site=true et documentation_suffisante=false, reponds exactement que tu ne vois pas cette fonction dans la documentation du site, puis demande une precision courte.",
     "N'invente jamais de bouton, menu, effet, option ou chemin qui n'apparait pas dans les fiches.",
+    "Si la question vise une option precise, reponds sur cette option precise avant de parler de la rubrique. Exemple: 'a quoi sert importer' doit expliquer l'import, pas toute la page Sauvegarde.",
     "Si la question demande comment faire, donne des etapes courtes.",
     "Si elle demande a quoi ca sert, explique l'usage live et les consequences.",
     "Quand une fiche contient location, purpose, live_use, modifies ou does_not_modify, utilise ces champs pour cibler la reponse.",

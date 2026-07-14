@@ -552,6 +552,41 @@
       ]
     },
     {
+      "id": "import_profile",
+      "section": "data",
+      "title": "Importer un profil",
+      "keywords": [
+        "importer",
+        "import",
+        "restaurer",
+        "charger profil",
+        "importer profil",
+        "profile importer",
+        "profil"
+      ],
+      "answer": "Importer un profil sert a recharger une configuration complete depuis un fichier exporte : participants, lots, poids, stocks, dialogues, sons, raccourcis et options. C'est utile si tu changes de navigateur, si tu recuperes une ancienne roulette ou si tu veux tester un profil prepare ailleurs. Attention : l'import remplace la configuration courante par celle du fichier; exporte ton profil actuel avant si tu veux garder une sauvegarde.",
+      "actions": [
+        "open_data"
+      ]
+    },
+    {
+      "id": "export_profile",
+      "section": "data",
+      "title": "Exporter un profil",
+      "keywords": [
+        "exporter profil",
+        "export profil",
+        "backup",
+        "sauvegarder profil",
+        "telecharger profil",
+        "télécharger profil"
+      ],
+      "answer": "Exporter un profil telecharge un fichier de sauvegarde contenant toute la roulette : participants, lots, poids, stocks, dialogues, sons, raccourcis et options. C'est la chose a faire avant un gros live, avant de modifier beaucoup de reglages, ou avant d'importer un autre profil.",
+      "actions": [
+        "open_data"
+      ]
+    },
+    {
       "id": "history_data",
       "section": "data",
       "title": "Historique, correction et profil",
@@ -559,9 +594,6 @@
         "historique",
         "gagnant",
         "csv",
-        "export",
-        "import",
-        "profil",
         "sauvegarde",
         "corriger",
         "annuler dernier tirage"
