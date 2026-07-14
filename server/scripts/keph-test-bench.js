@@ -70,7 +70,7 @@ const coreCases = [
   { q: "modifie le lot Dofus Cawotte et mets son poids a 10", expect: ["setpoids", "Dofus Cawotte", "10"], actionType: "command_batch" },
 
   { q: "comment créer un dialogue ?", expect: ["studio", "replique", "etape"], action: "open_scenario_studio", noInternalCommands: true },
-  { q: "Comment modifier les dialogues de présentation", expect: ["presentation", "modifier", "studio"], action: "open_scenario_studio", noInternalCommands: true },
+  { q: "Comment modifier les dialogues de présentation", expect: ["presentation", "studio"], expectAny: ["modifier", "modifie"], action: "open_scenario_studio", noInternalCommands: true },
   { q: "tu sais créer les dialogues toi ?", expect: ["oui", "idees", "confirmer"], action: "open_scenario_studio", noInternalCommands: true },
   { q: "tu ferais quoi comme dialogue pour un jingle drôle, donne moi juste des idées ne créer rien", expect: ["jingle"], expectAny: ["idees", "exemples", "phrases"], action: "open_scenario_studio", noInternalCommands: true },
   { q: "tu ferais quoi comme dialogue pour un jingle drole, donne moi juste des idees ne creer rien", mode: "creative", expect: ["jingle"], expectAny: ["idee", "phrase", "exemple"], expectMode: "creative", noInternalCommands: true, avoid: ["add_dialogue"] },

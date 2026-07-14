@@ -3268,9 +3268,15 @@ function directKephAnswer(message, context = {}) {
       actions: ["open_prepare"]
     },
     {
+      intent: "reorder_queue_howto",
+      test: () => /\b(?:comment|comment faire|ou|où|je peux)\b/.test(text) && /\b(?:mettre|placer|passer|remonter)\b/.test(text) && /\b(?:premiere position|première position|tete de liste|tête de liste|premier)\b/.test(text) && /\b(?:file|liste|candidat|participant|miette)\b/.test(text),
+      answer: "Pour mettre un candidat en première position, va dans Préparer > File de participants, puis remonte ce candidat tout en haut de la liste. Ça change l'ordre de passage, pas les lots ni l'historique. En mode Action, tu peux aussi me demander : « mets Miette en tête de liste ».",
+      actions: ["open_prepare"]
+    },
+    {
       intent: "add_lot_howto",
       test: () => /\b(?:comment|comment faire|comment ajouter|ajouter|mettre|creer|créer)\b/.test(text) && /\b(?:lot|lots|case|roue|roulette)\b/.test(text) && !/\b(?:dialogue|replique|réplique)\b/.test(text),
-      answer: "Pour ajouter un lot, ouvre Lots & roue puis le Studio de la roulette. Dans Lots & probabilités, ajoute une case, donne-lui un nom, un poids et éventuellement un stock. Ensuite passe dans Design & PNG si tu veux ajuster le texte, la couleur ou l'image de la case.",
+      answer: "Oui. Pour ajouter un lot, ouvre Lots & roue puis le Studio de la roulette. Dans Lots & probabilités, ajoute une case, donne-lui un nom, un poids et éventuellement un stock. Ensuite passe dans Design & PNG si tu veux ajuster le texte, la couleur ou l'image de la case.",
       actions: ["open_wheel_studio_lots"]
     },
     {
@@ -4055,12 +4061,12 @@ function isKephEditRequest(message = "") {
   const text = normalizeKephText(message);
   if (/\b(?:ne cree rien|ne creer rien|ne cree pas|ne creer pas|sans creer|sans modifier|juste des idees|juste des idées|donne moi des idees|donne moi des idées|tu ferais quoi|tu sais creer|tu sais créer|tu sais faire|tu peux m aider|peux tu m aider|m aider|m aide|ml aider|maider|aide moi|explique moi)\b/.test(text)) return false;
   if (/\b(?:liste|lister|affiche|afficher|montre|montrer|donne moi)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(text)) return false;
-  const learningQuestion = /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment fonctionne|comment je peux|comment faire|comment ajouter|comment creer|comment modifier|comment utiliser|comment mettre|ou est|ou se trouve|ou trouver|ou mettre|que fait|ca sert a quoi)\b/.test(text);
+  const learningQuestion = /\b(?:a quoi sert|a quoi ca sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment fonctionne|comment je peux|comment faire|comment ajouter|comment creer|comment modifier|comment utiliser|comment mettre|ou est|ou se trouve|ou trouver|ou mettre|que fait|ca sert a quoi)\b/.test(text);
   const yesNoQuestion = /\b(?:on peut|peut on|est ce que|possible|je peux)\b/.test(text);
   const explicitDoNow = /\b(?:tu peux|peux tu|peux-tu|stp|s il te plait|maintenant)\b/.test(text)
     && /\b(?:ajoute|ajouter|cree|creer|mets|mettre|met|modifie|modifier|change|changer|renomme|renommer|supprime|supprimer|vide|vider|active|activer|desactive|desactiver|lance|lancer|joue|jouer|ouvre|ouvrir)\b/.test(text)
     && !/\b(?:m aider|m aide|ml aider|maider|m expliquer|me guider|comment)\b/.test(text);
-  if (/\b(?:a quoi sert|sert a quoi|ca sert a quoi|c est quoi|c quoi|pourquoi|que fait)\b/.test(text)) return false;
+  if (/\b(?:a quoi sert|a quoi ca sert|sert a quoi|ca sert a quoi|c est quoi|c quoi|pourquoi|que fait)\b/.test(text)) return false;
   if (learningQuestion && !explicitDoNow) return false;
   if (yesNoQuestion && !explicitDoNow) return false;
   if (/\?$/.test(String(message || "").trim()) && !explicitDoNow) return false;
@@ -4668,7 +4674,8 @@ async function resolveKephReply(message, context = {}) {
     };
   }
   const knowledge = charlieKephKnowledge();
-  const command = parseKephCommand(message, context);
+  const allowParsedCommand = replyMode === "action" || (selectedMode === "auto" && isKephEditRequest(message));
+  const command = allowParsedCommand ? parseKephCommand(message, context) : null;
   const commandNeedsConfirmation = command?.source === "command" && Array.isArray(command.actions) && command.actions.some((action) => action?.type);
   if (commandNeedsConfirmation) return { ...command, replyMode, selectedMode, avatarUrl: kephPublicAvatar() };
   const guide = command
