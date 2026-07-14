@@ -3760,6 +3760,7 @@ const KEPH_EDIT_COMMANDS = [
 function isKephEditRequest(message = "") {
   const text = normalizeKephText(message);
   if (/\b(?:ne cree rien|ne creer rien|ne cree pas|ne creer pas|sans creer|sans modifier|juste des idees|juste des idées|donne moi des idees|donne moi des idées|tu ferais quoi|tu sais creer|tu sais créer)\b/.test(text)) return false;
+  if (/\b(?:liste|lister|affiche|afficher|montre|montrer|donne moi)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(text)) return false;
   const learningQuestion = /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment fonctionne|comment je peux|comment faire|comment ajouter|comment creer|comment modifier|comment utiliser|comment mettre|ou est|ou se trouve|ou trouver|ou mettre|que fait|ca sert a quoi)\b/.test(text);
   const yesNoQuestion = /\b(?:on peut|peut on|est ce que|possible|je peux)\b/.test(text);
   const explicitDoNow = /\b(?:tu peux|peux tu|peux-tu|stp|s il te plait|maintenant)\b/.test(text)
@@ -3901,6 +3902,7 @@ function kephCommandPlanFromRules(message, context = {}) {
   const raw = String(message || "");
   const text = normalizeKephText(raw);
   if (/\b(?:ne cree rien|ne creer rien|ne cree pas|ne creer pas|sans creer|sans modifier|juste des idees|juste des idées|donne moi des idees|donne moi des idées|tu ferais quoi|tu sais creer|tu sais créer)\b/.test(text)) return null;
+  if (/\b(?:liste|lister|affiche|afficher|montre|montrer|donne moi)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(text)) return null;
   const helpOnly = /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment je peux|comment faire|comment ajouter|comment creer|comment modifier|comment utiliser|comment mettre|ou est|ou trouver|ou mettre|ca sert a quoi)\b/.test(text);
   const explicitDoNow = /\b(?:tu peux|peux tu|peux-tu|stp|s il te plait|maintenant)\b/.test(text)
     && /\b(?:ajoute|ajouter|cree|creer|mets|mettre|met|modifie|modifier|change|changer|renomme|renommer|supprime|supprimer|vide|vider|active|activer|desactive|desactiver|lance|lancer|joue|jouer|ouvre|ouvrir)\b/.test(text)
@@ -3908,8 +3910,11 @@ function kephCommandPlanFromRules(message, context = {}) {
   if (helpOnly && !explicitDoNow) return null;
   const commands = [];
   const add = (command) => { if (command && kephCommandAllowed(command) && !commands.includes(command)) commands.push(command); };
+  const wantsTestDraw = /\b(?:tirage test|test roue|test roulette)\b/.test(text)
+    && /\b(?:tu peux|peux tu|peux-tu|fais|faire|lance|lancer|demarre|demarrer|start|test)\b/.test(text);
   const creativeWriting = /\b(?:ecris|ecrire|redige|rediger|fais|faire|prepare|preparer|genere|generer)\b/.test(text)
-    && /\b(?:dialogue|dialogues|replique|repliques|presentation|jingle|finale|scene finale|resultat|roue|tirage|candidat suivant|suivant|idle|temps mort)\b/.test(text);
+    && /\b(?:dialogue|dialogues|replique|repliques|presentation|jingle|finale|scene finale|resultat|roue|tirage|candidat suivant|suivant|idle|temps mort)\b/.test(text)
+    && !wantsTestDraw;
   const participantNames = [...new Set([
     ...(Array.isArray(context.queue) ? context.queue : []),
     context.currentCandidate,
@@ -4050,7 +4055,7 @@ function kephCommandPlanFromRules(message, context = {}) {
   if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\b(?:presentation|presenter les candidats|presente les candidats|la totale)\b/.test(text)) add("startpresentation");
   if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|annonce|annoncer|start)\b/.test(text) && /\b(?:candidat suivant|suivant|prochain candidat|la totale)\b/.test(text)) add("startnext");
   if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\bfinale\b/.test(text)) add("startfinale");
-  if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start|test)\b/.test(text) && /\b(?:tirage test|test roue|test roulette)\b/.test(text)) add("starttestdraw");
+  if (wantsTestDraw || (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start|test)\b/.test(text) && /\b(?:tirage test|test roue|test roulette)\b/.test(text))) add("starttestdraw");
   if (!creativeWriting && /\b(?:lance|lancer|joue|jouer|demarre|demarrer|start)\b/.test(text) && /\b(?:simulation|repetition|passage complet|la totale)\b/.test(text)) add("startrehearsal");
   if (!creativeWriting && /\b(?:lance|lancer|demarre|demarrer|start)\b/.test(text) && /\b(?:vrai tirage|tirage reel|la roue)\b/.test(text) && !/\btest\b/.test(text)) add("startdraw");
   if (!creativeWriting && /\b(?:stop|arrete|arreter|arret)\b/.test(text) && /\b(?:roue|tirage)\b/.test(text)) add("stopdraw");
