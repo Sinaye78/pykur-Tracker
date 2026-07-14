@@ -3930,6 +3930,7 @@ function isKephEditRequest(message = "") {
   const explicitDoNow = /\b(?:tu peux|peux tu|peux-tu|stp|s il te plait|maintenant)\b/.test(text)
     && /\b(?:ajoute|ajouter|cree|creer|mets|mettre|met|modifie|modifier|change|changer|renomme|renommer|supprime|supprimer|vide|vider|active|activer|desactive|desactiver|lance|lancer|joue|jouer|ouvre|ouvrir)\b/.test(text)
     && !/\b(?:m aider|m expliquer|me guider|comment)\b/.test(text);
+  if (/\b(?:a quoi sert|sert a quoi|ca sert a quoi|c est quoi|c quoi|pourquoi|que fait)\b/.test(text)) return false;
   if (learningQuestion && !explicitDoNow) return false;
   if (yesNoQuestion && !explicitDoNow) return false;
   if (/\?$/.test(String(message || "").trim()) && !explicitDoNow) return false;
@@ -4532,6 +4533,9 @@ async function resolveKephReply(message, context = {}) {
   const verifiedDocs = kephVerifiedDocs(message, context);
   if (guide.intent === "unverified_site_question") {
     return { ...guide, source: "verified", grounded: false, avatarUrl: kephPublicAvatar() };
+  }
+  if (["explain_discord_scene", "discord_scene"].includes(guide.intent)) {
+    return { ...guide, source: "guide", grounded: !!guide.matched, avatarUrl: kephPublicAvatar() };
   }
   if (!siteQuestion && guide.matched && ["command", "conversation"].includes(guide.source)) {
     return { ...guide, source: "guide", grounded: false, avatarUrl: kephPublicAvatar() };
