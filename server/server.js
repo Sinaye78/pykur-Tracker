@@ -2382,7 +2382,18 @@ function kephDocumentation(context = {}) {
 function kephDocumentationSearch(message, context = {}) {
   const text = normalizeKephText(message);
   const tokens = new Set(text.split(" ").filter((part) => part.length > 2));
-  return kephDocumentation(context)
+  const allDocs = kephDocumentation(context);
+  const forcedIds = [];
+  if (/\b(?:import|importe|importer|restaurer|charger)\b/.test(text) && /\b(?:profil|profile|sauvegarde|configuration)\b/.test(text)) forcedIds.push("import_profile");
+  if (/\b(?:export|exporte|exporter|backup|telecharger|sauvegarder)\b/.test(text) && /\b(?:profil|profile|sauvegarde|configuration)\b/.test(text)) forcedIds.push("export_profile");
+  if (forcedIds.length) {
+    const forcedDocs = forcedIds
+      .map((id, index) => allDocs.find((doc) => doc.id === id) ? { ...allDocs.find((doc) => doc.id === id), score: 100 - index } : null)
+      .filter(Boolean);
+    const contextDoc = allDocs.find((doc) => doc.id === "context");
+    return contextDoc ? [...forcedDocs, { ...contextDoc, score: 1 }].slice(0, 2) : forcedDocs.slice(0, 2);
+  }
+  return allDocs
     .map((doc) => {
       const haystack = normalizeKephText(`${doc.title} ${(doc.keywords || []).join(" ")} ${doc.content || ""} ${doc.answer || ""} ${(doc.examples || []).join(" ")}`);
       let score = 0;
@@ -2430,7 +2441,7 @@ function kephDocCard(doc) {
 
 function isKephSiteQuestion(message) {
   const text = normalizeKephText(message);
-  return /\b(?:site|application|bouton|option|live|preparer|studio|show|charlie|victoria|roulette|regie|roue|lot|lots|stock|poid|poids|participant|candidat|dialogue|replique|scenario|scene|jingle|son|audio|bruitage|mp3|discord|obs|historique|profil|sauvegarde|raccourci|lancer|stop|tirage|configuration|keph|emote|effet|ciblage)\b/.test(text);
+  return /\b(?:site|application|bouton|option|live|preparer|studio|show|charlie|victoria|roulette|regie|roue|lot|lots|stock|poid|poids|participant|candidat|dialogue|replique|scenario|scene|jingle|son|audio|bruitage|mp3|discord|obs|historique|profil|profile|sauvegarde|raccourci|lancer|stop|tirage|configuration|keph|emote|effet|ciblage)\b/.test(text);
 }
 
 function kephDiagnostics(message, context = {}) {
