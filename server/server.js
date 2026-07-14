@@ -2503,6 +2503,7 @@ function classifyKephMode(message, context = {}) {
   if (selected !== "auto") return selected;
   const text = normalizeKephText(message);
   if (/\b(?:pourquoi je peux pas|pourquoi je ne peux pas|impossible|bloque|bloquee|bloqué|bloquée|diagnostic|check|tout va bien|je peux lancer|pret|prêt)\b/.test(text)) return "diagnostic";
+  if (/\b(?:tu peux|peux tu|peux-tu|fais|faire|lance|lancer|teste|tester)\b/.test(text) && /\b(?:tirage test|test roue|test roulette)\b/.test(text)) return "action";
   if (isKephEditRequest(message)) return "action";
   if (/\b(?:idee|idees|idée|idées|imagine|propose|inspire|blague|drôle|drole|scenario|scénario|ecris|écris|redige|rédige)\b/.test(text)
     && /\b(?:dialogue|dialogues|replique|repliques|jingle|presentation|finale|scene|show|candidats?)\b/.test(text)) return "creative";
@@ -3649,7 +3650,7 @@ function directKephAnswer(message, context = {}) {
     {
       intent: "explain_me_cues",
       test: () => /\b(?:slash me|indication scenique|indication scénique|commande me)\b/.test(text) || (/\bme\b/.test(text) && /\b(?:c est quoi|sert|signifie|veut dire|commande)\b/.test(text)),
-      answer: "Un /me est une indication scénique. Au lieu de faire parler Charlie ou Victoria dans une grosse bulle, ça affiche une petite action près du personnage, par exemple « Charlie regarde la roue » ou « Victoria applaudit ». C'est pratique pour donner de la vie sans couper le dialogue principal.",
+      answer: "Un /me est une indication scénique. Au lieu de faire parler Charlie ou Victoria dans une grosse bulle, ça affiche une petite action de scène près du personnage, par exemple « Charlie regarde la roue » ou « Victoria applaudit ». C'est pratique pour donner de la vie sans couper le dialogue principal.",
       actions: ["open_scenario_studio"]
     },
     {
@@ -4236,6 +4237,7 @@ function kephCommandPlanFromRules(message, context = {}) {
     && !/\b(?:m aider|m expliquer|me guider|comment)\b/.test(text);
   if (helpOnly && !explicitDoNow) return null;
   const commands = [];
+  let answerOverride = "";
   const add = (command) => { if (command && kephCommandAllowed(command) && !commands.includes(command)) commands.push(command); };
   const wantsTestDraw = /\b(?:tirage test|test roue|test roulette)\b/.test(text)
     && /\b(?:tu peux|peux tu|peux-tu|fais|faire|lance|lancer|demarre|demarrer|start|test)\b/.test(text);
@@ -4251,7 +4253,7 @@ function kephCommandPlanFromRules(message, context = {}) {
             : /\b(?:suivant|prochain)\b/.test(text) ? "next"
               : "presentation";
     const speaker = /\bvictoria\b/.test(text) && !/\bcharlie\b/.test(text) ? "victoria" : "charlie";
-    const emote = /\b(?:rire|drole|drôle|blague)\b/.test(text) ? "laugh"
+    const emote = /\b(?:rire|drole|drôle|blague|emoji)\b/.test(text) ? "laugh"
       : /\b(?:coeur|cœur|love)\b/.test(text) ? "love"
         : /\b(?:surprise|choque|choc)\b/.test(text) ? "shock"
           : "star";
@@ -4260,6 +4262,9 @@ function kephCommandPlanFromRules(message, context = {}) {
         : /\bconfetti/.test(text) ? "confetti"
           : "spotlights";
     add(`add_dialogue ${quoteCommandArg(trigger)} ${quoteCommandArg(speaker)} ${quoteCommandArg(quotedDialogueText)} --kind "dialogue" --emote ${quoteCommandArg(emote)} --fx ${quoteCommandArg(fx)}`);
+    const emoteLabel = { laugh: "rire 😂", love: "coeur 💖", shock: "surprise 😲", star: "étoile ✨" }[emote] || emote;
+    const fxLabel = { spotlights: "projecteurs", fireworks: "feu d'artifice", flash: "flash", confetti: "confettis" }[fx] || fx;
+    answerOverride = `Je prépare 1 réplique exacte pour ${speaker === "victoria" ? "Victoria" : "Charlie"} en Présentation, avec l'emoji ${emoteLabel} et l'effet spécial ${fxLabel}. Vérifie l'aperçu, puis applique si tout est bon.`;
   }
   const participantNames = [...new Set([
     ...(Array.isArray(context.queue) ? context.queue : []),
@@ -4464,7 +4469,7 @@ function kephCommandPlanFromRules(message, context = {}) {
     add("startrehearsal");
   }
   return {
-    answer: `Je peux preparer ${commands.length} commande${commands.length > 1 ? "s" : ""} controlee${commands.length > 1 ? "s" : ""}. Verifie l'aperçu, puis applique seulement si tout est bon.`,
+    answer: answerOverride || `Je peux preparer ${commands.length} commande${commands.length > 1 ? "s" : ""} controlee${commands.length > 1 ? "s" : ""}. Verifie l'aperçu, puis applique seulement si tout est bon.`,
     commands
   };
 }
@@ -4694,7 +4699,9 @@ async function resolveKephReply(message, context = {}) {
   }
   const knowledge = charlieKephKnowledge();
   const allowParsedCommand = replyMode === "action" || (selectedMode === "auto" && isKephEditRequest(message));
-  const command = allowParsedCommand ? parseKephCommand(message, context) : null;
+  const parsedCommand = parseKephCommand(message, context);
+  const parsedCommandNeedsConfirmation = parsedCommand?.source === "command" && Array.isArray(parsedCommand.actions) && parsedCommand.actions.some((action) => action?.type);
+  const command = parsedCommandNeedsConfirmation && !allowParsedCommand ? null : parsedCommand;
   const commandNeedsConfirmation = command?.source === "command" && Array.isArray(command.actions) && command.actions.some((action) => action?.type);
   if (commandNeedsConfirmation) return { ...command, replyMode, selectedMode, avatarUrl: kephPublicAvatar() };
   const guide = command
@@ -4702,6 +4709,9 @@ async function resolveKephReply(message, context = {}) {
     : fallbackKephAnswer(message, context);
   const siteQuestion = isKephSiteQuestion(message);
   const verifiedDocs = kephVerifiedDocs(message, context);
+  if (command && command.source === "command") {
+    return { ...guide, source: "guide", replyMode, selectedMode, grounded: true, avatarUrl: kephPublicAvatar() };
+  }
   if (guide.intent === "unverified_site_question") {
     return { ...guide, source: "verified", replyMode, selectedMode, grounded: false, avatarUrl: kephPublicAvatar() };
   }

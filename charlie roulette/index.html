@@ -746,6 +746,7 @@ const SHOW_VARIABLES={candidatactuel:'Candidat actuel',candidatsuivant:'Candidat
 const VALID_SHOW_VARIABLES=new Set([...Object.keys(SHOW_VARIABLES),'participant','next','count','winners']);
 const DEFAULT_SHORTCUTS={draw:'Space',stop:'Enter',test:'T',jingle:'J',outro:'F',present:'P',candidate:'N',finale:'V',discord:'C'};
 function defaultSettings(){return {antiRepeatEnabled:false,antiRepeatMode:'last',forcedTestLot:'',charlieReactions:true,charlieMood:'taquin',launchTrollEnabled:true,launchTrollChance:8,showEnabled:true,defaultDialoguesEnabled:true,disabledDefaultDialogues:[],autoNextShow:true,showFrequency:'normal',dialogueMode:'timed',liveDialogueMode:'auto',dialogueDuration:8,cuePlaybackVersion:2,cuePlayback:{presentation:'sequence',jingle:'sequence',idle:'random',spin:'random',result:'random',next:'ordered',finale:'sequence'},sceneTracks:{presentation:'',jingle:'',idle:'',spin:'',result:'',next:'',finale:''},audioAssignments:{start:'',spin:'',end:''},shortcuts:{...DEFAULT_SHORTCUTS},mute:false,jingleVolume:90,spinVolume:90}}
+function createFreshProfile(){return {center:'',participant:'',queue:[],queueIndex:0,participantDraws:{},participantDrawProgress:{},history:[],settings:defaultSettings(),drawnLotIds:[],customDialogues:[],showAudioAssets:[],lastLotId:'',audio:{...DEFAULT_AUDIO},lots:cloneDefaultLots()}}
 function isCssColor(v){if(!v||typeof v!=='string')return false;let o=new Option().style;o.color=v;return !!o.color}
 function num(v,def,min,max){let n=parseFloat(String(v).replace(',','.'));if(!Number.isFinite(n))n=def;if(min!=null)n=Math.max(min,n);if(max!=null)n=Math.min(max,n);return n}
 function normalizeShortcutValue(value){
@@ -766,7 +767,7 @@ function repairData(){
   if(!data||typeof data!=='object')data={active:'Défaut',profiles:{}};
   if(!data.profiles||typeof data.profiles!=='object')data.profiles={};
   if(!data.active||!data.profiles[data.active])data.active=Object.keys(data.profiles)[0]||'Défaut';
-  if(!data.profiles[data.active])data.profiles[data.active]={center:'',participant:'',audio:{...DEFAULT_AUDIO},lots:cloneDefaultLots()};
+  if(!data.profiles[data.active])data.profiles[data.active]=createFreshProfile();
   Object.values(data.profiles).forEach(p=>{
     if(!p||typeof p!=='object')return;
     if(!('participant' in p))p.participant='';
@@ -827,7 +828,7 @@ function repairData(){
 }
 
 let saveFeedbackReady=false,saveFeedbackDelay=0,saveFeedbackHide=0;
-let data=JSON.parse(localStorage.getItem(LS)||'null')||{active:'Défaut',profiles:{'Défaut':{center:'',participant:'',audio:{...DEFAULT_AUDIO},lots:cloneDefaultLots()}}};
+let data=JSON.parse(localStorage.getItem(LS)||'null')||{active:'Défaut',profiles:{'Défaut':createFreshProfile()}};
 repairData();
 save();
 Object.values(data.profiles).forEach(p=>{
@@ -1793,7 +1794,7 @@ $('presentCandidatesBtn').onclick=presentCandidates;$('callNextBtn').onclick=cal
 const resetIdleReactionsOriginal=resetIdleReactions;resetIdleReactions=function(){resetIdleReactionsOriginal();clearTimeout(showIdleTimer);if(!showEnabled()||spinning||presentingResult)return;showIdleTimer=setTimeout(()=>playWheelDialogue('idle'),cur().settings?.showFrequency==='max'?14000:32000)};
 document.addEventListener('pointerdown',()=>{if(!spinning&&!presentingResult)resetIdleReactions()},{passive:true});
 document.addEventListener('keydown',()=>{if(!spinning&&!presentingResult)resetIdleReactions()},{passive:true});
-$('addProfileBtn').onclick=()=>{let n=$('newProfile').value.trim();if(!n||data.profiles[n])return;interruptExperience();closeScenarioStudio();closeWheelStudio();scenarioHistory=[];data.profiles[n]=structuredClone(cur());data.active=n;$('newProfile').value='';save();renderAll()};
+$('addProfileBtn').onclick=()=>{let n=$('newProfile').value.trim();if(!n||data.profiles[n])return;interruptExperience();closeScenarioStudio();closeWheelStudio();scenarioHistory=[];cuePlaybackCursor={};data.profiles[n]=createFreshProfile();data.active=n;$('newProfile').value='';repairData();save();renderAll()};
 $('delProfileBtn').onclick=()=>{if(Object.keys(data.profiles).length<=1)return alert('Impossible : garde au moins un profil.');if(confirm(`Supprimer définitivement le profil « ${data.active} » ?`)){interruptExperience();closeScenarioStudio();closeWheelStudio();scenarioHistory=[];delete data.profiles[data.active];data.active=Object.keys(data.profiles)[0];save();renderAll()}};
 async function loadAudio(){
   let generation=++audioLoadGeneration;[audio.start,audio.spin,audio.end].forEach(hardStopAudio);revokeShowAudioUrls();
