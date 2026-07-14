@@ -2384,13 +2384,14 @@ function kephDocumentationSearch(message, context = {}) {
   const tokens = new Set(text.split(" ").filter((part) => part.length > 2));
   const allDocs = kephDocumentation(context);
   const forcedIds = [];
-  if (/\b(?:import|importe|importer|restaurer|charger)\b/.test(text) && /\b(?:profil|profile|sauvegarde|configuration)\b/.test(text)) forcedIds.push("import_profile");
-  if (/\b(?:export|exporte|exporter|backup|telecharger|sauvegarder)\b/.test(text) && /\b(?:profil|profile|sauvegarde|configuration)\b/.test(text)) forcedIds.push("export_profile");
-  if (/\b(?:a quoi sert|sert a quoi|ca sert a quoi|pourquoi|utilite)\b/.test(text) && /\b(?:participant|participants|candidat|candidats|file|liste d attente|file d attente)\b/.test(text)) forcedIds.push("participant_purpose");
+  if (/\b(?:import|importe|importer|restaurer|charger|recuperer|récupérer)\b/.test(text) && /\b(?:profil|profile|sauvegarde|configuration|pc|ordinateur|navigateur)\b/.test(text)) forcedIds.push("import_profile");
+  if (/\b(?:export|exporte|exporter|backup|telecharger|sauvegarder|garder|deplacer|déplacer|changer)\b/.test(text) && /\b(?:profil|profile|sauvegarde|configuration|pc|ordinateur|navigateur)\b/.test(text)) forcedIds.push("export_profile");
+  if (/\b(?:candidat actuel|candidat suivant|dernier lot|lot concerne|lot concerné|nombre de candidats|nombre de gagnants|bouton|boutons|variable|variables)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text)) forcedIds.push("dialogue_tokens");
+  if (/\b(?:annoncer automatiquement|annonce automatique|option cochable annoncer|option annoncer|candidat suivant automatique)\b/.test(text)) forcedIds.push("show_options");
+  if (/\b(?:a quoi sert|sert a quoi|ca sert a quoi|pourquoi|utilite)\b/.test(text) && !/\b(?:dialogue|dialogues|replique|repliques|option|cochable|annoncer|automatiquement)\b/.test(text) && /\b(?:participant|participants|candidat|candidats|file|liste d attente|file d attente)\b/.test(text)) forcedIds.push("participant_purpose");
   if (/\b(?:comment|ajouter|creer|cree|mettre)\b/.test(text) && /\b(?:lot|lots|case|roue|roulette)\b/.test(text) && !/\b(?:dialogue|replique)\b/.test(text)) forcedIds.push("add_lot_howto");
   if (/\b(?:maximum|max|limite|combien|nombre)\b/.test(text) && /\b(?:lot|lots|case|cases|roue|roulette)\b/.test(text)) forcedIds.push("wheel_lot_limit");
-  if (/\b(?:candidat actuel|candidat suivant|dernier lot|lot concerne|lot concerne|nombre de candidats|nombre de gagnants|bouton|boutons|variable|variables)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text)) forcedIds.push("dialogue_tokens");
-  if (/\b(?:nouveau|premiere fois|jamais utilise|je suis perdu|utiliser le site|guide moi|me guider|commencer)\b/.test(text)) forcedIds.push("first_live_steps");
+  if (/\b(?:nouveau|premiere fois|jamais utilise|je suis perdu|utiliser le site|guide moi|me guider|commencer)\b/.test(text) && !/\b(?:pc|ordinateur|export|importe|importer|import|profil|profile)\b/.test(text)) forcedIds.push("first_live_steps");
   if (forcedIds.length) {
     const forcedDocs = forcedIds
       .map((id, index) => allDocs.find((doc) => doc.id === id) ? { ...allDocs.find((doc) => doc.id === id), score: 100 - index } : null)
@@ -2540,7 +2541,14 @@ function parseKephCommand(message, context = {}) {
     && /\b(?:ajoute|ajouter|cree|creer|mets|mettre|met|modifie|modifier|change|changer|renomme|renommer|supprime|supprimer|vide|vider|active|activer|desactive|desactiver|lance|lancer|joue|jouer|ouvre|ouvrir)\b/.test(normalized)
     && !/\b(?:m aider|m expliquer|me guider|comment)\b/.test(normalized);
   if (helpOnly && !explicitDoNow) return null;
-  if (/\b(?:file|liste|queue|candidats|participants)\b/.test(normalized) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(normalized)) {
+  if (/\b(?:dialogue|dialogues|replique|repliques)\b/.test(normalized)
+    && /\b(?:presenter|presentation|présenter|présentation)\b/.test(normalized)
+    && /\b(?:candidat|candidats|participant|participants)\b/.test(normalized)
+    && /\b(?:cree|creer|crée|créer|fais|faire|prepare|preparer|prépare|préparer|genere|generer|génère|générer|ecris|ecrire|écris|écrire)\b/.test(normalized)) {
+    const count = kephRequestedCount(raw, Math.min(5, Math.max(1, participantNames.length || 5)));
+    kephCandidatePresentationDialogueCommands(participantNames, count).forEach(addControlled);
+  }
+  if (!controlledCommands.length && /\b(?:file|liste|queue|candidats|participants)\b/.test(normalized) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(normalized)) {
     const names = kephNamesFromListText(raw.split(/:|avec|pour/i).pop() || raw);
     const picked = names.length >= 2 ? names : ["Mira", "Grobid", "Tofu-Royal"];
     addControlled(`set_queue ${picked.slice(0, 6).map(quoteCommandArg).join(" ")}`);
@@ -2571,19 +2579,37 @@ function parseKephCommand(message, context = {}) {
     addControlled('set_setting "launchTrollChance" "12"');
   }
   const lotNames = Array.isArray(context.lots) ? context.lots.map((lot) => String(lot.name || "")).filter(Boolean) : [];
+  const findMentionedLot = (hint = "") => {
+    const exact = lotNames.find((name) => text.includes(normalizeKephText(name)));
+    if (exact) return exact;
+    const fromHint = findKephBestName(lotNames, hint);
+    if (fromHint) return fromHint;
+    const rawTokens = normalizeKephText(raw).split(/\s+/).filter((token) => token.length > 2);
+    let best = "";
+    let bestScore = 0;
+    for (const name of lotNames) {
+      const nameTokens = normalizeKephText(name).split(/\s+/).filter((token) => token.length > 2);
+      const score = nameTokens.filter((token) => rawTokens.includes(token)).length;
+      if (score > bestScore) {
+        best = name;
+        bestScore = score;
+      }
+    }
+    return bestScore >= 2 ? best : "";
+  };
   const directRename = raw.match(/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s+(?:en|vers)\s+(.+?)(?:[?.!]|$)/i);
-  if (directRename) addControlled(`rename_lot ${quoteCommandArg(findKephBestName(lotNames, cleanKephName(directRename[1])) || cleanKephName(directRename[1]))} ${quoteCommandArg(cleanKephName(directRename[2]))}`);
+  if (directRename) addControlled(`rename_lot ${quoteCommandArg(findMentionedLot(cleanKephName(directRename[1])) || cleanKephName(directRename[1]))} ${quoteCommandArg(cleanKephName(directRename[2]))}`);
   if (/\b(?:supprime|supprimer|vide|vider|efface|effacer|retire|retirer)\b/.test(normalized) && /\b(?:file|liste|queue|attente|candidats|participants)\b/.test(normalized)) addControlled("clear_queue");
   const explicitQueue = raw.match(/\b(?:charge|charger|remplace|remplacer|mets|mettre)\s+(?:la\s+)?(?:file|liste|queue|liste d'attente|file d'attente)\s*(?:avec|par|:)?\s*(.+)$/i);
   const orderedQueue = /\b(?:tete de liste|tête de liste|en tete|en tête|premier|deux|deuxieme|deuxième|trois|troisieme|troisième)\b/.test(normalized)
     && /\b(?:liste|file|queue|ordre|candidats|participants)\b/.test(normalized);
   const parsedQueueNames = explicitQueue ? kephNamesFromListText(explicitQueue[1]) : orderedQueue ? kephNamesFromListText(raw) : [];
-  if (parsedQueueNames.length) {
+  if (!controlledCommands.length && parsedQueueNames.length) {
     const normalizedQueueNames = [...new Set(parsedQueueNames.map((name) => findKephBestName(participantNames, name) || name))];
     const rest = explicitQueue ? [] : participantNames.filter((name) => !normalizedQueueNames.some((item) => normalizeKephText(item) === normalizeKephText(name)));
     addControlled(`set_queue ${[...normalizedQueueNames, ...rest].map(quoteCommandArg).join(" ")}`);
   }
-  if (/\b(?:file|liste|queue|candidats|participants)\b/.test(normalized) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(normalized)) {
+  if (!controlledCommands.length && /\b(?:file|liste|queue|candidats|participants)\b/.test(normalized) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(normalized)) {
     const names = kephNamesFromListText(raw.split(/:|avec|pour/i).pop() || raw);
     const picked = names.length >= 2 ? names : ["Mira", "Grobid", "Tofu-Royal"];
     addControlled(`set_queue ${picked.slice(0, 6).map(quoteCommandArg).join(" ")}`);
@@ -2783,7 +2809,7 @@ function parseKephCommand(message, context = {}) {
   if (/\b(?:quelle heure|quel heure|il est quel heure|il est quelle heure|heure actuelle)\b/.test(normalized)) {
     const now = new Date();
     return {
-      answer: `Il est ${now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })}.`,
+      answer: `Il est ${now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })} en France actuellement.`,
       actions: [],
       source: "conversation",
       intent: "time_now"
@@ -3060,13 +3086,13 @@ function directKephAnswer(message) {
     },
     {
       intent: "new_user_onboarding",
-      test: () => /\b(?:nouveau|premiere fois|première fois|jamais utilise|jamais utiliser|je suis perdu|utiliser le site|me guider|guide moi|commencer)\b/.test(text) && /\b(?:site|roulette|live|nouveau|commencer|perdu|utiliser)\b/.test(text),
+      test: () => !/\b(?:pc|ordinateur|export|importe|importer|import|profil|profile)\b/.test(text) && /\b(?:nouveau|premiere fois|première fois|jamais utilise|jamais utiliser|je suis perdu|utiliser le site|me guider|guide moi|commencer)\b/.test(text) && /\b(?:site|roulette|live|nouveau|commencer|perdu|utiliser)\b/.test(text),
       answer: "Oui. Pense le site en 3 moments : 1) Préparer : tu charges les participants et leurs lancers. 2) Lots & roue : tu règles les lots, poids et stocks. 3) Scènes/Sons : tu ajustes dialogues, jingles et effets. Avant un vrai live, lance une simulation avec Simuler un passage pour vérifier que le rythme, les sons et la scène Discord sont propres.",
       actions: ["open_prepare", "highlight_rehearsal"]
     },
     {
       intent: "participant_purpose",
-      test: () => wantsPurpose && /\b(?:participant|participants|candidat|candidats|file|liste d attente|file d attente)\b/.test(text),
+      test: () => wantsPurpose && !/\b(?:dialogue|dialogues|replique|repliques|option|cochable|annoncer|automatiquement)\b/.test(text) && /\b(?:participant|participants|candidat|candidats|file|liste d attente|file d attente)\b/.test(text),
       answer: "Les participants servent à définir qui passe dans la roulette et dans quel ordre. Le participant actuel est affiché sur la scène, ses dialogues peuvent utiliser son nom, et son nombre de lancers indique combien de vrais tirages il peut faire avant de passer au suivant. Sans participants, tu peux tester la roue, mais tu n'as pas de vrai déroulé de live.",
       actions: ["open_prepare"]
     },
@@ -3294,7 +3320,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "wheel_purpose",
-      test: () => /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi)\b/.test(text) && /\b(?:roue|roulette)\b/.test(text),
+      test: () => /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi)\b/.test(text) && /\b(?:roue|roulette)\b/.test(text) && !/\b(?:poid|poids|probabilite|proba|chance|taux)\b/.test(text),
       answer: "La roue est la scène centrale du tirage : elle affiche les lots, choisit le résultat et donne le moment fort du live. Ses chances viennent des poids des lots, et ses cases peuvent devenir indisponibles si les stocks sont épuisés.",
       actions: ["open_wheel_studio_lots"]
     },
@@ -3313,7 +3339,7 @@ function directKephAnswer(message) {
     {
       intent: "what_if_wrong_result",
       test: () => /\b(?:mauvais resultat|mauvais tirage|erreur tirage|tirage rate|tirage foire|trompe|annuler tirage|corriger tirage|tirage erreur)\b/.test(text),
-      answer: "Si un tirage est parti par erreur, va dans Sauvegarde/Historique et utilise la correction du dernier tirage. Ça sert à revenir sur le dernier résultat, restaurer le contexte utile et éviter de laisser un historique faux.",
+      answer: "Si un tirage est parti par erreur, va dans Sauvegarde/Historique et utilise le bouton pour corriger le dernier tirage. Ça sert à revenir sur le dernier résultat, restaurer le contexte utile et éviter de laisser un historique faux.",
       actions: ["open_data"]
     },
     {
@@ -3952,6 +3978,31 @@ function kephScenarioDialogueCommands(trigger = "presentation", candidates = [])
   );
 }
 
+function kephRequestedCount(text = "", fallback = 5) {
+  const match = normalizeKephText(text).match(/\b(\d{1,2})\s+(?:candidats?|participants?|dialogues?|repliques?)\b/);
+  if (match) return Math.max(1, Math.min(12, Number(match[1])));
+  if (/\bcinq\b/.test(normalizeKephText(text))) return 5;
+  if (/\bquatre\b/.test(normalizeKephText(text))) return 4;
+  if (/\btrois\b/.test(normalizeKephText(text))) return 3;
+  return fallback;
+}
+
+function kephCandidatePresentationDialogueCommands(candidates = [], count = 5) {
+  const picked = candidates.slice(0, count);
+  while (picked.length < count) picked.push(`Candidat ${picked.length + 1}`);
+  const lines = [
+    ["charlie", (name, index) => `${name}, premier controle technique : sourire au public et ne pas negocier avec la roue avant le depart.`, "laugh", "spotlights"],
+    ["victoria", (name, index) => `${name} entre en scene. On applaudit fort : plus c'est bruyant, moins on entend Charlie lire les petites lignes.`, "smile", "goldwave"],
+    ["charlie", (name, index) => `${name}, dossier valide. La roulette promet du suspense, pas forcement de la justice.`, "question", "flash"],
+    ["victoria", (name, index) => `${name} rejoint la liste des courageux. La roue fait semblant d'etre neutre, c'est deja beaucoup.`, "star", "confetti"],
+    ["charlie", (name, index) => `${name}, bienvenue. Si le destin te regarde bizarrement, regarde Victoria, elle sourit mieux que moi.`, "wink", "spotlight"]
+  ];
+  return picked.map((name, index) => {
+    const [speaker, textFactory, emote, fx] = lines[index % lines.length];
+    return `add_dialogue "presentation" ${quoteCommandArg(speaker)} ${quoteCommandArg(textFactory(name, index))} --kind "dialogue" --emote ${quoteCommandArg(emote)} --fx ${quoteCommandArg(fx)}`;
+  });
+}
+
 function kephCommandAllowed(command = "") {
   const name = String(command).split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9_]/g, "") || "";
   return KEPH_EDIT_COMMANDS.some((entry) => entry.name === name);
@@ -3979,15 +4030,21 @@ function kephCommandPlanFromRules(message, context = {}) {
     context.currentCandidate,
     context.nextParticipant
   ].map(cleanKephName).filter(Boolean))];
+  if (creativeWriting
+    && /\b(?:presenter|presentation|présenter|présentation)\b/.test(text)
+    && /\b(?:candidat|candidats|participant|participants)\b/.test(text)) {
+    const count = kephRequestedCount(raw, Math.min(5, Math.max(1, participantNames.length || 5)));
+    kephCandidatePresentationDialogueCommands(participantNames, count).forEach(add);
+  }
   const clearQueueRequested = /\b(?:supprime|supprimer|vide|vider|efface|effacer|retire|retirer)\b/.test(text)
     && /\b(?:file|liste|queue|attente|candidats|participants)\b/.test(text);
-  if (clearQueueRequested) add("clear_queue");
+  if (!commands.length && clearQueueRequested) add("clear_queue");
   const explicitQueueMatch = raw.match(/\b(?:charge|charger|remplace|remplacer|mets|mettre)\s+(?:la\s+)?(?:file|liste|queue|liste d'attente|file d'attente)\s*(?:avec|par|:)?\s*(.+)$/i);
   const candidateListMatch = raw.match(/\b(?:candidats?|participants?)\b[^:]*:\s*([^.!?]+)/i);
   const orderQueueRequested = /\b(?:tete de liste|tête de liste|en tete|en tête|premier|deux|deuxieme|deuxième|trois|troisieme|troisième)\b/.test(text)
     && /\b(?:liste|file|queue|ordre|candidats|participants)\b/.test(text);
   const queueNames = creativeWriting ? [] : candidateListMatch ? kephNamesFromListText(candidateListMatch[1]) : explicitQueueMatch ? kephNamesFromListText(explicitQueueMatch[1]) : orderQueueRequested ? kephNamesFromListText(raw) : [];
-  if (queueNames.length >= 1 && !creativeWriting) {
+  if (!commands.length && queueNames.length >= 1 && !creativeWriting) {
     const normalizedQueueNames = [...new Set(queueNames.map((name) => findKephBestName(participantNames, name) || name))];
     const rest = explicitQueueMatch ? [] : participantNames.filter((name) => !normalizedQueueNames.some((item) => normalizeKephText(item) === normalizeKephText(name)));
     add(`set_queue ${[...normalizedQueueNames, ...rest].map(quoteCommandArg).join(" ")}`);
@@ -4022,7 +4079,7 @@ function kephCommandPlanFromRules(message, context = {}) {
     const stock = addSingleLotMatch[3] != null ? Math.max(0, Math.min(9999, Number(addSingleLotMatch[3]) || 0)) : null;
     if (lotName) add(`add_lot ${quoteCommandArg(lotName)} ${weight}${stock != null ? ` ${stock}` : ""}`);
   }
-  if (!creativeWriting && /\b(?:file|liste|queue|candidats|participants)\b/.test(text) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(text)) {
+  if (!commands.length && !creativeWriting && /\b(?:file|liste|queue|candidats|participants)\b/.test(text) && /\b(?:cree|creer|charge|charger|genere|generer|profil demo|3 candidats|trois candidats)\b/.test(text)) {
     const names = candidateListMatch ? kephNamesFromListText(candidateListMatch[1]) : kephNamesFromListText(raw.split(/:|avec|pour/i).pop() || raw);
     const picked = names.length >= 2 ? names : ["Mira", "Grobid", "Tofu-Royal"];
     add(`set_queue ${picked.slice(0, 6).map(quoteCommandArg).join(" ")}`);
@@ -4067,18 +4124,34 @@ function kephCommandPlanFromRules(message, context = {}) {
     add('set_setting "launchTrollChance" "12"');
   }
   const lotNames = Array.isArray(context.lots) ? context.lots.map((lot) => String(lot.name || "")).filter(Boolean) : [];
+  const findMentionedLot = (hint = "") => {
+    const exact = lotNames.find((name) => text.includes(normalizeKephText(name)));
+    if (exact) return exact;
+    const fromHint = findKephBestName(lotNames, hint);
+    if (fromHint) return fromHint;
+    const rawTokens = normalizeKephText(raw).split(/\s+/).filter((token) => token.length > 2);
+    let best = "";
+    let bestScore = 0;
+    for (const name of lotNames) {
+      const nameTokens = normalizeKephText(name).split(/\s+/).filter((token) => token.length > 2);
+      const score = nameTokens.filter((token) => rawTokens.includes(token)).length;
+      if (score > bestScore) {
+        best = name;
+        bestScore = score;
+      }
+    }
+    return bestScore >= 2 ? best : "";
+  };
   const directRenameMatch = raw.match(/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s+(?:en|vers)\s+(.+?)(?:[?.!]|$)/i);
   if (directRenameMatch) {
-    const targetName = findKephBestName(lotNames, cleanKephName(directRenameMatch[1])) || cleanKephName(directRenameMatch[1]);
+    const targetName = findMentionedLot(cleanKephName(directRenameMatch[1])) || cleanKephName(directRenameMatch[1]);
     add(`rename_lot ${quoteCommandArg(targetName)} ${quoteCommandArg(cleanKephName(directRenameMatch[2]))}`);
   }
   const requestedLotHint = raw.match(/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s+\b(?:en|vers)\b/i)?.[1]
     || raw.match(/\b(?:stock|poids|poid|probabilite|proba|chance)\s+(?:du|de la|de l'|de|pour le|pour la|pour)\s+(.+?)(?:\s+(?:a|à|sur|en)\s+\d|\s*$)/i)?.[1]
     || raw.match(/\b(?:active|activer|desactive|desactiver|coupe|retire)\s+(?:le\s+)?(?:lot\s+)?(.+?)\s*$/i)?.[1]
     || "";
-  const mentionedLot = lotNames.find((name) => text.includes(normalizeKephText(name)))
-    || findKephBestName(lotNames, requestedLotHint)
-    || findKephBestName(lotNames, raw);
+  const mentionedLot = findMentionedLot(requestedLotHint) || findKephBestName(lotNames, raw);
   const numberMatch = raw.match(/\b(\d{1,4})\b/);
   const effectAliases = [
     ["confetti", /\bconfettis?\b/],

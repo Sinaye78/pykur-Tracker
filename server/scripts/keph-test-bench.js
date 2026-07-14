@@ -59,6 +59,7 @@ const cases = [
   { q: "Comment modifier les dialogues de présentation", expect: ["presentation", "modifier", "studio"], action: "open_scenario_studio", noInternalCommands: true },
   { q: "tu sais créer les dialogues toi ?", expect: ["oui", "idees", "confirmer"], action: "open_scenario_studio", noInternalCommands: true },
   { q: "tu ferais quoi comme dialogue pour un jingle drôle, donne moi juste des idées ne créer rien", expect: ["jingle", "idees"], action: "open_scenario_studio", noInternalCommands: true },
+  { q: "Tu peux me créer un dialogue qui va présenter les 5 candidats un peu drôle, il doit y avoir 1 dialogue pour un candidat et libre à toi de choisir qui parle Charlie ou Victoria, les emotes et les effets", expect: ["add_dialogue", "presentation"], actionType: "command_batch", avoid: ["set_queue"] },
   { q: "quand créer un dialogue il y a des boutons Candidat actuel Lot etc ça sert à quoi ?", expect: ["variables", "contexte", "candidat"], action: "open_scenario_studio", noInternalCommands: true },
   { q: "dialogue parlé ou indication scénique ?", expect: ["bulle", "action", "scene"], action: "open_scenario_studio" },
   { q: "c'est quoi un /me ?", expect: ["indication scenique", "action"], action: "open_scenario_studio", avoid: ["discord"] },

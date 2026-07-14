@@ -656,7 +656,7 @@
         "telecharger profil",
         "télécharger profil"
       ],
-      "answer": "Exporter un profil telecharge un fichier de sauvegarde contenant toute la roulette : participants, lots, poids, stocks, dialogues, sons, raccourcis et options. C'est la chose a faire avant un gros live, avant de modifier beaucoup de reglages, ou avant d'importer un autre profil.",
+      "answer": "Exporter un profil telecharge un fichier de sauvegarde contenant toute la configuration de la roulette : participants, lots, poids, stocks, dialogues, sons, raccourcis et options. C'est la chose a faire avant un gros live, avant de modifier beaucoup de reglages, avant de changer de PC ou avant d'importer un autre profil.",
       "actions": [
         "open_data"
       ]
