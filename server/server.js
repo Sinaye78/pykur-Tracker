@@ -2667,14 +2667,6 @@ function parseKephCommand(message, context = {}) {
       return `${index + 1}. id=${cue.id || "sans-id"} · ${who} (${kind}) : ${String(cue.text || "").slice(0, 120)}`;
     });
     const quickActions = [{ id: "open_scenario_studio", label: "Ouvrir le studio" }];
-    if (trigger === "presentation") {
-      quickActions.push({
-        id: "apply_keph_command_batch",
-        type: "command_batch",
-        label: "Lancer la présentation",
-        payload: { commands: ["startpresentation"] }
-      });
-    }
     return {
       answer: `Voici les dialogues de l'etape ${label} que je vois dans la regie, avec leurs ids pour pouvoir les modifier ou les supprimer :\n${lines.join("\n")}${dialogues.length > 8 ? `\n... et ${dialogues.length - 8} autre(s).` : ""}`,
       actions: quickActions,
