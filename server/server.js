@@ -2436,7 +2436,8 @@ function isKephSiteQuestion(message) {
 function kephDiagnostics(message, context = {}) {
   const text = normalizeKephText(message);
   const asksProblem = /\b(?:pourquoi|probleme|bug|impossible|marche pas|peux pas|peut pas|bloque|bloquee|bloqué|bloquée|gris|grise|grisé|grisee|erreur)\b/.test(text);
-  const asksReady = /\b(?:pret|prêt|check|diagnostic|verifier|vérifier|avant live|tout va bien|je peux lancer)\b/.test(text);
+  const asksReady = /\b(?:pret|prêt|check|diagnostic|avant live|tout va bien|je peux lancer)\b/.test(text)
+    || (/\b(?:verifier|vérifier)\b/.test(text) && !/\b(?:a quoi sert|sert a quoi|pourquoi|utilite|ça sert|ca sert)\b/.test(text));
   if (!asksProblem && !asksReady) return null;
 
   const lots = Array.isArray(context.lots) ? context.lots : [];
@@ -2668,8 +2669,9 @@ function parseKephCommand(message, context = {}) {
       intent: "list_dialogues"
     };
   }
-  const greetingOnly = /^(?:bonjour|salut|coucou|hello|yo|hey)(?:\s+(?:ca va|ca roule|la forme|cv|comment ca va|comment vas tu|tu vas bien))?\s*\??$/.test(normalized);
-  if (greetingOnly || /^(?:ca va|ca roule|la forme|comment ca va|comment vas tu|tu vas bien)\s*\??$/.test(normalized)) {
+  const greetingText = normalized.replace(/\bkeph\b/g, " ").replace(/\s+/g, " ").trim();
+  const greetingOnly = /^(?:bonjour|salut|coucou|hello|yo|hey)(?:\s+(?:ca va|ca roule|la forme|cv|comment ca va|comment vas tu|tu vas bien))?\s*\??$/.test(greetingText);
+  if (greetingOnly || /^(?:ca va|ca roule|la forme|comment ca va|comment vas tu|tu vas bien)\s*\??$/.test(greetingText)) {
     return {
       answer: "Salut, ça va bien, merci. Je suis prêt pour t'aider sur la régie, mais on peut aussi commencer simple : dis-moi ce que tu veux préparer ou ce qui te bloque.",
       actions: [],
@@ -2749,6 +2751,31 @@ function parseKephCommand(message, context = {}) {
       intent: "assistant_identity"
     };
   }
+  if (/\b(?:tu connais keph|c est qui keph|qui est keph|keph c est qui)\b/.test(normalized)) {
+    return {
+      answer: "Oui : Keph, c'est moi. Je suis l'assistant de régie intégré à Charlie Roulette. Mon but est de t'aider à comprendre le site, préparer ton live et proposer des actions à confirmer sans toucher à tout n'importe comment.",
+      actions: [],
+      source: "conversation",
+      intent: "assistant_identity"
+    };
+  }
+  if (/\b(?:quelle heure|quel heure|il est quel heure|il est quelle heure|heure actuelle)\b/.test(normalized)) {
+    const now = new Date();
+    return {
+      answer: `Il est ${now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })}.`,
+      actions: [],
+      source: "conversation",
+      intent: "time_now"
+    };
+  }
+  if (/\b(?:qui a cree harry potter|qui a creer harry potter|qui est l auteur de harry potter|harry potter)\b/.test(normalized)) {
+    return {
+      answer: "Harry Potter a été créé par J. K. Rowling.",
+      actions: [],
+      source: "conversation",
+      intent: "general_harry_potter"
+    };
+  }
   if (/\b(?:qui est victoria|c est qui victoria|victoria c est qui)\b/.test(normalized)) {
     return {
       answer: "Victoria est un personnage de mise en scène dans Charlie Roulette. Elle intervient surtout dans les dialogues pour annoncer, commenter ou accompagner le tirage avec un ton plus présentateur. Tu peux modifier ses répliques dans le Studio de scénarios.",
@@ -2816,7 +2843,7 @@ function parseKephCommand(message, context = {}) {
   }
   if (/\b(?:merci|merci keph|ok merci|parfait merci)\b/.test(normalized) && normalized.split(" ").length <= 4) {
     return {
-      answer: "Avec plaisir. Si tu bloques sur un bouton, un lot, un dialogue ou la scène Discord, demande-moi directement ce que tu veux faire.",
+      answer: "Avec plaisir. Si tu bloques sur quelque chose, je suis là.",
       actions: [],
       source: "conversation",
       intent: "thanks"
@@ -2996,8 +3023,14 @@ function directKephAnswer(message) {
             : "Presentation";
   const directAnswers = [
     {
+      intent: "dialogue_sound_howto",
+      test: () => /\b(?:comment|comment faire|ou|ou est|ajouter|mettre|associer|assigner)\b/.test(text) && /\b(?:son|audio|musique|mp3|wav|ogg|bruitage)\b/.test(text) && /\b(?:dialogue|replique|réplique)\b/.test(text),
+      answer: "Pour mettre un son sur une réplique, ouvre Réglages > Scènes > Studio de scénarios, sélectionne ou crée la réplique, puis utilise le champ Bruitage dans le panneau d'édition. Si ton MP3/WAV/OGG n'est pas encore dans la bibliothèque, importe-le depuis ce champ, puis enregistre la réplique. Ce son se jouera avec ce dialogue, alors que la section Sons règle plutôt les volumes globaux et les jingles.",
+      actions: ["open_scenario_studio"]
+    },
+    {
       intent: "create_dialogue",
-      test: () => /\b(?:creer|cree|ajouter|ajoute|faire|mettre|met|mets|nouveau|nouvelle)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text),
+      test: () => /\b(?:creer|cree|ajouter|ajoute|faire|mettre|met|mets|nouveau|nouvelle)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text) && !/\b(?:son|audio|musique|mp3|wav|ogg|bruitage)\b/.test(text),
       answer: `Pour creer un dialogue, ouvre Reglages > Scenes > Studio de scenarios. A gauche, choisis l'etape ou la replique doit se jouer, par exemple ${stageLabel}. A droite, choisis Charlie ou Victoria, ecris le texte, regle si besoin le ciblage, l'emote, l'effet special ou le bruitage, puis clique sur Ajouter la replique. Si tu me donnes directement le texte entre guillemets, je peux aussi preparer l'action a confirmer.`,
       actions: ["open_scenario_studio"]
     },
@@ -3051,8 +3084,44 @@ function directKephAnswer(message) {
     },
     {
       intent: "first_steps",
-      test: () => /\b(?:je suis perdu|par quoi commencer|commencer par quoi|premiere fois|jamais utilise|jamais utiliser|tu me guides|guide moi|debuter|avant le live|preparer live)\b/.test(text),
-      answer: "Commence par trois choses : 1. charge la file de participants dans Préparer, 2. vérifie les lots et leurs stocks dans Lots & roue, 3. teste sons/dialogues avec Simuler un passage. Quand la checklist est verte, tu peux passer en scène propre Discord/OBS et lancer le vrai tirage.",
+      test: () => /\b(?:je suis perdu|par quoi commencer|commencer par quoi|premiere fois|jamais utilise|jamais utiliser|tu me guides|guide moi|debuter|avant le live|preparer live|nouveau sur le site|nouvelle sur le site|utiliser le site|faire quoi sur le site)\b/.test(text),
+      answer: "Oui, je te guide. Pour comprendre Charlie Roulette, pense en 3 blocs : Préparer sert à charger les candidats et leurs lancers, Lots & roue sert à régler ce qui peut tomber, Scènes/Sons servent à donner l'ambiance avec Charlie, Victoria, dialogues, effets et jingles. Pour un premier live : charge une file, vérifie les lots/stocks, fais une simulation, puis utilise Lancer/Stop/Suivant dans la régie.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "add_lot_howto",
+      test: () => /\b(?:comment|comment faire|ou|ou est|ou aller|je peux|peux tu m aider|aide moi)\b/.test(text) && /\b(?:ajouter|creer|mettre|nouveau)\b/.test(text) && /\b(?:lot|case)\b/.test(text),
+      answer: "Pour ajouter un lot, ouvre Réglages > Lots & roue, puis Ouvrir le studio de la roulette. Dans l'onglet Lots & probabilités, ajoute une nouvelle case, donne-lui un nom, un poids, et active un stock si le lot est limité. Ensuite vérifie dans Design & PNG que le texte tient bien sur la roue. Si tu veux que je le fasse, formule plutôt une action directe comme : ajoute un lot \"Cape du hasard\" poids 10 stock 2.",
+      actions: ["open_wheel_studio_lots"]
+    },
+    {
+      intent: "wheel_lot_limit",
+      test: () => /\b(?:nombre|combien|maximum|max|limite|limiter|theorique|théorique)\b/.test(text) && /\b(?:lot|lots|case|cases)\b/.test(text) && /\b(?:roue|roulette)\b/.test(text),
+      answer: "Il n'y a pas vraiment une limite pratique prévue comme “6 lots maximum”. Le vrai plafond, c'est la lisibilité : plus tu ajoutes de cases, plus le texte devient petit et serré. Pour un live propre, 6 à 10 lots restent confortables; au-delà, il faut raccourcir les noms et ajuster Design & PNG.",
+      actions: ["open_wheel_studio_lots", "open_wheel_studio_design"]
+    },
+    {
+      intent: "dialogue_variables_buttons",
+      test: () => /\b(?:bouton|boutons|candidat actuel|candidat suivant|dernier lot|lot concerne|lot concerné|nombre de candidats|gagnants)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|studio)\b/.test(text),
+      answer: "Ces boutons insèrent des variables dans une réplique. Au lieu d'écrire un nom en dur, tu peux mettre par exemple {candidatactuel} ou {lot}. Pendant le live, le site remplace automatiquement par le candidat en train de passer ou le dernier lot obtenu. C'est pratique pour écrire une phrase réutilisable sans la modifier à chaque candidat.",
+      actions: ["open_scenario_studio"]
+    },
+    {
+      intent: "verify_lots_purpose",
+      test: () => /\b(?:a quoi sert|sert a quoi|pourquoi|utilite|ca sert a quoi)\b/.test(text) && /\b(?:verifier|vérifier)\b/.test(text) && /\b(?:lot|lots|roue)\b/.test(text),
+      answer: "Vérifier les lots sert à éviter une mauvaise surprise en live : un lot désactivé, un stock à zéro, un poids trop haut ou un nom illisible sur la roue. Avant de lancer, regarde surtout que les lots importants sont disponibles, que les stocks limités sont corrects et que les chances correspondent à ce que tu veux.",
+      actions: ["open_wheel_studio_lots"]
+    },
+    {
+      intent: "lot_colors_howto",
+      test: () => /\b(?:couleur|couleurs|colorer|changer couleur)\b/.test(text) && /\b(?:case|cases|lot|lots|roue)\b/.test(text),
+      answer: "Oui, tu peux changer les couleurs des cases. Ouvre Lots & roue > Studio de la roulette, puis va dans Design & PNG ou sélectionne le lot selon l'interface affichée. La couleur change seulement l'apparence de la case : elle ne modifie ni le poids, ni le stock, ni les chances de tirage.",
+      actions: ["open_wheel_studio_design"]
+    },
+    {
+      intent: "stop_button_purpose",
+      test: () => /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi utiliser|quand utiliser)\b/.test(text) && /\bstop\b/.test(text),
+      answer: "Stop sert à arrêter la roue pendant un vrai tirage, au moment où tu veux figer le résultat pour le public. Il ne lance rien tout seul : Lancer démarre la roue, Stop l'arrête. S'il est grisé, c'est généralement qu'aucun tirage réel n'est en cours ou que l'arrêt n'est pas encore autorisé.",
       actions: ["open_prepare"]
     },
     {
@@ -3082,7 +3151,7 @@ function directKephAnswer(message) {
     {
       intent: "participant_queue",
       test: () => /\b(?:file|fil|queue|liste)\b/.test(text) && /\b(?:attente|participant|participants|candidat|candidats)\b/.test(text) && !/\b(?:dialogue|dialogues|replique|repliques)\b/.test(text),
-      answer: "La file d'attente sert a faire passer les candidats dans l'ordre. Dans Preparer, tu mets un pseudo par ligne puis tu charges la file. Le participant actuel est celui qui passe maintenant, Suivant charge le prochain, et chaque ligne peut avoir son nombre de lancers. Tu peux aussi monter, descendre, rejouer ou retirer un candidat dans la liste.",
+      answer: "La file d'attente sert à faire passer les candidats dans l'ordre. Dans Préparer, tu écris un pseudo par ligne, puis tu charges la file. Le participant actuel est celui qui passe maintenant, Suivant charge le prochain, et chaque ligne peut avoir son nombre de lancers. Tu peux aussi demander à Keph de réordonner la file, par exemple : mets Kinza en premier, Maz en deuxième et Capy en troisième.",
       actions: ["open_prepare"]
     },
     {
@@ -3275,7 +3344,7 @@ function directKephAnswer(message) {
     {
       intent: "explain_me_cues",
       test: () => /\b(?:slash me|indication scenique|indication scénique|commande me)\b/.test(text) || (/\bme\b/.test(text) && /\b(?:c est quoi|sert|signifie|veut dire|commande)\b/.test(text)),
-      answer: "Les /me sont des indications scéniques, pas des messages Discord. Au lieu de faire parler Charlie ou Victoria dans une grosse bulle, ça affiche une petite action près du personnage, par exemple « Charlie regarde la roue » ou « Victoria applaudit ». C'est pratique pour donner de la vie sans couper le dialogue principal.",
+      answer: "Un /me est une indication scénique. Au lieu de faire parler Charlie ou Victoria dans une grosse bulle, ça affiche une petite action près du personnage, par exemple « Charlie regarde la roue » ou « Victoria applaudit ». C'est pratique pour donner de la vie sans couper le dialogue principal.",
       actions: ["open_scenario_studio"]
     },
     {
@@ -3647,7 +3716,13 @@ const KEPH_EDIT_COMMANDS = [
 
 function isKephEditRequest(message = "") {
   const text = normalizeKephText(message);
-  if (/\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment fonctionne|que fait|ca sert a quoi)\b/.test(text)) return false;
+  const learningQuestion = /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment fonctionne|comment je peux|comment faire|comment ajouter|comment creer|comment modifier|comment utiliser|ou est|ou se trouve|ou trouver|que fait|ca sert a quoi)\b/.test(text);
+  const yesNoQuestion = /\b(?:on peut|peut on|est ce que|possible|je peux)\b/.test(text);
+  const explicitDoNow = /\b(?:tu peux|peux tu|peux-tu|stp|s il te plait|maintenant)\b/.test(text)
+    && /\b(?:ajoute|ajouter|cree|creer|mets|mettre|met|modifie|modifier|change|changer|renomme|renommer|supprime|supprimer|vide|vider|active|activer|desactive|desactiver|lance|lancer|joue|jouer|ouvre|ouvrir)\b/.test(text)
+    && !/\b(?:m aider|m expliquer|me guider|comment)\b/.test(text);
+  if (learningQuestion && !explicitDoNow) return false;
+  if (yesNoQuestion && !explicitDoNow) return false;
   if (/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\b/.test(text)) return true;
   if (/\b(?:supprime|supprimer|vide|vider|efface|effacer|retire|retirer|charge|charger|reorganise|reorganiser|ordre|tete de liste)\b/.test(text) && /\b(?:file|liste|queue|attente|candidats|participants|premier|deux|trois)\b/.test(text)) return true;
   if (/\b(?:relance|relances|lancer|lancers|participation|participations)\b/.test(text) && /\b\d{1,2}\b/.test(text)) return true;
@@ -3959,6 +4034,7 @@ function kephCommandPlanFromRules(message, context = {}) {
 async function askRemoteKephCommandPlan(message, context = {}, timeoutMs = 7000) {
   const config = kephRemoteConfig();
   if (!config) return null;
+  if (!isKephEditRequest(message)) return null;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   const payload = {
