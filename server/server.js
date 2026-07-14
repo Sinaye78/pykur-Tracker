@@ -354,6 +354,7 @@ ensureColumn("message_reports", "updated_at", "TEXT");
 ensureColumn("keph_feedback", "task_status", "TEXT NOT NULL DEFAULT 'open'");
 ensureColumn("keph_feedback", "task_note", "TEXT");
 ensureColumn("keph_feedback", "category", "TEXT");
+ensureColumn("keph_feedback", "mode", "TEXT");
 ensureColumn("keph_feedback", "training_case_json", "TEXT");
 ensureColumn("keph_feedback", "doc_suggestion_json", "TEXT");
 ensureColumn("keph_feedback", "updated_at", "TEXT");
@@ -2469,6 +2470,8 @@ function kephDocCard(doc) {
     does_not_modify: doc.does_not_modify || "",
     direct_action: doc.direct_action || "",
     answer,
+    examples: Array.isArray(doc.examples) ? doc.examples.slice(0, 4) : [],
+    good_answer_example: doc.good_answer_example || "",
     actions: doc.actions || []
   };
 }
@@ -2476,6 +2479,43 @@ function kephDocCard(doc) {
 function isKephSiteQuestion(message) {
   const text = normalizeKephText(message);
   return /\b(?:site|application|bouton|option|live|preparer|studio|show|charlie|victoria|roulette|regie|roue|lot|lots|stock|poid|poids|participant|candidat|dialogue|replique|scenario|scene|jingle|son|audio|bruitage|mp3|discord|obs|historique|profil|profile|sauvegarde|raccourci|lancer|stop|tirage|configuration|keph|emote|effet|ciblage)\b/.test(text);
+}
+
+const KEPH_REPLY_MODES = new Set(["auto", "discussion", "help", "action", "creative"]);
+
+function normalizeKephMode(value) {
+  const mode = normalizeKephText(value);
+  if (["aide", "help", "doc", "documentation"].includes(mode)) return "help";
+  if (["action", "commande", "commandes", "modifier"].includes(mode)) return "action";
+  if (["creatif", "creative", "creation", "scenario", "idees", "idee"].includes(mode)) return "creative";
+  if (["discussion", "chat", "humain", "general"].includes(mode)) return "discussion";
+  return "auto";
+}
+
+function kephSelectedMode(context = {}) {
+  const raw = context?.kephMode || context?.mode || context?.assistantMode || context?.replyMode || "";
+  return KEPH_REPLY_MODES.has(normalizeKephMode(raw)) ? normalizeKephMode(raw) : "auto";
+}
+
+function classifyKephMode(message, context = {}) {
+  const selected = kephSelectedMode(context);
+  if (selected !== "auto") return selected;
+  const text = normalizeKephText(message);
+  if (isKephEditRequest(message)) return "action";
+  if (/\b(?:idee|idees|idée|idées|imagine|propose|inspire|blague|drôle|drole|scenario|scénario|ecris|écris|redige|rédige)\b/.test(text)
+    && /\b(?:dialogue|dialogues|replique|repliques|jingle|presentation|finale|scene|show|candidats?)\b/.test(text)) return "creative";
+  if (isKephSiteQuestion(message)) return "help";
+  return "discussion";
+}
+
+function kephModeLabel(mode) {
+  return {
+    auto: "Auto",
+    discussion: "Discussion",
+    help: "Aide",
+    action: "Action",
+    creative: "Creatif"
+  }[mode] || "Auto";
 }
 
 function kephDiagnostics(message, context = {}) {
@@ -3793,14 +3833,39 @@ function kephRemoteConfig() {
   return null;
 }
 
-function kephRemotePrompt() {
+function kephRemotePrompt(mode = "auto") {
+  const normalizedMode = normalizeKephMode(mode);
+  const modeLines = {
+    discussion: [
+      "MODE DISCUSSION: reponds comme un assistant humain. Si la question est generale ou sociale, reponds naturellement sans forcer Charlie Roulette.",
+      "Si la question mentionne quand meme Charlie Roulette, donne une reponse utile mais garde un ton conversationnel."
+    ],
+    help: [
+      "MODE AIDE: explique l'interface utilisateur. Reponds a la fonction precise visee, pas a toute la rubrique.",
+      "Structure mentale: quoi c'est, ou le trouver, quand l'utiliser, ce que ca modifie, ce que ca ne modifie pas.",
+      "Ne propose des actions d'ouverture que si elles aident vraiment a retrouver le bon endroit."
+    ],
+    action: [
+      "MODE ACTION: l'utilisateur veut probablement modifier ou piloter le site. Si une action directe est necessaire, la preparation de commande est geree par le serveur.",
+      "Si aucune commande n'est fournie, demande l'information manquante clairement au lieu de donner une fiche generale."
+    ],
+    creative: [
+      "MODE CREATIF: aide a imaginer ou rediger des dialogues/scenarios. Sois vivant, concret et adapte au rythme d'un live.",
+      "Si l'utilisateur demande explicitement de creer dans le site, les commandes seront confirmees par le serveur. Sinon, donne des propositions lisibles et reutilisables."
+    ],
+    auto: [
+      "MODE AUTO: choisis la posture utile selon la question, mais ne melange pas aide, discussion et action dans la meme reponse."
+    ]
+  }[normalizedMode] || [];
   return [
     "Tu es Keph, assistant de regie de Charlie Roulette.",
     "Reponds en francais naturel, precis, court et directement a la question.",
+    ...modeLines,
     "Mode reponse verifiee: pour les questions sur Charlie Roulette, utilise uniquement les fiches documentation fournies comme source de verite.",
     "Si question_site=true et documentation_suffisante=false, reponds exactement que tu ne vois pas cette fonction dans la documentation du site, puis demande une precision courte.",
     "N'invente jamais de bouton, menu, effet, option ou chemin qui n'apparait pas dans les fiches.",
     "Si la question vise une option precise, reponds sur cette option precise avant de parler de la rubrique. Exemple: 'a quoi sert importer' doit expliquer l'import, pas toute la page Sauvegarde.",
+    "Quand une fiche fournit une bonne reponse, ne la recopie pas mot pour mot: reformule-la pour la question exacte, en une reponse plus naturelle.",
     "Dans une reponse d'aide normale, ne montre jamais de commandes internes comme /add_lot, /setpoids ou /add_dialogue. Explique l'interface utilisateur. Les commandes sont reservees au mode action controlee gere par le serveur.",
     "Si l'utilisateur demande simplement si tu sais faire quelque chose, reponds oui/non et explique la difference entre donner des idees et preparer une action a confirmer. Ne lance pas l'action.",
     "Pour les questions vagues comme 'ca se trouve ou ?', demande une precision courte au lieu de deviner.",
@@ -3813,11 +3878,12 @@ function kephRemotePrompt() {
   ].join("\n");
 }
 
-function kephRemotePayload(message, context, guidance) {
+function kephRemotePayload(message, context, guidance, mode = "auto") {
   const siteQuestion = isKephSiteQuestion(message);
   const docs = guidance?.docs || kephDocumentationSearch(message, context);
   const verifiedDocs = docs.filter((doc) => doc.id !== "context" && Number(doc.score || 0) >= 8);
   return {
+    mode: normalizeKephMode(mode),
     question: String(message || "").slice(0, 800),
     question_site: siteQuestion,
     documentation_suffisante: !siteQuestion || verifiedDocs.length > 0 || !!guidance?.matched,
@@ -3828,14 +3894,14 @@ function kephRemotePayload(message, context, guidance) {
   };
 }
 
-async function askRemoteKeph(message, context, guidance = null, timeoutMs = KEPH_REMOTE_TIMEOUT_MS) {
+async function askRemoteKeph(message, context, guidance = null, timeoutMs = KEPH_REMOTE_TIMEOUT_MS, mode = "auto") {
   const config = kephRemoteConfig();
   if (!config) return null;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const prompt = kephRemotePrompt();
-    const payload = kephRemotePayload(message, context, guidance);
+    const prompt = kephRemotePrompt(mode);
+    const payload = kephRemotePayload(message, context, guidance, mode);
     if (config.provider === "gemini") {
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent?key=${encodeURIComponent(config.key)}`, {
         method: "POST",
@@ -4383,12 +4449,12 @@ async function kephCommandPlan(message, context = {}) {
   return askRemoteKephCommandPlan(message, context);
 }
 
-async function askOllamaKeph(message, context, guidance = null, timeoutMs = 35000) {
+async function askOllamaKeph(message, context, guidance = null, timeoutMs = 35000, mode = "auto") {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const prompt = kephRemotePrompt();
-    const requestPayload = kephRemotePayload(message, context, guidance);
+    const prompt = kephRemotePrompt(mode);
+    const requestPayload = kephRemotePayload(message, context, guidance, mode);
     const response = await fetch(`${OLLAMA_URL.replace(/\/+$/, "")}/api/chat`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -4503,7 +4569,10 @@ app.get("/api/charlie-keph/status", asyncRoute(async (req, res) => {
 }));
 
 async function resolveKephReply(message, context = {}) {
-  const commandPlan = await kephCommandPlan(message, context);
+  const selectedMode = kephSelectedMode(context);
+  const replyMode = classifyKephMode(message, context);
+  const canPlanCommand = replyMode === "action" || (replyMode === "creative" && isKephEditRequest(message));
+  const commandPlan = canPlanCommand ? await kephCommandPlan(message, context) : null;
   if (commandPlan?.commands?.length) {
     const commands = commandPlan.commands.slice(0, 40);
     return {
@@ -4518,6 +4587,8 @@ async function resolveKephReply(message, context = {}) {
       ],
       source: "command",
       intent: "command_batch",
+      replyMode,
+      selectedMode,
       grounded: true,
       avatarUrl: kephPublicAvatar()
     };
@@ -4525,20 +4596,20 @@ async function resolveKephReply(message, context = {}) {
   const knowledge = charlieKephKnowledge();
   const command = parseKephCommand(message, context);
   const commandNeedsConfirmation = command?.source === "command" && Array.isArray(command.actions) && command.actions.some((action) => action?.type);
-  if (commandNeedsConfirmation) return { ...command, avatarUrl: kephPublicAvatar() };
+  if (commandNeedsConfirmation) return { ...command, replyMode, selectedMode, avatarUrl: kephPublicAvatar() };
   const guide = command
     ? { ...command, matched: true, expectedAnswer: command.answer || "", docs: kephDocumentationSearch(message, context) }
     : fallbackKephAnswer(message, context);
   const siteQuestion = isKephSiteQuestion(message);
   const verifiedDocs = kephVerifiedDocs(message, context);
   if (guide.intent === "unverified_site_question") {
-    return { ...guide, source: "verified", grounded: false, avatarUrl: kephPublicAvatar() };
+    return { ...guide, source: "verified", replyMode, selectedMode, grounded: false, avatarUrl: kephPublicAvatar() };
   }
   if (["explain_discord_scene", "discord_scene"].includes(guide.intent)) {
-    return { ...guide, source: "guide", grounded: !!guide.matched, avatarUrl: kephPublicAvatar() };
+    return { ...guide, source: "guide", replyMode, selectedMode, grounded: !!guide.matched, avatarUrl: kephPublicAvatar() };
   }
   if (!siteQuestion && guide.matched && ["command", "conversation"].includes(guide.source)) {
-    return { ...guide, source: "guide", grounded: false, avatarUrl: kephPublicAvatar() };
+    return { ...guide, source: "guide", replyMode, selectedMode, grounded: false, avatarUrl: kephPublicAvatar() };
   }
   if (siteQuestion && !command && guide.intent === "retrieval" && !verifiedDocs.length) {
     return {
@@ -4546,12 +4617,14 @@ async function resolveKephReply(message, context = {}) {
       actions: normalizedKephActions(["open_prepare"], knowledge),
       source: "verified",
       intent: "unverified_site_question",
+      replyMode,
+      selectedMode,
       grounded: false,
       avatarUrl: kephPublicAvatar()
     };
   }
   try {
-    const remote = await askRemoteKeph(message, context, guide.matched ? guide : null, KEPH_REMOTE_TIMEOUT_MS);
+    const remote = await askRemoteKeph(message, context, guide.matched ? guide : null, KEPH_REMOTE_TIMEOUT_MS, replyMode);
     if (remote) {
       const answer = String(remote?.answer || "").trim();
       if (!answer) throw new Error("Reponse distante vide");
@@ -4561,6 +4634,8 @@ async function resolveKephReply(message, context = {}) {
         actions: actions.length ? actions : (guide.matched ? guide.actions : []),
         source: remote.provider || "remote",
         intent: guide.intent || String(remote?.intent || "").slice(0, 80) || null,
+        replyMode,
+        selectedMode,
         grounded: !!guide.matched,
         model: remote.model || null,
         avatarUrl: kephPublicAvatar()
@@ -4570,7 +4645,7 @@ async function resolveKephReply(message, context = {}) {
     console.warn("[keph] API distante indisponible.", error.message);
   }
   try {
-    const ai = await askOllamaKeph(message, context, guide.matched ? guide : null, KEPH_AI_TIMEOUT_MS);
+    const ai = await askOllamaKeph(message, context, guide.matched ? guide : null, KEPH_AI_TIMEOUT_MS, replyMode);
     const answer = String(ai?.answer || "").trim();
     if (!answer) throw new Error("Reponse vide");
     const actions = guide.matched ? guide.actions : normalizedKephActions(ai?.actions, knowledge);
@@ -4579,13 +4654,15 @@ async function resolveKephReply(message, context = {}) {
       actions: actions.length ? actions : (guide.matched ? guide.actions : []),
       source: "ollama",
       intent: guide.intent || String(ai?.intent || "").slice(0, 80) || null,
+      replyMode,
+      selectedMode,
       grounded: !!guide.matched,
       model: KEPH_MODEL,
       avatarUrl: kephPublicAvatar()
     };
   } catch (error) {
     console.warn("[keph] Ollama indisponible.", error.message);
-    return { ...guide, source: guide.matched ? "guide" : "fallback", avatarUrl: kephPublicAvatar(), warning: "ollama_unavailable" };
+    return { ...guide, source: guide.matched ? "guide" : "fallback", replyMode, selectedMode, avatarUrl: kephPublicAvatar(), warning: "ollama_unavailable" };
   }
 }
 
@@ -4611,14 +4688,16 @@ function writeKephSse(res, event, payload) {
 
 app.post("/api/charlie-keph/ask", kephLimiter, asyncRoute(async (req, res) => {
   const message = String(req.body?.message || "").trim().slice(0, 800);
-  const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
+  const context = req.body?.context && typeof req.body.context === "object" ? { ...req.body.context } : {};
+  if (req.body?.mode) context.kephMode = normalizeKephMode(req.body.mode);
   if (!message) return res.status(400).json({ error: "Question vide.", code: "KEPH_EMPTY_MESSAGE" });
   res.json(await resolveKephReply(message, context));
 }));
 
 app.post("/api/charlie-keph/ask-stream", kephLimiter, asyncRoute(async (req, res) => {
   const message = String(req.body?.message || "").trim().slice(0, 800);
-  const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
+  const context = req.body?.context && typeof req.body.context === "object" ? { ...req.body.context } : {};
+  if (req.body?.mode) context.kephMode = normalizeKephMode(req.body.mode);
   if (!message) return res.status(400).json({ error: "Question vide.", code: "KEPH_EMPTY_MESSAGE" });
   res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
   res.setHeader("Cache-Control", "no-cache, no-transform");
@@ -4645,6 +4724,7 @@ app.post("/api/charlie-keph/feedback", kephLimiter, asyncRoute(async (req, res) 
   const answer = String(req.body?.answer || "").trim().slice(0, 2000);
   const source = String(req.body?.source || "").trim().slice(0, 40);
   const intent = String(req.body?.intent || "").trim().slice(0, 80);
+  const mode = normalizeKephMode(req.body?.mode || req.body?.replyMode || req.body?.context?.kephMode || "");
   const actions = Array.isArray(req.body?.actions) ? req.body.actions.slice(0, 8) : [];
   const context = req.body?.context && typeof req.body.context === "object" ? req.body.context : {};
   const feedbackRow = { vote, reason, question, answer, source, intent };
@@ -4652,8 +4732,8 @@ app.post("/api/charlie-keph/feedback", kephLimiter, asyncRoute(async (req, res) 
   const trainingCase = vote === "dislike" ? kephFeedbackTrainingCase({ ...feedbackRow, category }) : null;
   const docSuggestion = vote === "dislike" ? kephFeedbackDocSuggestion({ ...feedbackRow, category }) : null;
   db.prepare(`
-    INSERT INTO keph_feedback(message_id,vote,reason,question,answer,source,intent,actions_json,context_json,category,training_case_json,doc_suggestion_json,ip_address,user_agent)
-    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    INSERT INTO keph_feedback(message_id,vote,reason,question,answer,source,intent,mode,actions_json,context_json,category,training_case_json,doc_suggestion_json,ip_address,user_agent)
+    VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `).run(
     messageId || null,
     vote,
@@ -4662,6 +4742,7 @@ app.post("/api/charlie-keph/feedback", kephLimiter, asyncRoute(async (req, res) 
     answer || null,
     source || null,
     intent || null,
+    mode || null,
     JSON.stringify(actions),
     JSON.stringify(context).slice(0, 4000),
     category,
@@ -4761,7 +4842,7 @@ function parseKephJsonField(value, fallback) {
 
 app.get("/api/charlie-keph/feedback/summary", kephLimiter, asyncRoute(async (req, res) => {
   const rows = db.prepare(`
-    SELECT id, vote, reason, question, answer, source, intent, category, training_case_json, doc_suggestion_json, task_status, task_note, created_at
+    SELECT id, vote, reason, question, answer, source, intent, mode, category, training_case_json, doc_suggestion_json, task_status, task_note, created_at
     FROM keph_feedback
     WHERE vote = 'dislike'
     ORDER BY id DESC

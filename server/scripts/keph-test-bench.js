@@ -29,6 +29,7 @@ const context = {
 
 const cases = [
   { q: "salut la forme ?", expect: ["salut"], avoid: ["documentation", "dialogue cible"], noActions: true },
+  { q: "salut la forme ?", mode: "discussion", expect: ["salut"], expectMode: "discussion", avoid: ["documentation", "studio", "regie"], noActions: true },
   { q: "tu t appelles comment ?", expect: ["keph"], avoid: ["je peux t aider sur la regie"], noActions: true },
   { q: "tu connais Keph ?", expect: ["keph", "assistant"], avoid: ["je ne vois pas"], noActions: true },
   { q: "qui suis-je ?", expectAny: ["je ne peux pas savoir", "candidat actuellement"], noActions: false },
@@ -37,10 +38,12 @@ const cases = [
 
   { q: "je suis nouveau sur le site, je fais quoi ?", expect: ["preparer", "lots"], expectAny: ["simulation", "simuler"], action: "open_prepare", avoid: ["je ne vois pas"] },
   { q: "a quoi sert le site ?", expect: ["tirage", "live", "discord"], action: "open_prepare" },
+  { q: "a quoi sert le site ?", mode: "help", expect: ["tirage", "live"], expectMode: "help", action: "open_prepare", avoid: ["je peux t aider"] },
   { q: "par quoi je dois commencer avant un live ?", expect: ["preparer", "lots"], expectAny: ["simulation", "simuler"], action: "open_prepare" },
   { q: "ça se trouve ou ?", expectAny: ["quel bouton", "quelle option", "precise"], noActions: true },
 
   { q: "a quoi sert le bouton lancer ?", expect: ["vrai tirage", "stock", "historique"], action: "open_prepare", avoid: ["charlie roulette sert"] },
+  { q: "a quoi sert le bouton lancer ?", mode: "help", expect: ["vrai tirage", "stock", "historique"], expectMode: "help", action: "open_prepare", avoid: ["charlie roulette sert"] },
   { q: "a quoi sert stop ?", expect: ["arrete", "roue"], action: "open_prepare" },
   { q: "stop ca change quoi ?", expect: ["arrete", "roue"], action: "open_prepare", avoid: ["lancer demarre"] },
   { q: "suivant consomme un stock ?", expect: ["non", "prochain participant"], action: "open_prepare", avoid: ["stocks servent"] },
@@ -50,10 +53,13 @@ const cases = [
   { q: "ça sert à quoi de mettre des participants ?", expect: ["qui passe", "ordre", "lancers"], action: "open_prepare", avoid: ["pour ajouter"] },
   { q: "comment j'ajoute des candidats ?", expect: ["preparer", "pseudo", "charger"], action: "open_prepare" },
   { q: "tu peux mettre le candidat Miette en premiere position sans supprimer les autres?", expect: ["set_queue", "Miette"], actionType: "command_batch", avoid: ["add_player"] },
+  { q: "tu peux mettre le candidat Miette en premiere position sans supprimer les autres?", mode: "action", expect: ["set_queue", "Miette"], expectMode: "action", actionType: "command_batch", avoid: ["add_player"] },
+  { q: "comment je peux mettre Miette en premiere position ?", mode: "help", expectAny: ["file", "preparer", "ordre"], expectMode: "help", noInternalCommands: true, avoid: ["set_queue"] },
   { q: "tu peux ajouter le candidat Capy a la fin de la liste", expect: ["capy"], actionType: "command_batch", avoid: ["capy a la fin"] },
   { q: "mets tous les candidats a 5 lancers", expect: ["commande", "controlee"], actionType: "command_batch" },
 
   { q: "salut, tu peux m'aider comment je peux ajouter un lot dans la roue ?", expect: ["studio", "poids", "stock"], action: "open_wheel_studio_lots", noInternalCommands: true },
+  { q: "salut, tu peux m'aider comment je peux ajouter un lot dans la roue ?", mode: "help", expect: ["studio", "poids", "stock"], expectMode: "help", action: "open_wheel_studio_lots", noInternalCommands: true, avoid: ["add_lot", "setpoids"] },
   { q: "on peut changer les couleurs des cases de la roulette ?", expect: ["couleur", "design"], action: "open_wheel_studio_design" },
   { q: "il y a un nombre théorique de lot maximum dans la roue ?", expectAny: ["8", "12", "lisible"], action: "open_wheel_studio_lots", avoid: ["poids est une chance"] },
   { q: "a quoi sert le poid dans la roue ?", expect: ["chance relative", "20", "10"], action: "open_wheel_studio_lots" },
@@ -63,6 +69,7 @@ const cases = [
   { q: "Comment modifier les dialogues de présentation", expect: ["presentation", "modifier", "studio"], action: "open_scenario_studio", noInternalCommands: true },
   { q: "tu sais créer les dialogues toi ?", expect: ["oui", "idees", "confirmer"], action: "open_scenario_studio", noInternalCommands: true },
   { q: "tu ferais quoi comme dialogue pour un jingle drôle, donne moi juste des idées ne créer rien", expect: ["jingle"], expectAny: ["idees", "exemples", "phrases"], action: "open_scenario_studio", noInternalCommands: true },
+  { q: "tu ferais quoi comme dialogue pour un jingle drole, donne moi juste des idees ne creer rien", mode: "creative", expect: ["jingle"], expectAny: ["idee", "phrase", "exemple"], expectMode: "creative", noInternalCommands: true, avoid: ["add_dialogue"] },
   { q: "Tu peux me créer un dialogue qui va présenter les 5 candidats un peu drôle, il doit y avoir 1 dialogue pour un candidat et libre à toi de choisir qui parle Charlie ou Victoria, les emotes et les effets", expect: ["add_dialogue", "presentation"], actionType: "command_batch", avoid: ["set_queue"] },
   { q: "quand créer un dialogue il y a des boutons Candidat actuel Lot etc ça sert à quoi ?", expect: ["variables", "contexte", "candidat"], action: "open_scenario_studio", noInternalCommands: true },
   { q: "dialogue parlé ou indication scénique ?", expect: ["bulle", "action", "scene"], action: "open_scenario_studio" },
@@ -79,6 +86,7 @@ const cases = [
   { q: "a quoi sert l'option cochable annoncer le candidat suivant ?", expect: ["annonce", "apres un tirage"], action: "open_scenario_studio" },
 
   { q: "Dans profile ça sert à quoi d'importer ?", expect: ["recharger", "configuration", "remplace"], action: "open_data", avoid: ["participants a la file"] },
+  { q: "Dans profil, importer sert a quoi exactement ?", mode: "help", expect: ["recharger", "configuration"], expectAny: ["remplace", "charge"], expectMode: "help", action: "open_data", avoid: ["sauvegarde regroupe"] },
   { q: "a quoi sert exporter le profil ?", expect: ["fichier", "sauvegarde", "configuration"], action: "open_data" },
   { q: "d'accord, donc si je change d'ordinateur je peux exporter et importer sur le nouveau pc ?", expect: ["oui", "export", "import"], action: "open_data" },
   { q: "a quoi sert l historique ?", expect: ["vrais tirages", "gagnant"], action: "open_data" },
@@ -102,20 +110,20 @@ function hasTerm(answer, term) {
   return normalize(answer).includes(normalize(term));
 }
 
-async function ask(question, extraContext = {}) {
+async function ask(question, extraContext = {}, mode = "") {
   const started = Date.now();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   const response = await fetch(`${BASE_URL.replace(/\/$/, "")}/api/charlie-keph/ask`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ message: question, context: { ...context, ...extraContext } }),
+    body: JSON.stringify({ message: question, context: { ...context, ...extraContext, kephMode: mode || extraContext.kephMode || "auto" }, mode }),
     signal: controller.signal
   }).finally(() => clearTimeout(timer));
   const elapsed = Date.now() - started;
   if (response.status === 429) {
     await new Promise((resolve) => setTimeout(resolve, RETRY_429_MS));
-    return ask(question, extraContext);
+    return ask(question, extraContext, mode);
   }
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   return { elapsed, payload: await response.json() };
@@ -127,30 +135,32 @@ async function ask(question, extraContext = {}) {
   for (const test of selected) {
     try {
       if (PAUSE_MS) await new Promise((resolve) => setTimeout(resolve, PAUSE_MS));
-      const { elapsed, payload } = await ask(test.q, test.context || {});
+      const { elapsed, payload } = await ask(test.q, test.context || {}, test.mode || "");
       const answer = payload.answer || "";
       const actions = Array.isArray(payload.actions) ? payload.actions : [];
       const missing = (test.expect || []).filter((term) => !hasTerm(answer, term));
       const missingAny = test.expectAny?.length && !test.expectAny.some((term) => hasTerm(answer, term)) ? test.expectAny : [];
       const forbidden = (test.avoid || []).filter((term) => hasTerm(answer, term));
       const internalCommands = test.noInternalCommands && /(^|\n)\s*\/(?:add_lot|setpoids|setstock|add_dialogue|clear_lots|set_queue|setlance)\b/i.test(answer);
+      const modeMissing = test.expectMode && payload.replyMode !== test.expectMode;
       const actionMissing = test.action && !actions.some((action) => action.id === test.action);
       const actionAnyMissing = test.actionAny?.length && !actions.some((action) => test.actionAny.includes(action.id));
       const actionTypeMissing = test.actionType && !actions.some((action) => action.type === test.actionType);
       const noActionsFailed = test.noActions && actions.length > 0;
       const tooShort = answer.trim().length < 18;
-      const ok = !missing.length && !missingAny.length && !forbidden.length && !internalCommands && !actionMissing && !actionAnyMissing && !actionTypeMissing && !noActionsFailed && !tooShort;
-      console.log(`${ok ? "OK" : "FAIL"} ${elapsed}ms [${payload.source || "?"}/${payload.intent || "?"}] ${test.q}`);
+      const ok = !missing.length && !missingAny.length && !forbidden.length && !internalCommands && !modeMissing && !actionMissing && !actionAnyMissing && !actionTypeMissing && !noActionsFailed && !tooShort;
+      console.log(`${ok ? "OK" : "FAIL"} ${elapsed}ms [${payload.source || "?"}/${payload.replyMode || "?"}/${payload.intent || "?"}] ${test.q}`);
       if (missing.length) console.log(`  missing: ${missing.join(", ")}`);
       if (missingAny.length) console.log(`  missing any of: ${missingAny.join(", ")}`);
       if (forbidden.length) console.log(`  forbidden: ${forbidden.join(", ")}`);
       if (internalCommands) console.log("  forbidden internal command syntax in help answer");
+      if (modeMissing) console.log(`  wrong mode: expected ${test.expectMode}, got ${payload.replyMode || "?"}`);
       if (actionMissing) console.log(`  missing action: ${test.action}`);
       if (actionAnyMissing) console.log(`  missing one action of: ${test.actionAny.join(", ")}`);
       if (actionTypeMissing) console.log(`  missing action type: ${test.actionType}`);
       if (noActionsFailed) console.log(`  unexpected actions: ${actions.map((a) => a.id).join(", ")}`);
       if (tooShort) console.log("  answer too short");
-      if (!ok) failures.push({ test, elapsed, source: payload.source, intent: payload.intent, answer, actions });
+      if (!ok) failures.push({ test, elapsed, source: payload.source, mode: payload.replyMode, intent: payload.intent, answer, actions });
     } catch (error) {
       failures.push({ test, error: error.message });
       console.log(`FAIL ---- ${test.q}`);
