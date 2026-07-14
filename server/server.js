@@ -4306,9 +4306,6 @@ async function resolveKephReply(message, context = {}) {
   if (!siteQuestion && guide.matched && ["command", "conversation", "direct"].includes(guide.source)) {
     return { ...guide, source: "guide", grounded: false, avatarUrl: kephPublicAvatar() };
   }
-  if (siteQuestion && guide.matched && ["command", "direct", "ui_map", "doc", "diagnostic"].includes(guide.source)) {
-    return { ...guide, source: "guide", grounded: true, avatarUrl: kephPublicAvatar() };
-  }
   if (siteQuestion && !command && guide.intent === "retrieval" && !verifiedDocs.length) {
     return {
       answer: "Je ne vois pas cette fonction dans la documentation du site. Donne-moi le nom exact du bouton, du menu ou de l'option, et je te dirai si elle existe dans Charlie Roulette.",
