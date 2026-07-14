@@ -197,6 +197,24 @@
       ]
     },
     {
+      "id": "participant_purpose",
+      "section": "before",
+      "title": "A quoi servent les participants",
+      "keywords": [
+        "a quoi sert participant",
+        "a quoi servent participants",
+        "mettre des participants",
+        "pourquoi des candidats",
+        "utilite participants",
+        "utilité participants"
+      ],
+      "instant": true,
+      "answer": "Les participants servent a definir qui passe dans la roulette et dans quel ordre. Le participant actuel est affiche sur la scene, les dialogues peuvent utiliser son nom, et son nombre de lancers indique combien de vrais tirages il peut faire avant de passer au suivant. Sans participants, tu peux tester la roue, mais tu n'as pas de vrai deroule de live.",
+      "actions": [
+        "open_prepare"
+      ]
+    },
+    {
       "id": "keyboard_shortcuts",
       "section": "before",
       "title": "Raccourcis clavier",
@@ -247,6 +265,42 @@
       ],
       "instant": true,
       "answer": "Dans Lots & roue > Studio de la roulette > Lots & probabilites, chaque case a un nom, un poids, une activation et eventuellement un stock. Le poids est une chance relative : un lot a 20 sort environ deux fois plus souvent qu'un lot a 10. Si le stock arrive a zero ou si le lot est desactive, la case devient indisponible.",
+      "actions": [
+        "open_wheel_studio_lots"
+      ]
+    },
+    {
+      "id": "add_lot_howto",
+      "section": "wheel",
+      "title": "Ajouter un lot dans la roue",
+      "keywords": [
+        "ajouter lot",
+        "ajouter un lot",
+        "creer lot",
+        "créer lot",
+        "nouvelle case",
+        "ajouter case",
+        "lot dans la roue"
+      ],
+      "instant": true,
+      "answer": "Pour ajouter un lot, ouvre Lots & roue puis le Studio de la roulette. Dans Lots & probabilites, ajoute une case, donne-lui un nom, un poids et eventuellement un stock. Ensuite passe dans Design & PNG si tu veux ajuster le texte, la couleur ou l'image de la case.",
+      "actions": [
+        "open_wheel_studio_lots"
+      ]
+    },
+    {
+      "id": "wheel_lot_limit",
+      "section": "wheel",
+      "title": "Nombre conseille de lots",
+      "keywords": [
+        "maximum lots",
+        "max lots",
+        "limite lots",
+        "nombre maximum de lots",
+        "combien de lots",
+        "trop de lots"
+      ],
+      "answer": "Il n'y a pas vraiment un chiffre magique, mais en pratique il vaut mieux rester autour de 8 a 12 lots pour garder une roue lisible en live. Au-dela, les textes deviennent petits et la scene est moins claire. Si tu veux beaucoup de recompenses, regroupe certains lots ou utilise des categories.",
       "actions": [
         "open_wheel_studio_lots"
       ]
@@ -332,6 +386,27 @@
       ],
       "instant": true,
       "answer": "Le ciblage d'une replique sert a choisir pour qui elle peut se jouer. Tous les candidats = replique generale. Candidat actuel = la replique suit la personne en train de passer. Candidat cible = la replique ne sort que pour un pseudo precis. C'est utile pour preparer une phrase speciale sans qu'elle apparaisse pour les autres.",
+      "actions": [
+        "open_scenario_studio"
+      ]
+    },
+    {
+      "id": "dialogue_tokens",
+      "section": "show",
+      "title": "Boutons de variables dans une replique",
+      "keywords": [
+        "candidat actuel",
+        "candidat suivant",
+        "dernier lot",
+        "lot concerne",
+        "lot concerné",
+        "nombre de candidats",
+        "nombre de gagnants",
+        "boutons dialogue",
+        "variables dialogue"
+      ],
+      "instant": true,
+      "answer": "Les boutons comme Candidat actuel, Candidat suivant, Lot, Dernier lot obtenu, Nombre de candidats ou Gagnants inserent des variables dans le texte d'une replique. La phrase s'adapte ensuite au contexte du live, au lieu d'ecrire un dialogue different pour chaque candidat ou chaque lot.",
       "actions": [
         "open_scenario_studio"
       ]

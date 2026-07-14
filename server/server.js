@@ -2386,6 +2386,11 @@ function kephDocumentationSearch(message, context = {}) {
   const forcedIds = [];
   if (/\b(?:import|importe|importer|restaurer|charger)\b/.test(text) && /\b(?:profil|profile|sauvegarde|configuration)\b/.test(text)) forcedIds.push("import_profile");
   if (/\b(?:export|exporte|exporter|backup|telecharger|sauvegarder)\b/.test(text) && /\b(?:profil|profile|sauvegarde|configuration)\b/.test(text)) forcedIds.push("export_profile");
+  if (/\b(?:a quoi sert|sert a quoi|ca sert a quoi|pourquoi|utilite)\b/.test(text) && /\b(?:participant|participants|candidat|candidats|file|liste d attente|file d attente)\b/.test(text)) forcedIds.push("participant_purpose");
+  if (/\b(?:comment|ajouter|creer|cree|mettre)\b/.test(text) && /\b(?:lot|lots|case|roue|roulette)\b/.test(text) && !/\b(?:dialogue|replique)\b/.test(text)) forcedIds.push("add_lot_howto");
+  if (/\b(?:maximum|max|limite|combien|nombre)\b/.test(text) && /\b(?:lot|lots|case|cases|roue|roulette)\b/.test(text)) forcedIds.push("wheel_lot_limit");
+  if (/\b(?:candidat actuel|candidat suivant|dernier lot|lot concerne|lot concerne|nombre de candidats|nombre de gagnants|bouton|boutons|variable|variables)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text)) forcedIds.push("dialogue_tokens");
+  if (/\b(?:nouveau|premiere fois|jamais utilise|je suis perdu|utiliser le site|guide moi|me guider|commencer)\b/.test(text)) forcedIds.push("first_live_steps");
   if (forcedIds.length) {
     const forcedDocs = forcedIds
       .map((id, index) => allDocs.find((doc) => doc.id === id) ? { ...allDocs.find((doc) => doc.id === id), score: 100 - index } : null)
@@ -2865,6 +2870,15 @@ function parseKephCommand(message, context = {}) {
       intent: "thanks"
     };
   }
+  if (/\b(?:quelle heure|quel heure|il est quelle heure|il est quel heure|heure actuelle)\b/.test(normalized)) {
+    const now = new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit" }).format(new Date());
+    return {
+      answer: `Il est ${now} en France.`,
+      actions: [],
+      source: "conversation",
+      intent: "current_time"
+    };
+  }
   if (/\b(?:comment|comment faire pour|je veux)\b/.test(normalized) && /\b(?:lancer|demarrer)\b/.test(normalized) && /\b(?:roue|roulette|tirage)\b/.test(normalized)) {
     return {
       answer: "Pour lancer la roue, verifie d'abord qu'un participant est charge et qu'au moins un lot est disponible, puis clique sur Lancer dans la regie. C'est un vrai tirage : il peut consommer un stock, ajouter une ligne a l'historique et retirer un lancer au participant. Pour tester sans risque, utilise Tirage test.",
@@ -3039,6 +3053,42 @@ function directKephAnswer(message) {
             : "Presentation";
   const directAnswers = [
     {
+      intent: "ambiguous_location",
+      test: () => /\b(?:ca se trouve ou|ça se trouve ou|c est ou|c'est ou|ou ca|ou ça)\b/.test(text) && text.split(" ").length <= 6,
+      answer: "Tu parles de quel bouton ou quelle option ? Donne-moi le nom exact, par exemple « le bruitage », « le poids », « les raccourcis » ou « la sauvegarde », et je t'ouvre le bon endroit.",
+      actions: []
+    },
+    {
+      intent: "new_user_onboarding",
+      test: () => /\b(?:nouveau|premiere fois|première fois|jamais utilise|jamais utiliser|je suis perdu|utiliser le site|me guider|guide moi|commencer)\b/.test(text) && /\b(?:site|roulette|live|nouveau|commencer|perdu|utiliser)\b/.test(text),
+      answer: "Oui. Pense le site en 3 moments : 1) Préparer : tu charges les participants et leurs lancers. 2) Lots & roue : tu règles les lots, poids et stocks. 3) Scènes/Sons : tu ajustes dialogues, jingles et effets. Avant un vrai live, fais une simulation pour vérifier que le rythme, les sons et la scène Discord sont propres.",
+      actions: ["open_prepare", "highlight_rehearsal"]
+    },
+    {
+      intent: "participant_purpose",
+      test: () => wantsPurpose && /\b(?:participant|participants|candidat|candidats|file|liste d attente|file d attente)\b/.test(text),
+      answer: "Les participants servent à définir qui passe dans la roulette et dans quel ordre. Le participant actuel est affiché sur la scène, ses dialogues peuvent utiliser son nom, et son nombre de lancers indique combien de vrais tirages il peut faire avant de passer au suivant. Sans participants, tu peux tester la roue, mais tu n'as pas de vrai déroulé de live.",
+      actions: ["open_prepare"]
+    },
+    {
+      intent: "add_lot_howto",
+      test: () => /\b(?:comment|comment faire|comment ajouter|ajouter|mettre|creer|créer)\b/.test(text) && /\b(?:lot|lots|case|roue|roulette)\b/.test(text) && !/\b(?:dialogue|replique|réplique)\b/.test(text),
+      answer: "Pour ajouter un lot, ouvre Lots & roue puis le Studio de la roulette. Dans Lots & probabilités, ajoute une case, donne-lui un nom, un poids et éventuellement un stock. Ensuite passe dans Design & PNG si tu veux ajuster le texte, la couleur ou l'image de la case.",
+      actions: ["open_wheel_studio_lots"]
+    },
+    {
+      intent: "wheel_lot_limit",
+      test: () => /\b(?:maximum|max|limite|combien)\b/.test(text) && /\b(?:lot|lots|case|cases|roue|roulette)\b/.test(text),
+      answer: "Il n'y a pas vraiment un chiffre magique, mais en pratique je te conseille de rester autour de 8 à 12 lots pour garder une roue lisible en live. Au-delà, les textes deviennent petits et la scène est moins claire. Si tu veux beaucoup de récompenses, mieux vaut regrouper certains lots ou utiliser des catégories.",
+      actions: ["open_wheel_studio_lots"]
+    },
+    {
+      intent: "dialogue_tokens",
+      test: () => /\b(?:bouton|boutons|candidat actuel|candidat suivant|dernier lot|lot|nombre de candidats|gagnants|variables?)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques|phrase)\b/.test(text),
+      answer: "Ces boutons insèrent des variables dans le texte d'une réplique. Par exemple « Candidat actuel » mettra automatiquement le nom de la personne qui passe, et « Lot » peut reprendre le lot gagné. Ça évite d'écrire un dialogue différent pour chaque candidat : la phrase s'adapte au contexte du live.",
+      actions: ["open_scenario_studio"]
+    },
+    {
       intent: "effect_howto",
       test: () => /\b(?:comment|comment faire|comment mettre|comment ajouter|ou|ou est|ou mettre|mettre|ajouter)\b/.test(text) && /\b(?:effet|effets|fx|speciaux|special|confetti|flash|fumee|glitch)\b/.test(text),
       answer: "Pour mettre un effet spécial, ouvre Réglages > Scènes > Studio de scénarios, sélectionne ou crée une réplique, puis règle le champ Effet spécial dans le panneau d'édition. L'effet se déclenchera quand cette réplique se joue. Utilise-les surtout sur les moments forts : intro, résultat, finale ou grosse blague.",
@@ -3064,7 +3114,7 @@ function directKephAnswer(message) {
     },
     {
       intent: "add_candidates_howto",
-      test: () => /\b(?:comment|comment faire|ou|où|je veux|j ajoute|ajouter|mettre)\b/.test(text) && /\b(?:candidat|candidats|participant|participants)\b/.test(text) && !/\b(?:dialogue|replique|réplique)\b/.test(text),
+      test: () => !wantsPurpose && /\b(?:comment|comment faire|ou|où|je veux|j ajoute|ajouter|mettre)\b/.test(text) && /\b(?:candidat|candidats|participant|participants)\b/.test(text) && !/\b(?:dialogue|replique|réplique)\b/.test(text),
       answer: "Pour ajouter des candidats, ouvre Préparer. Dans la file de participants, écris un pseudo par ligne, puis clique sur Charger. Le premier devient le participant actuel, et Suivant passera au prochain. Tu peux aussi régler le nombre de lancers de chaque candidat dans la liste complète.",
       actions: ["open_prepare"]
     },
@@ -3461,7 +3511,7 @@ function fallbackKephAnswer(message, context = {}) {
   const picked = best?.feature || null;
   const docs = siteQuestion ? kephDocumentationSearch(message, context) : [];
   const instantDoc = docs.find((doc) => doc.instant && Number(doc.score || 0) >= 8);
-  if (instantDoc) {
+  if (instantDoc && !kephRemoteConfig()) {
     return {
       answer: instantDoc.answer || instantDoc.content || "",
       actions: normalizedKephActions(instantDoc.actions || [], knowledge),
@@ -3645,6 +3695,9 @@ function kephRemotePrompt() {
     "Si question_site=true et documentation_suffisante=false, reponds exactement que tu ne vois pas cette fonction dans la documentation du site, puis demande une precision courte.",
     "N'invente jamais de bouton, menu, effet, option ou chemin qui n'apparait pas dans les fiches.",
     "Si la question vise une option precise, reponds sur cette option precise avant de parler de la rubrique. Exemple: 'a quoi sert importer' doit expliquer l'import, pas toute la page Sauvegarde.",
+    "Dans une reponse d'aide normale, ne montre jamais de commandes internes comme /add_lot, /setpoids ou /add_dialogue. Explique l'interface utilisateur. Les commandes sont reservees au mode action controlee gere par le serveur.",
+    "Si l'utilisateur demande simplement si tu sais faire quelque chose, reponds oui/non et explique la difference entre donner des idees et preparer une action a confirmer. Ne lance pas l'action.",
+    "Pour les questions vagues comme 'ca se trouve ou ?', demande une precision courte au lieu de deviner.",
     "Si la question demande comment faire, donne des etapes courtes.",
     "Si elle demande a quoi ca sert, explique l'usage live et les consequences.",
     "Quand une fiche contient location, purpose, live_use, modifies ou does_not_modify, utilise ces champs pour cibler la reponse.",
@@ -3764,7 +3817,7 @@ const KEPH_EDIT_COMMANDS = [
 
 function isKephEditRequest(message = "") {
   const text = normalizeKephText(message);
-  if (/\b(?:ne cree rien|ne creer rien|ne cree pas|ne creer pas|sans creer|sans modifier|juste des idees|juste des idées|donne moi des idees|donne moi des idées|tu ferais quoi|tu sais creer|tu sais créer)\b/.test(text)) return false;
+  if (/\b(?:ne cree rien|ne creer rien|ne cree pas|ne creer pas|sans creer|sans modifier|juste des idees|juste des idées|donne moi des idees|donne moi des idées|tu ferais quoi|tu sais creer|tu sais créer|tu sais faire|tu peux m aider|peux tu m aider|aide moi|explique moi)\b/.test(text)) return false;
   if (/\b(?:liste|lister|affiche|afficher|montre|montrer|donne moi)\b/.test(text) && /\b(?:dialogue|dialogues|replique|repliques)\b/.test(text)) return false;
   const learningQuestion = /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|explique|pourquoi|comment fonctionne|comment je peux|comment faire|comment ajouter|comment creer|comment modifier|comment utiliser|comment mettre|ou est|ou se trouve|ou trouver|ou mettre|que fait|ca sert a quoi)\b/.test(text);
   const yesNoQuestion = /\b(?:on peut|peut on|est ce que|possible|je peux)\b/.test(text);
@@ -3773,6 +3826,7 @@ function isKephEditRequest(message = "") {
     && !/\b(?:m aider|m expliquer|me guider|comment)\b/.test(text);
   if (learningQuestion && !explicitDoNow) return false;
   if (yesNoQuestion && !explicitDoNow) return false;
+  if (/\?$/.test(String(message || "").trim()) && !explicitDoNow) return false;
   if (/\b(?:renomme|renommer|renome|renomer|appelle|nomme)\b/.test(text)) return true;
   if (/\b(?:supprime|supprimer|vide|vider|efface|effacer|retire|retirer|charge|charger|reorganise|reorganiser|ordre|tete de liste)\b/.test(text) && /\b(?:file|liste|queue|attente|candidats|participants|premier|deux|trois)\b/.test(text)) return true;
   if (/\b(?:relance|relances|lancer|lancers|participation|participations)\b/.test(text) && /\b\d{1,2}\b/.test(text)) return true;
