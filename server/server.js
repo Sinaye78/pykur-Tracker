@@ -3055,13 +3055,13 @@ function directKephAnswer(message) {
     {
       intent: "ambiguous_location",
       test: () => /\b(?:ca se trouve ou|ça se trouve ou|c est ou|c'est ou|ou ca|ou ça)\b/.test(text) && text.split(" ").length <= 6,
-      answer: "Tu parles de quel bouton ou quelle option ? Donne-moi le nom exact, par exemple « le bruitage », « le poids », « les raccourcis » ou « la sauvegarde », et je t'ouvre le bon endroit.",
+      answer: "Tu parles de quel bouton ou quelle option ? Précise le nom exact, par exemple « le bruitage », « le poids », « les raccourcis » ou « la sauvegarde », et je t'ouvre le bon endroit.",
       actions: []
     },
     {
       intent: "new_user_onboarding",
       test: () => /\b(?:nouveau|premiere fois|première fois|jamais utilise|jamais utiliser|je suis perdu|utiliser le site|me guider|guide moi|commencer)\b/.test(text) && /\b(?:site|roulette|live|nouveau|commencer|perdu|utiliser)\b/.test(text),
-      answer: "Oui. Pense le site en 3 moments : 1) Préparer : tu charges les participants et leurs lancers. 2) Lots & roue : tu règles les lots, poids et stocks. 3) Scènes/Sons : tu ajustes dialogues, jingles et effets. Avant un vrai live, fais une simulation pour vérifier que le rythme, les sons et la scène Discord sont propres.",
+      answer: "Oui. Pense le site en 3 moments : 1) Préparer : tu charges les participants et leurs lancers. 2) Lots & roue : tu règles les lots, poids et stocks. 3) Scènes/Sons : tu ajustes dialogues, jingles et effets. Avant un vrai live, lance une simulation avec Simuler un passage pour vérifier que le rythme, les sons et la scène Discord sont propres.",
       actions: ["open_prepare", "highlight_rehearsal"]
     },
     {
@@ -3169,7 +3169,7 @@ function directKephAnswer(message) {
     {
       intent: "site_purpose",
       test: () => !/\bstudio\b/.test(text) && /\b(?:a quoi sert|sert a quoi|c est quoi|c quoi|but|objectif|utilite)\b/.test(text) && /\b(?:site|application|appli|charlie roulette|roulette)\b/.test(text),
-      answer: "Charlie Roulette sert à animer un tirage en live comme une petite émission : tu prépares une file de candidats, des lots, des sons et des dialogues, puis tu pilotes la roue pendant que le public voit une scène propre. La régie sert à contrôler le live, les réglages servent à préparer la roue, les scènes et les sauvegardes. En gros : c’est un outil d’animation, pas juste une roulette aléatoire.",
+      answer: "Charlie Roulette sert à animer un tirage en live comme une petite émission : tu prépares une file de candidats, des lots, des sons et des dialogues, puis tu pilotes la roue pendant que le public voit une scène propre pour Discord/OBS. La régie sert à contrôler le live, les réglages servent à préparer la roue, les scènes et les sauvegardes. En gros : c’est un outil d’animation, pas juste une roulette aléatoire.",
       actions: ["open_prepare"]
     },
     {
@@ -4011,7 +4011,7 @@ function kephCommandPlanFromRules(message, context = {}) {
     const targetName = findKephBestName(participantNames, requestedName) || requestedName;
     add(`setlance ${quoteCommandArg(targetName)} ${Math.max(1, Math.min(20, amount))}`);
   }
-  const addPlayerMatch = raw.match(/\b(?:ajoute|ajouter)\s+(?:le\s+)?(?:candidat|participant|joueur)?\s*([A-Za-z0-9À-ÿ _-]{2,40})(?:\s+(?:avec|a|à)\s+(\d{1,2})\s+(?:lancer|lancers|tickets?))?/i);
+  const addPlayerMatch = raw.match(/\b(?:ajoute|ajouter)\s+(?:le\s+)?(?:candidat|participant|joueur)?\s*([A-Za-z0-9À-ÿ_-][A-Za-z0-9À-ÿ _-]{1,38}?)(?:\s+(?:a|à)\s+la\s+fin(?:\s+de\s+la\s+liste|\s+de\s+la\s+file|\s+de\s+la\s+queue)?|\s+(?:dans|a|à)\s+(?:la\s+)?(?:file|liste|queue)|\s+(?:avec|a|à)\s+(\d{1,2})\s+(?:lancer|lancers|tickets?)|[?.!]|$)/i);
   if (!commands.length && addPlayerMatch && /\b(?:file|liste|participant|candidat|joueur)\b/.test(text)) {
     add(`add_player ${quoteCommandArg(cleanKephName(addPlayerMatch[1]))} ${Math.max(1, Math.min(20, Number(addPlayerMatch[2] || 1)))}`);
   }

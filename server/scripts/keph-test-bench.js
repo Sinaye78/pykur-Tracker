@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 const BASE_URL = process.env.KEPH_TEST_BASE_URL || "https://familier-tracker.fr";
 const REQUEST_TIMEOUT_MS = Number(process.env.KEPH_TEST_TIMEOUT_MS || 12000);
+const PAUSE_MS = Number(process.env.KEPH_TEST_PAUSE_MS || 850);
+const RETRY_429_MS = Number(process.env.KEPH_TEST_RETRY_429_MS || 4500);
 const LIMIT = Number(process.env.KEPH_TEST_LIMIT || 0);
 
 const context = {
@@ -44,7 +46,7 @@ const cases = [
 
   { q: "ça sert à quoi de mettre des participants ?", expect: ["qui passe", "ordre", "lancers"], action: "open_prepare", avoid: ["pour ajouter"] },
   { q: "comment j'ajoute des candidats ?", expect: ["preparer", "pseudo", "charger"], action: "open_prepare" },
-  { q: "tu peux ajouter le candidat Capy a la fin de la liste", expect: ["capy"], actionType: "add_participant" },
+  { q: "tu peux ajouter le candidat Capy a la fin de la liste", expect: ["capy"], actionType: "command_batch", avoid: ["capy a la fin"] },
   { q: "mets tous les candidats a 5 lancers", expect: ["commande", "controlee"], actionType: "command_batch" },
 
   { q: "salut, tu peux m'aider comment je peux ajouter un lot dans la roue ?", expect: ["studio", "poids", "stock"], action: "open_wheel_studio_lots", noInternalCommands: true },
@@ -102,6 +104,10 @@ async function ask(question) {
     signal: controller.signal
   }).finally(() => clearTimeout(timer));
   const elapsed = Date.now() - started;
+  if (response.status === 429) {
+    await new Promise((resolve) => setTimeout(resolve, RETRY_429_MS));
+    return ask(question);
+  }
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   return { elapsed, payload: await response.json() };
 }
@@ -111,6 +117,7 @@ async function ask(question) {
   const failures = [];
   for (const test of selected) {
     try {
+      if (PAUSE_MS) await new Promise((resolve) => setTimeout(resolve, PAUSE_MS));
       const { elapsed, payload } = await ask(test.q);
       const answer = payload.answer || "";
       const actions = Array.isArray(payload.actions) ? payload.actions : [];
