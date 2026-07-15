@@ -4759,7 +4759,7 @@ async function resolveKephReply(message, context = {}) {
   if (guide.intent === "unverified_site_question") {
     return { ...guide, source: "verified", replyMode, selectedMode, grounded: false, avatarUrl: kephPublicAvatar() };
   }
-  if (["profile_transfer", "profile_import_purpose", "profile_export_purpose", "dialogue_tokens"].includes(guide.intent)) {
+  if (["profile_transfer", "profile_import_purpose", "profile_export_purpose", "dialogue_tokens", "new_user_onboarding"].includes(guide.intent)) {
     return { ...guide, source: "guide", replyMode, selectedMode, grounded: !!guide.matched, avatarUrl: kephPublicAvatar() };
   }
   if (["explain_discord_scene", "discord_scene"].includes(guide.intent)) {

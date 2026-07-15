@@ -272,15 +272,18 @@ function printKephResult(result) {
   let qualityTotal = 0;
   let qualityOne = 0;
   let streak = 0;
+  let executed = 0;
   for (let index = 0; index < selected.length; index++) {
     const test = selected[index];
     try {
       const result = await runKephCase(test);
+      executed++;
       qualityTotal += result.quality.score;
       if (result.quality.score === 1) qualityOne++;
       printKephResult(result);
       if (!result.ok) failures.push(result.failure);
     } catch (error) {
+      executed++;
       failures.push({ test, error: error.message });
       console.log(`FAIL ---- ${test.q}`);
       console.log(`  ${error.message}`);
@@ -297,8 +300,8 @@ function printKephResult(result) {
       if (streak >= STREAK_REQUIRED_PACKS) break;
     }
   }
-  const qualityAverage = selected.length ? qualityTotal / Math.max(1, Math.min(selected.length, STREAK_MODE ? STREAK_PACK_SIZE * Math.max(streak, 1) : selected.length)) : 0;
-  console.log(`\n${selected.length - failures.length}/${selected.length} OK`);
+  const qualityAverage = executed ? qualityTotal / executed : 0;
+  console.log(`\n${executed - failures.length}/${executed} OK`);
   console.log(`Quality average: ${qualityAverage.toFixed(2)}/2 (${qualityOne} response(s) at 1/2)`);
   if (STREAK_MODE) console.log(`Streak: ${streak}/${STREAK_REQUIRED_PACKS} paquet(s) de ${STREAK_PACK_SIZE}`);
   if (qualityAverage < MIN_QUALITY_AVG) {
