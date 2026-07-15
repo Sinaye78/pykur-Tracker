@@ -1974,6 +1974,7 @@ function verificationLink(token, client) {
 const charlieKephKnowledgePath = path.join(__dirname, "charlie-keph-knowledge.json");
 const kephSiteDocsPath = path.join(__dirname, "keph-docs", "site.json");
 const kephSiteManualPath = path.join(__dirname, "keph-docs", "site-manual.md");
+const kephGeneratedFeedbackCasesPath = path.join(__dirname, "keph-docs", "feedback-cases.generated.json");
 let charlieKephKnowledgeCache = null;
 let kephSiteDocsCache = null;
 let kephSiteManualCache = null;
@@ -4987,6 +4988,50 @@ function kephFeedbackDocSuggestion(row = {}) {
   };
 }
 
+function kephFeedbackCaseId(row = {}) {
+  return `feedback_${row.id || Date.now()}_${normalizeKephText(row.question || "case").replace(/\s+/g, "_").slice(0, 42) || "case"}`;
+}
+
+function kephFeedbackCaseForBench(row = {}) {
+  const training = parseKephJsonField(row.training_case_json, kephFeedbackTrainingCase(row));
+  const expected = Array.isArray(training.expected) ? training.expected.filter(Boolean) : [];
+  const forbidden = Array.isArray(training.forbidden) ? training.forbidden.filter(Boolean) : [];
+  const actions = Array.isArray(training.actions) ? training.actions.filter(Boolean) : [];
+  const test = {
+    id: kephFeedbackCaseId(row),
+    category: row.category || classifyKephFeedback(row),
+    question: row.question || "",
+    mode: normalizeKephMode(row.mode || "") || "auto",
+    expectAny: expected.length ? expected : ["réponse précise"],
+    avoid: forbidden,
+    ideal: training.reason || row.reason || "Réponse plus ciblée et vérifiée.",
+    sourceFeedbackId: row.id
+  };
+  if (actions.includes("action_required")) test.actionType = "command_batch";
+  if ((row.category || "") === "faux") test.noInternalCommands = true;
+  return test;
+}
+
+function loadKephGeneratedFeedbackCases() {
+  try {
+    return JSON.parse(fs.readFileSync(kephGeneratedFeedbackCasesPath, "utf8"));
+  } catch {
+    return { version: 1, source: "generated_from_keph_feedback", cases: [] };
+  }
+}
+
+function saveKephGeneratedFeedbackCase(row = {}) {
+  const payload = loadKephGeneratedFeedbackCases();
+  const cases = Array.isArray(payload.cases) ? payload.cases : [];
+  const test = kephFeedbackCaseForBench(row);
+  const existingIndex = cases.findIndex((item) => item.sourceFeedbackId === row.id || item.id === test.id);
+  if (existingIndex >= 0) cases[existingIndex] = { ...cases[existingIndex], ...test };
+  else cases.unshift(test);
+  fs.mkdirSync(path.dirname(kephGeneratedFeedbackCasesPath), { recursive: true });
+  fs.writeFileSync(kephGeneratedFeedbackCasesPath, `${JSON.stringify({ ...payload, version: 1, source: "generated_from_keph_feedback", cases }, null, 2)}\n`, "utf8");
+  return test;
+}
+
 function parseKephJsonField(value, fallback) {
   if (!value) return fallback;
   try {
@@ -4997,6 +5042,13 @@ function parseKephJsonField(value, fallback) {
 }
 
 app.get("/api/charlie-keph/feedback/summary", kephLimiter, asyncRoute(async (req, res) => {
+  const totals = db.prepare(`
+    SELECT
+      SUM(CASE WHEN vote = 'like' THEN 1 ELSE 0 END) AS likes,
+      SUM(CASE WHEN vote = 'dislike' THEN 1 ELSE 0 END) AS dislikes,
+      SUM(CASE WHEN vote = 'dislike' AND COALESCE(task_status,'open') = 'open' THEN 1 ELSE 0 END) AS openDislikes
+    FROM keph_feedback
+  `).get() || {};
   const rows = db.prepare(`
     SELECT id, vote, reason, question, answer, source, intent, mode, category, training_case_json, doc_suggestion_json, task_status, task_note, created_at
     FROM keph_feedback
@@ -5041,7 +5093,54 @@ app.get("/api/charlie-keph/feedback/summary", kephLimiter, asyncRoute(async (req
       question: item.question,
       reason: item.reason
     }));
-  res.json({ ok: true, counts, byMode, byStatus, recent, training, avatarUrl: kephPublicAvatar() });
+  const commandRejections = db.prepare(`
+    SELECT id, command, reason, question, created_at
+    FROM keph_command_rejections
+    ORDER BY id DESC
+    LIMIT 8
+  `).all().map((row) => ({
+    id: row.id,
+    command: row.command || "",
+    reason: row.reason || "",
+    question: row.question || "",
+    at: row.created_at || ""
+  }));
+  const generatedCases = loadKephGeneratedFeedbackCases();
+  const likes = Number(totals.likes || 0);
+  const dislikes = Number(totals.dislikes || 0);
+  const qualityScore = likes + dislikes > 0 ? Math.round((likes / (likes + dislikes)) * 100) : null;
+  res.json({
+    ok: true,
+    totals: {
+      likes,
+      dislikes,
+      openDislikes: Number(totals.openDislikes || 0),
+      generatedTests: Array.isArray(generatedCases.cases) ? generatedCases.cases.length : 0,
+      qualityScore
+    },
+    counts,
+    byMode,
+    byStatus,
+    recent,
+    training,
+    commandRejections,
+    avatarUrl: kephPublicAvatar()
+  });
+}));
+
+app.post("/api/charlie-keph/feedback/:id/test-case", kephLimiter, asyncRoute(async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: "Feedback invalide.", code: "KEPH_BAD_FEEDBACK_ID" });
+  const row = db.prepare(`
+    SELECT id, vote, reason, question, answer, source, intent, mode, category, training_case_json, doc_suggestion_json
+    FROM keph_feedback
+    WHERE id = ? AND vote = 'dislike'
+  `).get(id);
+  if (!row) return res.status(404).json({ error: "Feedback introuvable.", code: "KEPH_FEEDBACK_NOT_FOUND" });
+  const testCase = saveKephGeneratedFeedbackCase(row);
+  db.prepare("UPDATE keph_feedback SET task_status = ?, task_note = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+    .run("doc_added", "Transformé en cas de test Keph généré.", id);
+  res.json({ ok: true, id, testCase });
 }));
 
 app.patch("/api/charlie-keph/feedback/:id/task", kephLimiter, asyncRoute(async (req, res) => {

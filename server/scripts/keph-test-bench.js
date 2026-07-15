@@ -8,6 +8,9 @@ const RETRY_429_MS = Number(process.env.KEPH_TEST_RETRY_429_MS || 4500);
 const LIMIT = Number(process.env.KEPH_TEST_LIMIT || 0);
 const MIN_QUALITY_AVG = Number(process.env.KEPH_TEST_MIN_QUALITY_AVG || 1.72);
 const ALLOW_QUALITY_ONE = process.env.KEPH_TEST_ALLOW_QUALITY_ONE === "1";
+const STREAK_MODE = process.argv.includes("--streak") || process.env.KEPH_TEST_STREAK === "1";
+const STREAK_PACK_SIZE = Number(process.env.KEPH_TEST_PACK_SIZE || 5);
+const STREAK_REQUIRED_PACKS = Number(process.env.KEPH_TEST_REQUIRED_PACKS || 10);
 
 const context = {
   currentCandidate: "Kinza",
@@ -107,8 +110,12 @@ const coreCases = [
 ];
 
 function loadRealCases() {
-  try {
-    const file = path.join(__dirname, "..", "keph-docs", "feedback-cases.json");
+  const files = [
+    path.join(__dirname, "..", "keph-docs", "feedback-cases.json"),
+    path.join(__dirname, "..", "keph-docs", "feedback-cases.generated.json")
+  ];
+  return files.flatMap((file) => {
+    try {
     const payload = JSON.parse(fs.readFileSync(file, "utf8"));
     return (payload.cases || []).map((item) => ({
       q: item.question,
@@ -121,10 +128,11 @@ function loadRealCases() {
       realCaseId: item.id,
       category: item.category
     }));
-  } catch (error) {
-    console.warn(`WARN unable to load real feedback cases: ${error.message}`);
+    } catch (error) {
+      if (!file.endsWith("feedback-cases.generated.json")) console.warn(`WARN unable to load real feedback cases: ${error.message}`);
     return [];
-  }
+    }
+  });
 }
 
 const cases = [...coreCases, ...loadRealCases()];
@@ -205,56 +213,99 @@ async function ask(question, extraContext = {}, mode = "") {
   return { elapsed, payload: await response.json() };
 }
 
+async function runKephCase(test) {
+  if (PAUSE_MS) await new Promise((resolve) => setTimeout(resolve, PAUSE_MS));
+  const { elapsed, payload } = await ask(test.q, test.context || {}, test.mode || "");
+  const answer = payload.answer || "";
+  const actions = Array.isArray(payload.actions) ? payload.actions : [];
+  const missing = (test.expect || []).filter((term) => !hasTerm(answer, term));
+  const missingAny = test.expectAny?.length && !test.expectAny.some((term) => hasTerm(answer, term)) ? test.expectAny : [];
+  const forbidden = (test.avoid || []).filter((term) => hasTerm(answer, term));
+  const internalCommands = test.noInternalCommands && /(^|\n)\s*\/(?:add_lot|setpoids|setstock|add_dialogue|clear_lots|set_queue|setlance)\b/i.test(answer);
+  const modeMissing = test.expectMode && payload.replyMode !== test.expectMode;
+  const actionMissing = test.action && !actions.some((action) => action.id === test.action);
+  const actionAnyMissing = test.actionAny?.length && !actions.some((action) => test.actionAny.includes(action.id));
+  const actionTypeMissing = test.actionType && !actions.some((action) => action.type === test.actionType);
+  const noActionsFailed = test.noActions && actions.length > 0;
+  const tooShort = answer.trim().length < 18;
+  const quality = qualityScore({ test, answer, actions, payload });
+  const qualityFailed = quality.score === 0 || (!ALLOW_QUALITY_ONE && test.realCaseId && quality.score < 2);
+  const ok = !missing.length && !missingAny.length && !forbidden.length && !internalCommands && !modeMissing && !actionMissing && !actionAnyMissing && !actionTypeMissing && !noActionsFailed && !tooShort && !qualityFailed;
+  const failure = ok ? null : { test, elapsed, source: payload.source, mode: payload.replyMode, intent: payload.intent, quality, answer, actions };
+  return {
+    ok,
+    test,
+    elapsed,
+    payload,
+    answer,
+    actions,
+    quality,
+    failure,
+    reasons: { missing, missingAny, forbidden, internalCommands, modeMissing, actionMissing, actionAnyMissing, actionTypeMissing, noActionsFailed, tooShort }
+  };
+}
+
+function printKephResult(result) {
+  const { ok, test, elapsed, payload, quality, actions, reasons } = result;
+  console.log(`${ok ? "OK" : "FAIL"} q${quality.score}/2 ${elapsed}ms [${payload.source || "?"}/${payload.replyMode || "?"}/${payload.intent || "?"}] ${test.realCaseId ? `[${test.realCaseId}] ` : ""}${test.q}`);
+  if (reasons.missing.length) console.log(`  missing: ${reasons.missing.join(", ")}`);
+  if (reasons.missingAny.length) console.log(`  missing any of: ${reasons.missingAny.join(", ")}`);
+  if (reasons.forbidden.length) console.log(`  forbidden: ${reasons.forbidden.join(", ")}`);
+  if (reasons.internalCommands) console.log("  forbidden internal command syntax in help answer");
+  if (reasons.modeMissing) console.log(`  wrong mode: expected ${test.expectMode}, got ${payload.replyMode || "?"}`);
+  if (reasons.actionMissing) console.log(`  missing action: ${test.action}`);
+  if (reasons.actionAnyMissing) console.log(`  missing one action of: ${test.actionAny.join(", ")}`);
+  if (reasons.actionTypeMissing) console.log(`  missing action type: ${test.actionType}`);
+  if (reasons.noActionsFailed) console.log(`  unexpected actions: ${actions.map((a) => a.id).join(", ")}`);
+  if (reasons.tooShort) console.log("  answer too short");
+  if (quality.reasons.length) console.log(`  quality: ${quality.reasons.join("; ")}`);
+}
+
 (async () => {
-  const selected = LIMIT > 0 ? cases.slice(0, LIMIT) : cases;
+  const wantedStreakLimit = STREAK_MODE ? STREAK_PACK_SIZE * STREAK_REQUIRED_PACKS : 0;
+  const selected = LIMIT > 0
+    ? cases.slice(0, LIMIT)
+    : wantedStreakLimit > 0
+      ? cases.slice(0, wantedStreakLimit)
+      : cases;
   const failures = [];
   let qualityTotal = 0;
   let qualityOne = 0;
-  for (const test of selected) {
+  let streak = 0;
+  for (let index = 0; index < selected.length; index++) {
+    const test = selected[index];
     try {
-      if (PAUSE_MS) await new Promise((resolve) => setTimeout(resolve, PAUSE_MS));
-      const { elapsed, payload } = await ask(test.q, test.context || {}, test.mode || "");
-      const answer = payload.answer || "";
-      const actions = Array.isArray(payload.actions) ? payload.actions : [];
-      const missing = (test.expect || []).filter((term) => !hasTerm(answer, term));
-      const missingAny = test.expectAny?.length && !test.expectAny.some((term) => hasTerm(answer, term)) ? test.expectAny : [];
-      const forbidden = (test.avoid || []).filter((term) => hasTerm(answer, term));
-      const internalCommands = test.noInternalCommands && /(^|\n)\s*\/(?:add_lot|setpoids|setstock|add_dialogue|clear_lots|set_queue|setlance)\b/i.test(answer);
-      const modeMissing = test.expectMode && payload.replyMode !== test.expectMode;
-      const actionMissing = test.action && !actions.some((action) => action.id === test.action);
-      const actionAnyMissing = test.actionAny?.length && !actions.some((action) => test.actionAny.includes(action.id));
-      const actionTypeMissing = test.actionType && !actions.some((action) => action.type === test.actionType);
-      const noActionsFailed = test.noActions && actions.length > 0;
-      const tooShort = answer.trim().length < 18;
-      const quality = qualityScore({ test, answer, actions, payload });
-      qualityTotal += quality.score;
-      if (quality.score === 1) qualityOne++;
-      const qualityFailed = quality.score === 0 || (!ALLOW_QUALITY_ONE && test.realCaseId && quality.score < 2);
-      const ok = !missing.length && !missingAny.length && !forbidden.length && !internalCommands && !modeMissing && !actionMissing && !actionAnyMissing && !actionTypeMissing && !noActionsFailed && !tooShort && !qualityFailed;
-      console.log(`${ok ? "OK" : "FAIL"} q${quality.score}/2 ${elapsed}ms [${payload.source || "?"}/${payload.replyMode || "?"}/${payload.intent || "?"}] ${test.realCaseId ? `[${test.realCaseId}] ` : ""}${test.q}`);
-      if (missing.length) console.log(`  missing: ${missing.join(", ")}`);
-      if (missingAny.length) console.log(`  missing any of: ${missingAny.join(", ")}`);
-      if (forbidden.length) console.log(`  forbidden: ${forbidden.join(", ")}`);
-      if (internalCommands) console.log("  forbidden internal command syntax in help answer");
-      if (modeMissing) console.log(`  wrong mode: expected ${test.expectMode}, got ${payload.replyMode || "?"}`);
-      if (actionMissing) console.log(`  missing action: ${test.action}`);
-      if (actionAnyMissing) console.log(`  missing one action of: ${test.actionAny.join(", ")}`);
-      if (actionTypeMissing) console.log(`  missing action type: ${test.actionType}`);
-      if (noActionsFailed) console.log(`  unexpected actions: ${actions.map((a) => a.id).join(", ")}`);
-      if (tooShort) console.log("  answer too short");
-      if (quality.reasons.length) console.log(`  quality: ${quality.reasons.join("; ")}`);
-      if (!ok) failures.push({ test, elapsed, source: payload.source, mode: payload.replyMode, intent: payload.intent, quality, answer, actions });
+      const result = await runKephCase(test);
+      qualityTotal += result.quality.score;
+      if (result.quality.score === 1) qualityOne++;
+      printKephResult(result);
+      if (!result.ok) failures.push(result.failure);
     } catch (error) {
       failures.push({ test, error: error.message });
       console.log(`FAIL ---- ${test.q}`);
       console.log(`  ${error.message}`);
     }
+    if (STREAK_MODE && (index + 1) % STREAK_PACK_SIZE === 0) {
+      const packStart = index + 1 - STREAK_PACK_SIZE;
+      const packFailed = failures.some((failure) => selected.slice(packStart, index + 1).includes(failure?.test));
+      if (packFailed) {
+        console.log(`\nFAIL paquet ${streak + 1}/${STREAK_REQUIRED_PACKS} apres ${streak} paquet(s) valide(s) d'affilee.`);
+        break;
+      }
+      streak++;
+      console.log(`\nOK paquet ${streak}/${STREAK_REQUIRED_PACKS}`);
+      if (streak >= STREAK_REQUIRED_PACKS) break;
+    }
   }
-  const qualityAverage = selected.length ? qualityTotal / selected.length : 0;
+  const qualityAverage = selected.length ? qualityTotal / Math.max(1, Math.min(selected.length, STREAK_MODE ? STREAK_PACK_SIZE * Math.max(streak, 1) : selected.length)) : 0;
   console.log(`\n${selected.length - failures.length}/${selected.length} OK`);
   console.log(`Quality average: ${qualityAverage.toFixed(2)}/2 (${qualityOne} response(s) at 1/2)`);
+  if (STREAK_MODE) console.log(`Streak: ${streak}/${STREAK_REQUIRED_PACKS} paquet(s) de ${STREAK_PACK_SIZE}`);
   if (qualityAverage < MIN_QUALITY_AVG) {
     failures.push({ error: `Quality average ${qualityAverage.toFixed(2)} below ${MIN_QUALITY_AVG}` });
+  }
+  if (STREAK_MODE && streak < STREAK_REQUIRED_PACKS) {
+    failures.push({ error: `Streak ${streak}/${STREAK_REQUIRED_PACKS} incomplete` });
   }
   if (failures.length) {
     console.log(JSON.stringify(failures.slice(0, 12), null, 2));

@@ -1122,6 +1122,7 @@ function runKephAction(action){
   if(action.type==='play_event_rehearsal')return applyKephEventRehearsal(action);
   if(action.type==='start_test_draw')return applyKephStartTestDraw(action);
   if(action.type==='show_feedback_test_case')return applyKephShowFeedbackTestCase(action);
+  if(action.type==='add_feedback_test_case')return applyKephAddFeedbackTestCase(action);
   if(action.type==='command_batch')return previewKephCommandBatch(action);
   if(action.type==='undo_profile_snapshot')return applyKephUndoSnapshot(action);
   if(action.type==='update_feedback_task')return applyKephFeedbackTask(action);
@@ -1166,7 +1167,8 @@ async function loadKephLearningLog(){
     let items=(payload.recent||[]).slice(0,5);
     let recent=items.map(item=>`#${item.id} [${item.status||'open'}] ${item.category} : ${item.question||'question vide'}${item.reason?` (${item.reason})`:''}${item.trainingCase?' -> cas test pret':''}`).join('\n');
     let actions=items.flatMap(item=>[
-      {type:'show_feedback_test_case',id:'feedback-test-'+item.id,label:`Test #${item.id}`,payload:{id:item.id,trainingCase:item.trainingCase,docSuggestion:item.docSuggestion}},
+      {type:'add_feedback_test_case',id:'feedback-add-test-'+item.id,label:`Ajouter test #${item.id}`,payload:{id:item.id}},
+      {type:'show_feedback_test_case',id:'feedback-test-'+item.id,label:`Aperçu #${item.id}`,payload:{id:item.id,trainingCase:item.trainingCase,docSuggestion:item.docSuggestion}},
       {type:'update_feedback_task',id:'feedback-doc-'+item.id,label:`Doc #${item.id}`,payload:{id:item.id,status:'doc_added'}},
       {type:'update_feedback_task',id:'feedback-fixed-'+item.id,label:`Corrigé #${item.id}`,payload:{id:item.id,status:'fixed'}}
     ]);
@@ -1207,13 +1209,17 @@ async function loadKephLearningLog(){
     if(!response.ok)throw new Error('logs');
     let payload=await response.json();
     if(payload.avatarUrl)applyKephAvatar(payload.avatarUrl);
+    var totals=payload.totals||{};
+    var quality=totals.qualityScore==null?'pas assez de votes':`${totals.qualityScore}% utile`;
     let counts=Object.entries(payload.counts||{}).map(([name,count])=>`${name}: ${count}`).join(' · ')||'aucun dislike récent';
     let modes=Object.entries(payload.byMode||{}).map(([name,count])=>`${name}: ${count}`).join(' · ')||'mode inconnu';
     let statuses=Object.entries(payload.byStatus||{}).map(([name,count])=>`${name}: ${count}`).join(' · ')||'aucun statut';
     let items=(payload.recent||[]).slice(0,8);
     let recent=items.map(item=>`#${item.id} [${item.status||'open'}] ${item.category} · ${item.mode||'mode ?'} · ${item.source||'source ?'}\nQ: ${item.question||'question vide'}${item.reason?`\nRaison: ${item.reason}`:''}`).join('\n\n');
+    var rejected=(payload.commandRejections||[]).slice(0,4).map(item=>`#${item.id} ${item.command}${item.reason?` -> ${item.reason}`:''}`).join('\n');
     let actions=items.flatMap(item=>[
-      {type:'show_feedback_test_case',id:'feedback-test-'+item.id,label:`Créer test #${item.id}`,payload:{id:item.id,trainingCase:item.trainingCase,docSuggestion:item.docSuggestion}},
+      {type:'add_feedback_test_case',id:'feedback-add-test-'+item.id,label:`Ajouter test #${item.id}`,payload:{id:item.id}},
+      {type:'show_feedback_test_case',id:'feedback-test-'+item.id,label:`Aperçu #${item.id}`,payload:{id:item.id,trainingCase:item.trainingCase,docSuggestion:item.docSuggestion}},
       {type:'update_feedback_task',id:'feedback-doc-'+item.id,label:`Fiche doc #${item.id}`,payload:{id:item.id,status:'doc_added'}},
       {type:'update_feedback_task',id:'feedback-fixed-'+item.id,label:`Corrigé #${item.id}`,payload:{id:item.id,status:'fixed'}}
     ]);
@@ -1222,6 +1228,9 @@ async function loadKephLearningLog(){
   }catch{
     kephMessagesState.push({role:'assistant',text:'Je n’arrive pas à charger le journal d’apprentissage pour l’instant.'});
     setKephState('Logs indisponibles');
+  }
+  if(typeof quality!=='undefined'&&typeof totals!=='undefined'){
+    kephMessagesState.push({role:'assistant',text:`Synthese qualite\nScore: ${quality}\nVotes utiles: ${totals.likes||0}\nVotes negatifs: ${totals.dislikes||0}\nDislikes ouverts: ${totals.openDislikes||0}\nTests generes: ${totals.generatedTests||0}${typeof rejected!=='undefined'&&rejected?`\n\nCommandes refusees :\n${rejected}`:''}`});
   }
   renderKephMessages();
 }
@@ -1247,6 +1256,19 @@ function applyKephShowFeedbackTestCase(action){
   if(doc.source_question)lines.push(`Question source : ${doc.source_question}`);
   if(doc.suggested_fix)lines.push(`Correction doc : ${doc.suggested_fix}`);
   kephMessagesState.push({role:'assistant',text:lines.join('\n')});
+  renderKephMessages();
+}
+async function applyKephAddFeedbackTestCase(action){
+  let id=Number(action?.payload?.id);
+  if(!id)return;
+  try{
+    let response=await fetch(kephApi(`/api/charlie-keph/feedback/${id}/test-case`),{method:'POST',headers:{'content-type':'application/json'}});
+    if(!response.ok)throw new Error('test');
+    let payload=await response.json(),test=payload.testCase||{};
+    kephMessagesState.push({role:'assistant',text:`Test ajouté au banc Keph : ${test.id||('#'+id)}\nQuestion : ${test.question||'non renseignée'}\nIl sera chargé par npm run test:keph et npm run test:keph:streak.`});
+  }catch{
+    kephMessagesState.push({role:'assistant',text:`Je n'ai pas réussi à ajouter le feedback #${id} au banc de test.`});
+  }
   renderKephMessages();
 }
 function tokenizeKephCommand(command){
